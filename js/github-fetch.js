@@ -1,7 +1,6 @@
 /**
  * Dynamic GitHub Data Fetcher
- * Boots from shared config and fetches profile/repositories from GitHub.
- * Version: 13
+ * Version: 16
  */
 
 const MANIFEST_PLACEHOLDER_ID = 'manifest-placeholder';
@@ -30,85 +29,55 @@ async function getPortfolioConfig() {
 
     configPromise = (async () => {
         try {
-            const response = await fetch(`site.webmanifest?t=${new Date().getTime()}`, { cache: 'no-store' });
+            // Simple fetch for manifest
+            const response = await fetch(`site.webmanifest?t=${new Date().getTime()}`);
             if (response.ok) {
                 window.PortfolioConfig = await response.json();
                 return window.PortfolioConfig;
             }
         } catch (error) {
-            console.warn('Config: Manifest load failed, using defaults.');
+            console.warn('Config: Manifest blocked or missing.');
         }
-        window.PortfolioConfig = {
-            github_username: DEFAULT_USERNAME,
-            privacy_policy_repo: 'Privacy-Policies',
-            github_token: ''
-        };
+        window.PortfolioConfig = { github_username: DEFAULT_USERNAME, privacy_policy_repo: 'Privacy-Policies' };
         return window.PortfolioConfig;
     })();
 
     return configPromise;
 }
 
-/**
- * Returns headers for GitHub API requests, including token if available.
- */
-function getGithubHeaders(config) {
-    const headers = { 'Accept': 'application/vnd.github.v3+json' };
-    if (config && config.github_token) {
-        headers['Authorization'] = `token ${config.github_token}`;
-    }
-    return headers;
-}
-
 async function initPortfolio() {
     const config = await getPortfolioConfig();
     const username = config.github_username || DEFAULT_USERNAME;
-    const headers = getGithubHeaders(config);
+    const token = config.github_token;
+
+    // Use token only if present
+    const fetchOptions = token ? { headers: { 'Authorization': `token ${token}` } } : {};
 
     try {
-        // 1. Fetch User Data
-        const userResponse = await fetch(`https://api.github.com/users/${username}?t=${new Date().getTime()}`, {
-            headers,
-            cache: 'no-store'
-        });
+        const userURL = `https://api.github.com/users/${username}?t=${new Date().getTime()}`;
+        const userResponse = await fetch(userURL, fetchOptions);
 
-        if (userResponse.status === 403) {
-            handleRateLimit(username);
-            return;
+        if (userResponse.ok) {
+            const userData = await userResponse.json();
+            populateProfile(userData, username);
+        } else {
+            console.error('Portfolio: API Error', userResponse.status);
+            document.querySelectorAll('.user-name-js').forEach(el => el.textContent = username);
         }
 
-        if (!userResponse.ok) throw new Error('Failed to fetch user profile');
-
-        const userData = await userResponse.json();
-        populateProfile(userData, username);
-
-        // 2. Fetch Repositories
         const repoContainer = document.getElementById(REPO_CONTAINER_ID);
         if (repoContainer) {
-            const reposResponse = await fetch(`https://api.github.com/users/${username}/repos?sort=updated&per_page=100&t=${new Date().getTime()}`, {
-                headers,
-                cache: 'no-store'
-            });
+            const reposURL = `https://api.github.com/users/${username}/repos?sort=updated&per_page=100`;
+            const reposResponse = await fetch(reposURL, fetchOptions);
             if (reposResponse.ok) {
                 const repos = await reposResponse.json();
                 renderRepos(repoContainer, repos);
-            } else if (reposResponse.status === 403) {
-                repoContainer.innerHTML = `<div class="repo-loader">GitHub API Rate Limit Exceeded.</div>`;
             }
         }
 
     } catch (error) {
-        console.error('Portfolio Error:', error);
-        document.querySelectorAll('.user-name-js').forEach(el => el.textContent = username);
+        console.error('Portfolio: Network Error', error);
     }
-}
-
-function handleRateLimit(username) {
-    const repoContainer = document.getElementById(REPO_CONTAINER_ID);
-    if (repoContainer) {
-        repoContainer.innerHTML = `<div class="repo-loader">GitHub API Rate Limit Exceeded. <br> Please try again in an hour or <a href="https://github.com/${username}" target="_blank">view on GitHub</a>.</div>`;
-    }
-    document.querySelectorAll('.user-name-js').forEach(el => el.textContent = username);
 }
 
 function populateProfile(data, username) {
@@ -153,18 +122,12 @@ function renderMetadata(container, data) {
 
 function renderRepos(container, repos) {
     container.innerHTML = '';
-    if (repos.length === 0) {
-        container.innerHTML = '<div class="repo-loader">No public repositories found.</div>';
-        return;
-    }
-
     repos.forEach(repo => {
         const div = document.createElement('div');
         div.className = 'repo-item';
         const langColor = LANG_COLORS[repo.language] || '#8b949e';
         const updatedDate = new Date(repo.updated_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
         const sshUrl = repo.clone_url.replace('https://github.com/', 'git@github.com:');
-        const cliUrl = `gh repo clone ${repo.full_name}`;
 
         div.innerHTML = `
             <div class="repo-item__header"><a href="${repo.html_url}" target="_blank" class="repo-item__name">${repo.name}</a><span class="repo-item__badge">Public</span></div>
@@ -176,7 +139,6 @@ function renderRepos(container, repos) {
                     <div class="clone-box__tabs">
                         <button class="clone-box__tab active" onclick="switchCloneTab(this, 'https', '${repo.clone_url}')">HTTPS</button>
                         <button class="clone-box__tab" onclick="switchCloneTab(this, 'ssh', '${sshUrl}')">SSH</button>
-                        <button class="clone-box__tab" onclick="switchCloneTab(this, 'cli', '${cliUrl}')">CLI</button>
                     </div>
                     <div class="clone-box__url-container">
                         <input class="clone-box__input" type="text" value="${repo.clone_url}" readonly>
@@ -192,10 +154,6 @@ function renderRepos(container, repos) {
             </div>
         `;
         container.appendChild(div);
-    });
-
-    document.addEventListener('click', (e) => {
-        if (!e.target.closest('.repo-actions')) document.querySelectorAll('.repo-clone-box').forEach(b => b.classList.remove('active'));
     });
 }
 

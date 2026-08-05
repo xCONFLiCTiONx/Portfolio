@@ -1,7 +1,7 @@
 /**
  * Dynamic Privacy Policy Fetcher
- * Optimized for local and public viewing.
- * Version: 15
+ * Strictly fetches list and content from GitHub API.
+ * Version: 16
  */
 
 (function($) {
@@ -11,39 +11,32 @@
     const CONTENT_ID = '#policy-content';
 
     async function initPrivacy() {
-        const selector = $(SELECTOR_ID);
-        const content = $(CONTENT_ID);
-        const copyBtn = $('#copyPolicyLink');
-
-        function setStatus(msg, isError = false) {
-            content.html(`<div class="status-msg ${isError ? 'error' : ''}">${msg}</div>`);
-        }
-
-        setStatus('Step 1: Loading configuration...');
-
-        // 1. Get shared config
         const config = await getPortfolioConfig();
         const username = config.github_username || 'xCONFLiCTiONx';
         const repo = config.privacy_policy_repo || 'Privacy-Policies';
         const token = config.github_token;
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const targetPolicy = (urlParams.get('p') || urlParams.get('policy') || '').toLowerCase();
+        const selector = $(SELECTOR_ID);
+        const content = $(CONTENT_ID);
+        const copyBtn = $('#copyPolicyLink');
 
         if (!selector.length) return;
 
-        // 2. Setup Change Listener (Handles fetching content)
+        // Simple options for unauthenticated fetch to avoid CORS blocks
+        const fetchOptions = token ? { headers: { 'Authorization': `token ${token}` } } : {};
+
+        // 1. Setup Change Listener
         selector.off('change').on('change', async function() {
             const downloadUrl = $(this).val();
             const selectedSlug = $(this).find(':selected').data('slug');
             if (!downloadUrl) return;
 
             window.history.pushState({ path: selectedSlug }, '', '?p=' + selectedSlug);
-            setStatus('<i class="im im-spinner im-spin"></i> Loading policy content...');
+            content.html('<div class="repo-loader"><i class="im im-spinner im-spin"></i> Loading policy content...</div>');
 
             try {
-                // Fetch content - No auth header to avoid CORS blocks on raw content
-                const response = await fetch(downloadUrl, { cache: 'no-store' });
+                // Fetch content - Never use auth header for raw content servers
+                const response = await fetch(downloadUrl);
                 if (response.ok) {
                     const text = await response.text();
                     if (typeof marked !== 'undefined') {
@@ -53,24 +46,17 @@
                     }
                     $('html, body').animate({ scrollTop: content.offset().top - 100 }, 400);
                 } else {
-                    setStatus(`Error: Could not load the policy text (HTTP ${response.status}).`, true);
+                    content.html(`<p class="error">Error: Could not load the policy file (HTTP ${response.status}).</p>`);
                 }
             } catch (e) {
-                setStatus('Network error while fetching policy text.', true);
+                content.html('<p class="error">Network error while fetching policy content.</p>');
             }
         });
 
-        // 3. Fetch file list from GitHub
-        setStatus(`Step 2: Requesting policy list from ${username}/${repo}...`);
-
+        // 2. Fetch file list from GitHub
         try {
-            const apiURL = `https://api.github.com/repos/${username}/${repo}/contents?t=${new Date().getTime()}`;
-
-            // For the file list, only add token if it exists (avoids CORS preflight issues for unauthenticated)
-            const headers = { 'Accept': 'application/vnd.github.v3+json' };
-            if (token) headers['Authorization'] = `token ${token}`;
-
-            const response = await fetch(apiURL, { headers });
+            const apiURL = `https://api.github.com/repos/${username}/${repo}/contents`;
+            const response = await fetch(apiURL, fetchOptions);
 
             if (response.ok) {
                 const files = await response.json();
@@ -80,8 +66,7 @@
                 );
 
                 if (mdFiles.length === 0) {
-                    setStatus('Success: No .md files found in repository.', false);
-                    selector.html('<option value="" disabled selected>No policies found.</option>');
+                    selector.html('<option value="" disabled selected>No Markdown policies found.</option>');
                     return;
                 }
 
@@ -89,34 +74,31 @@
                 mdFiles.forEach(file => {
                     const slug = file.name.replace('.md', '').toLowerCase();
                     const displayName = slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-
-                    // Construct robust raw URL
                     const url = `https://raw.githubusercontent.com/${username}/${repo}/refs/heads/main/${file.name}`;
 
-                    options += `<option value="${url}" data-slug="${slug}" ${targetPolicy === slug ? 'selected' : ''}>${displayName}</option>`;
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const targetPolicy = (urlParams.get('p') || urlParams.get('policy') || '').toLowerCase();
+                    const isSelected = targetPolicy === slug;
+
+                    options += `<option value="${url}" data-slug="${slug}" ${isSelected ? 'selected' : ''}>${displayName}</option>`;
                 });
-
                 selector.html(options);
-                setStatus('Select a policy from the dropdown above to view details.');
 
-                // Auto-trigger if deep-linked
-                if (targetPolicy && selector.val()) {
+                if (selector.val()) {
                     selector.trigger('change');
                 }
 
             } else {
+                selector.html(`<option value="" disabled selected>GitHub Error (${response.status})</option>`);
                 if (response.status === 403) {
-                    setStatus('GitHub API Rate Limit Reached. If you have a token, add it to site.webmanifest.', true);
-                } else {
-                    setStatus(`GitHub API Error (HTTP ${response.status}). Is the repo name correct?`, true);
+                    content.html('<p class="error">GitHub API Limit Reached. (403 Forbidden)</p>');
                 }
-                selector.html(`<option value="" disabled selected>API Error (${response.status})</option>`);
             }
         } catch (e) {
-            setStatus('Connection error. Check your internet or browser security settings.', true);
+            selector.html('<option value="" disabled selected>CORS or Network Error</option>');
         }
 
-        // 4. Copy link button
+        // 3. Handle copy link button
         copyBtn.off('click').on('click', async function() {
             try {
                 await navigator.clipboard.writeText(window.location.href);
