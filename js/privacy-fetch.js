@@ -101,10 +101,9 @@
             const selectedSlug = $(this).find(':selected').data('slug');
             if (!downloadUrl) return;
 
-            // Update URL for deep linking
+            // Update URL for deep linking (Relative update to avoid local file path issues)
             if (selectedSlug) {
-                const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?p=' + selectedSlug;
-                window.history.pushState({ path: newUrl }, '', newUrl);
+                window.history.pushState({ path: selectedSlug }, '', '?p=' + selectedSlug);
             }
 
             console.log('Privacy Fetcher: Loading content from:', downloadUrl);
