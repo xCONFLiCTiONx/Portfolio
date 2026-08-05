@@ -24,6 +24,11 @@
         const content = $(CONTENT_ID);
         const copyBtn = $('#copyPolicyLink');
 
+        if (!selector.length) {
+            console.error('Privacy Fetcher: Selector element not found!');
+            return;
+        }
+
         // 1. Load configuration from manifest
         try {
             const manifestFetch = await fetch(`${MANIFEST_URL}?t=${new Date().getTime()}`, { cache: 'no-store' });
@@ -37,12 +42,48 @@
             console.warn('Privacy Fetcher: Manifest load failed, using defaults.', e);
         }
 
-        if (!selector.length) {
-            console.error('Privacy Fetcher: Selector element not found!');
-            return;
-        }
+        // 2. Handle selection change (Setup listener BEFORE fetching data to avoid race conditions)
+        selector.off('change').on('change', async function() {
+            const downloadUrl = $(this).val();
+            const selectedSlug = $(this).find(':selected').data('slug');
+            if (!downloadUrl) return;
 
-        // 2. Fetch list of Markdown files from GitHub API
+            // Update URL for deep linking (Relative update)
+            if (selectedSlug) {
+                window.history.pushState({ path: selectedSlug }, '', '?p=' + selectedSlug);
+            }
+
+            console.log('Privacy Fetcher: Loading content from:', downloadUrl);
+            content.html('<div class="repo-loader"><i class="im im-spinner im-spin"></i> Loading policy...</div>');
+
+            try {
+                const response = await fetch(downloadUrl, { cache: 'no-store' });
+                if (response.ok) {
+                    const text = await response.text();
+                    console.log('Privacy Fetcher: Content received.');
+
+                    if (typeof marked !== 'undefined') {
+                        content.html(marked.parse(text));
+                    } else {
+                        console.error('Privacy Fetcher: Marked.js not found!');
+                        content.html('<pre style="white-space: pre-wrap;">' + text + '</pre>');
+                    }
+
+                    // Smooth scroll to content
+                    $('html, body').animate({
+                        scrollTop: content.offset().top - 100
+                    }, 400);
+                } else {
+                    console.error('Privacy Fetcher: Failed to fetch policy content:', response.status);
+                    content.html('<p class="error">Failed to load policy content (HTTP ' + response.status + ').</p>');
+                }
+            } catch (e) {
+                console.error('Privacy Fetcher: Error fetching policy text:', e);
+                content.html('<p class="error">Error fetching policy. Check your connection.</p>');
+            }
+        });
+
+        // 3. Fetch list of Markdown files from GitHub API
         try {
             const apiURL = `https://api.github.com/repos/${username}/${repo}/contents?t=${new Date().getTime()}`;
             console.log('Privacy Fetcher: Fetching file list from:', apiURL);
@@ -95,49 +136,8 @@
             selector.html('<option value="" disabled selected>Connection error. Check console.</option>');
         }
 
-        // 3. Handle selection change
-        selector.off('change').on('change', async function() {
-            const downloadUrl = $(this).val();
-            const selectedSlug = $(this).find(':selected').data('slug');
-            if (!downloadUrl) return;
-
-            // Update URL for deep linking (Relative update to avoid local file path issues)
-            if (selectedSlug) {
-                window.history.pushState({ path: selectedSlug }, '', '?p=' + selectedSlug);
-            }
-
-            console.log('Privacy Fetcher: Loading content from:', downloadUrl);
-            content.html('<div class="repo-loader"><i class="im im-spinner im-spin"></i> Loading policy...</div>');
-
-            try {
-                const response = await fetch(downloadUrl, { cache: 'no-store' });
-                if (response.ok) {
-                    const text = await response.text();
-                    console.log('Privacy Fetcher: Content received.');
-
-                    if (typeof marked !== 'undefined') {
-                        content.html(marked.parse(text));
-                    } else {
-                        console.error('Privacy Fetcher: Marked.js not found!');
-                        content.html('<pre style="white-space: pre-wrap;">' + text + '</pre>');
-                    }
-
-                    // Smooth scroll to content
-                    $('html, body').animate({
-                        scrollTop: content.offset().top - 100
-                    }, 400);
-                } else {
-                    console.error('Privacy Fetcher: Failed to fetch policy content:', response.status);
-                    content.html('<p class="error">Failed to load policy content (HTTP ' + response.status + ').</p>');
-                }
-            } catch (e) {
-                console.error('Privacy Fetcher: Error fetching policy text:', e);
-                content.html('<p class="error">Error fetching policy. Check your connection.</p>');
-            }
-        });
-
         // 5. Handle copy link button
-        copyBtn.on('click', async function() {
+        copyBtn.off('click').on('click', async function() {
             const currentUrl = window.location.href;
             const originalHtml = copyBtn.html();
 
