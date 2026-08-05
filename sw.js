@@ -1,4 +1,4 @@
-const CACHE_NAME = 'portfolio-v7';
+const CACHE_NAME = 'portfolio-v9';
 const ASSETS = [
   './',
   './index.html',
@@ -35,8 +35,15 @@ self.addEventListener('activate', event => {
   );
 });
 
-// Fetch event - Network-First for HTML, Cache-First for others
+// Fetch event
 self.addEventListener('fetch', event => {
+  const url = new URL(event.request.url);
+
+  // 1. Skip caching for GitHub API calls - Always fetch fresh
+  if (url.hostname === 'api.github.com') {
+    return;
+  }
+
   const isHtml = event.request.mode === 'navigate' ||
                  (event.request.method === 'GET' && event.request.headers.get('accept').includes('text/html'));
 

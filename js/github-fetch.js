@@ -31,7 +31,7 @@ async function initPortfolio() {
     // Only attempt to load manifest if NOT on file:// protocol
     if (window.location.protocol !== 'file:') {
         try {
-            const manifestResponse = await fetch(MANIFEST_URL);
+            const manifestResponse = await fetch(`${MANIFEST_URL}?t=${new Date().getTime()}`, { cache: 'no-store' });
             if (manifestResponse.ok) {
                 const manifest = await manifestResponse.json();
                 if (manifest.github_username) {
@@ -52,7 +52,7 @@ async function initPortfolio() {
 
     try {
         // 2. Fetch User Data
-        const userResponse = await fetch(`https://api.github.com/users/${username}`);
+        const userResponse = await fetch(`https://api.github.com/users/${username}?t=${new Date().getTime()}`, { cache: 'no-store' });
         if (!userResponse.ok) throw new Error('Failed to fetch user profile');
 
         const userData = await userResponse.json();
@@ -61,7 +61,7 @@ async function initPortfolio() {
         // 3. Fetch Repositories
         const repoContainer = document.getElementById(REPO_CONTAINER_ID);
         if (repoContainer) {
-            const reposResponse = await fetch(`https://api.github.com/users/${username}/repos?sort=updated&per_page=100`);
+            const reposResponse = await fetch(`https://api.github.com/users/${username}/repos?sort=updated&per_page=100&t=${new Date().getTime()}`, { cache: 'no-store' });
             if (reposResponse.ok) {
                 const repos = await reposResponse.json();
                 renderRepos(repoContainer, repos);
@@ -300,7 +300,7 @@ async function updateManifest(avatarUrl, displayName) {
     }
 
     try {
-        const response = await fetch(MANIFEST_URL);
+        const response = await fetch(`${MANIFEST_URL}?t=${new Date().getTime()}`, { cache: 'no-store' });
         if (!response.ok) return;
         const manifest = await response.json();
 
