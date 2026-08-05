@@ -15,6 +15,11 @@
         let username = 'xCONFLiCTiONx'; // Default fallback
         let repo = 'Privacy-Policies'; // Default fallback
 
+        // 0. Parse URL parameters for deep linking
+        const urlParams = new URLSearchParams(window.location.search);
+        const targetPolicy = (urlParams.get('p') || urlParams.get('policy') || '').toLowerCase();
+        let autoSelectedUrl = null;
+
         // 1. Load configuration from manifest
         try {
             const manifestFetch = await fetch(`${MANIFEST_URL}?t=${new Date().getTime()}`, { cache: 'no-store' });
@@ -61,12 +66,24 @@
                 let options = '<option value="" disabled selected>-- Select a Project Policy --</option>';
                 mdFiles.forEach(file => {
                     const displayName = formatFileName(file.name);
+                    const fileBaseName = file.name.replace('.md', '').toLowerCase();
+
                     // Use download_url if available, fallback to a constructed raw URL
                     const url = file.download_url || `https://raw.githubusercontent.com/${username}/${repo}/main/${file.name}`;
-                    options += `<option value="${url}">${displayName}</option>`;
+
+                    const isSelected = targetPolicy && (fileBaseName === targetPolicy || displayName.toLowerCase() === targetPolicy.replace(/-/g, ' '));
+                    if (isSelected) autoSelectedUrl = url;
+
+                    options += `<option value="${url}" ${isSelected ? 'selected' : ''}>${displayName}</option>`;
                 });
                 selector.html(options);
                 console.log('Privacy Fetcher: Dropdown populated.');
+
+                // 4. Auto-trigger if deep-linked
+                if (autoSelectedUrl) {
+                    console.log('Privacy Fetcher: Deep link detected for:', targetPolicy);
+                    selector.trigger('change');
+                }
 
             } else {
                 console.error('Privacy Fetcher: GitHub API returned error:', response.status);
