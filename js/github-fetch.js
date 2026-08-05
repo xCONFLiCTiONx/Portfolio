@@ -236,32 +236,33 @@ function renderRepos(container, repos) {
             <div class="repo-item__header">
                 <a href="${repo.html_url}" target="_blank" class="repo-item__name">${repo.name}</a>
                 <span class="repo-item__badge">Public</span>
-
-                <div class="repo-actions">
-                    <button class="repo-code-btn" onclick="toggleCloneBox(this)">
-                        Code <i class="im im-angle-down"></i>
-                    </button>
-
-                    <div class="repo-clone-box">
-                        <div class="clone-box__header">
-                            <i class="im im-code"></i> Clone
-                        </div>
-                        <div class="clone-box__tabs">
-                            <button class="clone-box__tab active" onclick="switchCloneTab(this, 'https', '${repo.clone_url}')">HTTPS</button>
-                            <button class="clone-box__tab" onclick="switchCloneTab(this, 'ssh', '${sshUrl}')">SSH</button>
-                            <button class="clone-box__tab" onclick="switchCloneTab(this, 'cli', '${cliUrl}')">GitHub CLI</button>
-                        </div>
-                        <div class="clone-box__url-container">
-                            <input class="clone-box__input" type="text" value="${repo.clone_url}" readonly>
-                            <button class="clone-box__copy-btn" title="Copy to clipboard" onclick="copyCloneUrl(this)">
-                                <i class="im im-copy"></i>
-                            </button>
-                        </div>
-                        <div class="clone-box__footer">Clone using the web URL.</div>
-                    </div>
-                </div>
             </div>
             ${repo.description ? `<p class="repo-item__description">${repo.description}</p>` : ''}
+
+            <div class="repo-actions">
+                <button class="repo-code-btn" onclick="toggleCloneBox(this)">
+                    Code <i class="im im-angle-down"></i>
+                </button>
+
+                <div class="repo-clone-box">
+                    <div class="clone-box__header">
+                        <i class="im im-code"></i> Clone
+                    </div>
+                    <div class="clone-box__tabs">
+                        <button class="clone-box__tab active" onclick="switchCloneTab(this, 'https', '${repo.clone_url}')">HTTPS</button>
+                        <button class="clone-box__tab" onclick="switchCloneTab(this, 'ssh', '${sshUrl}')">SSH</button>
+                        <button class="clone-box__tab" onclick="switchCloneTab(this, 'cli', '${cliUrl}')">GitHub CLI</button>
+                    </div>
+                    <div class="clone-box__url-container">
+                        <input class="clone-box__input" type="text" value="${repo.clone_url}" readonly>
+                        <button class="clone-box__copy-btn" title="Copy to clipboard" onclick="copyCloneUrl(this)">
+                            <i class="im im-copy"></i>
+                        </button>
+                    </div>
+                    <div class="clone-box__footer">Clone using the web URL.</div>
+                </div>
+            </div>
+
             <div class="repo-item__footer">
                 ${repo.language ? `
                     <div class="repo-item__lang">
