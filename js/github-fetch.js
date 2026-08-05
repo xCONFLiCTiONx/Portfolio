@@ -1,16 +1,16 @@
 /**
  * Dynamic GitHub Data Fetcher
- * Version: 18
+ * Version: 19
  */
 
-const MANIFEST_PLACEHOLDER_ID = 'manifest-placeholder';
-const FAVICON_ID = 'favicon-js';
+const MANIFEST_URL = 'site.webmanifest';
 const REPO_CONTAINER_ID = 'github-repos';
 const AVATAR_CONTAINER_ID = 'profile-avatar';
 const HEADER_AVATAR_ID = 'header-avatar';
-const METADATA_CONTAINER_ID = 'profile-metadata';
-const BIO_CONTAINER_ID = 'profile-bio';
 const HANDLE_CONTAINER_ID = 'profile-handle';
+const BIO_CONTAINER_ID = 'profile-bio';
+const METADATA_CONTAINER_ID = 'profile-metadata';
+const FAVICON_ID = 'favicon-js';
 
 const LANG_COLORS = {
     'C#': '#178600', 'HTML': '#e34c26', 'CSS': '#563d7c', 'JavaScript': '#f1e05a',
@@ -29,18 +29,17 @@ async function getPortfolioConfig() {
 
     configPromise = (async () => {
         try {
-            const response = await fetch(`site.webmanifest`);
+            const response = await fetch(MANIFEST_URL, { cache: 'no-cache' });
             if (response.ok) {
                 window.PortfolioConfig = await response.json();
                 return window.PortfolioConfig;
             }
         } catch (error) {
-            console.warn('Config: Manifest load failed or blocked by local security.');
+            console.warn('Config: Failed to load manifest from server.');
         }
         window.PortfolioConfig = {
             github_username: DEFAULT_USERNAME,
-            privacy_policy_repo: 'Privacy-Policies',
-            github_token: null
+            privacy_policy_repo: 'Privacy-Policies'
         };
         return window.PortfolioConfig;
     })();
@@ -49,13 +48,13 @@ async function getPortfolioConfig() {
 }
 
 /**
- * Returns headers for GitHub API.
- * For local files, we only add headers if a token is present to avoid pre-flight blocks.
+ * Returns official GitHub headers
  */
 function getGithubHeaders(token) {
-    const headers = {};
+    const headers = {
+        'Accept': 'application/vnd.github.v3+json'
+    };
     if (token) {
-        headers['Accept'] = 'application/vnd.github.v3+json';
         headers['Authorization'] = `token ${token}`;
     }
     return headers;
@@ -66,27 +65,25 @@ async function initPortfolio() {
     const username = config.github_username || DEFAULT_USERNAME;
     const token = config.github_token;
 
-    // Use token only if present to keep request "simple" for local files
-    const headers = getGithubHeaders(token);
-    const fetchOptions = { cache: 'no-cache' };
-    if (token) fetchOptions.headers = headers;
+    const fetchOptions = {
+        headers: getGithubHeaders(token),
+        cache: 'no-cache'
+    };
 
     try {
-        const userURL = `https://api.github.com/users/${username}`;
-        const userResponse = await fetch(userURL, fetchOptions);
-
+        // 1. Fetch Profile
+        const userResponse = await fetch(`https://api.github.com/users/${username}`, fetchOptions);
         if (userResponse.ok) {
             const userData = await userResponse.json();
             populateProfile(userData, username);
         } else {
-            console.error('Portfolio API Error:', userResponse.status);
             document.querySelectorAll('.user-name-js').forEach(el => el.textContent = username);
         }
 
+        // 2. Fetch Repos
         const repoContainer = document.getElementById(REPO_CONTAINER_ID);
         if (repoContainer) {
-            const reposURL = `https://api.github.com/users/${username}/repos?sort=updated&per_page=100`;
-            const reposResponse = await fetch(reposURL, fetchOptions);
+            const reposResponse = await fetch(`https://api.github.com/users/${username}/repos?sort=updated&per_page=100`, fetchOptions);
             if (reposResponse.ok) {
                 const repos = await reposResponse.json();
                 renderRepos(repoContainer, repos);
@@ -94,24 +91,25 @@ async function initPortfolio() {
         }
 
     } catch (error) {
-        console.error('Portfolio Network Error:', error);
-        document.querySelectorAll('.user-name-js').forEach(el => el.textContent = username);
+        console.error('Portfolio: Connection Error', error);
     }
 }
 
 function populateProfile(data, username) {
     const openGithub = () => window.open(`https://github.com/${username}`, '_blank');
     const ids = [AVATAR_CONTAINER_ID, 'profile-name', HANDLE_CONTAINER_ID, BIO_CONTAINER_ID];
+
     ids.forEach(id => {
         const el = document.getElementById(id);
-        if (el) el.onclick = openGithub;
+        if (el) {
+            el.onclick = openGithub;
+            el.style.cursor = 'pointer';
+        }
     });
 
     document.querySelectorAll('.user-name-js').forEach(el => el.textContent = data.name || username);
-    const handleEl = document.getElementById(HANDLE_CONTAINER_ID);
-    if (handleEl) handleEl.textContent = data.login || username;
-    const bioEl = document.getElementById(BIO_CONTAINER_ID);
-    if (bioEl) bioEl.textContent = data.bio || 'Building tools for freedom & productivity.';
+    if (document.getElementById(HANDLE_CONTAINER_ID)) document.getElementById(HANDLE_CONTAINER_ID).textContent = data.login || username;
+    if (document.getElementById(BIO_CONTAINER_ID)) document.getElementById(BIO_CONTAINER_ID).textContent = data.bio || 'Building tools for freedom & productivity.';
 
     const avatarContainer = document.getElementById(AVATAR_CONTAINER_ID);
     const headerAvatar = document.getElementById(HEADER_AVATAR_ID);
@@ -197,7 +195,7 @@ async function copyCloneUrl(btn) {
         const icon = btn.querySelector('i');
         icon.className = 'im im-check-mark';
         setTimeout(() => { icon.className = 'im im-copy'; }, 2000);
-    } catch (err) { console.error('Failed to copy!', err); }
+    } catch (err) { console.error('Copy failed', err); }
 }
 
 document.addEventListener('DOMContentLoaded', initPortfolio);
