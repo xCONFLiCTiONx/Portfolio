@@ -1,6 +1,6 @@
 /**
  * Dynamic GitHub Data Fetcher
- * Version: 17
+ * Version: 18
  */
 
 const MANIFEST_PLACEHOLDER_ID = 'manifest-placeholder';
@@ -29,16 +29,19 @@ async function getPortfolioConfig() {
 
     configPromise = (async () => {
         try {
-            // Clean fetch for manifest
-            const response = await fetch(`site.webmanifest`, { cache: 'no-cache' });
+            const response = await fetch(`site.webmanifest`);
             if (response.ok) {
                 window.PortfolioConfig = await response.json();
                 return window.PortfolioConfig;
             }
         } catch (error) {
-            console.warn('Config: Manifest load failed.');
+            console.warn('Config: Manifest load failed or blocked by local security.');
         }
-        window.PortfolioConfig = { github_username: DEFAULT_USERNAME, privacy_policy_repo: 'Privacy-Policies' };
+        window.PortfolioConfig = {
+            github_username: DEFAULT_USERNAME,
+            privacy_policy_repo: 'Privacy-Policies',
+            github_token: null
+        };
         return window.PortfolioConfig;
     })();
 
@@ -46,13 +49,13 @@ async function getPortfolioConfig() {
 }
 
 /**
- * Returns standardized headers for GitHub API
+ * Returns headers for GitHub API.
+ * For local files, we only add headers if a token is present to avoid pre-flight blocks.
  */
 function getGithubHeaders(token) {
-    const headers = {
-        'Accept': 'application/vnd.github.v3+json'
-    };
+    const headers = {};
     if (token) {
+        headers['Accept'] = 'application/vnd.github.v3+json';
         headers['Authorization'] = `token ${token}`;
     }
     return headers;
@@ -63,13 +66,12 @@ async function initPortfolio() {
     const username = config.github_username || DEFAULT_USERNAME;
     const token = config.github_token;
 
-    const fetchOptions = {
-        headers: getGithubHeaders(token),
-        cache: 'no-cache'
-    };
+    // Use token only if present to keep request "simple" for local files
+    const headers = getGithubHeaders(token);
+    const fetchOptions = { cache: 'no-cache' };
+    if (token) fetchOptions.headers = headers;
 
     try {
-        // 1. Fetch User Data
         const userURL = `https://api.github.com/users/${username}`;
         const userResponse = await fetch(userURL, fetchOptions);
 
@@ -81,7 +83,6 @@ async function initPortfolio() {
             document.querySelectorAll('.user-name-js').forEach(el => el.textContent = username);
         }
 
-        // 2. Fetch Repositories
         const repoContainer = document.getElementById(REPO_CONTAINER_ID);
         if (repoContainer) {
             const reposURL = `https://api.github.com/users/${username}/repos?sort=updated&per_page=100`;
@@ -94,6 +95,7 @@ async function initPortfolio() {
 
     } catch (error) {
         console.error('Portfolio Network Error:', error);
+        document.querySelectorAll('.user-name-js').forEach(el => el.textContent = username);
     }
 }
 
