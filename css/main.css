@@ -195,6 +195,7 @@ header.site-header {
 }
 
 .profile-handle {
+    cursor: pointer;
     font-size: 2rem;
     color: #8b949e;
     margin-bottom: 2rem;
@@ -202,6 +203,7 @@ header.site-header {
 }
 
 .profile-bio {
+    cursor: pointer;
     font-size: 1.6rem;
     margin-bottom: 3rem;
     color: #c9d1d9;
