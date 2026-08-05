@@ -25,57 +25,88 @@ const LANG_COLORS = {
     'Shell': '#89e051'
 };
 
-async function initPortfolio() {
-    let username = DEFAULT_USERNAME;
+// Global Configuration Sharing
+window.PortfolioConfig = null;
+let configPromise = null;
 
-    try {
-        const manifestResponse = await fetch(`${MANIFEST_URL}?t=${new Date().getTime()}`, { cache: 'no-store' });
-        if (manifestResponse.ok) {
-            const manifest = await manifestResponse.json();
-            if (manifest.github_username) {
-                username = manifest.github_username;
+async function getPortfolioConfig() {
+    if (window.PortfolioConfig) return window.PortfolioConfig;
+    if (configPromise) return configPromise;
+
+    configPromise = (async () => {
+        try {
+            const response = await fetch(`${MANIFEST_URL}?t=${new Date().getTime()}`, { cache: 'no-store' });
+            if (response.ok) {
+                window.PortfolioConfig = await response.json();
+
+                // Add the manifest link tag dynamically
+                if (!document.getElementById(MANIFEST_PLACEHOLDER_ID)) {
+                    const link = document.createElement('link');
+                    link.id = MANIFEST_PLACEHOLDER_ID;
+                    link.rel = 'manifest';
+                    link.href = MANIFEST_URL;
+                    document.head.appendChild(link);
+                }
+
+                return window.PortfolioConfig;
             }
-
-            // Add the manifest link tag dynamically
-            const link = document.createElement('link');
-            link.id = MANIFEST_PLACEHOLDER_ID;
-            link.rel = 'manifest';
-            link.href = MANIFEST_URL;
-            document.head.appendChild(link);
+        } catch (error) {
+            console.warn('Manifest load failed, using defaults.');
         }
-    } catch (error) {
-        // Silently fallback to DEFAULT_USERNAME if fetch fails (e.g., local file:// security)
-    }
+        window.PortfolioConfig = { github_username: DEFAULT_USERNAME };
+        return window.PortfolioConfig;
+    })();
+
+    return configPromise;
+}
+
+async function initPortfolio() {
+    const config = await getPortfolioConfig();
+    const username = config.github_username || DEFAULT_USERNAME;
 
     try {
-        // 2. Fetch User Data
+        // 1. Fetch User Data
         const userResponse = await fetch(`https://api.github.com/users/${username}?t=${new Date().getTime()}`, { cache: 'no-store' });
+
+        if (userResponse.status === 403) {
+            handleRateLimit(username);
+            return;
+        }
+
         if (!userResponse.ok) throw new Error('Failed to fetch user profile');
 
         const userData = await userResponse.json();
         populateProfile(userData, username);
 
-        // 3. Fetch Repositories
+        // 2. Fetch Repositories (Only if container exists - main page)
         const repoContainer = document.getElementById(REPO_CONTAINER_ID);
         if (repoContainer) {
             const reposResponse = await fetch(`https://api.github.com/users/${username}/repos?sort=updated&per_page=100&t=${new Date().getTime()}`, { cache: 'no-store' });
             if (reposResponse.ok) {
                 const repos = await reposResponse.json();
                 renderRepos(repoContainer, repos);
+            } else if (reposResponse.status === 403) {
+                repoContainer.innerHTML = `<div class="repo-loader">GitHub API Rate Limit Exceeded. <br> Please try again in an hour or <a href="https://github.com/${username}" target="_blank">view repositories on GitHub</a>.</div>`;
             } else {
-                repoContainer.innerHTML = `<div class="repo-loader">Error loading repositories from GitHub. <br> <a href="https://github.com/${username}" target="_blank">View on GitHub</a></div>`;
+                repoContainer.innerHTML = `<div class="repo-loader">Error loading repositories. <br> <a href="https://github.com/${username}" target="_blank">View on GitHub</a></div>`;
             }
         }
 
     } catch (error) {
         console.error('GitHub API Error:', error);
-        const repoContainer = document.getElementById(REPO_CONTAINER_ID);
-        if (repoContainer) {
-            repoContainer.innerHTML = `<div class="repo-loader">Could not connect to GitHub. <br> Please check your internet connection or verify the username in site.webmanifest.</div>`;
-        }
-        // Remove "Loading..." from other places
+        // Basic fallback for name
         document.querySelectorAll('.user-name-js').forEach(el => el.textContent = username);
     }
+}
+
+function handleRateLimit(username) {
+    console.warn('GitHub API Rate Limit Hit');
+    const repoContainer = document.getElementById(REPO_CONTAINER_ID);
+    if (repoContainer) {
+        repoContainer.innerHTML = `<div class="repo-loader">GitHub API Rate Limit Exceeded. <br> Please try again in an hour or <a href="https://github.com/${username}" target="_blank">view profile on GitHub</a>.</div>`;
+    }
+    // Remove "Loading..." and put username
+    document.querySelectorAll('.user-name-js').forEach(el => el.textContent = username);
 }
 
 /**
@@ -296,9 +327,8 @@ async function updateManifest(avatarUrl, displayName) {
     }
 
     try {
-        const response = await fetch(`${MANIFEST_URL}?t=${new Date().getTime()}`, { cache: 'no-store' });
-        if (!response.ok) return;
-        const manifest = await response.json();
+        const config = await getPortfolioConfig();
+        const manifest = JSON.parse(JSON.stringify(config)); // Deep copy
 
         // Inject Dynamic Data
         manifest.name = `${displayName} Portfolio`;

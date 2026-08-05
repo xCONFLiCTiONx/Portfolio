@@ -6,14 +6,16 @@
 (function($) {
     "use strict";
 
-    const MANIFEST_URL = 'site.webmanifest';
     const SELECTOR_ID = '#policySelector';
     const CONTENT_ID = '#policy-content';
 
     async function initPrivacy() {
         console.log('Privacy Fetcher: Initializing...');
-        let username = 'xCONFLiCTiONx'; // Default fallback
-        let repo = 'Privacy-Policies'; // Default fallback
+
+        // 1. Get shared config from github-fetch.js
+        const config = await getPortfolioConfig();
+        const username = config.github_username || 'xCONFLiCTiONx';
+        const repo = config.privacy_policy_repo || 'Privacy-Policies';
 
         // 0. Parse URL parameters for deep linking
         const urlParams = new URLSearchParams(window.location.search);
@@ -29,26 +31,12 @@
             return;
         }
 
-        // 1. Load configuration from manifest
-        try {
-            const manifestFetch = await fetch(`${MANIFEST_URL}?t=${new Date().getTime()}`, { cache: 'no-store' });
-            if (manifestFetch.ok) {
-                const manifest = await manifestFetch.json();
-                if (manifest.github_username) username = manifest.github_username;
-                if (manifest.privacy_policy_repo) repo = manifest.privacy_policy_repo;
-                console.log('Privacy Fetcher: Config loaded from manifest:', { username, repo });
-            }
-        } catch (e) {
-            console.warn('Privacy Fetcher: Manifest load failed, using defaults.', e);
-        }
-
-        // 2. Handle selection change (Setup listener BEFORE fetching data to avoid race conditions)
+        // 2. Setup listener BEFORE fetching data
         selector.off('change').on('change', async function() {
             const downloadUrl = $(this).val();
             const selectedSlug = $(this).find(':selected').data('slug');
             if (!downloadUrl) return;
 
-            // Update URL for deep linking (Relative update)
             if (selectedSlug) {
                 window.history.pushState({ path: selectedSlug }, '', '?p=' + selectedSlug);
             }
@@ -58,107 +46,95 @@
 
             try {
                 const response = await fetch(downloadUrl, { cache: 'no-store' });
+                if (response.status === 403) {
+                    content.html('<p class="error">GitHub Rate Limit Exceeded. <br> Please try again in an hour or view the repository directly.</p>');
+                    return;
+                }
                 if (response.ok) {
                     const text = await response.text();
-                    console.log('Privacy Fetcher: Content received.');
-
                     if (typeof marked !== 'undefined') {
                         content.html(marked.parse(text));
                     } else {
-                        console.error('Privacy Fetcher: Marked.js not found!');
                         content.html('<pre style="white-space: pre-wrap;">' + text + '</pre>');
                     }
-
-                    // Smooth scroll to content
-                    $('html, body').animate({
-                        scrollTop: content.offset().top - 100
-                    }, 400);
+                    $('html, body').animate({ scrollTop: content.offset().top - 100 }, 400);
                 } else {
-                    console.error('Privacy Fetcher: Failed to fetch policy content:', response.status);
                     content.html('<p class="error">Failed to load policy content (HTTP ' + response.status + ').</p>');
                 }
             } catch (e) {
-                console.error('Privacy Fetcher: Error fetching policy text:', e);
                 content.html('<p class="error">Error fetching policy. Check your connection.</p>');
             }
         });
 
-        // 3. Fetch list of Markdown files from GitHub API
-        try {
-            const apiURL = `https://api.github.com/repos/${username}/${repo}/contents?t=${new Date().getTime()}`;
-            console.log('Privacy Fetcher: Fetching file list from:', apiURL);
-
-            const response = await fetch(apiURL, { cache: 'no-store' });
-
-            if (response.ok) {
-                const files = await response.json();
-                console.log('Privacy Fetcher: Files found:', files.length);
-
-                const mdFiles = files.filter(file =>
-                    file.name.endsWith('.md') &&
-                    file.name.toLowerCase() !== 'readme.md'
-                );
-
-                if (mdFiles.length === 0) {
-                    selector.html('<option value="" disabled selected>No policies found in repository.</option>');
-                    return;
-                }
-
-                // Populate selector
-                let options = '<option value="" disabled selected>-- Select a Project Policy --</option>';
-                mdFiles.forEach(file => {
-                    const displayName = formatFileName(file.name);
-                    const fileBaseName = file.name.replace('.md', '').toLowerCase();
-
-                    // Use download_url if available, fallback to a constructed raw URL
-                    const url = file.download_url || `https://raw.githubusercontent.com/${username}/${repo}/main/${file.name}`;
-
-                    const isSelected = targetPolicy && (fileBaseName === targetPolicy || displayName.toLowerCase() === targetPolicy.replace(/-/g, ' '));
-                    if (isSelected) autoSelectedUrl = url;
-
-                    options += `<option value="${url}" data-slug="${fileBaseName}" ${isSelected ? 'selected' : ''}>${displayName}</option>`;
-                });
-                selector.html(options);
-                console.log('Privacy Fetcher: Dropdown populated.');
-
-                // 4. Auto-trigger if deep-linked
-                if (autoSelectedUrl) {
-                    console.log('Privacy Fetcher: Deep link detected for:', targetPolicy);
-                    selector.trigger('change');
-                }
-
-            } else {
-                console.error('Privacy Fetcher: GitHub API returned error:', response.status);
-                selector.html('<option value="" disabled selected>Error loading policies (HTTP ' + response.status + ')</option>');
-            }
-        } catch (e) {
-            console.error('Privacy Fetcher: Network error while listing policies:', e);
-            selector.html('<option value="" disabled selected>Connection error. Check console.</option>');
+        // 3. Populate policy list (Try manifest first to save API call)
+        if (config.policies && Array.isArray(config.policies)) {
+            console.log('Privacy Fetcher: Using policies from manifest.');
+            renderPolicyOptions(config.policies, username, repo, selector, targetPolicy);
+            handleAutoTrigger(targetPolicy, selector);
+        } else {
+            // Fallback: Fetch from GitHub API
+            await fetchFromGitHubAPI(username, repo, selector, targetPolicy);
+            handleAutoTrigger(targetPolicy, selector);
         }
 
         // 5. Handle copy link button
         copyBtn.off('click').on('click', async function() {
             const currentUrl = window.location.href;
             const originalHtml = copyBtn.html();
-
             try {
                 await navigator.clipboard.writeText(currentUrl);
-
-                // Visual feedback
                 copyBtn.addClass('copied').html('<i class="im im-check-mark"></i> Copied!');
-
-                setTimeout(() => {
-                    copyBtn.removeClass('copied').html(originalHtml);
-                }, 2000);
-            } catch (err) {
-                console.error('Failed to copy URL:', err);
-            }
+                setTimeout(() => { copyBtn.removeClass('copied').html(originalHtml); }, 2000);
+            } catch (err) { console.error('Failed to copy URL:', err); }
         });
     }
 
-    /**
-     * Formats filenames (e.g., 'call-guard-shield.md') to readable titles ('Call Guard Shield')
-     */
+    function renderPolicyOptions(slugs, username, repo, selector, targetPolicy) {
+        let options = '<option value="" disabled selected>-- Select a Project Policy --</option>';
+        slugs.forEach(slug => {
+            const displayName = formatFileName(slug);
+            const url = `https://raw.githubusercontent.com/${username}/${repo}/main/${slug}.md`;
+            const isSelected = targetPolicy && (slug.toLowerCase() === targetPolicy);
+            options += `<option value="${url}" data-slug="${slug}" ${isSelected ? 'selected' : ''}>${displayName}</option>`;
+        });
+        selector.html(options);
+    }
+
+    async function fetchFromGitHubAPI(username, repo, selector, targetPolicy) {
+        try {
+            const apiURL = `https://api.github.com/repos/${username}/${repo}/contents`;
+            const response = await fetch(apiURL);
+
+            if (response.status === 403) {
+                selector.html('<option value="" disabled selected>API Rate Limit Exceeded. Try again later.</option>');
+                return;
+            }
+
+            if (response.ok) {
+                const files = await response.json();
+                const mdFiles = files.filter(file => file.name.endsWith('.md') && file.name.toLowerCase() !== 'readme.md');
+
+                let options = '<option value="" disabled selected>-- Select a Project Policy --</option>';
+                mdFiles.forEach(file => {
+                    const displayName = formatFileName(file.name);
+                    const slug = file.name.replace('.md', '').toLowerCase();
+                    const url = file.download_url || `https://raw.githubusercontent.com/${username}/${repo}/main/${file.name}`;
+                    const isSelected = targetPolicy && (slug === targetPolicy);
+                    options += `<option value="${url}" data-slug="${slug}" ${isSelected ? 'selected' : ''}>${displayName}</option>`;
+                });
+                selector.html(options);
+            }
+        } catch (e) {
+            selector.html('<option value="" disabled selected>Connection error.</option>');
+        }
+    }
+
+    function handleAutoTrigger(targetPolicy, selector) {
+        if (targetPolicy && selector.val()) {
+            selector.trigger('change');
+        }
+    }
+
     function formatFileName(name) {
         return name
             .replace('.md', '')
@@ -167,9 +143,6 @@
             .join(' ');
     }
 
-    // Initialize
-    $(document).ready(function() {
-        initPrivacy();
-    });
+    $(document).ready(initPrivacy);
 
 })(jQuery);
