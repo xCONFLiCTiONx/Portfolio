@@ -1,17 +1,7 @@
 {
     "github_username": "xCONFLiCTiONx",
+    "github_token": "",
     "privacy_policy_repo": "Privacy-Policies",
-    "policies": [
-        "call-guard-shield",
-        "xtended-menu",
-        "nws-alerts",
-        "pdf-tools",
-        "cookie-manager",
-        "element-hider",
-        "bookmarks",
-        "pip",
-        "copy-paste"
-    ],
     "name": "Developer Portfolio",
     "short_name": "Portfolio",
     "start_url": "index.html",

@@ -1,6 +1,7 @@
 /**
  * Dynamic Privacy Policy Fetcher
- * Fetches Markdown policies from a specified GitHub repository.
+ * Strictly fetches list and content from GitHub API.
+ * Version: 13
  */
 
 (function($) {
@@ -10,46 +11,31 @@
     const CONTENT_ID = '#policy-content';
 
     async function initPrivacy() {
-        console.log('Privacy Fetcher: Initializing...');
-
-        // 1. Get shared config from github-fetch.js
         const config = await getPortfolioConfig();
         const username = config.github_username || 'xCONFLiCTiONx';
         const repo = config.privacy_policy_repo || 'Privacy-Policies';
+        const headers = getGithubHeaders(config);
 
-        // 0. Parse URL parameters for deep linking
         const urlParams = new URLSearchParams(window.location.search);
         const targetPolicy = (urlParams.get('p') || urlParams.get('policy') || '').toLowerCase();
-        let autoSelectedUrl = null;
 
         const selector = $(SELECTOR_ID);
         const content = $(CONTENT_ID);
         const copyBtn = $('#copyPolicyLink');
 
-        if (!selector.length) {
-            console.error('Privacy Fetcher: Selector element not found!');
-            return;
-        }
+        if (!selector.length) return;
 
-        // 2. Setup listener BEFORE fetching data
+        // 1. Setup Change Listener
         selector.off('change').on('change', async function() {
             const downloadUrl = $(this).val();
             const selectedSlug = $(this).find(':selected').data('slug');
             if (!downloadUrl) return;
 
-            if (selectedSlug) {
-                window.history.pushState({ path: selectedSlug }, '', '?p=' + selectedSlug);
-            }
-
-            console.log('Privacy Fetcher: Loading content from:', downloadUrl);
-            content.html('<div class="repo-loader"><i class="im im-spinner im-spin"></i> Loading policy...</div>');
+            window.history.pushState({ path: selectedSlug }, '', '?p=' + selectedSlug);
+            content.html('<div class="repo-loader"><i class="im im-spinner im-spin"></i> Loading policy content...</div>');
 
             try {
-                const response = await fetch(downloadUrl, { cache: 'no-store' });
-                if (response.status === 403) {
-                    content.html('<p class="error">GitHub Rate Limit Exceeded. <br> Please try again in an hour or view the repository directly.</p>');
-                    return;
-                }
+                const response = await fetch(downloadUrl, { headers, cache: 'no-store' });
                 if (response.ok) {
                     const text = await response.text();
                     if (typeof marked !== 'undefined') {
@@ -59,88 +45,64 @@
                     }
                     $('html, body').animate({ scrollTop: content.offset().top - 100 }, 400);
                 } else {
-                    content.html('<p class="error">Failed to load policy content (HTTP ' + response.status + ').</p>');
+                    content.html(`<p class="error">Error: Could not load the policy file (HTTP ${response.status}).</p>`);
                 }
             } catch (e) {
-                content.html('<p class="error">Error fetching policy. Check your connection.</p>');
+                content.html('<p class="error">Network error while fetching policy.</p>');
             }
         });
 
-        // 3. Populate policy list (Try manifest first to save API call)
-        if (config.policies && Array.isArray(config.policies)) {
-            console.log('Privacy Fetcher: Using policies from manifest.');
-            renderPolicyOptions(config.policies, username, repo, selector, targetPolicy);
-            handleAutoTrigger(targetPolicy, selector);
-        } else {
-            // Fallback: Fetch from GitHub API
-            await fetchFromGitHubAPI(username, repo, selector, targetPolicy);
-            handleAutoTrigger(targetPolicy, selector);
-        }
-
-        // 5. Handle copy link button
-        copyBtn.off('click').on('click', async function() {
-            const currentUrl = window.location.href;
-            const originalHtml = copyBtn.html();
-            try {
-                await navigator.clipboard.writeText(currentUrl);
-                copyBtn.addClass('copied').html('<i class="im im-check-mark"></i> Copied!');
-                setTimeout(() => { copyBtn.removeClass('copied').html(originalHtml); }, 2000);
-            } catch (err) { console.error('Failed to copy URL:', err); }
-        });
-    }
-
-    function renderPolicyOptions(slugs, username, repo, selector, targetPolicy) {
-        let options = '<option value="" disabled selected>-- Select a Project Policy --</option>';
-        slugs.forEach(slug => {
-            const displayName = formatFileName(slug);
-            const url = `https://raw.githubusercontent.com/${username}/${repo}/main/${slug}.md`;
-            const isSelected = targetPolicy && (slug.toLowerCase() === targetPolicy);
-            options += `<option value="${url}" data-slug="${slug}" ${isSelected ? 'selected' : ''}>${displayName}</option>`;
-        });
-        selector.html(options);
-    }
-
-    async function fetchFromGitHubAPI(username, repo, selector, targetPolicy) {
+        // 2. Fetch file list from GitHub
         try {
-            const apiURL = `https://api.github.com/repos/${username}/${repo}/contents`;
-            const response = await fetch(apiURL);
-
-            if (response.status === 403) {
-                selector.html('<option value="" disabled selected>API Rate Limit Exceeded. Try again later.</option>');
-                return;
-            }
+            const apiURL = `https://api.github.com/repos/${username}/${repo}/contents?t=${new Date().getTime()}`;
+            const response = await fetch(apiURL, { headers, cache: 'no-store' });
 
             if (response.ok) {
                 const files = await response.json();
-                const mdFiles = files.filter(file => file.name.endsWith('.md') && file.name.toLowerCase() !== 'readme.md');
+                const mdFiles = files.filter(file =>
+                    file.name.endsWith('.md') &&
+                    file.name.toLowerCase() !== 'readme.md'
+                );
+
+                if (mdFiles.length === 0) {
+                    selector.html('<option value="" disabled selected>No Markdown policies found.</option>');
+                    return;
+                }
 
                 let options = '<option value="" disabled selected>-- Select a Project Policy --</option>';
                 mdFiles.forEach(file => {
-                    const displayName = formatFileName(file.name);
                     const slug = file.name.replace('.md', '').toLowerCase();
+                    const displayName = slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
                     const url = file.download_url || `https://raw.githubusercontent.com/${username}/${repo}/main/${file.name}`;
                     const isSelected = targetPolicy && (slug === targetPolicy);
+
                     options += `<option value="${url}" data-slug="${slug}" ${isSelected ? 'selected' : ''}>${displayName}</option>`;
                 });
                 selector.html(options);
+
+                if (targetPolicy && selector.val()) {
+                    selector.trigger('change');
+                }
+
+            } else {
+                selector.html(`<option value="" disabled selected>GitHub API Error (${response.status})</option>`);
+                if (response.status === 403) {
+                    content.html('<p class="error">GitHub API Rate Limit reached. Please use a GitHub Token in site.webmanifest.</p>');
+                }
             }
         } catch (e) {
             selector.html('<option value="" disabled selected>Connection error.</option>');
         }
-    }
 
-    function handleAutoTrigger(targetPolicy, selector) {
-        if (targetPolicy && selector.val()) {
-            selector.trigger('change');
-        }
-    }
-
-    function formatFileName(name) {
-        return name
-            .replace('.md', '')
-            .split('-')
-            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-            .join(' ');
+        // 3. Handle copy link button
+        copyBtn.off('click').on('click', async function() {
+            try {
+                await navigator.clipboard.writeText(window.location.href);
+                const originalHtml = copyBtn.html();
+                copyBtn.addClass('copied').html('<i class="im im-check-mark"></i> Copied!');
+                setTimeout(() => { copyBtn.removeClass('copied').html(originalHtml); }, 2000);
+            } catch (err) { console.error('Copy failed', err); }
+        });
     }
 
     $(document).ready(initPrivacy);
