@@ -28,26 +28,23 @@ const LANG_COLORS = {
 async function initPortfolio() {
     let username = DEFAULT_USERNAME;
 
-    // Only attempt to load manifest if NOT on file:// protocol
-    if (window.location.protocol !== 'file:') {
-        try {
-            const manifestResponse = await fetch(`${MANIFEST_URL}?t=${new Date().getTime()}`, { cache: 'no-store' });
-            if (manifestResponse.ok) {
-                const manifest = await manifestResponse.json();
-                if (manifest.github_username) {
-                    username = manifest.github_username;
-                }
-
-                // Add the manifest link tag dynamically
-                const link = document.createElement('link');
-                link.id = MANIFEST_PLACEHOLDER_ID;
-                link.rel = 'manifest';
-                link.href = MANIFEST_URL;
-                document.head.appendChild(link);
+    try {
+        const manifestResponse = await fetch(`${MANIFEST_URL}?t=${new Date().getTime()}`, { cache: 'no-store' });
+        if (manifestResponse.ok) {
+            const manifest = await manifestResponse.json();
+            if (manifest.github_username) {
+                username = manifest.github_username;
             }
-        } catch (error) {
-            console.warn('Could not load site.webmanifest, falling back to default username.');
+
+            // Add the manifest link tag dynamically
+            const link = document.createElement('link');
+            link.id = MANIFEST_PLACEHOLDER_ID;
+            link.rel = 'manifest';
+            link.href = MANIFEST_URL;
+            document.head.appendChild(link);
         }
+    } catch (error) {
+        // Silently fallback to DEFAULT_USERNAME if fetch fails (e.g., local file:// security)
     }
 
     try {
