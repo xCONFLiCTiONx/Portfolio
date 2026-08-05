@@ -1,7 +1,7 @@
 /**
  * Dynamic Privacy Policy Fetcher
  * Optimized for production website.
- * Version: 19
+ * Version: 21
  */
 
 (function($) {
@@ -25,23 +25,17 @@
 
         if (!selector.length) return;
 
-        const apiOptions = {
-            headers: getGithubHeaders(token),
-            cache: 'no-cache'
-        };
-
         // 1. Setup Selection Change Listener
         selector.off('change').on('change', async function() {
             const downloadUrl = $(this).val();
             const selectedSlug = $(this).find(':selected').data('slug');
             if (!downloadUrl) return;
 
-            // Update Browser URL
             window.history.pushState({ path: selectedSlug }, '', '?p=' + selectedSlug);
             content.html('<div class="repo-loader"><i class="im im-spinner im-spin"></i> Loading policy content...</div>');
 
             try {
-                // Fetch text - Use simple fetch for raw content to avoid CORS issues
+                // Fetch text using simple fetch for raw content
                 const response = await fetch(downloadUrl, { cache: 'no-cache' });
                 if (response.ok) {
                     const text = await response.text();
@@ -62,7 +56,9 @@
         // 2. Load Policy List from GitHub API
         try {
             const apiURL = `https://api.github.com/repos/${username}/${repo}/contents`;
-            const response = await fetch(apiURL, apiOptions);
+            const options = token ? { headers: { 'Authorization': `token ${token}` } } : {};
+
+            const response = await fetch(apiURL, options);
 
             if (response.ok) {
                 const files = await response.json();
@@ -72,25 +68,24 @@
                 );
 
                 if (mdFiles.length === 0) {
-                    selector.html('<option value="" disabled selected>No policies found in repository.</option>');
+                    selector.html('<option value="" disabled selected>No policies found.</option>');
                     return;
                 }
 
-                let options = '<option value="" disabled selected>-- Select a Project Policy --</option>';
+                let optionsHtml = '<option value="" disabled selected>-- Select a Project Policy --</option>';
                 mdFiles.forEach(file => {
                     const slug = file.name.replace('.md', '').toLowerCase();
                     const displayName = slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 
-                    // Use the canonical download_url provided by the GitHub API
-                    const url = file.download_url;
+                    // Simple Method: Explicit raw URL with /refs/heads/main/
+                    const url = `https://raw.githubusercontent.com/${username}/${repo}/refs/heads/main/${file.name}`;
                     const isSelected = targetPolicy === slug;
 
-                    options += `<option value="${url}" data-slug="${slug}" ${isSelected ? 'selected' : ''}>${displayName}</option>`;
+                    optionsHtml += `<option value="${url}" data-slug="${slug}" ${isSelected ? 'selected' : ''}>${displayName}</option>`;
                 });
 
-                selector.html(options);
+                selector.html(optionsHtml);
 
-                // Auto-trigger if deep-linked
                 if (selector.val()) {
                     selector.trigger('change');
                 }
@@ -98,7 +93,7 @@
             } else {
                 selector.html(`<option value="" disabled selected>GitHub Error (${response.status})</option>`);
                 if (response.status === 403) {
-                    content.html('<p class="error">GitHub API Rate Limit Reached. Please try again later or add a token to site.webmanifest.</p>');
+                    content.html('<p class="error">GitHub API Rate Limit Reached. Please try again later.</p>');
                 }
             }
         } catch (e) {
