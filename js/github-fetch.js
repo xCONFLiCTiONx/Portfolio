@@ -146,17 +146,6 @@ async function copyCloneUrl(btn) {
 }
 
 function populateProfile(data, username) {
-    // Make the entire sidebar clickable
-    const sidebar = document.querySelector('.sidebar.profile-sidebar');
-    if (sidebar) {
-        sidebar.onclick = (e) => {
-            // Don't redirect if they clicked an actual link inside the sidebar
-            if (e.target.tagName !== 'A' && e.target.parentElement.tagName !== 'A' && !e.target.closest('.repo-actions')) {
-                window.open(`https://github.com/${username}`, '_blank');
-            }
-        };
-    }
-
     // Name Placeholders
     const nameElements = document.querySelectorAll('.user-name-js');
     nameElements.forEach(el => el.textContent = data.name || username);

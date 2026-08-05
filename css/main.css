@@ -171,18 +171,6 @@ header.site-header {
     padding-top: 2rem;
 }
 
-.sidebar.profile-sidebar {
-    cursor: pointer;
-    padding: 2rem;
-    margin-left: -2rem;
-    border-radius: 8px;
-    transition: background-color 0.2s ease;
-}
-
-.sidebar.profile-sidebar:hover {
-    background-color: #161b22;
-}
-
 .profile-avatar {
     width: 260px;
     height: 260px;
