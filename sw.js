@@ -1,10 +1,11 @@
-const CACHE_NAME = 'portfolio-v19';
+const CACHE_NAME = 'portfolio-v20';
 const ASSETS = [
   './',
   './index.html',
   './privacy.html',
   './css/main.css',
   './css/fonts.css',
+  './js/config.js',
   './js/github-fetch.js',
   './js/jquery-3.2.1.min.js'
 ];
@@ -37,15 +38,20 @@ self.addEventListener('activate', event => {
 
 // Fetch event
 self.addEventListener('fetch', event => {
+  // 1. Only handle GET requests for caching
+  if (event.request.method !== 'GET') {
+    return;
+  }
+
   const url = new URL(event.request.url);
 
-  // 1. Skip caching for GitHub API calls - Always fetch fresh
+  // 2. Skip caching for GitHub API calls - Always fetch fresh
   if (url.hostname === 'api.github.com') {
     return;
   }
 
   const isHtml = event.request.mode === 'navigate' ||
-                 (event.request.method === 'GET' && event.request.headers.get('accept').includes('text/html'));
+                 (event.request.headers.get('accept') && event.request.headers.get('accept').includes('text/html'));
 
   if (isHtml) {
     // Network-First strategy for HTML
@@ -63,10 +69,15 @@ self.addEventListener('fetch', event => {
     event.respondWith(
       caches.match(event.request).then(response => {
         return response || fetch(event.request).then(fetchRes => {
-          return caches.open(CACHE_NAME).then(cache => {
-            cache.put(event.request, fetchRes.clone());
+          // Verify response is valid before caching
+          if (!fetchRes || fetchRes.status !== 200 || fetchRes.type !== 'basic') {
             return fetchRes;
+          }
+          const responseToCache = fetchRes.clone();
+          caches.open(CACHE_NAME).then(cache => {
+            cache.put(event.request, responseToCache);
           });
+          return fetchRes;
         });
       }).catch(() => {
         // Fallback for failed fetches
