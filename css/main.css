@@ -172,6 +172,7 @@ header.site-header {
 }
 
 .profile-avatar {
+    cursor: pointer;
     width: 260px;
     height: 260px;
     border-radius: 50%;
@@ -188,6 +189,7 @@ header.site-header {
 }
 
 .profile-name {
+    cursor: pointer;
     font-size: 2.6rem;
     margin-bottom: 0.5rem;
 }

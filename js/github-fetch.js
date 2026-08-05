@@ -146,6 +146,14 @@ async function copyCloneUrl(btn) {
 }
 
 function populateProfile(data, username) {
+    const openGithub = () => window.open(`https://github.com/${username}`, '_blank');
+
+    // Make Avatar and Name clickable
+    const avatarEl = document.getElementById(AVATAR_CONTAINER_ID);
+    const nameEl = document.getElementById('profile-name');
+    if (avatarEl) avatarEl.onclick = openGithub;
+    if (nameEl) nameEl.onclick = openGithub;
+
     // Name Placeholders
     const nameElements = document.querySelectorAll('.user-name-js');
     nameElements.forEach(el => el.textContent = data.name || username);
