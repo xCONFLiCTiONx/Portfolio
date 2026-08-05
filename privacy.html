@@ -8,6 +8,12 @@
     <link rel="icon" id="favicon-js" href="favicon.ico" type="image/x-icon">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
+        .policy-header {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 3rem;
+            align-items: center;
+        }
         .policy-select {
             background: #161b22;
             color: #f0f6fc;
@@ -15,9 +21,32 @@
             padding: 1rem 1.5rem;
             font-size: 1.6rem;
             border-radius: 6px;
-            width: 100%;
-            margin-bottom: 3rem;
+            flex-grow: 1;
             cursor: pointer;
+        }
+        .copy-link-btn {
+            background-color: #21262d;
+            color: #c9d1d9;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 1rem 1.5rem;
+            font-size: 1.4rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            white-space: nowrap;
+            transition: all 0.2s;
+            height: 4.6rem;
+        }
+        .copy-link-btn:hover {
+            background-color: #30363d;
+            border-color: #8b949e;
+        }
+        .copy-link-btn i { font-size: 1.6rem; }
+        .copy-link-btn.copied {
+            color: #3fb950;
+            border-color: #3fb950;
         }
         .policy-body {
             min-height: 200px;
@@ -67,9 +96,14 @@
         <section class="main-content">
             <h2 class="section-title">Privacy Policy</h2>
 
-            <select id="policySelector" class="policy-select">
-                <option value="" disabled selected>-- Loading Policies... --</option>
-            </select>
+            <div class="policy-header">
+                <select id="policySelector" class="policy-select">
+                    <option value="" disabled selected>-- Loading Policies... --</option>
+                </select>
+                <button id="copyPolicyLink" class="copy-link-btn" title="Copy direct link to this policy">
+                    <i class="im im-link"></i> Copy Link
+                </button>
+            </div>
 
             <div id="policy-content" class="policy-body">
                 <!-- Markdown content will be rendered here -->

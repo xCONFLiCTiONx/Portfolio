@@ -20,6 +20,10 @@
         const targetPolicy = (urlParams.get('p') || urlParams.get('policy') || '').toLowerCase();
         let autoSelectedUrl = null;
 
+        const selector = $(SELECTOR_ID);
+        const content = $(CONTENT_ID);
+        const copyBtn = $('#copyPolicyLink');
+
         // 1. Load configuration from manifest
         try {
             const manifestFetch = await fetch(`${MANIFEST_URL}?t=${new Date().getTime()}`, { cache: 'no-store' });
@@ -32,9 +36,6 @@
         } catch (e) {
             console.warn('Privacy Fetcher: Manifest load failed, using defaults.', e);
         }
-
-        const selector = $(SELECTOR_ID);
-        const content = $(CONTENT_ID);
 
         if (!selector.length) {
             console.error('Privacy Fetcher: Selector element not found!');
@@ -74,7 +75,7 @@
                     const isSelected = targetPolicy && (fileBaseName === targetPolicy || displayName.toLowerCase() === targetPolicy.replace(/-/g, ' '));
                     if (isSelected) autoSelectedUrl = url;
 
-                    options += `<option value="${url}" ${isSelected ? 'selected' : ''}>${displayName}</option>`;
+                    options += `<option value="${url}" data-slug="${fileBaseName}" ${isSelected ? 'selected' : ''}>${displayName}</option>`;
                 });
                 selector.html(options);
                 console.log('Privacy Fetcher: Dropdown populated.');
@@ -97,7 +98,14 @@
         // 3. Handle selection change
         selector.off('change').on('change', async function() {
             const downloadUrl = $(this).val();
+            const selectedSlug = $(this).find(':selected').data('slug');
             if (!downloadUrl) return;
+
+            // Update URL for deep linking
+            if (selectedSlug) {
+                const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?p=' + selectedSlug;
+                window.history.pushState({ path: newUrl }, '', newUrl);
+            }
 
             console.log('Privacy Fetcher: Loading content from:', downloadUrl);
             content.html('<div class="repo-loader"><i class="im im-spinner im-spin"></i> Loading policy...</div>');
@@ -126,6 +134,25 @@
             } catch (e) {
                 console.error('Privacy Fetcher: Error fetching policy text:', e);
                 content.html('<p class="error">Error fetching policy. Check your connection.</p>');
+            }
+        });
+
+        // 5. Handle copy link button
+        copyBtn.on('click', async function() {
+            const currentUrl = window.location.href;
+            const originalHtml = copyBtn.html();
+
+            try {
+                await navigator.clipboard.writeText(currentUrl);
+
+                // Visual feedback
+                copyBtn.addClass('copied').html('<i class="im im-check-mark"></i> Copied!');
+
+                setTimeout(() => {
+                    copyBtn.removeClass('copied').html(originalHtml);
+                }, 2000);
+            } catch (err) {
+                console.error('Failed to copy URL:', err);
             }
         });
     }
