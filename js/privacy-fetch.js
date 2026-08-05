@@ -1,7 +1,7 @@
 /**
  * Dynamic Privacy Policy Fetcher
  * Strictly fetches list and content from GitHub API.
- * Version: 13
+ * Version: 14
  */
 
 (function($) {
@@ -11,10 +11,11 @@
     const CONTENT_ID = '#policy-content';
 
     async function initPrivacy() {
+        console.log('Privacy: Initializing...');
         const config = await getPortfolioConfig();
         const username = config.github_username || 'xCONFLiCTiONx';
         const repo = config.privacy_policy_repo || 'Privacy-Policies';
-        const headers = getGithubHeaders(config);
+        const token = config.github_token;
 
         const urlParams = new URLSearchParams(window.location.search);
         const targetPolicy = (urlParams.get('p') || urlParams.get('policy') || '').toLowerCase();
@@ -24,6 +25,18 @@
         const copyBtn = $('#copyPolicyLink');
 
         if (!selector.length) return;
+
+        /**
+         * Helper to get headers based on target URL
+         */
+        function getHeaders(url) {
+            const headers = { 'Accept': 'application/vnd.github.v3+json' };
+            // Only send token to API endpoint, never to raw content servers
+            if (token && url.includes('api.github.com')) {
+                headers['Authorization'] = `token ${token}`;
+            }
+            return headers;
+        }
 
         // 1. Setup Change Listener
         selector.off('change').on('change', async function() {
@@ -35,9 +48,15 @@
             content.html('<div class="repo-loader"><i class="im im-spinner im-spin"></i> Loading policy content...</div>');
 
             try {
-                const response = await fetch(downloadUrl, { headers, cache: 'no-store' });
+                console.log('Privacy: Fetching policy content from:', downloadUrl);
+                const response = await fetch(downloadUrl, {
+                    headers: getHeaders(downloadUrl),
+                    cache: 'no-store'
+                });
+
                 if (response.ok) {
                     const text = await response.text();
+                    console.log('Privacy: Content received.');
                     if (typeof marked !== 'undefined') {
                         content.html(marked.parse(text));
                     } else {
@@ -45,9 +64,11 @@
                     }
                     $('html, body').animate({ scrollTop: content.offset().top - 100 }, 400);
                 } else {
+                    console.error('Privacy: Failed to load policy content:', response.status);
                     content.html(`<p class="error">Error: Could not load the policy file (HTTP ${response.status}).</p>`);
                 }
             } catch (e) {
+                console.error('Privacy: Network error while fetching policy:', e);
                 content.html('<p class="error">Network error while fetching policy.</p>');
             }
         });
@@ -55,10 +76,15 @@
         // 2. Fetch file list from GitHub
         try {
             const apiURL = `https://api.github.com/repos/${username}/${repo}/contents?t=${new Date().getTime()}`;
-            const response = await fetch(apiURL, { headers, cache: 'no-store' });
+            console.log('Privacy: Requesting file list from GitHub:', apiURL);
+            const response = await fetch(apiURL, {
+                headers: getHeaders(apiURL),
+                cache: 'no-store'
+            });
 
             if (response.ok) {
                 const files = await response.json();
+                console.log('Privacy: Files found:', files.length);
                 const mdFiles = files.filter(file =>
                     file.name.endsWith('.md') &&
                     file.name.toLowerCase() !== 'readme.md'
@@ -81,16 +107,19 @@
                 selector.html(options);
 
                 if (targetPolicy && selector.val()) {
+                    console.log('Privacy: Triggering auto-load for:', targetPolicy);
                     selector.trigger('change');
                 }
 
             } else {
+                console.error('Privacy: GitHub API responded with error:', response.status);
                 selector.html(`<option value="" disabled selected>GitHub API Error (${response.status})</option>`);
                 if (response.status === 403) {
-                    content.html('<p class="error">GitHub API Rate Limit reached. Please use a GitHub Token in site.webmanifest.</p>');
+                    content.html('<p class="error">GitHub API Rate Limit reached. Please ensure your token in site.webmanifest is correct.</p>');
                 }
             }
         } catch (e) {
+            console.error('Privacy: Failed to connect to GitHub API:', e);
             selector.html('<option value="" disabled selected>Connection error.</option>');
         }
 

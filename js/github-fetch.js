@@ -38,7 +38,11 @@ async function getPortfolioConfig() {
         } catch (error) {
             console.warn('Config: Manifest load failed, using defaults.');
         }
-        window.PortfolioConfig = { github_username: DEFAULT_USERNAME };
+        window.PortfolioConfig = {
+            github_username: DEFAULT_USERNAME,
+            privacy_policy_repo: 'Privacy-Policies',
+            github_token: ''
+        };
         return window.PortfolioConfig;
     })();
 
