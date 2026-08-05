@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title class="user-name-title-js">Portfolio</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Software Developer Portfolio - Building tools for freedom & productivity.">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="icon" id="favicon-js" href="favicon.ico" type="image/x-icon">
+</head>
+<body id="top">
+
+    <header class="site-header">
+        <nav class="nav-content">
+            <div class="nav-brand">
+                <a href="#top">
+                    <span id="header-avatar" class="nav-logo"></span>
+                    <span class="user-name-js">Loading...</span>
+                </a>
+            </div>
+            <button class="menu-toggle" id="menuToggle">
+                <i class="im im-menu"></i>
+            </button>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="#top" class="active"><i class="im im-home"></i> Overview</a></li>
+                <li><a href="privacy.html"><i class="im im-shield"></i> Privacy</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="container">
+        
+        <!-- Sidebar: Profile Info -->
+        <aside class="sidebar profile-sidebar">
+            <div id="profile-avatar" class="profile-avatar">
+                <!-- Avatar injected by JS -->
+            </div>
+            <h1 id="profile-name" class="profile-name user-name-js">Loading...</h1>
+            <span id="profile-handle" class="profile-handle">Software Developer</span>
+
+            <p id="profile-bio" class="profile-bio">
+                <!-- Bio injected by JS -->
+            </p>
+
+            <ul id="profile-metadata" class="profile-metadata">
+                <!-- Metadata injected by JS -->
+            </ul>
+        </aside>
+
+        <!-- Main Content: Dynamic Repos -->
+        <section id="projects" class="main-content">
+            <h2 class="section-title">Popular repositories</h2>
+
+            <div id="github-repos">
+                <div class="repo-loader">
+                    <i class="im im-spinner im-spin"></i> Loading repositories...
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="site-footer">
+        <div class="container" style="display: block;">
+            <p>&copy; 2026 <span class="user-name-js"></span>. Built with pure logic and the GitHub API.</p>
+        </div>
+    </footer>
+
+    <script src="js/jquery-3.2.1.min.js"></script>
+    <script src="js/github-fetch.js"></script>
+    <script>
+        // Register Service Worker for PWA (Only on HTTP/HTTPS)
+        if ('serviceWorker' in navigator && (window.location.protocol === 'http:' || window.location.protocol === 'https:')) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW registration failed:', err));
+            });
+        }
+
+        // Mobile Menu Toggle
+        $('#menuToggle').click(function() {
+            $('#navLinks').toggleClass('active');
+            $(this).find('i').toggleClass('im-menu im-x-mark');
+        });
+
+        // Simple active state toggle for nav
+        $('.nav-links a').click(function() {
+            $('.nav-links a').removeClass('active');
+            $(this).addClass('active');
+
+            // Close mobile menu on click
+            if ($(window).width() <= 900) {
+                $('#navLinks').removeClass('active');
+                $('#menuToggle').find('i').removeClass('im-x-mark').addClass('im-menu');
+            }
+        });
+    </script>
+
+</body>
+</html>

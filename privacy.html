@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title class="user-name-title-js">Privacy Policy</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="icon" id="favicon-js" href="favicon.ico" type="image/x-icon">
+    <style>
+        .policy-select {
+            background: #161b22;
+            color: #f0f6fc;
+            border: 1px solid #30363d;
+            padding: 1rem 1.5rem;
+            font-size: 1.6rem;
+            border-radius: 6px;
+            width: 100%;
+            margin-bottom: 3rem;
+            cursor: pointer;
+        }
+        .policy-content-block {
+            display: none;
+        }
+        .policy-content-block.active {
+            display: block;
+        }
+        .policy-body h3 { margin-top: 3rem; margin-bottom: 1.5rem; border-bottom: 1px solid #30363d; padding-bottom: 0.5rem; }
+        .policy-body h4 { margin-top: 2rem; color: #8b949e; }
+        .policy-body p { margin-bottom: 1.5rem; }
+        .policy-body ul { margin-left: 2rem; margin-bottom: 2.5rem; }
+    </style>
+</head>
+<body id="top">
+
+    <header class="site-header">
+        <nav class="nav-content">
+            <div class="nav-brand">
+                <a href="index.html">
+                    <span id="header-avatar" class="nav-logo"></span>
+                    <span class="user-name-js">Loading...</span>
+                </a>
+            </div>
+            <button class="menu-toggle" id="menuToggle">
+                <i class="im im-menu"></i>
+            </button>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="index.html"><i class="im im-home"></i> Overview</a></li>
+                <li><a href="privacy.html" class="active"><i class="im im-shield"></i> Privacy</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="container">
+        
+        <aside class="sidebar">
+            <h1 class="profile-name">Legal</h1>
+            <span class="profile-handle">Privacy & Terms</span>
+            <p class="profile-bio">
+                Detailed information on how my applications handle your data. Transparency is a core value of my development process.
+            </p>
+        </aside>
+
+        <section class="main-content">
+            <h2 class="section-title">Privacy Policy</h2>
+
+            <select id="policySelector" class="policy-select">
+                <option value="" disabled selected>-- Select a Project Policy --</option>
+                <option value="call-guard-shield">Call Guard Shield (Android)</option>
+                <option value="xtended-menu">XtendedMenu (Windows)</option>
+                <option value="nws-alerts">NWS Alerts (Desktop)</option>
+                <option value="pdf-tools">PDF-Tools (Browser Extension)</option>
+                <option value="cookie-manager">Cookie-Manager (Browser Extension)</option>
+                <option value="element-hider">Element-Hider (Browser Extension)</option>
+                <option value="bookmarks">Bookmarks (Browser Extension)</option>
+                <option value="pip">Picture-in-Picture (Browser Extension)</option>
+                <option value="copy-paste">Allow Copy and Paste (Browser Extension)</option>
+            </select>
+
+            <!-- Original: Call Guard Shield -->
+            <div id="call-guard-shield" class="policy-content-block policy-body">
+                <p><strong>Effective Date:</strong> August 4, 2026</p>
+                <p>Call Guard Shield is committed to protecting your privacy. This Privacy Policy outlines how our application handles your information when you use our Android application for call filtering, spam detection, and local database management.</p>
+                
+                <h3>1. Information We Collect</h3>
+                <h4>Local Call and Device Data</h4>
+                <p><strong>Call State and Logs:</strong> The app accesses incoming call states and local call logs solely to compare numbers against your local blocklists and provide real-time filtering functionality.</p>
+                <p><strong>Local Database:</strong> Any blacklists, whitelists, or custom rules you configure are stored locally on your device.</p>
+
+                <h4>Gemini Intelligence Lookups</h4>
+                <p>If you utilize optional features powered by Gemini intelligence for phone number analysis, relevant query data necessary to perform the lookup is processed securely.</p>
+
+                <h3>2. How We Use Your Information</h3>
+                <ul>
+                    <li>Executing local call blocking and spam filtering rules.</li>
+                    <li>Managing your personal blacklists and whitelists directly on your device.</li>
+                    <li>Providing intelligent phone number insights when requested.</li>
+                </ul>
+
+                <h3>3. Data Sharing and Disclosure</h3>
+                <p><strong>No Third-Party Sale:</strong> We do not sell, trade, or rent your personal data or call logs to third parties.</p>
+                <p><strong>Service Providers:</strong> Data is only shared with trusted API services (such as Gemini intelligence endpoints) strictly to deliver specific features triggered within the app.</p>
+
+                <h3>4. Data Security</h3>
+                <p>We implement appropriate technical measures to ensure that your local database and call handling rules remain secure on your device.</p>
+
+                <h3>5. User Controls</h3>
+                <p>You can clear your local blocklists, logs, and custom rules at any time directly through the app settings or by uninstalling the application.</p>
+            </div>
+
+            <!-- XtendedMenu -->
+            <div id="xtended-menu" class="policy-content-block policy-body">
+                <p><strong>Effective Date:</strong> August 5, 2026</p>
+                <p>XtendedMenu is a Windows utility designed to enhance your workflow. This policy explains our commitment to your privacy.</p>
+
+                <h3>1. Data Collection</h3>
+                <p>XtendedMenu operates entirely locally on your Windows machine. It does not collect, store, or transmit any personal information, file names, or system data to external servers.</p>
+
+                <h3>2. System Integration</h3>
+                <p>The application requires administrative privileges only to modify Registry keys necessary for adding options to the Windows context menu. These modifications are performed locally and can be reverted using the application settings.</p>
+
+                <h3>3. No Tracking</h3>
+                <p>There is no telemetry, analytics, or background tracking implemented in XtendedMenu.</p>
+            </div>
+
+            <!-- NWS Alerts -->
+            <div id="nws-alerts" class="policy-content-block policy-body">
+                <p><strong>Effective Date:</strong> August 5, 2026</p>
+                <p>NWS Alerts provides real-time weather notifications. We value your privacy and transparency.</p>
+
+                <h3>1. Data Processing</h3>
+                <p><strong>API Usage:</strong> The application polls the public National Weather Service (NWS) API to retrieve weather alerts. No personal identifiers are sent during these requests.</p>
+                <p><strong>Local Filtering:</strong> Your selected counties and severity levels are stored locally on your device and are used only to filter the data received from the API.</p>
+
+                <h3>2. No Data Collection</h3>
+                <p>We do not track your location via GPS. Location settings are manually entered by the user and remain on the local device.</p>
+            </div>
+
+            <!-- PDF-Tools -->
+            <div id="pdf-tools" class="policy-content-block policy-body">
+                <p><strong>Effective Date:</strong> August 5, 2026</p>
+                <p>PDF-Tools is a privacy-first browser extension for managing PDF files.</p>
+
+                <h3>1. Local Processing</h3>
+                <p><strong>Client-Side Only:</strong> All PDF manipulations (merging, splitting, etc.) are performed locally within your browser using JavaScript. Your PDF files are never uploaded to a server.</p>
+
+                <h3>2. Permissions</h3>
+                <p>The extension requires access to files only when you explicitly select them for processing. No data is collected or shared with third parties.</p>
+            </div>
+
+            <!-- Cookie-Manager -->
+            <div id="cookie-manager" class="policy-content-block policy-body">
+                <p><strong>Effective Date:</strong> August 5, 2026</p>
+                <p>Cookie-Manager helps you maintain your privacy by automating cookie cleanup.</p>
+
+                <h3>1. Data Handling</h3>
+                <p><strong>Whitelisting:</strong> Your whitelisted domains are stored locally in your browser's synchronized storage (if enabled in your browser settings) or local storage.</p>
+                <p><strong>Cleanup Logic:</strong> The extension monitors tab closures to trigger the removal of site data. This process happens entirely within your browser.</p>
+
+                <h3>2. No Telemetry</h3>
+                <p>We do not collect statistics on the sites you visit or the cookies being managed.</p>
+            </div>
+
+            <!-- Element-Hider -->
+            <div id="element-hider" class="policy-content-block policy-body">
+                <p><strong>Effective Date:</strong> August 5, 2026</p>
+                <p>Element-Hider allows you to customize your web experience by hiding unwanted elements.</p>
+
+                <h3>1. Local Storage</h3>
+                <p>Your custom CSS selectors and rules are stored locally in your browser. They are used only to apply visual changes to the websites you visit as per your configuration.</p>
+
+                <h3>2. No Tracking</h3>
+                <p>The extension does not track your browsing history or collect any data from the pages you visit.</p>
+            </div>
+
+            <!-- Bookmarks -->
+            <div id="bookmarks" class="policy-content-block policy-body">
+                <p><strong>Effective Date:</strong> August 5, 2026</p>
+                <p>Bookmarks provides a high-performance navigation interface.</p>
+
+                <h3>1. Access</h3>
+                <p>The extension requires permission to read your browser bookmarks to display them in the custom interface. This data is read locally and never transmitted.</p>
+
+                <h3>2. Privacy</h3>
+                <p>No analytics or third-party tracking is included in this extension.</p>
+            </div>
+
+            <!-- Picture-in-Picture -->
+            <div id="pip" class="policy-content-block policy-body">
+                <p><strong>Effective Date:</strong> August 5, 2026</p>
+                <p>Picture-in-Picture is a utility extension for video players.</p>
+
+                <h3>1. Functionality</h3>
+                <p>The extension interacts with video elements on webpages to enable the native browser PiP mode. It does not monitor video content or track viewing habits.</p>
+
+                <h3>2. Permissions</h3>
+                <p>Requires access to active tabs only to trigger the PiP functionality on your command.</p>
+            </div>
+
+            <!-- Allow Copy and Paste -->
+            <div id="copy-paste" class="policy-content-block policy-body">
+                <p><strong>Effective Date:</strong> August 5, 2026</p>
+                <p>Allow Copy and Paste restores standard browser interactions.</p>
+
+                <h3>1. Implementation</h3>
+                <p>The extension works by re-enabling standard DOM events (like `oncopy`, `oncontextmenu`) that websites may have disabled. It does not intercept or record the content you copy or paste.</p>
+
+                <h3>2. No Data Collection</h3>
+                <p>No user data or browsing history is collected or transmitted.</p>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="site-footer">
+        <div class="container" style="display: block;">
+            <p>&copy; 2026 <span class="user-name-js"></span>. All policies are as open as the source code.</p>
+        </div>
+    </footer>
+
+    <script src="js/jquery-3.2.1.min.js"></script>
+    <script src="js/github-fetch.js"></script>
+    <script>
+        // Register Service Worker for PWA (Only on HTTP/HTTPS)
+        if ('serviceWorker' in navigator && (window.location.protocol === 'http:' || window.location.protocol === 'https:')) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW registration failed:', err));
+            });
+        }
+
+        // Mobile Menu Toggle
+        $('#menuToggle').click(function() {
+            $('#navLinks').toggleClass('active');
+            $(this).find('i').toggleClass('im-menu im-x-mark');
+        });
+
+        $('#policySelector').on('change', function() {
+            var selectedPolicy = $(this).val();
+            $('.policy-content-block').removeClass('active');
+            if (selectedPolicy) {
+                $('#' + selectedPolicy).addClass('active');
+            }
+        });
+    </script>
+
+</body>
+</html>
