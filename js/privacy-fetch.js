@@ -1,7 +1,7 @@
 /**
  * Dynamic Privacy Policy Fetcher
- * Strictly fetches list and content from GitHub API.
- * Version: 14
+ * Optimized for local and public viewing.
+ * Version: 15
  */
 
 (function($) {
@@ -11,7 +11,17 @@
     const CONTENT_ID = '#policy-content';
 
     async function initPrivacy() {
-        console.log('Privacy: Initializing...');
+        const selector = $(SELECTOR_ID);
+        const content = $(CONTENT_ID);
+        const copyBtn = $('#copyPolicyLink');
+
+        function setStatus(msg, isError = false) {
+            content.html(`<div class="status-msg ${isError ? 'error' : ''}">${msg}</div>`);
+        }
+
+        setStatus('Step 1: Loading configuration...');
+
+        // 1. Get shared config
         const config = await getPortfolioConfig();
         const username = config.github_username || 'xCONFLiCTiONx';
         const repo = config.privacy_policy_repo || 'Privacy-Policies';
@@ -20,43 +30,22 @@
         const urlParams = new URLSearchParams(window.location.search);
         const targetPolicy = (urlParams.get('p') || urlParams.get('policy') || '').toLowerCase();
 
-        const selector = $(SELECTOR_ID);
-        const content = $(CONTENT_ID);
-        const copyBtn = $('#copyPolicyLink');
-
         if (!selector.length) return;
 
-        /**
-         * Helper to get headers based on target URL
-         */
-        function getHeaders(url) {
-            const headers = { 'Accept': 'application/vnd.github.v3+json' };
-            // Only send token to API endpoint, never to raw content servers
-            if (token && url.includes('api.github.com')) {
-                headers['Authorization'] = `token ${token}`;
-            }
-            return headers;
-        }
-
-        // 1. Setup Change Listener
+        // 2. Setup Change Listener (Handles fetching content)
         selector.off('change').on('change', async function() {
             const downloadUrl = $(this).val();
             const selectedSlug = $(this).find(':selected').data('slug');
             if (!downloadUrl) return;
 
             window.history.pushState({ path: selectedSlug }, '', '?p=' + selectedSlug);
-            content.html('<div class="repo-loader"><i class="im im-spinner im-spin"></i> Loading policy content...</div>');
+            setStatus('<i class="im im-spinner im-spin"></i> Loading policy content...');
 
             try {
-                console.log('Privacy: Fetching policy content from:', downloadUrl);
-                const response = await fetch(downloadUrl, {
-                    headers: getHeaders(downloadUrl),
-                    cache: 'no-store'
-                });
-
+                // Fetch content - No auth header to avoid CORS blocks on raw content
+                const response = await fetch(downloadUrl, { cache: 'no-store' });
                 if (response.ok) {
                     const text = await response.text();
-                    console.log('Privacy: Content received.');
                     if (typeof marked !== 'undefined') {
                         content.html(marked.parse(text));
                     } else {
@@ -64,34 +53,35 @@
                     }
                     $('html, body').animate({ scrollTop: content.offset().top - 100 }, 400);
                 } else {
-                    console.error('Privacy: Failed to load policy content:', response.status);
-                    content.html(`<p class="error">Error: Could not load the policy file (HTTP ${response.status}).</p>`);
+                    setStatus(`Error: Could not load the policy text (HTTP ${response.status}).`, true);
                 }
             } catch (e) {
-                console.error('Privacy: Network error while fetching policy:', e);
-                content.html('<p class="error">Network error while fetching policy.</p>');
+                setStatus('Network error while fetching policy text.', true);
             }
         });
 
-        // 2. Fetch file list from GitHub
+        // 3. Fetch file list from GitHub
+        setStatus(`Step 2: Requesting policy list from ${username}/${repo}...`);
+
         try {
             const apiURL = `https://api.github.com/repos/${username}/${repo}/contents?t=${new Date().getTime()}`;
-            console.log('Privacy: Requesting file list from GitHub:', apiURL);
-            const response = await fetch(apiURL, {
-                headers: getHeaders(apiURL),
-                cache: 'no-store'
-            });
+
+            // For the file list, only add token if it exists (avoids CORS preflight issues for unauthenticated)
+            const headers = { 'Accept': 'application/vnd.github.v3+json' };
+            if (token) headers['Authorization'] = `token ${token}`;
+
+            const response = await fetch(apiURL, { headers });
 
             if (response.ok) {
                 const files = await response.json();
-                console.log('Privacy: Files found:', files.length);
                 const mdFiles = files.filter(file =>
                     file.name.endsWith('.md') &&
                     file.name.toLowerCase() !== 'readme.md'
                 );
 
                 if (mdFiles.length === 0) {
-                    selector.html('<option value="" disabled selected>No Markdown policies found.</option>');
+                    setStatus('Success: No .md files found in repository.', false);
+                    selector.html('<option value="" disabled selected>No policies found.</option>');
                     return;
                 }
 
@@ -99,31 +89,34 @@
                 mdFiles.forEach(file => {
                     const slug = file.name.replace('.md', '').toLowerCase();
                     const displayName = slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-                    const url = file.download_url || `https://raw.githubusercontent.com/${username}/${repo}/main/${file.name}`;
-                    const isSelected = targetPolicy && (slug === targetPolicy);
 
-                    options += `<option value="${url}" data-slug="${slug}" ${isSelected ? 'selected' : ''}>${displayName}</option>`;
+                    // Construct robust raw URL
+                    const url = `https://raw.githubusercontent.com/${username}/${repo}/refs/heads/main/${file.name}`;
+
+                    options += `<option value="${url}" data-slug="${slug}" ${targetPolicy === slug ? 'selected' : ''}>${displayName}</option>`;
                 });
-                selector.html(options);
 
+                selector.html(options);
+                setStatus('Select a policy from the dropdown above to view details.');
+
+                // Auto-trigger if deep-linked
                 if (targetPolicy && selector.val()) {
-                    console.log('Privacy: Triggering auto-load for:', targetPolicy);
                     selector.trigger('change');
                 }
 
             } else {
-                console.error('Privacy: GitHub API responded with error:', response.status);
-                selector.html(`<option value="" disabled selected>GitHub API Error (${response.status})</option>`);
                 if (response.status === 403) {
-                    content.html('<p class="error">GitHub API Rate Limit reached. Please ensure your token in site.webmanifest is correct.</p>');
+                    setStatus('GitHub API Rate Limit Reached. If you have a token, add it to site.webmanifest.', true);
+                } else {
+                    setStatus(`GitHub API Error (HTTP ${response.status}). Is the repo name correct?`, true);
                 }
+                selector.html(`<option value="" disabled selected>API Error (${response.status})</option>`);
             }
         } catch (e) {
-            console.error('Privacy: Failed to connect to GitHub API:', e);
-            selector.html('<option value="" disabled selected>Connection error.</option>');
+            setStatus('Connection error. Check your internet or browser security settings.', true);
         }
 
-        // 3. Handle copy link button
+        // 4. Copy link button
         copyBtn.off('click').on('click', async function() {
             try {
                 await navigator.clipboard.writeText(window.location.href);
