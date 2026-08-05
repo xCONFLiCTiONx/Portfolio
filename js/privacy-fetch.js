@@ -1,7 +1,7 @@
 /**
  * Dynamic Privacy Policy Fetcher
  * Strictly fetches list and content from GitHub API.
- * Version: 16
+ * Version: 17
  */
 
 (function($) {
@@ -22,21 +22,20 @@
 
         if (!selector.length) return;
 
-        // Simple options for unauthenticated fetch to avoid CORS blocks
-        const fetchOptions = token ? { headers: { 'Authorization': `token ${token}` } } : {};
-
         // 1. Setup Change Listener
         selector.off('change').on('change', async function() {
             const downloadUrl = $(this).val();
             const selectedSlug = $(this).find(':selected').data('slug');
             if (!downloadUrl) return;
 
+            // Deep link update
             window.history.pushState({ path: selectedSlug }, '', '?p=' + selectedSlug);
-            content.html('<div class="repo-loader"><i class="im im-spinner im-spin"></i> Loading policy content...</div>');
+
+            content.html('<div class="repo-loader"><i class="im im-spinner im-spin"></i> Loading content...</div>');
 
             try {
-                // Fetch content - Never use auth header for raw content servers
-                const response = await fetch(downloadUrl);
+                // Fetch content - No auth header for raw content servers
+                const response = await fetch(downloadUrl, { cache: 'no-cache' });
                 if (response.ok) {
                     const text = await response.text();
                     if (typeof marked !== 'undefined') {
@@ -46,17 +45,20 @@
                     }
                     $('html, body').animate({ scrollTop: content.offset().top - 100 }, 400);
                 } else {
-                    content.html(`<p class="error">Error: Could not load the policy file (HTTP ${response.status}).</p>`);
+                    content.html(`<p class="error">Error: Could not load text (HTTP ${response.status}).</p>`);
                 }
             } catch (e) {
-                content.html('<p class="error">Network error while fetching policy content.</p>');
+                content.html('<p class="error">Network error while fetching policy.</p>');
             }
         });
 
         // 2. Fetch file list from GitHub
         try {
             const apiURL = `https://api.github.com/repos/${username}/${repo}/contents`;
-            const response = await fetch(apiURL, fetchOptions);
+            const headers = { 'Accept': 'application/vnd.github.v3+json' };
+            if (token) headers['Authorization'] = `token ${token}`;
+
+            const response = await fetch(apiURL, { headers, cache: 'no-cache' });
 
             if (response.ok) {
                 const files = await response.json();
@@ -66,7 +68,7 @@
                 );
 
                 if (mdFiles.length === 0) {
-                    selector.html('<option value="" disabled selected>No Markdown policies found.</option>');
+                    selector.html('<option value="" disabled selected>No policies found.</option>');
                     return;
                 }
 
@@ -74,7 +76,9 @@
                 mdFiles.forEach(file => {
                     const slug = file.name.replace('.md', '').toLowerCase();
                     const displayName = slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-                    const url = `https://raw.githubusercontent.com/${username}/${repo}/refs/heads/main/${file.name}`;
+
+                    // Use the official download_url from GitHub
+                    const url = file.download_url;
 
                     const urlParams = new URLSearchParams(window.location.search);
                     const targetPolicy = (urlParams.get('p') || urlParams.get('policy') || '').toLowerCase();
@@ -91,14 +95,14 @@
             } else {
                 selector.html(`<option value="" disabled selected>GitHub Error (${response.status})</option>`);
                 if (response.status === 403) {
-                    content.html('<p class="error">GitHub API Limit Reached. (403 Forbidden)</p>');
+                    content.html('<p class="error">Access Denied (403). GitHub is rejecting the request format. <br> <a href="https://github.com/' + username + '/' + repo + '" target="_blank">View Files on GitHub</a></p>');
                 }
             }
         } catch (e) {
-            selector.html('<option value="" disabled selected>CORS or Network Error</option>');
+            selector.html('<option value="" disabled selected>Connection error.</option>');
         }
 
-        // 3. Handle copy link button
+        // 3. Copy link button
         copyBtn.off('click').on('click', async function() {
             try {
                 await navigator.clipboard.writeText(window.location.href);

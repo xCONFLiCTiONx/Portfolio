@@ -1,6 +1,6 @@
 /**
  * Dynamic GitHub Data Fetcher
- * Version: 16
+ * Version: 17
  */
 
 const MANIFEST_PLACEHOLDER_ID = 'manifest-placeholder';
@@ -29,14 +29,14 @@ async function getPortfolioConfig() {
 
     configPromise = (async () => {
         try {
-            // Simple fetch for manifest
-            const response = await fetch(`site.webmanifest?t=${new Date().getTime()}`);
+            // Clean fetch for manifest
+            const response = await fetch(`site.webmanifest`, { cache: 'no-cache' });
             if (response.ok) {
                 window.PortfolioConfig = await response.json();
                 return window.PortfolioConfig;
             }
         } catch (error) {
-            console.warn('Config: Manifest blocked or missing.');
+            console.warn('Config: Manifest load failed.');
         }
         window.PortfolioConfig = { github_username: DEFAULT_USERNAME, privacy_policy_repo: 'Privacy-Policies' };
         return window.PortfolioConfig;
@@ -45,26 +45,43 @@ async function getPortfolioConfig() {
     return configPromise;
 }
 
+/**
+ * Returns standardized headers for GitHub API
+ */
+function getGithubHeaders(token) {
+    const headers = {
+        'Accept': 'application/vnd.github.v3+json'
+    };
+    if (token) {
+        headers['Authorization'] = `token ${token}`;
+    }
+    return headers;
+}
+
 async function initPortfolio() {
     const config = await getPortfolioConfig();
     const username = config.github_username || DEFAULT_USERNAME;
     const token = config.github_token;
 
-    // Use token only if present
-    const fetchOptions = token ? { headers: { 'Authorization': `token ${token}` } } : {};
+    const fetchOptions = {
+        headers: getGithubHeaders(token),
+        cache: 'no-cache'
+    };
 
     try {
-        const userURL = `https://api.github.com/users/${username}?t=${new Date().getTime()}`;
+        // 1. Fetch User Data
+        const userURL = `https://api.github.com/users/${username}`;
         const userResponse = await fetch(userURL, fetchOptions);
 
         if (userResponse.ok) {
             const userData = await userResponse.json();
             populateProfile(userData, username);
         } else {
-            console.error('Portfolio: API Error', userResponse.status);
+            console.error('Portfolio API Error:', userResponse.status);
             document.querySelectorAll('.user-name-js').forEach(el => el.textContent = username);
         }
 
+        // 2. Fetch Repositories
         const repoContainer = document.getElementById(REPO_CONTAINER_ID);
         if (repoContainer) {
             const reposURL = `https://api.github.com/users/${username}/repos?sort=updated&per_page=100`;
@@ -76,7 +93,7 @@ async function initPortfolio() {
         }
 
     } catch (error) {
-        console.error('Portfolio: Network Error', error);
+        console.error('Portfolio Network Error:', error);
     }
 }
 
