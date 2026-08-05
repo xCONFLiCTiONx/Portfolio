@@ -1,7 +1,9 @@
 /**
  * Dynamic GitHub Data Fetcher
- * Version: 19
+ * Version: 23
  */
+
+console.log('[DEBUG] GITHUB-FETCH: Script File Loaded');
 
 const MANIFEST_URL = 'site.webmanifest';
 const REPO_CONTAINER_ID = 'github-repos';
@@ -47,6 +49,9 @@ async function getPortfolioConfig() {
     return configPromise;
 }
 
+// Explicitly export to window for other scripts
+window.getPortfolioConfig = getPortfolioConfig;
+
 /**
  * Returns official GitHub headers
  */
@@ -59,6 +64,7 @@ function getGithubHeaders(token) {
     }
     return headers;
 }
+window.getGithubHeaders = getGithubHeaders;
 
 async function initPortfolio() {
     const config = await getPortfolioConfig();
@@ -71,8 +77,8 @@ async function initPortfolio() {
     };
 
     try {
-        // 1. Fetch Profile
-        const userResponse = await fetch(`https://api.github.com/users/${username}`, fetchOptions);
+        const userURL = `https://api.github.com/users/${username}`;
+        const userResponse = await fetch(userURL, fetchOptions);
         if (userResponse.ok) {
             const userData = await userResponse.json();
             populateProfile(userData, username);
@@ -80,10 +86,10 @@ async function initPortfolio() {
             document.querySelectorAll('.user-name-js').forEach(el => el.textContent = username);
         }
 
-        // 2. Fetch Repos
         const repoContainer = document.getElementById(REPO_CONTAINER_ID);
         if (repoContainer) {
-            const reposResponse = await fetch(`https://api.github.com/users/${username}/repos?sort=updated&per_page=100`, fetchOptions);
+            const reposURL = `https://api.github.com/users/${username}/repos?sort=updated&per_page=100`;
+            const reposResponse = await fetch(reposURL, fetchOptions);
             if (reposResponse.ok) {
                 const repos = await reposResponse.json();
                 renderRepos(repoContainer, repos);
