@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title class="user-name-title-js">Contact</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" id="meta-description-js" content="Get in touch with the developer.">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="icon" id="favicon-js" href="favicon.ico" type="image/x-icon">
+    <style>
+        .contact-methods { margin-top: 3rem; }
+        .contact-method {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            transition: border-color 0.2s;
+        }
+        .contact-method:hover { border-color: #58a6ff; }
+        .contact-method i { font-size: 3rem; color: #58a6ff; }
+        .contact-method div h4 { margin-bottom: 0.5rem; font-size: 1.8rem; }
+        .contact-method div p { color: #8b949e; font-size: 1.4rem; }
+    </style>
+</head>
+<body id="top">
+
+    <header class="site-header">
+        <nav class="nav-content">
+            <div class="nav-brand">
+                <a href="index.html">
+                    <span id="header-avatar" class="nav-logo"></span>
+                    <span class="user-name-js">Loading...</span>
+                </a>
+            </div>
+            <button class="menu-toggle" id="menuToggle">
+                <i class="im im-menu"></i>
+            </button>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="index.html"><i class="im im-home"></i> Overview</a></li>
+                <li><a href="about.html"><i class="im im-user-male"></i> About</a></li>
+                <li><a href="privacy.html"><i class="im im-shield"></i> Privacy</a></li>
+                <li><a href="contact.html" class="active"><i class="im im-paperplane"></i> Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="container">
+
+        <aside class="sidebar profile-sidebar">
+            <div id="profile-avatar" class="profile-avatar"></div>
+            <h1 id="profile-name" class="profile-name user-name-js">Loading...</h1>
+            <span id="profile-handle" class="profile-handle">Software Developer</span>
+            <p id="profile-bio" class="profile-bio"></p>
+            <ul id="profile-metadata" class="profile-metadata"></ul>
+        </aside>
+
+        <section class="main-content">
+            <h2 class="section-title">Get In Touch</h2>
+
+            <div class="contact-content">
+                <p>I'm always open to discussing new projects, open-source collaborations, or technical questions regarding my tools.</p>
+
+                <div class="contact-methods">
+                    <a href="#" id="contact-github-js" target="_blank" class="contact-method">
+                        <i class="im im-github"></i>
+                        <div>
+                            <h4>GitHub</h4>
+                            <p>Collaborate on projects or report issues.</p>
+                        </div>
+                    </a>
+
+                    <div class="contact-method">
+                        <i class="im im-lock"></i>
+                        <div>
+                            <h4>Secure Communication</h4>
+                            <p>For sensitive topics, reach out via Signal or encrypted channels.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="site-footer">
+        <div class="container" style="display: block;">
+            <p>&copy; 2026 <span class="user-name-js"></span>. Always connected, always secure.</p>
+        </div>
+    </footer>
+
+    <script src="js/jquery-3.2.1.min.js"></script>
+    <script src="js/github-fetch.js?v=23"></script>
+    <script>
+        if ('serviceWorker' in navigator && (window.location.protocol === 'http:' || window.location.protocol === 'https:')) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW registration failed:', err));
+            });
+        }
+        $('#menuToggle').click(function() {
+            $('#navLinks').toggleClass('active');
+            $(this).find('i').toggleClass('im-menu im-x-mark');
+        });
+    </script>
+</body>
+</html>

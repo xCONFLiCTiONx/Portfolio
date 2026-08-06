@@ -41,7 +41,8 @@ async function getPortfolioConfig() {
         }
         window.PortfolioConfig = {
             github_username: DEFAULT_USERNAME,
-            privacy_policy_repo: 'Privacy-Policies'
+            privacy_policy_repo: 'Privacy-Policies',
+            github_token: null
         };
         return window.PortfolioConfig;
     })();
@@ -94,6 +95,17 @@ async function initPortfolio() {
                 const repos = await reposResponse.json();
                 renderRepos(repoContainer, repos);
             }
+        }
+
+        // 3. Inject Dynamic Configuration
+        const githubLink = document.getElementById('contact-github-js');
+        if (githubLink) {
+            githubLink.href = `https://github.com/${username}`;
+        }
+
+        const metaDesc = document.getElementById('meta-description-js');
+        if (metaDesc) {
+            metaDesc.content = `Software Developer Portfolio for ${userData.name || username} - Building tools for freedom & productivity.`;
         }
 
     } catch (error) {

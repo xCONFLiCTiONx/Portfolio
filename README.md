@@ -15,7 +15,7 @@ A modern, dynamic, and GitHub-centric portfolio template designed for software d
 To make this portfolio your own, follow these simple steps:
 
 ### 1. Personalize the Data
-Open [site.webmanifest](file:///F:/Repositories/Portfolio/site.webmanifest) and update the `github_username` field with your own GitHub handle:
+Open [site.webmanifest](file:///F:/Repositories/Portfolio/site.webmanifest) and update the `github_username` field with your own details:
 
 ```json
 {
