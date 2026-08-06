@@ -20,10 +20,46 @@
             gap: 2rem;
             transition: border-color 0.2s;
         }
-        .contact-method:hover { border-color: #58a6ff; }
+        .contact-method:not(div):hover { border-color: #58a6ff; }
         .contact-method i { font-size: 3rem; color: #58a6ff; }
         .contact-method div h4 { margin-bottom: 0.5rem; font-size: 1.8rem; }
         .contact-method div p { color: #8b949e; font-size: 1.4rem; }
+
+        .repo-issue-selector {
+            width: 100%;
+            margin-top: 1.5rem;
+            display: none; /* Hidden until GitHub button is clicked or data loaded */
+        }
+        .repo-select {
+            background: #0d1117;
+            color: #c9d1d9;
+            border: 1px solid #30363d;
+            padding: 0.8rem 1.2rem;
+            border-radius: 6px;
+            font-size: 1.4rem;
+            width: 100%;
+            margin-bottom: 1rem;
+            cursor: pointer;
+        }
+        .repo-go-btn {
+            background-color: #238636;
+            color: #ffffff;
+            border: 1px solid rgba(240, 246, 252, 0.1);
+            border-radius: 6px;
+            padding: 0.8rem 1.6rem;
+            font-size: 1.4rem;
+            font-weight: 500;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.2s;
+        }
+        .repo-go-btn:hover { background-color: #2ea043; }
+        .repo-go-btn:disabled {
+            background-color: #21262d;
+            color: #8b949e;
+            cursor: not-allowed;
+            border-color: #30363d;
+        }
     </style>
 </head>
 <body id="top">
@@ -65,19 +101,26 @@
                 <p>I'm always open to discussing new projects, open-source collaborations, or technical questions regarding my tools.</p>
 
                 <div class="contact-methods">
-                    <a href="#" id="contact-github-js" target="_blank" class="contact-method">
-                        <i class="im im-github"></i>
-                        <div>
-                            <h4>GitHub</h4>
-                            <p>Collaborate on projects or report issues.</p>
+                    <div class="contact-method" style="flex-direction: column; align-items: flex-start;">
+                        <div style="display: flex; align-items: center; gap: 2rem; width: 100%;">
+                            <i class="im im-github"></i>
+                            <div>
+                                <h4>GitHub</h4>
+                                <p>Report issues or suggest features.</p>
+                            </div>
                         </div>
-                    </a>
 
-                    <div class="contact-method">
-                        <i class="im im-lock"></i>
-                        <div>
-                            <h4>Secure Communication</h4>
-                            <p>For sensitive topics, reach out via Signal or encrypted channels.</p>
+                        <div class="repo-issue-selector" style="display: block;">
+                            <p style="font-size: 1.3rem; color: #8b949e; margin-bottom: 0.8rem;">Which project is this in regards to?</p>
+                            <select id="contact-repo-selector" class="repo-select">
+                                <option value="" disabled selected>Loading repositories...</option>
+                            </select>
+                            <button id="go-to-issues-btn" class="repo-go-btn" disabled>
+                                Issues <i class="im im-external-link" style="font-size: 1.2rem; color: white;"></i>
+                            </button>
+                            <button id="go-to-discussions-btn" class="repo-go-btn" style="margin-top: 1rem;" disabled>
+                                Discussions <i class="im im-external-link" style="font-size: 1.2rem; color: white;"></i>
+                            </button>
                         </div>
                     </div>
                 </div>

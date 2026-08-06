@@ -88,12 +88,19 @@ async function initPortfolio() {
         }
 
         const repoContainer = document.getElementById(REPO_CONTAINER_ID);
-        if (repoContainer) {
+        const contactRepoSelector = document.getElementById('contact-repo-selector');
+
+        if (repoContainer || contactRepoSelector) {
             const reposURL = `https://api.github.com/users/${username}/repos?sort=updated&per_page=100`;
             const reposResponse = await fetch(reposURL, fetchOptions);
             if (reposResponse.ok) {
                 const repos = await reposResponse.json();
-                renderRepos(repoContainer, repos);
+
+                // If on main page, render repo cards
+                if (repoContainer) renderRepos(repoContainer, repos);
+
+                // If on contact page, populate dropdown
+                if (contactRepoSelector) populateRepoSelector(contactRepoSelector, repos, username);
             }
         }
 
@@ -153,6 +160,48 @@ function renderMetadata(container, data) {
         html += `<li><i class="im im-link"></i> <a href="${url}" target="_blank">${data.blog.replace(/^https?:\/\//, '')}</a></li>`;
     }
     container.innerHTML = html;
+}
+
+function populateRepoSelector(selector, repos, username) {
+    let options = '<option value="" disabled selected>-- Select a project --</option>';
+
+    // Sort repos by name
+    const sortedRepos = repos.sort((a, b) => a.name.localeCompare(b.name));
+
+    sortedRepos.forEach(repo => {
+        options += `<option value="${repo.name}">${repo.name}</option>`;
+    });
+
+    selector.innerHTML = options;
+
+    const goBtn = document.getElementById('go-to-issues-btn');
+    const discBtn = document.getElementById('go-to-discussions-btn');
+
+    if (goBtn || discBtn) {
+        selector.onchange = () => {
+            const hasValue = !!selector.value;
+            if (goBtn) goBtn.disabled = !hasValue;
+            if (discBtn) discBtn.disabled = !hasValue;
+        };
+
+        if (goBtn) {
+            goBtn.onclick = () => {
+                const selectedRepo = selector.value;
+                if (selectedRepo) {
+                    window.open(`https://github.com/${username}/${selectedRepo}/issues`, '_blank');
+                }
+            };
+        }
+
+        if (discBtn) {
+            discBtn.onclick = () => {
+                const selectedRepo = selector.value;
+                if (selectedRepo) {
+                    window.open(`https://github.com/${username}/${selectedRepo}/discussions`, '_blank');
+                }
+            };
+        }
+    }
 }
 
 function renderRepos(container, repos) {
