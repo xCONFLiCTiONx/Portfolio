@@ -1,6 +1,6 @@
 /**
  * Dynamic Privacy Policy Fetcher
- * Version: 24 (Folder-Based Discovery)
+ * Version: 25 (Per-Repo Discovery)
  */
 
 console.log('[DEBUG] PRIVACY-FETCH: Script File Loaded');
@@ -19,7 +19,6 @@ async function initPrivacy() {
     try {
         const config = await getPortfolioConfig();
         const username = config.github_username || 'xCONFLiCTiONx';
-        const repo = config.privacy_policy_repo || 'Privacy-Policies';
         const token = config.github_token;
 
         const urlParams = new URLSearchParams(window.location.search);
@@ -52,41 +51,53 @@ async function initPrivacy() {
             }
         });
 
-        // 2. RECURSIVE DISCOVERY: Fetch file tree from GitHub
-        // Using the git/trees API with recursive=1 to find privacy.md in folders
-        const apiURL = `https://api.github.com/repos/${username}/${repo}/git/trees/main?recursive=1`;
-        const headers = { 'Accept': 'application/vnd.github.v3+json' };
-        if (token) headers['Authorization'] = `token ${token}`;
+        // 2. DISCOVERY: Fetch all repositories for the user
+        const fetchOptions = {
+            headers: typeof getGithubHeaders === 'function' ? getGithubHeaders(token) : {},
+            cache: 'no-cache'
+        };
 
-        console.log('[DEBUG] Privacy: Fetching recursive tree...');
-        const response = await fetch(apiURL, { headers, cache: 'no-cache' });
+        console.log('[DEBUG] Privacy: Fetching user repositories...');
+        const reposURL = `https://api.github.com/users/${username}/repos?sort=updated&per_page=100`;
+        const reposResponse = await fetch(reposURL, fetchOptions);
 
-        if (response.ok) {
-            const data = await response.json();
+        if (reposResponse.ok) {
+            const repos = await reposResponse.json();
 
-            // Filter for privacy.md files within folders
-            const policyEntries = data.tree.filter(item =>
-                item.type === 'blob' &&
-                item.path.toLowerCase().endsWith('/privacy.md')
-            );
+            // Filter out forks if desired, or keep them. Let's keep them for now.
+            // We need to check which repos have a privacy.md
+            // To avoid hitting rate limits with dozens of API calls, we'll try to check the raw content URL with a HEAD request
 
-            if (policyEntries.length === 0) {
-                selector.html('<option value="" disabled selected>No policies found in repository.</option>');
+            const policyCheckPromises = repos.map(async (repo) => {
+                const branch = repo.default_branch || 'main';
+                const rawUrl = `https://raw.githubusercontent.com/${username}/${repo.name}/${branch}/privacy.md`;
+
+                try {
+                    const check = await fetch(rawUrl, { method: 'HEAD', cache: 'no-cache' });
+                    if (check.ok) {
+                        return {
+                            name: repo.name,
+                            url: rawUrl,
+                            slug: repo.name.toLowerCase()
+                        };
+                    }
+                } catch (e) {
+                    // Fail silently for individual repo checks
+                }
+                return null;
+            });
+
+            const foundPolicies = (await Promise.all(policyCheckPromises)).filter(p => p !== null);
+
+            if (foundPolicies.length === 0) {
+                selector.html('<option value="" disabled selected>No privacy.md found in any repository.</option>');
                 return;
             }
 
             let options = '<option value="" disabled selected>-- Select a Project Policy --</option>';
-            policyEntries.forEach(item => {
-                // Extract project name from folder path (e.g., "Call Guard Shield/privacy.md" -> "Call Guard Shield")
-                const pathParts = item.path.split('/');
-                const projectName = pathParts[pathParts.length - 2];
-                const slug = projectName.toLowerCase().replace(/\s+/g, '-');
-
-                // Construct the raw URL
-                const url = `https://raw.githubusercontent.com/${username}/${repo}/refs/heads/main/${encodeURIComponent(item.path)}`;
-                const isSelected = targetPolicy === slug || targetPolicy === projectName.toLowerCase();
-
-                options += `<option value="${url}" data-slug="${slug}" ${isSelected ? 'selected' : ''}>${projectName}</option>`;
+            foundPolicies.forEach(policy => {
+                const isSelected = targetPolicy === policy.slug;
+                options += `<option value="${policy.url}" data-slug="${policy.slug}" ${isSelected ? 'selected' : ''}>${policy.name}</option>`;
             });
             selector.html(options);
 
@@ -95,10 +106,7 @@ async function initPrivacy() {
             }
 
         } else {
-            selector.html(`<option value="" disabled selected>GitHub Error (${response.status})</option>`);
-            if (response.status === 403) {
-                content.html('<p class="error">GitHub API Rate Limit reached. Please add a token to site.webmanifest.</p>');
-            }
+            selector.html(`<option value="" disabled selected>GitHub Error (${reposResponse.status})</option>`);
         }
     } catch (e) {
         console.error('[DEBUG] Privacy: Initialization error', e);

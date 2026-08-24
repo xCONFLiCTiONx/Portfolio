@@ -41,7 +41,6 @@ async function getPortfolioConfig() {
         }
         window.PortfolioConfig = {
             github_username: DEFAULT_USERNAME,
-            privacy_policy_repo: 'Privacy-Policies',
             github_token: null
         };
         return window.PortfolioConfig;
