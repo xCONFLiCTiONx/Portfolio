@@ -1,3 +1,5 @@
+<img src="favicon.ico" alt="Weather Watcher Logo" width="64" align="left" style="margin-right: 20px; border-radius: 10px;">
+
 # Dynamic Developer Portfolio
 
 A modern, dynamic, and GitHub-centric portfolio template designed for software developers. This portfolio automatically fetches your profile information and popular repositories directly from the GitHub API, ensuring your site is always up to date with your latest work.
