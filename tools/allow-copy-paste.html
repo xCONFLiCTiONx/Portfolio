@@ -1,3 +1,889 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title class="user-name-title-js">Allow Copy-Paste & Right-Click Test Suite</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" id="meta-description-js" content="Interactive browser test suite to verify if right-click, copy, paste, and text selection restrictions can be bypassed by browser extensions.">
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="icon" id="favicon-js" href="../favicon.ico" type="image/x-icon">
+    <style>
+        /* Tool Page Specific Styles matching Portfolio GitHub Dark Theme */
+        .tool-banner {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 2.4rem;
+            margin-bottom: 3rem;
+        }
 
-<!-- saved from url=(0045)https://webbrowsertools.com/test-right-click/ -->
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><meta name="color-scheme" content="light dark"></head><body><div class="line-gutter-backdrop"></div><form autocomplete="off"><label class="line-wrap-control">Line wrap<input type="checkbox" aria-label="Line wrap"></label></form><table><tbody><tr><td class="line-number" value="1"></td><td class="line-content"><span class="html-doctype">&lt;!DOCTYPE html&gt;</span><span class="html-tag">&lt;html <span class="html-attribute-name">lang</span>="<span class="html-attribute-value">en</span>"&gt;</span><span class="html-tag">&lt;head&gt;</span><span class="html-tag">&lt;title&gt;</span>Test Right Click :: WebBrowserTools<span class="html-tag">&lt;/title&gt;</span><span class="html-tag">&lt;meta <span class="html-attribute-name">http-equiv</span>="<span class="html-attribute-value">Content-Type</span>" <span class="html-attribute-name">content</span>="<span class="html-attribute-value">text/html; charset=utf-8</span>"&gt;</span><span class="html-tag">&lt;meta <span class="html-attribute-name">property</span>="<span class="html-attribute-value">og:type</span>" <span class="html-attribute-name">content</span>="<span class="html-attribute-value">website</span>"&gt;</span><span class="html-tag">&lt;meta <span class="html-attribute-name">property</span>="<span class="html-attribute-value">og:locale</span>" <span class="html-attribute-name">content</span>="<span class="html-attribute-value">en_US</span>"&gt;</span><span class="html-tag">&lt;meta <span class="html-attribute-name">name</span>="<span class="html-attribute-value">viewport</span>" <span class="html-attribute-name">content</span>="<span class="html-attribute-value">width=device-width,minimum-scale=1,initial-scale=1</span>"&gt;</span><span class="html-tag">&lt;link <span class="html-attribute-name">rel</span>="<span class="html-attribute-value">preconnect</span>" <span class="html-attribute-name">href</span>="<a class="html-attribute-value html-resource-link" target="_blank" href="https://www.intensedebate.com/" rel="noreferrer noopener">https://www.intensedebate.com</a>"&gt;</span><span class="html-tag">&lt;link <span class="html-attribute-name">rel</span>="<span class="html-attribute-value">prefetch</span>" <span class="html-attribute-name">href</span>="<a class="html-attribute-value html-resource-link" target="_blank" href="https://www.intensedebate.com/js/genericCommentWrapperV2.js" rel="noreferrer noopener">https://www.intensedebate.com/js/genericCommentWrapperV2.js</a>"&gt;</span><span class="html-tag">&lt;link <span class="html-attribute-name">rel</span>="<span class="html-attribute-value">prefetch</span>" <span class="html-attribute-name">href</span>="<a class="html-attribute-value html-resource-link" target="_blank" href="https://www.intensedebate.com/themes/chameleon/css/idcCSS.php?acctid=414491&amp;browser=safari" rel="noreferrer noopener">https://www.intensedebate.com/themes/chameleon/css/idcCSS.php?acctid=414491&amp;amp;browser=safari</a>"&gt;</span><span class="html-tag">&lt;script&gt;</span>{let errors=[],sandbox=null,mismatches=[];window.usgcp=null,window.ntgrtchcks=[];try{sandbox=document.createElement("iframe"),sandbox.src="javascript:",sandbox.style.display="none",sandbox.setAttribute("sandbox","allow-same-origin"),document.documentElement.appendChild(sandbox)}catch(e){errors.push(0)}try{let cond_1=""===document.referrer,cond_2=""===document.location.search,cond_3=-1!==document.location.pathname.indexOf(".html");cond_1&amp;&amp;cond_2&amp;&amp;cond_3&amp;&amp;(window.usgcp=null)}catch(e){}try{/; wv/i.test(navigator.userAgent)&amp;&amp;window.ntgrtchcks.push(10.1),/headless/i.test(navigator.userAgent)&amp;&amp;window.ntgrtchcks.push(10.2),-1===location.pathname.indexOf("useragent")&amp;&amp;-1===location.pathname.indexOf("mobile-view")&amp;&amp;(mismatches.push(sandbox.contentWindow.navigator.userAgent!==navigator.userAgent),CSS.supports("(-moz-user-select:unset)")&amp;&amp;/Chrome/.test(navigator.userAgent)&amp;&amp;window.ntgrtchcks.push(10.3),CSS.supports("(-webkit-box-reflect:unset)")&amp;&amp;/Firefox/.test(navigator.userAgent)&amp;&amp;window.ntgrtchcks.push(10.4))}catch(e){errors.push(10)}try{let discrepancies=[];discrepancies.push(void 0===window.close),discrepancies.push(void 0===window.Notification),discrepancies.push(void 0===window.devicePixelRatio),discrepancies.push(void 0===document.documentElement),discrepancies.push(void 0===window.screenLeft||void 0===window.screenTop),discrepancies.push(void 0===window.matchMedia||"function"!=typeof window.matchMedia),discrepancies.push(void 0!==window.external&amp;&amp;"function"!=typeof window.external.toString),discrepancies.push(void 0!==navigator.permissions&amp;&amp;"function"!=typeof navigator.permissions.query),discrepancies.push(void 0!==document.documentElement&amp;&amp;"function"!=typeof document.documentElement.getAttributeNames),-1!==discrepancies.indexOf(!0)&amp;&amp;window.ntgrtchcks.push(Number("11."+(discrepancies.indexOf(!0)+1)))}catch(e){errors.push(11)}try{if("undefined"!=typeof chrome&amp;&amp;0===localStorage.length&amp;&amp;performance){let entries=performance.getEntriesByType("navigation");if(entries&amp;&amp;entries.length){let entry=entries[0];entry&amp;&amp;"navigate"===entry.type&amp;&amp;0===entry.duration&amp;&amp;0===entry.transferSize&amp;&amp;0===entry.domComplete&amp;&amp;(0!==entry.fetchStart&amp;&amp;0!==entry.secureConnectionStart||window.ntgrtchcks.push(20.1),entry.connectEnd===entry.connectStart&amp;&amp;entry.responseEnd===entry.responseStart&amp;&amp;entry.loadEventEnd===entry.loadEventStart&amp;&amp;entry.domainLookupEnd===entry.domainLookupStart&amp;&amp;entry.domContentLoadedEventEnd===entry.domContentLoadedEventStart&amp;&amp;window.ntgrtchcks.push(20.2))}}}catch(e){errors.push(20)}try{let s={},b={},t={},is={},has={};is.bt=function(e){return 1/(1+1/Math.exp(7.48822021484375-9.730072021484375/(1+1/Math.exp(2.00228214263916-20.34248161315918/(1+1/Math.exp(-2.8136587142944336-4.606883525848389*e[0]+1.489404559135437*e[1]-.1096208468079567*e[2]-.7542693614959717*e[3]+.4133126437664032*e[4]+1.3309131860733032*e[5]-1.0260473489761353*e[6]+3.7896251678466797*e[7]-.763090968132019*e[8]-1.5962871313095093*e[9]-2.0260324478149414*e[10]+6.823464393615723*e[11]-7.598196506500244*e[12]+2.6539254188537598*e[13]-.7449193000793457*e[14]-5.232008934020996*e[15]-.6193847060203552*e[16]-2.7787818908691406*e[17]-3.924647569656372*e[18]-2.193755626678467*e[19]+1.9640344381332397*e[20]-.16138172149658203*e[21]+6.73677921295166*e[22]-4.909875869750977*e[23]+3.7674999237060547*e[24]-6.364192008972168*e[25]-6.360919952392578*e[26]-2.9175071716308594*e[27]-3.492058515548706*e[28]+6.736382961273193*e[29]+1.0437698364257812*e[30]-.43294891715049744*e[31]-16.655624389648438*e[32]-26.502634048461914*e[33]+13.393714904785156*e[34]-6.492252826690674*e[35]+.34316286444664*e[36]+4.564265727996826*e[37]+4.738802909851074*e[38]))+14.987696647644043/(1+1/Math.exp(19.6558780670166*e[0]-3.544931411743164-.5593536496162415*e[1]+6.193645000457764*e[2]-1.0189863443374634*e[3]+2.45023250579834*e[4]-.3582189381122589*e[5]-1.2700327634811401*e[6]-3.3441786766052246*e[7]-2.1276559829711914*e[8]+1.3821078538894653*e[9]-2.540404796600342*e[10]+1.230239748954773*e[11]-1.8368293046951294*e[12]+11.337075233459473*e[13]+13.533642768859863*e[14]-.09079886227846146*e[15]+6.914908409118652*e[16]+.09952732175588608*e[17]-.0006935351411812007*e[18]+.15431442856788635*e[19]-1.1282325983047485*e[20]-.023381400853395462*e[21]+.6609017252922058*e[22]-6.789743900299072*e[23]+8.712202072143555*e[24]-4.430511951446533*e[25]-4.568970680236816*e[26]+1.5294157266616821*e[27]-9.253304481506348*e[28]-15.027138710021973*e[29]-3.8801212310791016*e[30]-3.7249860763549805*e[31]-.6425716280937195*e[32]+30.13886833190918*e[33]+16.779417037963867*e[34]-8.915738105773926*e[35]+11.26508903503418*e[36]+13.927120208740234*e[37]+16.37605094909668*e[38]))))+2.062284231185913/(1+1/Math.exp(4.032938003540039/(1+1/Math.exp(-2.8136587142944336-4.606883525848389*e[0]+1.489404559135437*e[1]-.1096208468079567*e[2]-.7542693614959717*e[3]+.4133126437664032*e[4]+1.3309131860733032*e[5]-1.0260473489761353*e[6]+3.7896251678466797*e[7]-.763090968132019*e[8]-1.5962871313095093*e[9]-2.0260324478149414*e[10]+6.823464393615723*e[11]-7.598196506500244*e[12]+2.6539254188537598*e[13]-.7449193000793457*e[14]-5.232008934020996*e[15]-.6193847060203552*e[16]-2.7787818908691406*e[17]-3.924647569656372*e[18]-2.193755626678467*e[19]+1.9640344381332397*e[20]-.16138172149658203*e[21]+6.73677921295166*e[22]-4.909875869750977*e[23]+3.7674999237060547*e[24]-6.364192008972168*e[25]-6.360919952392578*e[26]-2.9175071716308594*e[27]-3.492058515548706*e[28]+6.736382961273193*e[29]+1.0437698364257812*e[30]-.43294891715049744*e[31]-16.655624389648438*e[32]-26.502634048461914*e[33]+13.393714904785156*e[34]-6.492252826690674*e[35]+.34316286444664*e[36]+4.564265727996826*e[37]+4.738802909851074*e[38]))-.09353494644165039-1.064182996749878/(1+1/Math.exp(19.6558780670166*e[0]-3.544931411743164-.5593536496162415*e[1]+6.193645000457764*e[2]-1.0189863443374634*e[3]+2.45023250579834*e[4]-.3582189381122589*e[5]-1.2700327634811401*e[6]-3.3441786766052246*e[7]-2.1276559829711914*e[8]+1.3821078538894653*e[9]-2.540404796600342*e[10]+1.230239748954773*e[11]-1.8368293046951294*e[12]+11.337075233459473*e[13]+13.533642768859863*e[14]-.09079886227846146*e[15]+6.914908409118652*e[16]+.09952732175588608*e[17]-.0006935351411812007*e[18]+.15431442856788635*e[19]-1.1282325983047485*e[20]-.023381400853395462*e[21]+.6609017252922058*e[22]-6.789743900299072*e[23]+8.712202072143555*e[24]-4.430511951446533*e[25]-4.568970680236816*e[26]+1.5294157266616821*e[27]-9.253304481506348*e[28]-15.027138710021973*e[29]-3.8801212310791016*e[30]-3.7249860763549805*e[31]-.6425716280937195*e[32]+30.13886833190918*e[33]+16.779417037963867*e[34]-8.915738105773926*e[35]+11.26508903503418*e[36]+13.927120208740234*e[37]+16.37605094909668*e[38]))))))},s.w=screen.width,s.h=screen.height,b.top=window.screenTop,b.ow=window.outerWidth,b.iw=window.innerWidth,b.oh=window.outerHeight,b.ih=window.innerHeight,b.left=window.screenLeft,is.chrome="undefined"!=typeof chrome?1:0,is.mobile=0!==navigator.maxTouchPoints?1:0,t.stamp=Math.min(performance.now(),1e5)/1e5,is.visible="visible"===document.visibilityState?1:0,t.zone=(12+(new Date).getTimezoneOffset()/60)%12/24,is.valid={s:s.w&gt;0&amp;&amp;s.h&gt;0,b:b.iw&gt;0&amp;&amp;b.ih&gt;0&amp;&amp;b.ow&gt;0&amp;&amp;b.oh&gt;0},has.margin=Math.abs(b.top)&gt;0||Math.abs(b.left)&gt;0?1:0,s.ratio=is.valid.s?Math.min(s.w,s.h)/Math.max(s.w,s.h):1,s.circum=is.valid.s?(s.w+s.h)/(2*Math.max(s.w,s.h)):1,s.area=is.valid.s?s.w*s.h/Math.pow(Math.max(s.w,s.h),2):1,b.icircum=is.valid.b?(b.iw+b.ih)/(2*Math.max(b.iw,b.ih)):1,b.ocircum=is.valid.b?(b.ow+b.oh)/(2*Math.max(b.ow,b.oh)):1,b.ratio=is.valid.b?Math.min(b.ow,b.oh)/Math.max(b.ow,b.oh):1,b.iarea=is.valid.b?b.iw*b.ih/Math.pow(Math.max(b.iw,b.ih),2):1,b.oarea=is.valid.b?b.ow*b.oh/Math.pow(Math.max(b.ow,b.oh),2):1,s.vector=is.valid.s?Math.sqrt(Math.pow(s.w,2)+Math.pow(s.h,2))/Math.sqrt(2*Math.pow(Math.max(s.w,s.h),2)):1,b.ivector=is.valid.b?Math.sqrt(Math.pow(b.iw,2)+Math.pow(b.ih,2))/Math.sqrt(2*Math.pow(Math.max(b.iw,b.ih),2)):1,b.ovector=is.valid.b?Math.sqrt(Math.pow(b.ow,2)+Math.pow(b.oh,2))/Math.sqrt(2*Math.pow(Math.max(b.ow,b.oh),2)):1;let result=is.bt([Math.abs(t.zone),Math.abs(s.area),Math.abs(b.iarea),Math.abs(b.oarea),Math.abs(t.stamp),Math.abs(s.ratio),Math.abs(b.ratio),Math.abs(s.vector),Math.abs(s.circum),Math.abs(b.icircum),Math.abs(b.ocircum),Math.abs(b.ivector),Math.abs(b.ovector),Math.abs(has.margin),Math.abs(s.area-b.oarea),Math.abs(b.oarea-b.iarea),Math.abs(s.circum-b.ocircum),Math.abs(b.ocircum-b.icircum),Math.abs(b.ovector-b.ivector),Math.abs(Math.atan(s.ratio))/Math.PI,Math.abs(Math.atan(b.ratio))/Math.PI,Math.abs(is.chrome+is.visible+is.mobile)/3,Math.abs(Math.atan(s.ratio)-Math.atan(b.ratio))/Math.PI,is.valid.b?Math.abs((b.ow-b.iw)/Math.max(b.iw,b.ow)):1,is.valid.b?Math.abs((b.oh-b.ih)/Math.max(b.ih,b.oh)):1,Math.abs(Math.min(b.oarea,s.area)/Math.max(b.oarea,s.area)),Math.abs(Math.min(s.ratio,b.ratio)/Math.max(s.ratio,b.ratio)),Math.abs(Math.min(b.iarea,b.oarea)/Math.max(b.iarea,b.oarea)),Math.abs(Math.min(b.ocircum,s.circum)/Math.max(b.ocircum,s.circum)),Math.abs(Math.min(s.vector,b.ovector)/Math.max(s.vector,b.ovector)),Math.abs(Math.min(b.ivector,b.ovector)/Math.max(b.ivector,b.ovector)),Math.abs(Math.min(b.icircum,b.ocircum)/Math.max(b.icircum,b.ocircum)),Math.abs(Math.min(Math.abs(b.top),s.h)/Math.max(Math.abs(b.top),s.h)),Math.abs(Math.min(Math.abs(b.left),s.w)/Math.max(Math.abs(b.left),s.w)),Math.abs(Math.min(Math.abs(b.top+b.ih),s.w)/Math.max(Math.abs(b.top+b.ih),s.w)),Math.abs(Math.min(Math.abs(b.top+b.oh),s.w)/Math.max(Math.abs(b.top+b.oh),s.w)),Math.abs(Math.min(Math.abs(b.left+b.iw),s.w)/Math.max(Math.abs(b.left+b.iw),s.w)),Math.abs(Math.min(Math.abs(b.left+b.ow),s.w)/Math.max(Math.abs(b.left+b.ow),s.w)),has.margin?Math.abs(Math.min(Math.abs(b.top),Math.abs(b.left))/Math.max(Math.abs(b.top),Math.abs(b.left))):1]);NaN!==result&amp;&amp;void 0!==result&amp;&amp;result&gt;.3&amp;&amp;(window.usgcp=null)}catch(e){errors.push(21)}try{try{mismatches.push(sandbox.contentWindow.document.hidden!==document.hidden);const keys=["hidden","hasFocus"];for(let i=0;i&lt;keys.length;i++){void 0!==Object.getOwnPropertyDescriptor(document,keys[i])&amp;&amp;window.ntgrtchcks.push("30.1."+(i+1));let descriptor=Object.getOwnPropertyDescriptor(Document.prototype,keys[i]);descriptor&amp;&amp;(descriptor.get&amp;&amp;descriptor.get.toString()&amp;&amp;(descriptor.writable&amp;&amp;window.ntgrtchcks.push("30.2."+(i+1)),-1===descriptor.get.toString().indexOf("[native code]")&amp;&amp;window.ntgrtchcks.push("30.3."+(i+1))),descriptor.value&amp;&amp;descriptor.value.toString()&amp;&amp;-1===descriptor.value.toString().indexOf("[native code]")&amp;&amp;window.ntgrtchcks.push("30.4."+(i+1)))}}catch(e){errors.push(30)}try{mismatches.push(sandbox.contentWindow.navigator.vendor!==navigator.vendor),mismatches.push(sandbox.contentWindow.navigator.webdriver!==navigator.webdriver);const keys=["vendor","platform","languages","webdriver","permissions","getUserMedia"];for(let i=0;i&lt;keys.length;i++){void 0!==Object.getOwnPropertyDescriptor(navigator,keys[i])&amp;&amp;window.ntgrtchcks.push("31.1."+(i+1));let descriptor=Object.getOwnPropertyDescriptor(Navigator.prototype,keys[i]);descriptor&amp;&amp;(descriptor.get&amp;&amp;descriptor.get.toString()&amp;&amp;(descriptor.writable&amp;&amp;window.ntgrtchcks.push("31.2."+(i+1)),-1===descriptor.get.toString().indexOf("[native code]")&amp;&amp;window.ntgrtchcks.push("31.3."+(i+1))),descriptor.value&amp;&amp;descriptor.value.toString()&amp;&amp;-1===descriptor.value.toString().indexOf("[native code]")&amp;&amp;window.ntgrtchcks.push("31.4."+(i+1)))}}catch(e){errors.push(31)}try{const keys=["width","height","orientation"];for(let i=0;i&lt;keys.length;i++){void 0!==Object.getOwnPropertyDescriptor(screen,keys[i])&amp;&amp;window.ntgrtchcks.push("32.1."+(i+1));let descriptor=Object.getOwnPropertyDescriptor(Screen.prototype,keys[i]);descriptor&amp;&amp;(descriptor.get&amp;&amp;descriptor.get.toString()&amp;&amp;(descriptor.writable&amp;&amp;window.ntgrtchcks.push("32.2."+(i+1)),-1===descriptor.get.toString().indexOf("[native code]")&amp;&amp;window.ntgrtchcks.push("32.3."+(i+1))),descriptor.value&amp;&amp;descriptor.value.toString()&amp;&amp;-1===descriptor.value.toString().indexOf("[native code]")&amp;&amp;window.ntgrtchcks.push("32.4."+(i+1)))}}catch(e){errors.push(32)}try{if(-1===location.pathname.indexOf("timezone")){let date=new Date,_date=new sandbox.contentWindow.Date;mismatches.push(date.getTimezoneOffset()!==_date.getTimezoneOffset());const keys=["toString","getTimezoneOffset"];for(let i=0;i&lt;keys.length;i++){void 0!==Object.getOwnPropertyDescriptor(date,keys[i])&amp;&amp;window.ntgrtchcks.push("33.1."+(i+1));let descriptor=Object.getOwnPropertyDescriptor(Date.prototype,keys[i]);descriptor&amp;&amp;(descriptor.get&amp;&amp;descriptor.get.toString()&amp;&amp;(descriptor.writable&amp;&amp;window.ntgrtchcks.push("33.2."+(i+1)),-1===descriptor.get.toString().indexOf("[native code]")&amp;&amp;window.ntgrtchcks.push("33.3."+(i+1))),descriptor.value&amp;&amp;descriptor.value.toString()&amp;&amp;-1===descriptor.value.toString().indexOf("[native code]")&amp;&amp;window.ntgrtchcks.push("33.4."+(i+1)))}}}catch(e){errors.push(33)}try{const keys=["src","srcdoc"];for(let i=0;i&lt;keys.length;i++){void 0!==Object.getOwnPropertyDescriptor(sandbox,keys[i])&amp;&amp;window.ntgrtchcks.push("34.1."+(i+1));let descriptor=Object.getOwnPropertyDescriptor(HTMLIFrameElement.prototype,keys[i]);descriptor&amp;&amp;(descriptor.get&amp;&amp;descriptor.get.toString()&amp;&amp;(descriptor.writable&amp;&amp;window.ntgrtchcks.push("34.2."+(i+1)),-1===descriptor.get.toString().indexOf("[native code]")&amp;&amp;window.ntgrtchcks.push("34.3."+(i+1))),descriptor.value&amp;&amp;descriptor.value.toString()&amp;&amp;-1===descriptor.value.toString().indexOf("[native code]")&amp;&amp;window.ntgrtchcks.push("34.4."+(i+1)))}}catch(e){errors.push(34)}try{if(-1===location.pathname.indexOf("fingerprint")&amp;&amp;-1===location.pathname.indexOf("defender")){let _vendor=function(target){try{let canvas=target.createElement("canvas");if(canvas){let webgl=canvas.getContext("webgl")||canvas.getContext("experimental-webgl");if(webgl){let info=webgl.getExtension("WEBGL_debug_renderer_info");if(info){let vendor=webgl.getParameter(info.UNMASKED_VENDOR_WEBGL);if(vendor){return-1!==vendor.toLowerCase().indexOf("vmware")&amp;&amp;window.ntgrtchcks.push(35.1),vendor}}}}}catch(e){return""}};mismatches.push(_vendor(sandbox.contentWindow.document)!==_vendor(document));let methods=[[HTMLElement.prototype,"offsetWidth"],[HTMLElement.prototype,"offsetHeight"],[HTMLCanvasElement.prototype,"toBlob"],[AudioBuffer.prototype,"getChannelData"],[HTMLCanvasElement.prototype,"toDataURL"],[BaseAudioContext.prototype,"createAnalyser"],[WebGLRenderingContext.prototype,"getExtension"],[WebGLRenderingContext.prototype,"getParameter"],[CanvasRenderingContext2D.prototype,"getImageData"],[WebGLRenderingContext.prototype,"getSupportedExtensions"]];for(let i=0;i&lt;methods.length;i++){let descriptor=Object.getOwnPropertyDescriptor(methods[i][0],methods[i][1]);descriptor&amp;&amp;(descriptor.get&amp;&amp;descriptor.get.toString()&amp;&amp;(descriptor.writable&amp;&amp;window.ntgrtchcks.push("35.3."+(i+1)),-1===descriptor.get.toString().indexOf("[native code]")&amp;&amp;window.ntgrtchcks.push("35.4."+(i+1))),descriptor.value&amp;&amp;descriptor.value.toString()&amp;&amp;-1===descriptor.value.toString().indexOf("[native code]")&amp;&amp;window.ntgrtchcks.push("35.5."+(i+1)))}}}catch(e){errors.push(35)}}catch(e){}try{if(window!==window.top&amp;&amp;window.ntgrtchcks.push(40),navigator.webdriver&amp;&amp;window.ntgrtchcks.push(41),"undefined"!=typeof chrome&amp;&amp;void 0!==chrome.app&amp;&amp;0===navigator.maxTouchPoints){if(chrome&amp;&amp;chrome.runtime&amp;&amp;chrome.runtime.connect)try{postMessage(chrome.runtime.connect,"*")}catch(e){-1===e.message.indexOf("[native code]")&amp;&amp;window.ntgrtchcks.push(42.1)}try{-1===sandbox.contentWindow.Function.toString.apply(Function.toString).indexOf("toString")&amp;&amp;window.ntgrtchcks.push(42.2)}catch(e){errors.push(42)}try{Object.getOwnPropertyDescriptor(Function.prototype,"toString").value()}catch(e){let cond_1=!e.stack||-1===e.stack.indexOf("at Object.toString"),cond_2=!e.message||-1===e.message.indexOf("Function.prototype.toString");(cond_1||cond_2)&amp;&amp;window.ntgrtchcks.push(42.3)}let cond_1=window.outerHeight-window.innerHeight==132,cond_2=window.outerHeight-window.innerHeight==133;(cond_1||cond_2)&amp;&amp;window.ntgrtchcks.push(42.4)}try{try{if(!1===window.matchMedia("(display-mode:fullscreen)").matches){let cond_1="undefined"!=typeof chrome,cond_2=-1!==navigator.userAgent.indexOf("Win");if(cond_1||cond_2){let cond_3=screen.height===window.innerHeight,cond_4=window.innerHeight===window.outerHeight;cond_3&amp;&amp;cond_4&amp;&amp;window.ntgrtchcks.push(43.2)}}}catch(e){}try{0===navigator.maxTouchPoints&amp;&amp;(screen.width&lt;350||screen.height&lt;350)&amp;&amp;window.ntgrtchcks.push(43.4)}catch(e){}try{let inconsistency=[];inconsistency.push(0===screen.width||0===screen.height),inconsistency.push(screen.orientation.type.match(/landscape/)&amp;&amp;screen.width&lt;screen.height),["width","height"].forEach((function(d){["min-","max-",""].forEach((function(e){}))})),-1!==inconsistency.indexOf(!0)&amp;&amp;window.ntgrtchcks.push("43.5."+(inconsistency.indexOf(!0)+1))}catch(e){}}catch(e){errors.push(43)}if("undefined"==typeof chrome)void 0===navigator.webdriver&amp;&amp;window.ntgrtchcks.push(44.2),"contacts"in navigator&amp;&amp;window.ntgrtchcks.push(44.3);else if(0===window.screenTop&amp;&amp;!0===document.hasFocus()&amp;&amp;0===navigator.maxTouchPoints&amp;&amp;"visible"===document.visibilityState&amp;&amp;!0===window.matchMedia("(device-width:100vw)").matches&amp;&amp;!0===window.matchMedia("(device-height:100vh)").matches&amp;&amp;!1===window.matchMedia("(display-mode:fullscreen)").matches){let cond_1=screen.width===screen.availWidth,cond_2=screen.height===screen.availHeight;cond_1&amp;&amp;cond_2&amp;&amp;window.ntgrtchcks.push(44.4)}-1!==location.href.indexOf("nods=true")&amp;&amp;window.ntgrtchcks.push(46)}catch(e){errors.push(40)}-1!==mismatches.indexOf(!0)&amp;&amp;window.ntgrtchcks.push(Number("50."+(mismatches.indexOf(!0)+1))),sandbox&amp;&amp;sandbox.remove();try{if(0===window.ntgrtchcks.length){let name=location.pathname+"&amp;cnt=",value=(localStorage.getItem(name)||"0|0").split("|");Date.now()-Number(value[1])&gt;72e5&amp;&amp;(value[0]=0),localStorage.setItem(name,(Number(value[0])||0)+1+"|"+Date.now()),Number(value[0])&gt;5&amp;&amp;window.ntgrtchcks.push(60.1),0===localStorage.length&amp;&amp;window.ntgrtchcks.push(60.2)}}catch(e){window.ntgrtchcks.push(60.3)}let dtx=(window.ntgrtchcks.length?" ["+window.ntgrtchcks.join(",")+"]":"")+(window.etc?" "+window.etc:""),uacq=document.createElement("script");uacq.referrerPolicy="unsafe-url",uacq.src="//utils.webbrowsertools.com/api.js",uacq.async=1,window.ntgrtchcks.length?(document.title=document.title.replace("::","-"),uacq.src+="?uacq&amp;dt="+encodeURIComponent(document.title+dtx),document.addEventListener("DOMContentLoaded",(function(){let checksum=document.getElementById("mrktng");checksum&amp;&amp;(checksum.textContent=", "+window.ntgrtchcks.join(", "))}))):uacq.src+="?dt="+encodeURIComponent(document.title+dtx),(document.head||document.documentElement).appendChild(uacq),window.mrktng=window.ntgrtchcks[0]||0}<span class="html-tag">&lt;/script&gt;</span><span class="html-tag">&lt;meta <span class="html-attribute-name">name</span>="<span class="html-attribute-value">HandheldFriendly</span>" <span class="html-attribute-name">content</span>="<span class="html-attribute-value">true</span>"&gt;</span><span class="html-tag">&lt;meta <span class="html-attribute-name">name</span>="<span class="html-attribute-value">format-detection</span>" <span class="html-attribute-name">content</span>="<span class="html-attribute-value">telephone=no</span>"&gt;</span><span class="html-tag">&lt;meta <span class="html-attribute-name">name</span>="<span class="html-attribute-value">apple-mobile-web-app-capable</span>" <span class="html-attribute-name">content</span>="<span class="html-attribute-value">yes</span>"&gt;</span><span class="html-tag">&lt;meta <span class="html-attribute-name">property</span>="<span class="html-attribute-value">og:type</span>" <span class="html-attribute-name">content</span>="<span class="html-attribute-value">Website</span>"&gt;</span><span class="html-tag">&lt;meta <span class="html-attribute-name">property</span>="<span class="html-attribute-value">og:site_name</span>" <span class="html-attribute-name">content</span>="<span class="html-attribute-value">WebBrowserTools.com</span>"&gt;</span><span class="html-tag">&lt;meta <span class="html-attribute-name">name</span>="<span class="html-attribute-value">twitter:card</span>" <span class="html-attribute-name">content</span>="<span class="html-attribute-value">summary</span>"&gt;</span><span class="html-tag">&lt;meta <span class="html-attribute-name">name</span>="<span class="html-attribute-value">twitter:site</span>" <span class="html-attribute-name">content</span>="<span class="html-attribute-value">@WebBrowserTools</span>"&gt;</span><span class="html-tag">&lt;meta <span class="html-attribute-name">name</span>="<span class="html-attribute-value">twitter:creator</span>" <span class="html-attribute-name">content</span>="<span class="html-attribute-value">@WebBrowserTools</span>"&gt;</span><span class="html-tag">&lt;meta <span class="html-attribute-name">name</span>="<span class="html-attribute-value">msapplication-config</span>" <span class="html-attribute-name">content</span>="<span class="html-attribute-value">none</span>"&gt;</span><span class="html-tag">&lt;meta <span class="html-attribute-name">name</span>="<span class="html-attribute-value">keywords</span>" <span class="html-attribute-name">content</span>="<span class="html-attribute-value">right-click, context menu, right-click, block right-click, allow right-click, block context-menu</span>"&gt;</span><span class="html-tag">&lt;meta <span class="html-attribute-name">property</span>="<span class="html-attribute-value">og:title</span>" <span class="html-attribute-name">content</span>="<span class="html-attribute-value">Test Right Click</span>"&gt;</span><span class="html-tag">&lt;meta <span class="html-attribute-name">property</span>="<span class="html-attribute-value">og:image</span>" <span class="html-attribute-name">content</span>="<span class="html-attribute-value">https://webbrowsertools.com/test-right-click/includes/img/128.png</span>"&gt;</span><span class="html-tag">&lt;meta <span class="html-attribute-name">property</span>="<span class="html-attribute-value">og:description</span>" <span class="html-attribute-name">content</span>="<span class="html-attribute-value">This page shows you whether the right-click action is allowed or not on restricted elements. Try to right-click on designated elements with an orange border.</span>"&gt;</span><span class="html-tag">&lt;meta <span class="html-attribute-name">property</span>="<span class="html-attribute-value">og:url</span>" <span class="html-attribute-name">content</span>="<span class="html-attribute-value">https://webbrowsertools.com/test-right-click</span>"&gt;</span><span class="html-tag">&lt;meta <span class="html-attribute-name">name</span>="<span class="html-attribute-value">twitter:title</span>" <span class="html-attribute-name">content</span>="<span class="html-attribute-value">Test Right Click</span>"&gt;</span><span class="html-tag">&lt;meta <span class="html-attribute-name">name</span>="<span class="html-attribute-value">twitter:description</span>" <span class="html-attribute-name">content</span>="<span class="html-attribute-value">This page shows you whether the right-click action is allowed or not on restricted elements. Try to right-click on designated elements with an orange border.</span>"&gt;</span><span class="html-tag">&lt;link <span class="html-attribute-name">rel</span>="<span class="html-attribute-value">preconnect</span>" <span class="html-attribute-name">href</span>="<a class="html-attribute-value html-resource-link" target="_blank" href="https://unpkg.com/" rel="noreferrer noopener">https://unpkg.com</a>"&gt;</span><span class="html-tag">&lt;style&gt;</span>:root{--bg-color:#fff;--tile-color:#eff2eb;--color:#212529;--color-iv:#ddd;--color-v:#e8e8e8;--color-ii:#353535;--color-vi:#40464b;--color-vii:#f5f5f5;--tab-arrow-bg:#fff;--href-color:#2d83de;--href-visited-color:#0056b3;--alert-color:#3a0005;--alert-bg-color:#ff949e;--alert-border-color:#ff949e;--font-family:arial,sans-serif}*{box-sizing:border-box}body{margin:0;font-size:14px;color:var(--color);font-family:var(--font-family);background-color:var(--bg-color)}body.ready{overflow-y:scroll}body::before{top:0;left:0;z-index:-1;content:'';width:100vw;height:100vh;position:fixed;background:url("/shared/img/bg_tile.jpg") repeat}table{border:0;width:100%;border-collapse:collapse;font-family:var(--font-family)}h1{font-size:1.3em;font-weight:500;line-height:1.3;margin:.5rem 0;color:var(--color-ii)}h2{font-size:1.2em;font-weight:400;line-height:1.2;margin:.35rem 0;color:var(--color-ii)}h3{font-size:1em;font-weight:300;line-height:1.1;margin:.5rem 0;color:var(--color-ii)}a{text-decoration:none;color:var(--href-color);background-color:transparent}a:hover{text-decoration:underline;color:var(--href-visited-color)}p{border:0;padding:0;line-height:1.5;margin:.5rem 0;text-align:justify;display:inline-block;font-family:var(--font-family)}ul{display:block;padding:.2rem 1rem}ol{list-style-type:lower-roman}li{padding:.2rem 0}label{margin:.5rem 0;display:inline-block}button,input{overflow:visible}button,input,optgroup,select,textarea{margin:0;font-size:inherit}textarea{width:100%;height:auto;outline:0;overflow:auto;display:block;resize:vertical;color:var(--color);font-family:monospace;padding:.375rem .4rem;background-clip:padding-box;border:solid 1px var(--color-v)}input[type=text]{border:var(--color-v) solid 1px;padding:.5rem}[type=button],button,select{outline:0;user-select:none;text-align:center;color:var(--color);text-transform:none;display:inline-block;-ms-user-select:none;vertical-align:middle;-moz-user-select:none;-webkit-user-select:none;background-color:transparent}body.ready [type=button],body.ready button,body.ready select{transition:color 150ms ease-in-out,background-color 150ms ease-in-out,border-color 150ms ease-in-out,box-shadow 150ms ease-in-out}select{border:none;padding:.65rem;border-radius:0;text-align:left;-moz-appearance:none;-webkit-appearance:none;background-color:var(--color-v)}[type=button],button{border:0;cursor:pointer;padding:.65rem 2rem}details p{margin-top:0}details summary{color:#333;cursor:pointer;user-select:none;padding:.5rem 0}details summary:focus{outline:0}html[compact] body{padding:0;max-width:unset;overflow-x:hidden}html[compact] body.sticky .header{padding:unset;position:unset}html[compact] .mb-2{margin-bottom:.3rem}html[compact] .header{margin-top:0}html[compact] .card-body{padding:.1rem .5rem}html[compact] .tile{margin-bottom:0}html[compact] .webapps{margin-top:0;margin-bottom:.3rem}.btn{line-height:1.5;user-select:none;text-align:center;font-size:inherit;color:var(--color);display:inline-block;-ms-user-select:none;-moz-user-select:none;vertical-align:middle;padding:.375rem .75rem;-webkit-user-select:none;background-color:transparent;border:1px solid transparent}body.ready .btn{transition:color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out}.btn-outline-primary{color:var(--button-bg-color);border-color:var(--button-bg-color)}.btn-outline-primary:hover{color:var(--button-text-color);border-color:var(--button-bg-color);background-color:var(--button-bg-color)}.loading::before{content:'';width:28px;height:28px;display:block;position:absolute;border-radius:50%;top:calc(50% - 14px);left:calc(50% - 14px);border-right-color:transparent;border:8px solid var(--color-vi);animation:rotate .8s infinite linear}@keyframes rotate{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}.container{margin:0 auto;padding:0 10px;max-width:1240px}.vbox{display:flex}.hbox{display:flex;flex-direction:row}[pack=center]{justify-content:center}[align=center]{align-items:center}.text-muted{color:var(--color-vi)!important}.shadow{box-shadow:0 0 1rem rgba(0,0,0,.15)!important}.hidden{display:none!important}.float-l{float:left}.float-r{float:right}.mb-1{margin-bottom:.1rem}.mb-2{margin-bottom:.5rem}.mb-3{margin-bottom:.7rem}.mb-4{margin-bottom:1.2rem}.prod{display:flex;flex-direction:row;gap:10px;padding-block:20px;justify-content:center}.card{display:flex;position:relative;display:-ms-flexbox;word-wrap:break-word;flex-direction:column;-ms-flex-direction:column;background-clip:border-box;background-color:var(--bg-color)}.card-body{padding:0 10px}.card-title{width:100%;height:84px;padding:0 0 0 15px;border-left:solid 1px var(--color-v)}body.sticky .card-title{height:52px;padding:0 0 0 10px}.card-title h1{margin-top:0}.card-image{padding:0 0 0 .5rem}.card-subtitle{padding:0;line-height:1.2;font-weight:300}.header{top:0;padding:0;z-index:2}body.ready .header{transition:all .3s ease}.header img{width:64px;height:64px;vertical-align:middle}.homepage{margin:auto;cursor:pointer}.header img[alt=Logo]{margin:auto 10px;outline:solid 2px transparent}body.sticky .header img[alt=Logo]{margin:auto 5px}.header img[alt=Homepage]{padding:16px}body.sticky .header img[alt=Homepage]{margin-right:2px}body.sticky .header{position:sticky;padding:0 .3rem}body.sticky .header img{width:32px;height:32px}body.sticky .header img[alt=Homepage]{padding:5px}body.sticky .card-title h1{margin:0;font-weight:300;font-size:1rem;padding:12px 0}body.sticky .card-subtitle{display:none}.description{line-height:1.5;text-align:justify}.description b{font-weight:400;color:var(--href-color)}.description ol{padding:0 25px;margin:0 0 15px 0}.footer img{width:16px;height:16px;vertical-align:middle}.footer ul{margin:0;overflow:hidden;padding:.83rem 0;list-style-type:none;background-size:32px;background-repeat:no-repeat;font-family:var(--font-family);background-position:left center}.footer li a{padding:0;text-align:center;text-decoration:none;display:inline-block;color:var(--href-color);background-color:transparent}body.ready .footer li a{transition:.3s ease all}.footer li:not(:last-child)::before{content:'|';padding:0 .4rem}.footer li a:hover{color:var(--color)}.footer span{padding:5px}.tab{display:flex;overflow:hidden;white-space:nowrap;background-color:var(--color-v)}.tabs-container{flex:1;overflow:hidden;display:inline-block;scroll-snap-type:x mandatory}.tabs-container button{scroll-snap-align:start}.tab button{margin:0;border:0;padding:.8em 1rem;fill:var(--color-ii);color:var(--color-ii)}body.ready .tab button{transition:.3s}.tab button:hover{background-color:var(--color-iv)}.tab button.active{color:var(--bg-color);background-color:var(--color-vi)}.tab-title{font-size:1rem}.tab-content{border-top:none;padding:.5rem .7rem;animation:fadeEffect 1s}.tab-content.active{display:block}.tab-content h3{text-transform:uppercase}.tab-content li span:first-child{color:var(--color-vi);text-transform:capitalize}.tab_arrow{background:var(--tab-arrow-bg)}.app-view-button{border:0;width:100%;margin:auto;cursor:pointer;padding:.3rem;background-color:transparent}.app-view-button button{float:right;padding:.45rem .8rem;background-color:var(--color-v)}#euconsent{bottom:0;z-index:2;padding:0;margin:auto;display:flex;position:sticky;text-align:left;flex-direction:row;padding-left:.7rem;border-top:solid 1px var(--color-v)}#euconsent .consent{flex:1}#euconsent .button{margin-left:.7rem;transition:.3s ease all;border-left:solid 1px var(--color-v)}#euconsent .button:hover{border-left:solid 1px #d0d0d0}#euconsent .button button{padding:.65rem 2rem}@media only screen and (max-width:750px){.container{padding:0 5px}.header{margin-left:0;margin-right:0;padding:.5rem;margin-top:.3rem}}@media only screen and (max-width:600px){.container{padding:0}.header{margin-top:0}#euconsent .button button{padding:1rem 1.5rem}}@media only screen and (max-width:500px){#euconsent .button button{padding:1.5rem}}@media (prefers-color-scheme:dark){:root{--color:#dfdfdf;--color-ii:#ddd;--color-v:#474747;--bg-color:#292929;--color-vi:#a5a5a5;--color-iv:#5a5a5a;--color-vii:#242424}html{color-scheme:dark}body:before{filter:brightness(30%) contrast(130%)}body.sticky .header{background:#1e1e1e}details summary{color:#dfdfdf}.app-view-button button{background-color:#1e1e1e}.header img[alt=Logo]{background-color:#e9e9e9;outline:solid 2px #e9e9e9}.shadow{box-shadow:0 0 1rem rgb(255 255 255 / 5%)!important}.tile[data-id]{background-image:var(--tile-image),linear-gradient(#dbdbdb,#dbdbdb)!important;background-position:top 18px center,top 14px center;background-size:64px 64px,72px 72px}.footer ul{background-image:url('./includes/img/32.png'),linear-gradient(#dbdbdb,#dbdbdb)!important;background-position:left 1px center,left center;background-size:32px 32px,34px 34px}#intensedebate{filter:invert(1) hue-rotate(180deg)}}<span class="html-tag">&lt;/style&gt;</span><span class="html-tag">&lt;style&gt;</span>#right-click{border-spacing:0 10px;border-collapse:separate}#right-click tr:nth-child(2n){background-color:var(--color-v)}#right-click tr td{padding:8px}#right-click tr .button{height:58px}#right-click tr td[id]{padding:0;height:52px;max-width:52px;text-align:center;color:var(--color);border:solid 1px #d98c02;background-color:var(--bg-color)!important}#right-click tr td[id] img{vertical-align:middle}#right-click tr td[id] input{border:0;margin:0;padding:0;width:100%;height:52px;outline:0;text-align:center;color:var(--color);box-sizing:border-box}#right-click .info{padding:10px}#right-click input[type=button]{outline:0;width:191px;padding:7px;cursor:pointer;font-size:12px;text-align:left;overflow:hidden;color:var(--color);text-decoration:none;display:inline-block;vertical-align:middle;font-family:monospace;transition:.3s ease all;background:var(--bg-color);border:solid 1px var(--color-iv)}#right-click input[type=button]:hover{background-color:var(--color-vii)}#right-click .description{padding:15px 5px;background-color:var(--bg-color)}#test-right-click-12 :not(input):not(textarea)::selection{background-color:transparent!important;color:inherit!important}.forbidden{background-color:#ffdfa7}<span class="html-tag">&lt;/style&gt;</span><span class="html-tag">&lt;link <span class="html-attribute-name">rel</span>="<span class="html-attribute-value">icon</span>" <span class="html-attribute-name">type</span>="<span class="html-attribute-value">image/png</span>" <span class="html-attribute-name">href</span>="<a class="html-attribute-value html-resource-link" target="_blank" href="https://webbrowsertools.com/test-right-click/includes/img/64.png" rel="noreferrer noopener">./includes/img/64.png</a>" <span class="html-attribute-name">sizes</span>="<span class="html-attribute-value">64x64</span>"&gt;</span><span class="html-tag">&lt;link <span class="html-attribute-name">rel</span>="<span class="html-attribute-value">icon</span>" <span class="html-attribute-name">type</span>="<span class="html-attribute-value">image/png</span>" <span class="html-attribute-name">href</span>="<a class="html-attribute-value html-resource-link" target="_blank" href="https://webbrowsertools.com/test-right-click/includes/img/48.png" rel="noreferrer noopener">./includes/img/48.png</a>" <span class="html-attribute-name">sizes</span>="<span class="html-attribute-value">48x48</span>"&gt;</span><span class="html-tag">&lt;link <span class="html-attribute-name">rel</span>="<span class="html-attribute-value">icon</span>" <span class="html-attribute-name">type</span>="<span class="html-attribute-value">image/png</span>" <span class="html-attribute-name">href</span>="<a class="html-attribute-value html-resource-link" target="_blank" href="https://webbrowsertools.com/test-right-click/includes/img/32.png" rel="noreferrer noopener">./includes/img/32.png</a>" <span class="html-attribute-name">sizes</span>="<span class="html-attribute-value">32x32</span>"&gt;</span><span class="html-tag">&lt;link <span class="html-attribute-name">rel</span>="<span class="html-attribute-value">icon</span>" <span class="html-attribute-name">type</span>="<span class="html-attribute-value">image/png</span>" <span class="html-attribute-name">href</span>="<a class="html-attribute-value html-resource-link" target="_blank" href="https://webbrowsertools.com/test-right-click/includes/img/16.png" rel="noreferrer noopener">./includes/img/16.png</a>" <span class="html-attribute-name">sizes</span>="<span class="html-attribute-value">16x16</span>"&gt;</span><span class="html-tag">&lt;/head&gt;</span><span class="html-tag">&lt;body <span class="html-attribute-name">class</span>="<span class="html-attribute-value">container</span>"&gt;</span><span class="html-tag">&lt;div <span class="html-attribute-name">class</span>="<span class="html-attribute-value">card shadow mb-2 m-lr header</span>"&gt;</span><span class="html-tag">&lt;table&gt;</span><span class="html-tag">&lt;tbody&gt;</span><span class="html-tag">&lt;tr&gt;</span><span class="html-tag">&lt;td&gt;</span><span class="html-tag">&lt;a <span class="html-attribute-name">target</span>="<span class="html-attribute-value">_blank</span>" <span class="html-attribute-name">href</span>="<a class="html-attribute-value html-external-link" target="_blank" href="https://webbrowsertools.com/" rel="noreferrer noopener">//webbrowsertools.com</a>" <span class="html-attribute-name">title</span>="<span class="html-attribute-value">Homepage</span>"&gt;</span><span class="html-tag">&lt;img <span class="html-attribute-name">class</span>="<span class="html-attribute-value">homepage</span>" <span class="html-attribute-name">alt</span>="<span class="html-attribute-value">Homepage</span>" <span class="html-attribute-name">src</span>="<a class="html-attribute-value html-resource-link" target="_blank" href="https://webbrowsertools.com/shared/img/home.png" rel="noreferrer noopener">../shared/img/home.png</a>"&gt;</span><span class="html-tag">&lt;/a&gt;</span><span class="html-tag">&lt;/td&gt;</span><span class="html-tag">&lt;td <span class="html-attribute-name">class</span>="<span class="html-attribute-value">card-title</span>"&gt;</span><span class="html-tag">&lt;h1 <span class="html-attribute-name">data-i18n</span>="<span class="html-attribute-value">page_header</span>"&gt;</span>Test Right Click<span class="html-tag">&lt;/h1&gt;</span><span class="html-tag">&lt;span <span class="html-attribute-name">class</span>="<span class="html-attribute-value">card-subtitle text-muted</span>" <span class="html-attribute-name">data-i18n</span>="<span class="html-attribute-value">page_description</span>"&gt;</span>See if the right-click action is allowed or not on the restricted elements in your browser.<span class="html-tag">&lt;/span&gt;</span><span class="html-tag">&lt;/td&gt;</span><span class="html-tag">&lt;td&gt;</span><span class="html-tag">&lt;img <span class="html-attribute-name">alt</span>="<span class="html-attribute-value">Logo</span>" <span class="html-attribute-name">src</span>="<a class="html-attribute-value html-resource-link" target="_blank" href="https://webbrowsertools.com/test-right-click/includes/img/128.png" rel="noreferrer noopener">./includes/img/128.png</a>"&gt;</span><span class="html-tag">&lt;/td&gt;</span><span class="html-tag">&lt;/tr&gt;</span><span class="html-tag">&lt;tr&gt;</span><span class="html-tag">&lt;/tr&gt;</span><span class="html-tag">&lt;/tbody&gt;</span><span class="html-tag">&lt;/table&gt;</span><span class="html-tag">&lt;/div&gt;</span><span class="html-tag">&lt;div <span class="html-attribute-name">class</span>="<span class="html-attribute-value">card shadow card-body mb-2 m-lr description</span>"&gt;</span><span class="html-tag">&lt;h3&gt;</span>Advertisements<span class="html-tag">&lt;/h3&gt;</span><span class="html-tag">&lt;div <span class="html-attribute-name">style</span>="<span class="html-attribute-value">text-align:center;margin:5px auto 10px auto;min-height:90px;width:100%</span>"&gt;</span><span class="html-tag">&lt;ins <span class="html-attribute-name">class</span>="<span class="html-attribute-value">adsbygoogle</span>" <span class="html-attribute-name">style</span>="<span class="html-attribute-value">display:block</span>" <span class="html-attribute-name">data-ad-client</span>="<span class="html-attribute-value">ca-pub-3612538213024578</span>" <span class="html-attribute-name">data-ad-slot</span>="<span class="html-attribute-value">8538964175</span>" <span class="html-attribute-name">data-ad-format</span>="<span class="html-attribute-value">auto</span>" <span class="html-attribute-name">data-full-width-responsive</span>="<span class="html-attribute-value">true</span>"&gt;</span><span class="html-tag">&lt;/ins&gt;</span><span class="html-tag">&lt;script&gt;</span>(adsbygoogle=window.adsbygoogle||[]).push({})<span class="html-tag">&lt;/script&gt;</span><span class="html-tag">&lt;script&gt;</span>{const rmtchecks=[];window.mtc=[],0===window.mrktng&amp;&amp;window.usgcp&amp;&amp;rmtchecks.push(new Promise(((resolve,reject)=&gt;{const script=document.createElement("script");script.src="https://www.google.com/recaptcha/api.js?render=6Ldf3X0fAAAAAFhTOmuTO268qGvhe01iVzcbrth0",script.onload=()=&gt;{document.body.classList.add("rcpt"),grecaptcha.ready((async()=&gt;{try{const token=await grecaptcha.execute("6Ldf3X0fAAAAAFhTOmuTO268qGvhe01iVzcbrth0",{action:"submit"});if(token){const j=await fetch("//"+location.hostname+"/recaptcha?token="+token).then((r=&gt;r.json()));if(j&amp;&amp;j.success&amp;&amp;j.score&gt;=.7)return resolve();window.mtc.push("!"),window.ntgrtchcks.push(1001)}throw Error("nb")}catch(e){reject(e)}}))},document.head.appendChild(script)}))),0===window.mrktng&amp;&amp;window.ussvc&amp;&amp;rmtchecks.push(new Promise(((resolve,reject)=&gt;{try{const check=()=&gt;{if(0===speechSynthesis.getVoices().filter((a=&gt;!1===a.localService)).length)return window.mtc.push("×"),window.ntgrtchcks.push(1002),reject(Error("vc"));resolve()};speechSynthesis.getVoices().length?check():speechSynthesis.onvoiceschanged=check,setTimeout(resolve,2e3)}catch(e){resolve()}}))),0===window.mrktng?Promise.all(rmtchecks).then((()=&gt;{const script=document.createElement("script");script.async=!0,script.setAttribute("crossorigin","anonymous"),script.src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3612538213024578",document.body.appendChild(script),document.dispatchEvent(new Event("flush-success"))})).catch((()=&gt;document.dispatchEvent(new Event("flush-error")))).finally((()=&gt;{if(window.mtc.length){let ptt=document.title+(window.ntgrtchcks.length?" ["+window.ntgrtchcks.join(",")+"]":"")+(window.etc?" "+window.etc:"");ptt=ptt.replace("::",window.mtc.join(""));const config={page_title:ptt,dimension1:document.visibilityState[0]+(window.top===window?"t":"f"),dimension2:window.mrktng,dimension3:window.ntgrtchcks.length};window.gtag("config","G-F9H4YEVZB6",config)}})):document.dispatchEvent(new Event("flush-error"))}<span class="html-tag">&lt;/script&gt;</span><span class="html-tag">&lt;/div&gt;</span><span class="html-tag">&lt;/div&gt;</span><span class="html-tag">&lt;div <span class="html-attribute-name">class</span>="<span class="html-attribute-value">card shadow card-body mb-2 m-lr description</span>"&gt;</span><span class="html-tag">&lt;details <span class="html-attribute-name">name</span>="<span class="html-attribute-value">short-description</span>" <span class="html-attribute-name">open</span>&gt;</span><span class="html-tag">&lt;summary&gt;</span>About<span class="html-tag">&lt;/summary&gt;</span><span class="html-tag">&lt;p&gt;</span>Test Right Click is a simple web application to show you whether you can right-click on elements with restrictions on the context menu or not. All the elements with an orange border have some sort of restriction for the right click. If you have a third-party plugin or extension to allow the right-click, you can use this page to see if the extension is working or not.<span class="html-tag">&lt;/p&gt;</span><span class="html-tag">&lt;/details&gt;</span><span class="html-tag">&lt;/div&gt;</span><span class="html-tag">&lt;div <span class="html-attribute-name">class</span>="<span class="html-attribute-value">card shadow card-body mb-2 m-lr</span>"&gt;</span><span class="html-tag">&lt;table <span class="html-attribute-name">id</span>="<span class="html-attribute-value">right-click</span>"&gt;</span><span class="html-tag">&lt;tbody&gt;</span><span class="html-tag">&lt;tr&gt;</span><span class="html-tag">&lt;td <span class="html-attribute-name">colspan</span>="<span class="html-attribute-value">2</span>"&gt;</span><span class="html-tag">&lt;h2&gt;</span>Test if right click is allowed in your browser<span class="html-tag">&lt;/h2&gt;</span><span class="html-tag">&lt;/td&gt;</span><span class="html-tag">&lt;/tr&gt;</span><span class="html-tag">&lt;tr&gt;</span><span class="html-tag">&lt;td <span class="html-attribute-name">colspan</span>="<span class="html-attribute-value">2</span>" <span class="html-attribute-name">class</span>="<span class="html-attribute-value">description</span>"&gt;</span>Right-click on the below areas (orange border) to test whether the right-click is allowed or not on the restricted elements in your browser. Note: all these elements have restrictions for the right click. So, in normal browsing, you won't be able to right-click on them. But, with third-party plugins, right-click may become possible.<span class="html-tag">&lt;/td&gt;</span><span class="html-tag">&lt;/tr&gt;</span><span class="html-tag">&lt;tr&gt;</span><span class="html-tag">&lt;td <span class="html-attribute-name">class</span>="<span class="html-attribute-value">button</span>"&gt;</span>Method 1: right-click on a restricted element (via inline event-blocking)<span class="html-tag">&lt;/td&gt;</span><span class="html-tag">&lt;td <span class="html-attribute-name">id</span>="<span class="html-attribute-value">test-right-click-1</span>" <span class="html-attribute-name">oncontextmenu</span>="<span class="html-attribute-value">return!1</span>" <span class="html-attribute-name">onmousedown</span>="<span class="html-attribute-value">return!1</span>"&gt;</span>Right click here<span class="html-tag">&lt;/td&gt;</span><span class="html-tag">&lt;/tr&gt;</span><span class="html-tag">&lt;tr&gt;</span><span class="html-tag">&lt;td <span class="html-attribute-name">class</span>="<span class="html-attribute-value">info</span>"&gt;</span>Method 2: right-click on the input (via event-blocking)<span class="html-tag">&lt;/td&gt;</span><span class="html-tag">&lt;td <span class="html-attribute-name">id</span>="<span class="html-attribute-value">test-right-click-2</span>"&gt;</span><span class="html-tag">&lt;input <span class="html-attribute-name">value</span>="<span class="html-attribute-value">Right click here</span>"&gt;</span><span class="html-tag">&lt;/td&gt;</span><span class="html-tag">&lt;/tr&gt;</span><span class="html-tag">&lt;tr&gt;</span><span class="html-tag">&lt;td <span class="html-attribute-name">class</span>="<span class="html-attribute-value">info</span>"&gt;</span>Method 3: paste any text into the input field (via paste event)<span class="html-tag">&lt;/td&gt;</span><span class="html-tag">&lt;td <span class="html-attribute-name">id</span>="<span class="html-attribute-value">test-right-click-3</span>"&gt;</span><span class="html-tag">&lt;input <span class="html-attribute-name">placeholder</span>="<span class="html-attribute-value">Paste text here</span>"&gt;</span><span class="html-tag">&lt;/td&gt;</span><span class="html-tag">&lt;/tr&gt;</span><span class="html-tag">&lt;tr&gt;</span><span class="html-tag">&lt;td <span class="html-attribute-name">class</span>="<span class="html-attribute-value">info</span>"&gt;</span>Method 4: right-click on the image (via event blocking)<span class="html-tag">&lt;/td&gt;</span><span class="html-tag">&lt;td <span class="html-attribute-name">id</span>="<span class="html-attribute-value">test-right-click-4</span>"&gt;</span><span class="html-tag">&lt;img <span class="html-attribute-name">width</span>="<span class="html-attribute-value">92</span>" <span class="html-attribute-name">src</span>="<a class="html-attribute-value html-resource-link" target="_blank" href="https://webbrowsertools.com/test-right-click/img.svg" rel="noreferrer noopener">img.svg</a>" <span class="html-attribute-name">alt</span>=""&gt;</span><span class="html-tag">&lt;/td&gt;</span><span class="html-tag">&lt;/tr&gt;</span><span class="html-tag">&lt;tr&gt;</span><span class="html-tag">&lt;td <span class="html-attribute-name">class</span>="<span class="html-attribute-value">info</span>"&gt;</span>Method 5: right-click on the image (via window.alert)<span class="html-tag">&lt;/td&gt;</span><span class="html-tag">&lt;td <span class="html-attribute-name">id</span>="<span class="html-attribute-value">test-right-click-5</span>"&gt;</span><span class="html-tag">&lt;img <span class="html-attribute-name">width</span>="<span class="html-attribute-value">92</span>" <span class="html-attribute-name">src</span>="<a class="html-attribute-value html-resource-link" target="_blank" href="https://webbrowsertools.com/test-right-click/img.svg" rel="noreferrer noopener">img.svg</a>" <span class="html-attribute-name">alt</span>=""&gt;</span><span class="html-tag">&lt;/td&gt;</span><span class="html-tag">&lt;/tr&gt;</span><span class="html-tag">&lt;tr&gt;</span><span class="html-tag">&lt;td <span class="html-attribute-name">class</span>="<span class="html-attribute-value">info</span>"&gt;</span>Method 6: right-click on the image (via pointer-events)<span class="html-tag">&lt;/td&gt;</span><span class="html-tag">&lt;td <span class="html-attribute-name">id</span>="<span class="html-attribute-value">test-right-click-6</span>"&gt;</span><span class="html-tag">&lt;img <span class="html-attribute-name">width</span>="<span class="html-attribute-value">92</span>" <span class="html-attribute-name">src</span>="<a class="html-attribute-value html-resource-link" target="_blank" href="https://webbrowsertools.com/test-right-click/img.svg" rel="noreferrer noopener">img.svg</a>" <span class="html-attribute-name">alt</span>="" <span class="html-attribute-name">style</span>="<span class="html-attribute-value">pointer-events:none</span>"&gt;</span><span class="html-tag">&lt;/td&gt;</span><span class="html-tag">&lt;/tr&gt;</span><span class="html-tag">&lt;tr&gt;</span><span class="html-tag">&lt;td <span class="html-attribute-name">class</span>="<span class="html-attribute-value">info</span>"&gt;</span>Method 7: right-click on the image (via overlap + event blocking)<span class="html-tag">&lt;/td&gt;</span><span class="html-tag">&lt;td <span class="html-attribute-name">id</span>="<span class="html-attribute-value">test-right-click-7</span>"&gt;</span><span class="html-tag">&lt;div <span class="html-attribute-name">style</span>="<span class="html-attribute-value">position:relative</span>"&gt;</span><span class="html-tag">&lt;img <span class="html-attribute-name">width</span>="<span class="html-attribute-value">92</span>" <span class="html-attribute-name">src</span>="<a class="html-attribute-value html-resource-link" target="_blank" href="https://webbrowsertools.com/test-right-click/img.svg" rel="noreferrer noopener">img.svg</a>" <span class="html-attribute-name">alt</span>=""&gt;</span><span class="html-tag">&lt;div <span class="html-attribute-name">class</span>="<span class="html-attribute-value">overlap</span>" <span class="html-attribute-name">style</span>="<span class="html-attribute-value">position:absolute;inset:0</span>"&gt;</span><span class="html-tag">&lt;/div&gt;</span><span class="html-tag">&lt;/div&gt;</span><span class="html-tag">&lt;/td&gt;</span><span class="html-tag">&lt;/tr&gt;</span><span class="html-tag">&lt;tr&gt;</span><span class="html-tag">&lt;td <span class="html-attribute-name">class</span>="<span class="html-attribute-value">info</span>"&gt;</span>Method 8: right-click on the image (via overlap + pointer-events)<span class="html-tag">&lt;/td&gt;</span><span class="html-tag">&lt;td <span class="html-attribute-name">id</span>="<span class="html-attribute-value">test-right-click-8</span>"&gt;</span><span class="html-tag">&lt;div <span class="html-attribute-name">style</span>="<span class="html-attribute-value">position:relative</span>"&gt;</span><span class="html-tag">&lt;img <span class="html-attribute-name">width</span>="<span class="html-attribute-value">92</span>" <span class="html-attribute-name">src</span>="<a class="html-attribute-value html-resource-link" target="_blank" href="https://webbrowsertools.com/test-right-click/img.svg" rel="noreferrer noopener">img.svg</a>" <span class="html-attribute-name">alt</span>="" <span class="html-attribute-name">style</span>="<span class="html-attribute-value">pointer-events:none</span>"&gt;</span><span class="html-tag">&lt;div <span class="html-attribute-name">style</span>="<span class="html-attribute-value">position:absolute;inset:0</span>"&gt;</span><span class="html-tag">&lt;/div&gt;</span><span class="html-tag">&lt;/div&gt;</span><span class="html-tag">&lt;/td&gt;</span><span class="html-tag">&lt;/tr&gt;</span><span class="html-tag">&lt;tr&gt;</span><span class="html-tag">&lt;td <span class="html-attribute-name">class</span>="<span class="html-attribute-value">info</span>"&gt;</span>Method 9: Try to select text (via selectstart event)<span class="html-tag">&lt;/td&gt;</span><span class="html-tag">&lt;td <span class="html-attribute-name">id</span>="<span class="html-attribute-value">test-right-click-9</span>"&gt;</span>Sample text<span class="html-tag">&lt;/td&gt;</span><span class="html-tag">&lt;/tr&gt;</span><span class="html-tag">&lt;tr&gt;</span><span class="html-tag">&lt;td <span class="html-attribute-name">class</span>="<span class="html-attribute-value">info</span>"&gt;</span>Method 10: Try to select text (via removeAllRanges)<span class="html-tag">&lt;/td&gt;</span><span class="html-tag">&lt;td <span class="html-attribute-name">id</span>="<span class="html-attribute-value">test-right-click-10</span>"&gt;</span>Sample text<span class="html-tag">&lt;/td&gt;</span><span class="html-tag">&lt;/tr&gt;</span><span class="html-tag">&lt;tr&gt;</span><span class="html-tag">&lt;td <span class="html-attribute-name">class</span>="<span class="html-attribute-value">info</span>"&gt;</span>Method 11: Try to copy text via Ctrl + C (via event blocking)<span class="html-tag">&lt;/td&gt;</span><span class="html-tag">&lt;td <span class="html-attribute-name">id</span>="<span class="html-attribute-value">test-right-click-11</span>"&gt;</span><span class="html-tag">&lt;input <span class="html-attribute-name">value</span>="<span class="html-attribute-value">Sample text</span>"&gt;</span><span class="html-tag">&lt;/td&gt;</span><span class="html-tag">&lt;/tr&gt;</span><span class="html-tag">&lt;tr&gt;</span><span class="html-tag">&lt;td <span class="html-attribute-name">class</span>="<span class="html-attribute-value">info</span>"&gt;</span>Method 12: Try to select text (via event blocking)<span class="html-tag">&lt;/td&gt;</span><span class="html-tag">&lt;td <span class="html-attribute-name">id</span>="<span class="html-attribute-value">test-right-click-12</span>"&gt;</span><span class="html-tag">&lt;span&gt;</span>Select this text<span class="html-tag">&lt;/span&gt;</span><span class="html-tag">&lt;/td&gt;</span><span class="html-tag">&lt;/tr&gt;</span><span class="html-tag">&lt;tr&gt;</span><span class="html-tag">&lt;td <span class="html-attribute-name">class</span>="<span class="html-attribute-value">info</span>"&gt;</span>Method 13: copy text using right-click context menu (via overlay)<span class="html-tag">&lt;/td&gt;</span><span class="html-tag">&lt;td <span class="html-attribute-name">id</span>="<span class="html-attribute-value">test-right-click-13</span>"&gt;</span><span class="html-tag">&lt;div <span class="html-attribute-name">style</span>="<span class="html-attribute-value">position:relative</span>"&gt;</span><span class="html-tag">&lt;input <span class="html-attribute-name">value</span>="<span class="html-attribute-value">Select this text</span>"&gt;</span><span class="html-tag">&lt;div <span class="html-attribute-name">style</span>="<span class="html-attribute-value">position:absolute;inset:0px</span>"&gt;</span><span class="html-tag">&lt;/div&gt;</span><span class="html-tag">&lt;/div&gt;</span><span class="html-tag">&lt;/td&gt;</span><span class="html-tag">&lt;/tr&gt;</span><span class="html-tag">&lt;tr&gt;</span><span class="html-tag">&lt;td <span class="html-attribute-name">class</span>="<span class="html-attribute-value">info</span>"&gt;</span>Method 14: Pasting longer than two char data is restricted (via input event)<span class="html-tag">&lt;/td&gt;</span><span class="html-tag">&lt;td <span class="html-attribute-name">id</span>="<span class="html-attribute-value">test-right-click-14</span>"&gt;</span><span class="html-tag">&lt;div&gt;</span><span class="html-tag">&lt;input <span class="html-attribute-name">placeholder</span>="<span class="html-attribute-value">Paste here</span>"&gt;</span><span class="html-tag">&lt;/div&gt;</span><span class="html-tag">&lt;/td&gt;</span><span class="html-tag">&lt;/tr&gt;</span><span class="html-tag">&lt;tr&gt;</span><span class="html-tag">&lt;td <span class="html-attribute-name">class</span>="<span class="html-attribute-value">info</span>"&gt;</span>Method 15: right-click on the canvas (via overlap + pointer-events)<span class="html-tag">&lt;/td&gt;</span><span class="html-tag">&lt;td <span class="html-attribute-name">id</span>="<span class="html-attribute-value">test-right-click-8</span>"&gt;</span><span class="html-tag">&lt;div <span class="html-attribute-name">style</span>="<span class="html-attribute-value">position:relative</span>"&gt;</span><span class="html-tag">&lt;canvas <span class="html-attribute-name">width</span>="<span class="html-attribute-value">92</span>" <span class="html-attribute-name">height</span>="<span class="html-attribute-value">92</span>" <span class="html-attribute-name">alt</span>="" <span class="html-attribute-name">style</span>="<span class="html-attribute-value">pointer-events:none</span>" <span class="html-attribute-name">id</span>="<span class="html-attribute-value">asdsdwe</span>"&gt;</span><span class="html-tag">&lt;div <span class="html-attribute-name">style</span>="<span class="html-attribute-value">position:absolute;inset:0</span>"&gt;</span><span class="html-tag">&lt;/div&gt;</span><span class="html-tag">&lt;/canvas&gt;</span><span class="html-tag">&lt;/div&gt;</span><span class="html-tag">&lt;script&gt;</span>const canvas=document.getElementById("asdsdwe"),ctx=canvas.getContext("2d"),img=new Image;img.src="img.svg",img.onload=function(){ctx.drawImage(img,0,0,canvas.width,canvas.height)}<span class="html-tag">&lt;/script&gt;</span><span class="html-tag">&lt;/td&gt;</span><span class="html-tag">&lt;/tr&gt;</span><span class="html-tag">&lt;tr&gt;</span><span class="html-tag">&lt;td <span class="html-attribute-name">class</span>="<span class="html-attribute-value">info</span>"&gt;</span>Method 16: right-click on an element with background image<span class="html-tag">&lt;/td&gt;</span><span class="html-tag">&lt;td <span class="html-attribute-name">id</span>="<span class="html-attribute-value">test-right-click-5</span>" <span class="html-attribute-name">style</span>="<span class="html-attribute-value">background:#fff url(img.svg) no-repeat center;height:95px</span>"&gt;</span><span class="html-tag">&lt;/td&gt;</span><span class="html-tag">&lt;/tr&gt;</span><span class="html-tag">&lt;/tbody&gt;</span><span class="html-tag">&lt;/table&gt;</span><span class="html-tag">&lt;/div&gt;</span><span class="html-tag">&lt;div <span class="html-attribute-name">class</span>="<span class="html-attribute-value">card shadow card-body mb-2 m-lr description</span>"&gt;</span><span class="html-tag">&lt;details <span class="html-attribute-name">name</span>="<span class="html-attribute-value">description</span>" <span class="html-attribute-name">open</span>&gt;</span><span class="html-tag">&lt;summary&gt;</span>Description<span class="html-tag">&lt;/summary&gt;</span><span class="html-tag">&lt;h2&gt;</span>What is Test Right Click?<span class="html-tag">&lt;/h2&gt;</span><span class="html-tag">&lt;p&gt;</span>Test Right Click is a web app to tell you whether the right-click action is allowed on restricted elements or not. Some HTML elements may block the right-click action, if you have third-party plugins or extensions (i.e. Allow Right Click) you may be able to overcome this restriction. This web app is designed to tell you whether the right-click action is blocked or not. Simply right-click on designated elements (with an orange border) and see if it is blocked or allowed. Do this operation once with and once without the third-part plugin to be able to compare.<span class="html-tag">&lt;/p&gt;</span><span class="html-tag">&lt;h2&gt;</span>What test methods are available here?<span class="html-tag">&lt;/h2&gt;</span><span class="html-tag">&lt;p&gt;</span>Currently, there are 8 methods available to test here. In normal browsing and without any third-party plugins or extensions, you won't be able to right-click on these elements. Please activate the plugin or extension, and reload this page. Then, try to right-click on these elements again and see if you can perform the right-click action or not. Each method has a description to show the blocking rule for the right-click. For example, method #1 has an inline script to block the context-menu event.<span class="html-tag">&lt;/p&gt;</span><span class="html-tag">&lt;h2&gt;</span>Related Blog Posts<span class="html-tag">&lt;/h2&gt;</span><span class="html-tag">&lt;ol&gt;</span><span class="html-tag">&lt;li&gt;</span><span class="html-tag">&lt;a <span class="html-attribute-name">target</span>="<span class="html-attribute-value">_blank</span>" <span class="html-attribute-name">href</span>="<a class="html-attribute-value html-external-link" target="_blank" href="https://webbrowsertools.com/blog/enable-privacy-extensions-for-firefox.html" rel="noreferrer noopener">//webbrowsertools.com/blog/enable-privacy-extensions-for-firefox.html</a>"&gt;</span><span class="html-tag">&lt;b&gt;</span>How You Can Enable Privacy Extensions and Content Blocking Filters for Firefox<span class="html-tag">&lt;/b&gt;</span><span class="html-tag">&lt;/a&gt;</span>: Mozilla had rolled out its new privacy features for their desktop version. Some of the features include enhanced tracker protection, password manager, content blocking, and optional security extensions...<span class="html-tag">&lt;/li&gt;</span><span class="html-tag">&lt;li&gt;</span><span class="html-tag">&lt;a <span class="html-attribute-name">target</span>="<span class="html-attribute-value">_blank</span>" <span class="html-attribute-name">href</span>="<a class="html-attribute-value html-external-link" target="_blank" href="https://webbrowsertools.com/blog/test-browser-crypto-jacking-protection.html" rel="noreferrer noopener">//webbrowsertools.com/blog/test-browser-crypto-jacking-protection.html</a>"&gt;</span><span class="html-tag">&lt;b&gt;</span>Study Browser's Crypto Jacking Protection<span class="html-tag">&lt;/b&gt;</span><span class="html-tag">&lt;/a&gt;</span>: One of the newest threats on the internet is Crypto Jacking. It actually refers to the websites which abuse computing resources of visitors in order to mine cryptocurrency...<span class="html-tag">&lt;/li&gt;</span><span class="html-tag">&lt;/ol&gt;</span><span class="html-tag">&lt;/details&gt;</span><span class="html-tag">&lt;/div&gt;</span><span class="html-tag">&lt;div <span class="html-attribute-name">class</span>="<span class="html-attribute-value">card shadow card-body mb-2 m-lr</span>"&gt;</span><span class="html-tag">&lt;details <span class="html-attribute-name">open</span>&gt;</span><span class="html-tag">&lt;summary&gt;</span>Comments and feedback<span class="html-tag">&lt;/summary&gt;</span><span class="html-tag">&lt;div <span class="html-attribute-name">id</span>="<span class="html-attribute-value">intensedebate</span>" <span class="html-attribute-name">class</span>="<span class="html-attribute-value">spinner</span>"&gt;</span><span class="html-tag">&lt;iframe <span class="html-attribute-name">width</span>="<span class="html-attribute-value">100%</span>" <span class="html-attribute-name">frameborder</span>="<span class="html-attribute-value">0</span>" <span class="html-attribute-name">style</span>="<span class="html-attribute-value">opacity:0</span>"&gt;</span><span class="html-tag">&lt;/iframe&gt;</span><span class="html-tag">&lt;/div&gt;</span><span class="html-tag">&lt;/details&gt;</span><span class="html-tag">&lt;script&gt;</span>const forum=()=&gt;{console.log("loading forum");const intensedebate=document.getElementById("intensedebate");intensedebate.classList.add("loading");const iframe=document.querySelector("#intensedebate iframe");iframe.onload=()=&gt;{const win=iframe.contentWindow,doc=iframe.contentDocument;doc.title=document.title,win.idcomments_acct="63cc423aa2909f1d89cb9776a1714114",win.idcomments_post_url=location.origin+location.pathname,win.idcomments_post_id=win.idcomments_post_url.split("?")[0].split("/").pop().replace(".html","");const span=document.createElement("span");span.id="IDCommentsPostTitle",span.style.display="none";const script=document.createElement("script");script.src="//www.intensedebate.com/js/genericCommentWrapperV2.js",script.onload=()=&gt;{observe(),setTimeout((()=&gt;{intensedebate.classList.remove("loading"),iframe.style.opacity=1}),100)},doc.body.appendChild(span),doc.body.appendChild(script);const style=document.createElement("style");style.textContent="body {overflow: hidden; -webkit-font-smoothing: antialiased;-moz-osx-font-smoothing: grayscale;color: #515151;} a {color: #0053f9}",doc.body.appendChild(style);const observe=()=&gt;{const e=doc.getElementById("idc-container-parent");e&amp;&amp;(iframe.style.height=e.scrollHeight+20+"px")};"undefined"!=typeof ResizeObserver?new ResizeObserver(observe).observe(doc.body):(win.addEventListener("resize",observe),new MutationObserver(observe).observe(doc.body,{subtree:!0,childList:!0}))},iframe.contentDocument&amp;&amp;iframe.onload()};if("undefined"!=typeof IntersectionObserver){const observer=new IntersectionObserver((entries=&gt;{entries.forEach((function(entry){entry.intersectionRatio&gt;0&amp;&amp;(forum(),observer.disconnect())}))}),{});observer.observe(document.getElementById("intensedebate"))}else forum()<span class="html-tag">&lt;/script&gt;</span><span class="html-tag">&lt;/div&gt;</span><span class="html-tag">&lt;div <span class="html-attribute-name">class</span>="<span class="html-attribute-value">card shadow card-body m-lr footer</span>"&gt;</span><span class="html-tag">&lt;ul <span class="html-attribute-name">style</span>="<span class="html-attribute-value">background-image:url('./includes/img/32.png')</span>"&gt;</span><span class="html-tag">&lt;li <span class="html-attribute-name">class</span>="<span class="html-attribute-value">float-r</span>"&gt;</span><span class="html-tag">&lt;a <span class="html-attribute-name">target</span>="<span class="html-attribute-value">_blank</span>" <span class="html-attribute-name">href</span>="<a class="html-attribute-value html-external-link" target="_blank" href="https://webbrowsertools.com/sitemap.xml" rel="noreferrer noopener">//webbrowsertools.com/sitemap.xml</a>"&gt;</span>Site Map<span class="html-tag">&lt;/a&gt;</span><span class="html-tag">&lt;/li&gt;</span><span class="html-tag">&lt;li <span class="html-attribute-name">class</span>="<span class="html-attribute-value">float-r</span>"&gt;</span><span class="html-tag">&lt;a <span class="html-attribute-name">target</span>="<span class="html-attribute-value">_blank</span>" <span class="html-attribute-name">href</span>="<a class="html-attribute-value html-external-link" target="_blank" href="mailto:abuse@webbrowsertools.com?subject=report-abuse" rel="noreferrer noopener">mailto:abuse@webbrowsertools.com?subject=report-abuse</a>"&gt;</span>Report Abuse<span class="html-tag">&lt;/a&gt;</span><span class="html-tag">&lt;/li&gt;</span><span class="html-tag">&lt;li <span class="html-attribute-name">class</span>="<span class="html-attribute-value">float-r</span>"&gt;</span><span class="html-tag">&lt;a <span class="html-attribute-name">target</span>="<span class="html-attribute-value">_blank</span>" <span class="html-attribute-name">href</span>="<a class="html-attribute-value html-external-link" target="_blank" href="https://webbrowsertools.com/privacy.html" rel="noreferrer noopener">//webbrowsertools.com/privacy.html</a>"&gt;</span>Privacy Policy<span class="html-tag">&lt;/a&gt;</span><span class="html-tag">&lt;/li&gt;</span><span class="html-tag">&lt;li <span class="html-attribute-name">class</span>="<span class="html-attribute-value">float-r</span>"&gt;</span><span class="html-tag">&lt;a <span class="html-attribute-name">target</span>="<span class="html-attribute-value">_blank</span>" <span class="html-attribute-name">href</span>="<a class="html-attribute-value html-external-link" target="_blank" href="https://webbrowsertools.com/terms.html" rel="noreferrer noopener">//webbrowsertools.com/terms.html</a>"&gt;</span>Terms of Use<span class="html-tag">&lt;/a&gt;</span><span class="html-tag">&lt;/li&gt;</span><span class="html-tag">&lt;li <span class="html-attribute-name">class</span>="<span class="html-attribute-value">float-r</span>"&gt;</span>Copyright 2026 All rights reserved<span class="html-tag">&lt;/li&gt;</span><span class="html-tag">&lt;/ul&gt;</span><span class="html-tag">&lt;/div&gt;</span><span class="html-tag">&lt;iframe <span class="html-attribute-name">id</span>="<span class="html-attribute-value">normalFrame</span>" <span class="html-attribute-name">title</span>="<span class="html-attribute-value">Clone Data in Frame</span>" <span class="html-attribute-name">class</span>="<span class="html-attribute-value">hidden</span>"&gt;</span><span class="html-tag">&lt;/iframe&gt;</span><span class="html-tag">&lt;iframe <span class="html-attribute-name">id</span>="<span class="html-attribute-value">sandFrame</span>" <span class="html-attribute-name">title</span>="<span class="html-attribute-value">Clone Data in Frame</span>" <span class="html-attribute-name">sandbox</span>="<span class="html-attribute-value">allow-same-origin allow-scripts</span>" <span class="html-attribute-name">class</span>="<span class="html-attribute-value">hidden</span>"&gt;</span><span class="html-tag">&lt;/iframe&gt;</span><span class="html-tag">&lt;div <span class="html-attribute-name">id</span>="<span class="html-attribute-value">euconsent</span>" <span class="html-attribute-name">class</span>="<span class="html-attribute-value">card shadow card-body container hidden</span>" <span class="html-attribute-name">align</span>="<span class="html-attribute-value">center</span>"&gt;</span><span class="html-tag">&lt;div <span class="html-attribute-name">class</span>="<span class="html-attribute-value">consent</span>"&gt;</span><span class="html-tag">&lt;p&gt;</span>We use cookies to enhance your experience. By continuing to visit this site you agree to our use of cookies. <span class="html-tag">&lt;a <span class="html-attribute-name">target</span>="<span class="html-attribute-value">_blank</span>" <span class="html-attribute-name">href</span>="<a class="html-attribute-value html-external-link" target="_blank" href="https://webbrowsertools.com/privacy.html" rel="noreferrer noopener">//webbrowsertools.com/privacy.html</a>"&gt;</span>Learn more<span class="html-tag">&lt;/a&gt;</span><span class="html-tag">&lt;/p&gt;</span><span class="html-tag">&lt;/div&gt;</span><span class="html-tag">&lt;div <span class="html-attribute-name">class</span>="<span class="html-attribute-value">button</span>"&gt;</span><span class="html-tag">&lt;button&gt;</span>Got it!<span class="html-tag">&lt;/button&gt;</span><span class="html-tag">&lt;/div&gt;</span><span class="html-tag">&lt;/div&gt;</span><span class="html-tag">&lt;script&gt;</span>if(-1===document.cookie.indexOf("webbrowsertools-euconsent")){const euconsent=document.getElementById("euconsent");euconsent.classList.remove("hidden"),euconsent.querySelector("button").onclick=()=&gt;{euconsent.classList.add("hidden");const date=new Date;date.setDate(date.getDate()+365);const arr=["webbrowsertools-euconsent=","expires="+date.toUTCString(),"path=/","domain="+document.domain];document.cookie=arr.join(";")}}<span class="html-tag">&lt;/script&gt;</span><span class="html-tag">&lt;script&gt;</span>window.locales={page_header:{message:"Test Right Click"},page_description:{message:"See if the right-click action is allowed or not on the restricted elements in your browser."}}<span class="html-tag">&lt;/script&gt;</span><span class="html-tag">&lt;script&gt;</span>"use strict";window.locales=Object.assign({page_header:{message:"template for web-app"},page_description:{message:"description for web-app"},sticky_header:{message:"Sticky Header"}},window.locales||{}),[...document.querySelectorAll("[data-i18n]")].forEach((e=&gt;{e.dataset.i18nvalue?e.setAttribute(e.dataset.i18nvalue,window.locales[e.dataset.i18n].message):e.textContent=window.locales[e.dataset.i18n]?window.locales[e.dataset.i18n].message:""})),window.getLocale=key=&gt;window.locales[key].message<span class="html-tag">&lt;/script&gt;</span><span class="html-tag">&lt;script&gt;</span>"use strict";window.addEventListener("scroll",(()=&gt;{const{scrollTop:scrollTop}=document.documentElement;scrollTop&gt;120&amp;&amp;document.body.classList.add("sticky"),scrollTop&lt;60&amp;&amp;document.body.classList.remove("sticky")}))<span class="html-tag">&lt;/script&gt;</span><span class="html-tag">&lt;script&gt;</span>"use strict";new URL(document.location).searchParams.has("compact")&amp;&amp;(document.documentElement.setAttribute("compact",""),[...document.querySelectorAll("details")].map((e=&gt;{-1===e.parentNode.className.indexOf("webapps")&amp;&amp;e.removeAttribute("open")})))<span class="html-tag">&lt;/script&gt;</span><span class="html-tag">&lt;script&gt;</span>"use strict";var config={stop:function(e){e.preventDefault(),e.stopPropagation(),e.stopImmediatePropagation()},remove:function(){window.getSelection().removeAllRanges()},test:{right:{click:{action:function(){document.getElementById("test-right-click-2").querySelector("input").addEventListener("contextmenu",config.stop),document.getElementById("test-right-click-3").querySelector("input").addEventListener("paste",config.stop),document.getElementById("test-right-click-4").querySelector("img").addEventListener("contextmenu",config.stop),document.getElementById("test-right-click-7").querySelector(".overlap").addEventListener("contextmenu",config.stop),document.getElementById("test-right-click-5").querySelector("img").addEventListener("contextmenu",(function(e){return window.alert("Context-menu is not allowed!"),config.stop(e),e.returnValue=!0}),!0),document.getElementById("test-right-click-9").addEventListener("selectstart",config.stop,!0),document.getElementById("test-right-click-10").addEventListener("mouseup",config.remove),document.getElementById("test-right-click-10").addEventListener("keyup",config.remove),document.getElementById("test-right-click-10").addEventListener("contextmenu",config.remove),document.getElementById("test-right-click-10").addEventListener("touchend",config.remove),document.getElementById("test-right-click-11").onkeydown=function(e){if(console.log(e),e.ctrlKey||e.shiftKey||e.altKey||e.metaKey)return e.returnValue=!1,!1};{let mggfttt="";const revertMessage=target=&gt;{target.classList.add("forbidden"),setTimeout((()=&gt;target.classList.remove("forbidden")),300),requestAnimationFrame((()=&gt;{target.value=mggfttt}))};document.getElementById("test-right-click-14").addEventListener("input",(e=&gt;{if(e.target.value.length-mggfttt.length&gt;2)return revertMessage(e.target);mggfttt=e.target.value}))}}}}}};window.addEventListener("load",(function(){config.test.right.click.action()}))<span class="html-tag">&lt;/script&gt;</span><span class="html-tag">&lt;script <span class="html-attribute-name">async</span> <span class="html-attribute-name">src</span>="<a class="html-attribute-value html-resource-link" target="_blank" href="https://www.googletagmanager.com/gtag/js?id=G-F9H4YEVZB6" rel="noreferrer noopener">//www.googletagmanager.com/gtag/js?id=G-F9H4YEVZB6</a>"&gt;</span><span class="html-tag">&lt;/script&gt;</span><span class="html-tag">&lt;script&gt;</span>{window.dataLayer=window.dataLayer||[],window.gtag=function(){dataLayer.push(arguments)},window.gtag("js",new Date);let ptt=document.title+(window.ntgrtchcks.length?" ["+window.ntgrtchcks.join(",")+"]":"")+(window.etc?" "+window.etc:"");window.mtc&amp;&amp;window.mtc.length&amp;&amp;(ptt=ptt.replace("::",window.mtc.join("")));const config={page_title:ptt,dimension1:document.visibilityState[0]+(window.top===window?"t":"f"),dimension2:window.mrktng,dimension3:window.ntgrtchcks.length};window.gtag("config","G-F9H4YEVZB6",config)}<span class="html-tag">&lt;/script&gt;</span><span class="html-tag">&lt;script <span class="html-attribute-name">type</span>="<span class="html-attribute-value">module</span>" <span class="html-attribute-name">src</span>="<a class="html-attribute-value html-resource-link" target="_blank" href="https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495" rel="noreferrer noopener">https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495</a>" <span class="html-attribute-name">integrity</span>="<span class="html-attribute-value">sha512-iIg7k2xntmwu6/uSb5tpc/hySgZc4eoL31yB29W6tJFo2akwjPWcEqnCEdJvGexCL0KEQwVYv5BlowfhVz26hg==</span>" <span class="html-attribute-name">data-cf-beacon</span>='<span class="html-attribute-value">{"version":"2024.11.0","token":"955d2a1d5bd547dd9c5435515224864d","r":1,"spa":2}</span>' <span class="html-attribute-name">crossorigin</span>="<span class="html-attribute-value">anonymous</span>"&gt;</span><span class="html-tag">&lt;/script&gt;</span></td></tr><tr><td class="line-number" value="2"></td><td class="line-content"><span class="html-tag">&lt;/body&gt;</span><span class="html-tag">&lt;/html&gt;</span></td></tr></tbody></table></body></html>
+        .tool-banner h3 {
+            color: #f0f6fc;
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .tool-banner p {
+            color: #8b949e;
+            font-size: 1.4rem;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+
+        .controls-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.2rem;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .search-box {
+            position: relative;
+            flex-grow: 1;
+            max-width: 380px;
+        }
+
+        .search-box input {
+            width: 100%;
+            background: #0d1117;
+            color: #c9d1d9;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 0.8rem 1.2rem 0.8rem 3.6rem;
+            font-size: 1.4rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .search-box input:focus {
+            border-color: #58a6ff;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 1.2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #8b949e;
+            font-size: 1.6rem;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            background: #0d1117;
+            color: #8b949e;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 0.6rem 1.2rem;
+            font-size: 1.3rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-btn:hover {
+            color: #f0f6fc;
+            border-color: #8b949e;
+        }
+
+        .filter-btn.active {
+            background: #21262d;
+            color: #f0f6fc;
+            border-color: #58a6ff;
+        }
+
+        /* Test Card Grid */
+        .test-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 2rem;
+        }
+
+        .test-card {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .test-card:hover {
+            border-color: #484f58;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .test-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .test-card-title {
+            font-size: 1.6rem;
+            color: #f0f6fc;
+            font-weight: 600;
+            line-height: 1.3;
+        }
+
+        .method-tag {
+            background: rgba(88, 166, 255, 0.1);
+            color: #58a6ff;
+            border: 1px solid rgba(88, 166, 255, 0.3);
+            border-radius: 12px;
+            padding: 0.2rem 0.8rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .feedback-badge {
+            display: inline-block;
+            background: rgba(247, 129, 102, 0.15);
+            color: #f78166;
+            border: 1px solid rgba(247, 129, 102, 0.4);
+            border-radius: 4px;
+            padding: 0.2rem 0.6rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            opacity: 0;
+            transform: translateY(-4px);
+            transition: opacity 0.2s, transform 0.2s;
+        }
+
+        .feedback-badge.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Orange-bordered test box as specified in tool rules */
+        .test-target-box {
+            border: 2px dashed #f78166;
+            background: #0d1117;
+            border-radius: 6px;
+            padding: 1.6rem;
+            margin: 1rem 0;
+            text-align: center;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: text;
+            -webkit-user-select: text;
+            position: relative;
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+
+        .test-target-box.forbidden {
+            background-color: rgba(247, 129, 102, 0.2) !important;
+            border-color: #ff4d4d !important;
+        }
+
+        .test-target-box input {
+            width: 100%;
+            background: #161b22;
+            color: #f0f6fc;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 0.8rem 1rem;
+            font-size: 1.3rem;
+            text-align: center;
+            outline: none;
+        }
+
+        .test-target-box input:focus {
+            border-color: #58a6ff;
+        }
+
+        .test-target-box img, .test-target-box canvas {
+            display: block;
+            margin: 0 auto;
+            max-width: 100%;
+            height: auto;
+        }
+
+        .test-card-desc {
+            color: #8b949e;
+            font-size: 1.3rem;
+            line-height: 1.5;
+            margin-top: 1rem;
+            border-top: 1px solid #21262d;
+            padding-top: 1rem;
+        }
+
+        /* Sidebar stats card */
+        .tool-stats-card {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+
+        .tool-stats-card h4 {
+            color: #f0f6fc;
+            font-size: 1.6rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.8rem 0;
+            border-bottom: 1px solid #21262d;
+            font-size: 1.3rem;
+        }
+
+        .stat-item:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label { color: #8b949e; }
+        .stat-value { color: #58a6ff; font-weight: 600; }
+
+        /* Custom selection hiding rule for Method 12 */
+        #test-right-click-12 :not(input):not(textarea)::selection {
+            background-color: transparent !important;
+            color: inherit !important;
+        }
+        #test-right-click-12 :not(input):not(textarea)::-moz-selection {
+            background-color: transparent !important;
+            color: inherit !important;
+        }
+
+        @media (max-width: 768px) {
+            .test-cards-grid {
+                grid-template-columns: 1fr;
+            }
+            .controls-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .search-box {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body id="top">
+
+    <header class="site-header">
+        <nav class="nav-content">
+            <div class="nav-brand">
+                <a href="../index.html">
+                    <span id="header-avatar" class="nav-logo"></span>
+                    <span class="user-name-js">Loading...</span>
+                </a>
+            </div>
+            <button class="menu-toggle" id="menuToggle">
+                <i class="im im-menu"></i>
+            </button>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="../index.html"><i class="im im-home"></i> Overview</a></li>
+                <li><a href="../about.html"><i class="im im-user-male"></i> About</a></li>
+                <li><a href="allow-copy-paste.html" class="active"><i class="im im-tools"></i> Tools</a></li>
+                <li><a href="../privacy.html"><i class="im im-shield"></i> Privacy</a></li>
+                <li><a href="../contact.html"><i class="im im-paperplane"></i> Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="container">
+
+        <!-- Sidebar Info -->
+        <aside class="sidebar profile-sidebar">
+            <div id="profile-avatar" class="profile-avatar"></div>
+            <h1 id="profile-name" class="profile-name user-name-js">Loading...</h1>
+            <span id="profile-handle" class="profile-handle">Software Developer</span>
+
+            <p id="profile-bio" class="profile-bio"></p>
+
+            <div class="tool-stats-card">
+                <h4><i class="im im-shield" style="color: #58a6ff;"></i> Tool Diagnostics</h4>
+                <div class="stat-item">
+                    <span class="stat-label">Total Test Scenarios</span>
+                    <span class="stat-value">16</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Context Menu Tests</span>
+                    <span class="stat-value">8</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Copy & Paste Tests</span>
+                    <span class="stat-value">3</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Selection Tests</span>
+                    <span class="stat-value">4</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Canvas & Media Tests</span>
+                    <span class="stat-value">1</span>
+                </div>
+            </div>
+
+            <ul id="profile-metadata" class="profile-metadata" style="margin-top: 2rem;"></ul>
+        </aside>
+
+        <!-- Main Content Section -->
+        <section class="main-content">
+            <h2 class="section-title">Allow Copy-Paste & Right-Click Test Suite</h2>
+
+            <!-- Top Banner Card -->
+            <div class="tool-banner">
+                <h3><i class="im im-check-mark" style="color: #3fb950;"></i> Browser Security & Extension Verification</h3>
+                <p>
+                    Websites often employ techniques to block right-clicking, text highlighting, clipboard copying, or pasting.
+                    Use the <strong>16 test scenarios</strong> below to verify if your browser extensions (e.g., <em>Allow Right Click</em> or <em>Enable Copy</em>) can bypass these restrictions.
+                    Elements marked with an <strong>orange dashed border</strong> have active restrictions applied.
+                </p>
+
+                <div class="controls-row">
+                    <div class="search-box">
+                        <i class="im im-magnifier"></i>
+                        <input type="text" id="search-tests" placeholder="Search test scenarios..." aria-label="Search test scenarios">
+                    </div>
+
+                    <div class="filter-tabs">
+                        <button class="filter-btn active" data-category="all">All (16)</button>
+                        <button class="filter-btn" data-category="context">Context Menu</button>
+                        <button class="filter-btn" data-category="clipboard">Copy & Paste</button>
+                        <button class="filter-btn" data-category="selection">Text Selection</button>
+                        <button class="filter-btn" data-category="media">Media & Canvas</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grid of 16 Test Cards -->
+            <div class="test-cards-grid" id="test-grid">
+
+                <!-- Method 1 -->
+                <div class="test-card" data-category="context">
+                    <div>
+                        <div class="test-card-header">
+                            <div>
+                                <span class="method-tag">Method 1</span>
+                                <h4 class="test-card-title" style="margin-top: 0.5rem;">Inline Handler Blocking</h4>
+                            </div>
+                            <span class="feedback-badge">Blocked</span>
+                        </div>
+                        <div class="test-target-box" id="test-right-click-1" oncontextmenu="return false;" onmousedown="return false;">
+                            <span style="color: #c9d1d9; font-weight: 500;">Right-click anywhere inside this target</span>
+                        </div>
+                    </div>
+                    <p class="test-card-desc">
+                        Blocks right-click context menu using inline HTML event attributes: <code>oncontextmenu="return false;" onmousedown="return false;"</code>.
+                    </p>
+                </div>
+
+                <!-- Method 2 -->
+                <div class="test-card" data-category="context">
+                    <div>
+                        <div class="test-card-header">
+                            <div>
+                                <span class="method-tag">Method 2</span>
+                                <h4 class="test-card-title" style="margin-top: 0.5rem;">Input Context-Menu Listener</h4>
+                            </div>
+                            <span class="feedback-badge">Blocked</span>
+                        </div>
+                        <div class="test-target-box" id="test-right-click-2">
+                            <input type="text" value="Right-click inside this input box" aria-label="Method 2 test input" readonly>
+                        </div>
+                    </div>
+                    <p class="test-card-desc">
+                        Prevents context menu on an <code>&lt;input&gt;</code> element via JavaScript <code>addEventListener("contextmenu")</code>.
+                    </p>
+                </div>
+
+                <!-- Method 3 -->
+                <div class="test-card" data-category="clipboard">
+                    <div>
+                        <div class="test-card-header">
+                            <div>
+                                <span class="method-tag">Method 3</span>
+                                <h4 class="test-card-title" style="margin-top: 0.5rem;">Input Paste Event Blocking</h4>
+                            </div>
+                            <span class="feedback-badge">Blocked</span>
+                        </div>
+                        <div class="test-target-box" id="test-right-click-3">
+                            <input type="text" placeholder="Try pasting text here..." aria-label="Method 3 test input">
+                        </div>
+                    </div>
+                    <p class="test-card-desc">
+                        Prevents pasting text into the input field using a JavaScript <code>paste</code> event listener.
+                    </p>
+                </div>
+
+                <!-- Method 4 -->
+                <div class="test-card" data-category="context">
+                    <div>
+                        <div class="test-card-header">
+                            <div>
+                                <span class="method-tag">Method 4</span>
+                                <h4 class="test-card-title" style="margin-top: 0.5rem;">Image Right-Click Listener</h4>
+                            </div>
+                            <span class="feedback-badge">Blocked</span>
+                        </div>
+                        <div class="test-target-box" id="test-right-click-4">
+                            <img src="img.svg" width="92" height="92" alt="Protected Graphic">
+                        </div>
+                    </div>
+                    <p class="test-card-desc">
+                        Blocks right-click on an <code>&lt;img&gt;</code> element via JS <code>contextmenu</code> listener.
+                    </p>
+                </div>
+
+                <!-- Method 5 -->
+                <div class="test-card" data-category="context">
+                    <div>
+                        <div class="test-card-header">
+                            <div>
+                                <span class="method-tag">Method 5</span>
+                                <h4 class="test-card-title" style="margin-top: 0.5rem;">Image Alert Popup Blocking</h4>
+                            </div>
+                            <span class="feedback-badge">Alerted</span>
+                        </div>
+                        <div class="test-target-box" id="test-right-click-5">
+                            <img src="img.svg" width="92" height="92" alt="Protected Graphic">
+                        </div>
+                    </div>
+                    <p class="test-card-desc">
+                        Triggers a <code>window.alert()</code> modal upon right-clicking an image and cancels the event.
+                    </p>
+                </div>
+
+                <!-- Method 6 -->
+                <div class="test-card" data-category="context">
+                    <div>
+                        <div class="test-card-header">
+                            <div>
+                                <span class="method-tag">Method 6</span>
+                                <h4 class="test-card-title" style="margin-top: 0.5rem;">Image CSS Pointer Events</h4>
+                            </div>
+                            <span class="feedback-badge">CSS Disabled</span>
+                        </div>
+                        <div class="test-target-box" id="test-right-click-6">
+                            <img src="img.svg" width="92" height="92" alt="Protected Graphic" style="pointer-events: none;">
+                        </div>
+                    </div>
+                    <p class="test-card-desc">
+                        Disables mouse pointer events directly on the image element using CSS <code>pointer-events: none</code>.
+                    </p>
+                </div>
+
+                <!-- Method 7 -->
+                <div class="test-card" data-category="context">
+                    <div>
+                        <div class="test-card-header">
+                            <div>
+                                <span class="method-tag">Method 7</span>
+                                <h4 class="test-card-title" style="margin-top: 0.5rem;">Overlay Mask + JS Blocking</h4>
+                            </div>
+                            <span class="feedback-badge">Masked</span>
+                        </div>
+                        <div class="test-target-box" id="test-right-click-7">
+                            <div style="position: relative; display: inline-block;">
+                                <img src="img.svg" width="92" height="92" alt="Protected Graphic">
+                                <div class="overlap" style="position: absolute; inset: 0;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="test-card-desc">
+                        Places a transparent <code>&lt;div&gt;</code> overlay over the image that intercepts and cancels right-click events.
+                    </p>
+                </div>
+
+                <!-- Method 8 -->
+                <div class="test-card" data-category="context">
+                    <div>
+                        <div class="test-card-header">
+                            <div>
+                                <span class="method-tag">Method 8</span>
+                                <h4 class="test-card-title" style="margin-top: 0.5rem;">Overlay Mask + CSS Pointer</h4>
+                            </div>
+                            <span class="feedback-badge">Masked</span>
+                        </div>
+                        <div class="test-target-box" id="test-right-click-8">
+                            <div style="position: relative; display: inline-block;">
+                                <img src="img.svg" width="92" height="92" alt="Protected Graphic" style="pointer-events: none;">
+                                <div style="position: absolute; inset: 0;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="test-card-desc">
+                        Combines a transparent overlay container with CSS <code>pointer-events: none</code> on the underlying image.
+                    </p>
+                </div>
+
+                <!-- Method 9 -->
+                <div class="test-card" data-category="selection">
+                    <div>
+                        <div class="test-card-header">
+                            <div>
+                                <span class="method-tag">Method 9</span>
+                                <h4 class="test-card-title" style="margin-top: 0.5rem;">SelectStart Event Blocking</h4>
+                            </div>
+                            <span class="feedback-badge">Selection Blocked</span>
+                        </div>
+                        <div class="test-target-box" id="test-right-click-9">
+                            <span style="color: #c9d1d9; font-weight: 500;">Try selecting this sample text</span>
+                        </div>
+                    </div>
+                    <p class="test-card-desc">
+                        Prevents starting text selection by intercepting and cancelling the DOM <code>selectstart</code> event.
+                    </p>
+                </div>
+
+                <!-- Method 10 -->
+                <div class="test-card" data-category="selection">
+                    <div>
+                        <div class="test-card-header">
+                            <div>
+                                <span class="method-tag">Method 10</span>
+                                <h4 class="test-card-title" style="margin-top: 0.5rem;">Selection Range Clearing</h4>
+                            </div>
+                            <span class="feedback-badge">Cleared</span>
+                        </div>
+                        <div class="test-target-box" id="test-right-click-10">
+                            <span style="color: #c9d1d9; font-weight: 500;">Try highlighting this sample text</span>
+                        </div>
+                    </div>
+                    <p class="test-card-desc">
+                        Programmatically clears active text selections instantly using <code>window.getSelection().removeAllRanges()</code>.
+                    </p>
+                </div>
+
+                <!-- Method 11 -->
+                <div class="test-card" data-category="clipboard">
+                    <div>
+                        <div class="test-card-header">
+                            <div>
+                                <span class="method-tag">Method 11</span>
+                                <h4 class="test-card-title" style="margin-top: 0.5rem;">Keyboard Hotkey Interception</h4>
+                            </div>
+                            <span class="feedback-badge">Hotkey Intercepted</span>
+                        </div>
+                        <div class="test-target-box" id="test-right-click-11">
+                            <input type="text" value="Try copying with Ctrl+C / Cmd+C" aria-label="Method 11 test input">
+                        </div>
+                    </div>
+                    <p class="test-card-desc">
+                        Blocks keyboard shortcuts like <kbd>Ctrl+C</kbd> / <kbd>Cmd+C</kbd> by listening to keydown modifier events.
+                    </p>
+                </div>
+
+                <!-- Method 12 -->
+                <div class="test-card" data-category="selection">
+                    <div>
+                        <div class="test-card-header">
+                            <div>
+                                <span class="method-tag">Method 12</span>
+                                <h4 class="test-card-title" style="margin-top: 0.5rem;">CSS ::selection Concealment</h4>
+                            </div>
+                            <span class="feedback-badge">Concealed</span>
+                        </div>
+                        <div class="test-target-box" id="test-right-click-12">
+                            <span style="color: #c9d1d9; font-weight: 500;">Select this text to test highlighting</span>
+                        </div>
+                    </div>
+                    <p class="test-card-desc">
+                        Hides visual text selection highlights using CSS <code>::selection { background-color: transparent; }</code>.
+                    </p>
+                </div>
+
+                <!-- Method 13 -->
+                <div class="test-card" data-category="selection">
+                    <div>
+                        <div class="test-card-header">
+                            <div>
+                                <span class="method-tag">Method 13</span>
+                                <h4 class="test-card-title" style="margin-top: 0.5rem;">Input Field Overlay Mask</h4>
+                            </div>
+                            <span class="feedback-badge">Masked</span>
+                        </div>
+                        <div class="test-target-box" id="test-right-click-13">
+                            <div style="position: relative; width: 100%;">
+                                <input type="text" value="Select or copy this text" aria-label="Method 13 test input" readonly>
+                                <div style="position: absolute; inset: 0;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="test-card-desc">
+                        Prevents clicking, dragging, or right-clicking on an input element by covering it with a transparent overlay.
+                    </p>
+                </div>
+
+                <!-- Method 14 -->
+                <div class="test-card" data-category="clipboard">
+                    <div>
+                        <div class="test-card-header">
+                            <div>
+                                <span class="method-tag">Method 14</span>
+                                <h4 class="test-card-title" style="margin-top: 0.5rem;">Input Length Delta Restriction</h4>
+                            </div>
+                            <span class="feedback-badge">Reverted</span>
+                        </div>
+                        <div class="test-target-box" id="test-right-click-14">
+                            <input type="text" placeholder="Pasting >2 characters will be blocked..." aria-label="Method 14 test input">
+                        </div>
+                    </div>
+                    <p class="test-card-desc">
+                        Restricts clipboard pasting by checking input length deltas on input events and reverting multi-character pastes.
+                    </p>
+                </div>
+
+                <!-- Method 15 -->
+                <div class="test-card" data-category="media">
+                    <div>
+                        <div class="test-card-header">
+                            <div>
+                                <span class="method-tag">Method 15</span>
+                                <h4 class="test-card-title" style="margin-top: 0.5rem;">HTML5 Canvas Overlay Protection</h4>
+                            </div>
+                            <span class="feedback-badge">Canvas Protected</span>
+                        </div>
+                        <div class="test-target-box" id="test-right-click-15">
+                            <div style="position: relative; display: inline-block;">
+                                <canvas id="asdsdwe" width="92" height="92" style="pointer-events: none;"></canvas>
+                                <div style="position: absolute; inset: 0;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="test-card-desc">
+                        Renders graphics onto an HTML5 <code>&lt;canvas&gt;</code> element combined with CSS <code>pointer-events: none</code> and overlay masking.
+                    </p>
+                </div>
+
+                <!-- Method 16 -->
+                <div class="test-card" data-category="context">
+                    <div>
+                        <div class="test-card-header">
+                            <div>
+                                <span class="method-tag">Method 16</span>
+                                <h4 class="test-card-title" style="margin-top: 0.5rem;">CSS Background Image Context</h4>
+                            </div>
+                            <span class="feedback-badge">No Image Menu</span>
+                        </div>
+                        <div class="test-target-box" id="test-right-click-16" style="background: url('img.svg') no-repeat center; background-size: contain; height: 92px;">
+                        </div>
+                    </div>
+                    <p class="test-card-desc">
+                        Displays image content as a CSS <code>background-image</code> property instead of an <code>&lt;img&gt;</code> tag to suppress image context menus.
+                    </p>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="site-footer">
+        <div class="container" style="display: block;">
+            <p>&copy; 2026 <span class="user-name-js"></span>. Built with code and conviction.</p>
+        </div>
+    </footer>
+
+    <script src="../js/jquery-3.2.1.min.js"></script>
+    <script src="../js/github-fetch.js?v=24"></script>
+    <script>
+        // Mobile Menu Toggle
+        $('#menuToggle').click(function() {
+            $('#navLinks').toggleClass('active');
+            $(this).find('i').toggleClass('im-menu im-x-mark');
+        });
+
+        // Event Feedback Helper
+        function showFeedback(element, text) {
+            const card = element.closest('.test-card');
+            if (!card) return;
+            const badge = card.querySelector('.feedback-badge');
+            if (badge) {
+                badge.textContent = text;
+                badge.classList.add('active');
+                clearTimeout(badge.timer);
+                badge.timer = setTimeout(() => {
+                    badge.classList.remove('active');
+                }, 1800);
+            }
+        }
+
+        // Test Methods Config Implementation
+        var config = {
+            stop: function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+                showFeedback(e.currentTarget || e.target, "Event Blocked");
+            },
+            remove: function(e) {
+                window.getSelection().removeAllRanges();
+                showFeedback(e.currentTarget || e.target, "Selection Cleared");
+            },
+            test: {
+                right: {
+                    click: {
+                        action: function() {
+                            // Method 1: Feedback listener
+                            const m1 = document.getElementById("test-right-click-1");
+                            if (m1) {
+                                m1.addEventListener("contextmenu", function(e) {
+                                    showFeedback(e.currentTarget, "Inline Blocked");
+                                });
+                            }
+
+                            // Method 2: Input contextmenu
+                            const m2 = document.getElementById("test-right-click-2");
+                            if (m2 && m2.querySelector("input")) {
+                                m2.querySelector("input").addEventListener("contextmenu", config.stop);
+                            }
+
+                            // Method 3: Input paste
+                            const m3 = document.getElementById("test-right-click-3");
+                            if (m3 && m3.querySelector("input")) {
+                                m3.querySelector("input").addEventListener("paste", config.stop);
+                            }
+
+                            // Method 4: Image contextmenu
+                            const m4 = document.getElementById("test-right-click-4");
+                            if (m4 && m4.querySelector("img")) {
+                                m4.querySelector("img").addEventListener("contextmenu", config.stop);
+                            }
+
+                            // Method 5: Image contextmenu alert
+                            const m5 = document.getElementById("test-right-click-5");
+                            if (m5 && m5.querySelector("img")) {
+                                m5.querySelector("img").addEventListener("contextmenu", function(e) {
+                                    showFeedback(e.currentTarget, "Alert Triggered");
+                                    window.alert("Context-menu is not allowed!");
+                                    config.stop(e);
+                                    e.returnValue = true;
+                                }, true);
+                            }
+
+                            // Method 7: Overlay contextmenu
+                            const m7 = document.getElementById("test-right-click-7");
+                            if (m7 && m7.querySelector(".overlap")) {
+                                m7.querySelector(".overlap").addEventListener("contextmenu", config.stop);
+                            }
+
+                            // Method 9: selectstart
+                            const m9 = document.getElementById("test-right-click-9");
+                            if (m9) {
+                                m9.addEventListener("selectstart", config.stop, true);
+                            }
+
+                            // Method 10: removeAllRanges
+                            const m10 = document.getElementById("test-right-click-10");
+                            if (m10) {
+                                m10.addEventListener("mouseup", config.remove);
+                                m10.addEventListener("keyup", config.remove);
+                                m10.addEventListener("contextmenu", config.remove);
+                                m10.addEventListener("touchend", config.remove);
+                            }
+
+                            // Method 11: Keyboard hotkey blocking (Ctrl+C / Cmd+C)
+                            const m11 = document.getElementById("test-right-click-11");
+                            if (m11 && m11.querySelector("input")) {
+                                m11.querySelector("input").onkeydown = function(e) {
+                                    if (e.ctrlKey || e.shiftKey || e.altKey || e.metaKey) {
+                                        showFeedback(e.currentTarget, "Hotkey Intercepted");
+                                        e.preventDefault();
+                                        return false;
+                                    }
+                                };
+                            }
+
+                            // Method 14: Input paste delta restriction (>2 chars)
+                            const m14 = document.getElementById("test-right-click-14");
+                            if (m14 && m14.querySelector("input")) {
+                                let lastValue = "";
+                                const inputEl = m14.querySelector("input");
+                                const revertMessage = target => {
+                                    target.classList.add("forbidden");
+                                    showFeedback(target, "Paste >2 Chars Blocked");
+                                    setTimeout(() => target.classList.remove("forbidden"), 500);
+                                    requestAnimationFrame(() => {
+                                        target.value = lastValue;
+                                    });
+                                };
+                                inputEl.addEventListener("input", function(e) {
+                                    if (e.target.value.length - lastValue.length > 2) {
+                                        return revertMessage(e.target);
+                                    }
+                                    lastValue = e.target.value;
+                                });
+                            }
+
+                            // Method 15: Canvas graphic drawing
+                            const canvas = document.getElementById("asdsdwe");
+                            if (canvas) {
+                                const ctx = canvas.getContext("2d");
+                                const img = new Image();
+                                img.src = "img.svg";
+                                img.onload = function() {
+                                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                                };
+                            }
+                        }
+                    }
+                }
+            }
+        };
+
+        // Initialize tests on page load
+        window.addEventListener("load", function() {
+            config.test.right.click.action();
+        });
+
+        // Search and Category Filter Logic
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        const searchInput = document.getElementById('search-tests');
+        const testCards = document.querySelectorAll('.test-card');
+
+        function filterScenarios() {
+            const activeCategory = document.querySelector('.filter-btn.active').getAttribute('data-category');
+            const searchQuery = searchInput.value.toLowerCase().trim();
+
+            testCards.forEach(card => {
+                const cardCategory = card.getAttribute('data-category');
+                const cardText = card.textContent.toLowerCase();
+
+                const categoryMatches = (activeCategory === 'all' || cardCategory === activeCategory);
+                const searchMatches = !searchQuery || cardText.includes(searchQuery);
+
+                if (categoryMatches && searchMatches) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                filterBtns.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                filterScenarios();
+            });
+        });
+
+        searchInput.addEventListener('input', filterScenarios);
+    </script>
+</body>
+</html>

@@ -5,7 +5,7 @@
 
 console.log('[DEBUG] GITHUB-FETCH: Script File Loaded');
 
-const MANIFEST_URL = 'site.webmanifest';
+const MANIFEST_URL = window.location.pathname.includes('/tools/') ? '../site.webmanifest' : 'site.webmanifest';
 const REPO_CONTAINER_ID = 'github-repos';
 const AVATAR_CONTAINER_ID = 'profile-avatar';
 const HEADER_AVATAR_ID = 'header-avatar';
