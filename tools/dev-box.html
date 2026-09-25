@@ -99,7 +99,7 @@
             <div class="flex flex-wrap items-center bg-vscode-sidebar p-1 rounded-lg border border-vscode-border gap-1">
                 <button type="button" data-tab="jwt" class="tab-btn px-2.5 py-1.5 text-xs font-medium rounded transition-all flex items-center gap-1.5 bg-vscode-accent text-white shadow">
                     <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg>
-                    <span>JWT Decoder</span>
+                    <span>JWT Decoder/Encoder</span>
                 </button>
                 <button type="button" data-tab="regex" class="tab-btn px-2.5 py-1.5 text-xs font-medium rounded transition-all flex items-center gap-1.5 text-vscode-muted hover:text-white hover:bg-vscode-hover">
                     <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path></svg>
@@ -120,21 +120,21 @@
             </div>
         </div>
 
-        <!-- TOOL 1: JWT Decoder -->
+        <!-- TOOL 1: JWT Decoder & Encoder -->
         <div id="tool-jwt" class="tool-view flex-1 flex flex-col gap-6">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1">
                 <div
                     class="flex flex-col bg-vscode-sidebar border border-vscode-border rounded-lg overflow-hidden shadow-lg">
                     <div
                         class="bg-vscode-hover px-4 py-3 border-b border-vscode-border flex justify-between items-center">
-                        <span class="text-xs font-semibold uppercase tracking-wider text-vscode-blue">Encoded JWT Token</span>
+                        <span class="text-xs font-semibold uppercase tracking-wider text-vscode-blue">Encoded JWT Token (Live Output / Input)</span>
                         <div class="flex items-center gap-3">
                             <button type="button" id="jwt-load-sample" class="text-xs text-vscode-accent hover:underline">Load Sample</button>
                             <button type="button" id="jwt-clear" class="text-xs text-vscode-muted hover:text-white">Clear</button>
                         </div>
                     </div>
                     <div class="p-4 flex-1 flex flex-col">
-                        <textarea id="jwt-input" placeholder="Paste your JWT here..." class="flex-1 w-full bg-vscode-input text-vscode-text code-font text-xs p-3 rounded border border-vscode-border focus:outline-none focus:border-vscode-accent resize-none min-h-[250px]"></textarea>
+                        <textarea id="jwt-input" placeholder="Paste your JWT here or edit payload/header to generate..." class="flex-1 w-full bg-vscode-input text-vscode-text code-font text-xs p-3 rounded border border-vscode-border focus:outline-none focus:border-vscode-accent resize-none min-h-[250px]"></textarea>
                         <div id="jwt-status" class="mt-3 text-xs flex items-center gap-2 text-vscode-muted">
                             <span class="w-2 h-2 rounded-full bg-vscode-muted"></span>
                             <span>Waiting for token input...</span>
@@ -146,19 +146,17 @@
                     class="flex flex-col bg-vscode-sidebar border border-vscode-border rounded-lg overflow-hidden shadow-lg">
                     <div
                         class="bg-vscode-hover px-4 py-3 border-b border-vscode-border flex justify-between items-center">
-                        <span class="text-xs font-semibold uppercase tracking-wider text-vscode-green">Decoded Payload & Header</span>
-                        <button type="button" id="jwt-copy" class="text-xs text-vscode-accent hover:underline flex items-center gap-1">Copy JSON</button>
+                        <span class="text-xs font-semibold uppercase tracking-wider text-vscode-green">Decoded Payload & Header (Fully Editable)</span>
+                        <button type="button" id="jwt-copy" class="text-xs text-vscode-accent hover:underline flex items-center gap-1">Copy Token</button>
                     </div>
                     <div class="p-4 flex-1 flex flex-col gap-4">
-                        <div>
-                            <label class="text-[10px] uppercase font-bold text-vscode-muted tracking-wider block mb-1">Header</label>
-                            <pre id="jwt-header"
-                                class="bg-vscode-input p-2.5 rounded border border-vscode-border text-vscode-orange code-font text-xs overflow-x-auto max-h-32">{ }</pre>
+                        <div class="flex flex-col">
+                            <label class="text-[10px] uppercase font-bold text-vscode-muted tracking-wider block mb-1">Header (JSON)</label>
+                            <textarea id="jwt-header" spellcheck="false" class="w-full bg-vscode-input p-2.5 rounded border border-vscode-border text-vscode-orange code-font text-xs resize-none h-24 focus:outline-none focus:border-vscode-accent">{ }</textarea>
                         </div>
                         <div class="flex-1 flex flex-col">
-                            <label class="text-[10px] uppercase font-bold text-vscode-muted tracking-wider block mb-1">Payload</label>
-                            <pre id="jwt-output-json"
-                                class="flex-1 bg-vscode-input p-2.5 rounded border border-vscode-border text-vscode-green code-font text-xs overflow-x-auto max-h-64">{ }</pre>
+                            <label class="text-[10px] uppercase font-bold text-vscode-muted tracking-wider block mb-1">Payload (JSON)</label>
+                            <textarea id="jwt-output-json" spellcheck="false" class="flex-1 w-full bg-vscode-input p-2.5 rounded border border-vscode-border text-vscode-green code-font text-xs resize-none min-h-[160px] focus:outline-none focus:border-vscode-accent">{ }</textarea>
                         </div>
                     </div>
                 </div>
@@ -466,7 +464,7 @@
                         if (t === tabId) view.classList.remove('hidden');
                         else view.classList.add('hidden');
                     });
-                    if (tabId === 'jwt') decodeJwt();
+                    if (tabId === 'jwt') decodeJwt(true);
                     if (tabId === 'regex') runRegex();
                     if (tabId === 'hash') generateHashes();
                     if (tabId === 'diff') computeDiff();
@@ -482,12 +480,15 @@
                 setTimeout(() => notif.remove(), 2000);
             }
 
-            // --- 1. JWT DECODER ---
+            // --- 1. TWO-WAY JWT DECODER & ENCODER ---
             const jwtInput = document.getElementById('jwt-input');
             const jwtHeader = document.getElementById('jwt-header');
             const jwtOutputJson = document.getElementById('jwt-output-json');
             const jwtStatus = document.getElementById('jwt-status');
             
+            let isUpdatingFromToken = false;
+            let isUpdatingFromJson = false;
+
             function safeBase64Decode(str) {
                 let output = str.replace(/-/g, '+').replace(/_/g, '/');
                 switch (output.length % 4) {
@@ -499,43 +500,98 @@
                 return decodeURIComponent(atob(output).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
             }
 
-            function decodeJwt() {
-                const token = jwtInput.value.trim();
-                if (!token) {
-                    jwtHeader.textContent = '{ }';
-                    jwtOutputJson.textContent = '{ }';
-                    jwtStatus.innerHTML = `<span class="w-2 h-2 rounded-full bg-vscode-muted"></span><span>Waiting for token input...</span>`;
-                    return;
-                }
-                const parts = token.split('.');
-                if (parts.length !== 3) {
-                    jwtHeader.textContent = 'Invalid format';
-                    jwtOutputJson.textContent = 'JWT must have 3 parts separated by dots.';
-                    jwtStatus.innerHTML = `<span class="w-2 h-2 rounded-full bg-red-500"></span><span class="text-red-400">Malformed token</span>`;
-                    return;
-                }
-                try {
-                    const header = JSON.parse(safeBase64Decode(parts[0]));
-                    const payload = JSON.parse(safeBase64Decode(parts[1]));
-                    jwtHeader.textContent = JSON.stringify(header, null, 2);
-                    jwtOutputJson.textContent = JSON.stringify(payload, null, 2);
-                    jwtStatus.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400"></span><span class="text-vscode-green">Decoded Successfully</span>`;
-                } catch (e) {
-                    jwtHeader.textContent = 'Error';
-                    jwtOutputJson.textContent = e.message;
-                    jwtStatus.innerHTML = `<span class="w-2 h-2 rounded-full bg-red-500"></span><span class="text-red-400">Decoding failed</span>`;
-                }
+            function base64UrlEncode(str) {
+                return btoa(unescape(encodeURIComponent(str)))
+                    .replace(/=/g, '')
+                    .replace(/\+/g, '-')
+                    .replace(/\//g, '_');
             }
 
-            jwtInput.addEventListener('input', decodeJwt);
-            document.getElementById('jwt-clear').addEventListener('click', () => { jwtInput.value = ''; decodeJwt(); });
+            // Decode Token -> JSON fields
+            function decodeJwt(forceReset = false) {
+                if (isUpdatingFromJson) return;
+                isUpdatingFromToken = true;
+
+                const token = jwtInput.value.trim();
+                if (!token) {
+                    if (forceReset) {
+                        jwtHeader.textContent = '{\n  "alg": "HS256",\n  "typ": "JWT"\n}';
+                        jwtOutputJson.textContent = '{\n  "sub": "xCONFLiCTiONx",\n  "name": "Michael"\n}';
+                        encodeJwtFromFields();
+                    } else {
+                        jwtHeader.value = '{ }';
+                        jwtOutputJson.value = '{ }';
+                        jwtStatus.innerHTML = `<span class="w-2 h-2 rounded-full bg-vscode-muted"></span><span>Waiting for token input...</span>`;
+                    }
+                    isUpdatingFromToken = false;
+                    return;
+                }
+
+                const parts = token.split('.');
+                if (parts.length < 2) {
+                    jwtStatus.innerHTML = `<span class="w-2 h-2 rounded-full bg-red-500"></span><span class="text-red-400">Malformed token (missing parts)</span>`;
+                    isUpdatingFromToken = false;
+                    return;
+                }
+
+                try {
+                    const headerDecoded = JSON.parse(safeBase64Decode(parts[0]));
+                    const payloadDecoded = JSON.parse(safeBase64Decode(parts[1]));
+
+                    jwtHeader.value = JSON.stringify(headerDecoded, null, 2);
+                    jwtOutputJson.value = JSON.stringify(payloadDecoded, null, 2);
+                    
+                    jwtStatus.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400"></span><span class="text-vscode-green">Decoded & Synced Successfully</span>`;
+                } catch (e) {
+                    jwtStatus.innerHTML = `<span class="w-2 h-2 rounded-full bg-red-500"></span><span class="text-red-400">Decoding failed: ${e.message}</span>`;
+                }
+                isUpdatingFromToken = false;
+            }
+
+            // Encode JSON fields -> Token string
+            function encodeJwtFromFields() {
+                if (isUpdatingFromToken) return;
+                isUpdatingFromJson = true;
+
+                try {
+                    const headerParsed = JSON.parse(jwtHeader.value);
+                    const payloadParsed = JSON.parse(jwtOutputJson.value);
+
+                    const encodedHeader = base64UrlEncode(JSON.stringify(headerParsed));
+                    const encodedPayload = base64UrlEncode(JSON.stringify(payloadParsed));
+                    
+                    // Preserve signature from existing token if available, otherwise use a placeholder signature
+                    const currentParts = jwtInput.value.trim().split('.');
+                    const signature = (currentParts.length === 3 && currentParts[2]) ? currentParts[2] : 'signature';
+
+                    jwtInput.value = `${encodedHeader}.${encodedPayload}.${signature}`;
+                    jwtStatus.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400"></span><span class="text-vscode-green">Live Re-encoded Successfully</span>`;
+                } catch (e) {
+                    jwtStatus.innerHTML = `<span class="w-2 h-2 rounded-full bg-yellow-500"></span><span class="text-yellow-400">JSON Syntax Error: ${e.message}</span>`;
+                }
+                isUpdatingFromJson = false;
+            }
+
+            jwtInput.addEventListener('input', () => decodeJwt(false));
+            jwtHeader.addEventListener('input', encodeJwtFromFields);
+            jwtOutputJson.addEventListener('input', encodeJwtFromFields);
+
+            document.getElementById('jwt-clear').addEventListener('click', () => { 
+                jwtInput.value = ''; 
+                jwtHeader.value = '{ }';
+                jwtOutputJson.value = '{ }';
+                jwtStatus.innerHTML = `<span class="w-2 h-2 rounded-full bg-vscode-muted"></span><span>Waiting for token input...</span>`;
+            });
+
             document.getElementById('jwt-load-sample').addEventListener('click', () => {
                 jwtInput.value = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ4Q09ORkxpQ1RJT054IiwibmFtZSI6Ik1pY2hhZWwiLCJpYXQiOjE3NTAwMDAwMDAsImV4cCI6MjAwMDAwMDAwMH0.signature';
-                decodeJwt();
+                decodeJwt(false);
+                showNotification('Loaded sample JWT!');
             });
+
             document.getElementById('jwt-copy').addEventListener('click', () => {
-                navigator.clipboard.writeText(jwtOutputJson.textContent);
-                showNotification('Copied JSON to clipboard!');
+                navigator.clipboard.writeText(jwtInput.value);
+                showNotification('Copied encoded JWT to clipboard!');
             });
 
             // --- 2. REGEX TESTER ---
@@ -836,8 +892,9 @@
 
             document.getElementById('recon-refresh-ip').addEventListener('click', runRecon);
 
-            // Initial load triggers
-            decodeJwt();
+            // Initial load triggers (Load sample token by default so encoder is ready)
+            jwtInput.value = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ4Q09ORkxpQ1RJT054IiwibmFtZSI6Ik1pY2hhZWwiLCJpYXQiOjE3NTAwMDAwMDAsImV4cCI6MjAwMDAwMDAwMH0.signature';
+            decodeJwt(true);
             runRegex();
             generateHashes();
             computeDiff();
