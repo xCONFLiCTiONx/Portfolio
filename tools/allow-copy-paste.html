@@ -1,605 +1,987 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dev Swiss Army Knife | xconflictionx tools</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        vscode: {
-                            bg: '#1e1e1e',
-                            sidebar: '#252526',
-                            border: '#333333',
-                            input: '#3c3c3c',
-                            hover: '#2a2d2e',
-                            accent: '#007acc',
-                            accentHover: '#0098ff',
-                            text: '#d4d4d4',
-                            muted: '#858585',
-                            green: '#4ec9b0',
-                            orange: '#ce9178',
-                            purple: '#c586c0',
-                            blue: '#569cd6'
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    <!-- Inter Font & JetBrains Mono -->
-    <link
-        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap"
-        rel="stylesheet">
+    <meta charset="utf-8">
+    <title class="user-name-title-js">Allow Copy-Paste & Right-Click Test Suite</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" id="meta-description-js"
+        content="Interactive browser test suite to verify if right-click, copy, paste, and text selection restrictions can be bypassed by browser extensions.">
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="icon" id="favicon-js" href="../favicon.ico" type="image/x-icon">
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
+        /* Tool Page Specific Styles matching Portfolio GitHub Dark Theme */
+        .tool-banner {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 2.4rem;
+            margin-bottom: 3rem;
         }
 
-        .code-font {
-            font-family: 'JetBrains Mono', monospace;
+        .tool-banner h3 {
+            color: #f0f6fc;
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
         }
 
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
+        .tool-banner p {
+            color: #8b949e;
+            font-size: 1.4rem;
+            line-height: 1.6;
+            margin-bottom: 2rem;
         }
 
-        ::-webkit-scrollbar-track {
-            background: #1e1e1e;
+        .controls-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.2rem;
+            align-items: center;
+            justify-content: space-between;
         }
 
-        ::-webkit-scrollbar-thumb {
-            background: #424242;
+        .search-box {
+            position: relative;
+            flex-grow: 1;
+            max-width: 380px;
+        }
+
+        .search-box input {
+            width: 100%;
+            background: #0d1117;
+            color: #c9d1d9;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 0.8rem 1.2rem 0.8rem 3.6rem;
+            font-size: 1.4rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .search-box input:focus {
+            border-color: #58a6ff;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 1.2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #8b949e;
+            font-size: 1.6rem;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            background: #0d1117;
+            color: #8b949e;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 0.6rem 1.2rem;
+            font-size: 1.3rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-btn:hover {
+            color: #f0f6fc;
+            border-color: #8b949e;
+        }
+
+        .filter-btn.active {
+            background: #21262d;
+            color: #f0f6fc;
+            border-color: #58a6ff;
+        }
+
+        /* Test Card Grid */
+        .test-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 2rem;
+        }
+
+        .test-card {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .test-card:hover {
+            border-color: #484f58;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .test-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .test-card-title {
+            font-size: 1.6rem;
+            color: #f0f6fc;
+            font-weight: 600;
+            line-height: 1.3;
+        }
+
+        .method-tag {
+            background: rgba(88, 166, 255, 0.1);
+            color: #58a6ff;
+            border: 1px solid rgba(88, 166, 255, 0.3);
+            border-radius: 12px;
+            padding: 0.2rem 0.8rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .feedback-badge {
+            display: inline-block;
+            background: rgba(247, 129, 102, 0.15);
+            color: #f78166;
+            border: 1px solid rgba(247, 129, 102, 0.4);
             border-radius: 4px;
+            padding: 0.2rem 0.6rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            opacity: 0;
+            transform: translateY(-4px);
+            transition: opacity 0.2s, transform 0.2s;
         }
 
-        ::-webkit-scrollbar-thumb:hover {
-            background: #4f4f4f;
+        .feedback-badge.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Orange-bordered test box as specified in tool rules */
+        .test-target-box {
+            border: 2px dashed #f78166;
+            background: #0d1117;
+            border-radius: 6px;
+            padding: 1.6rem;
+            margin: 1rem 0;
+            text-align: center;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: text;
+            -webkit-user-select: text;
+            position: relative;
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+
+        .test-target-box.forbidden {
+            background-color: rgba(247, 129, 102, 0.2) !important;
+            border-color: #ff4d4d !important;
+        }
+
+        .test-target-box input {
+            width: 100%;
+            background: #161b22;
+            color: #f0f6fc;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 0.8rem 1rem;
+            font-size: 1.3rem;
+            text-align: center;
+            outline: none;
+        }
+
+        .test-target-box input:focus {
+            border-color: #58a6ff;
+        }
+
+        .test-target-box img,
+        .test-target-box canvas {
+            display: block;
+            margin: 0 auto;
+            max-width: 100%;
+            height: auto;
+        }
+
+        .test-card-desc {
+            color: #8b949e;
+            font-size: 1.3rem;
+            line-height: 1.5;
+            margin-top: 1rem;
+            border-top: 1px solid #21262d;
+            padding-top: 1rem;
+        }
+
+        /* Sidebar stats card */
+        .tool-stats-card {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+
+        .tool-stats-card h4 {
+            color: #f0f6fc;
+            font-size: 1.6rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.8rem 0;
+            border-bottom: 1px solid #21262d;
+            font-size: 1.3rem;
+        }
+
+        .stat-item:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            color: #8b949e;
+        }
+
+        .stat-value {
+            color: #58a6ff;
+            font-weight: 600;
+        }
+
+        /* Custom selection hiding rule for Method 12 */
+        #test-right-click-12 :not(input):not(textarea)::selection {
+            background-color: transparent !important;
+            color: inherit !important;
+        }
+
+        #test-right-click-12 :not(input):not(textarea)::-moz-selection {
+            background-color: transparent !important;
+            color: inherit !important;
+        }
+
+        @media (max-width: 768px) {
+            .test-cards-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .controls-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-box {
+                max-width: 100%;
+            }
         }
     </style>
 </head>
 
-<body
-    class="bg-[#1e1e1e] text-vscode-text min-h-screen flex flex-col antialiased selection:bg-vscode-accent selection:text-white">
+<body id="top">
 
-    <header
-        class="border-b border-vscode-border bg-vscode-sidebar px-6 py-4 flex items-center justify-between sticky top-0 z-50">
-        <div class="flex items-center space-x-3">
-            <div class="w-3.5 h-3.5 rounded-full bg-red-500/80"></div>
-            <div class="w-3.5 h-3.5 rounded-full bg-yellow-500/80"></div>
-            <div class="w-3.5 h-3.5 rounded-full bg-green-500/80"></div>
-            <span class="text-sm font-semibold tracking-wider text-vscode-muted ml-2 uppercase">xconflictionx / tools / dev-suite</span>
-        </div>
-        <div
-            class="flex items-center space-x-2 text-xs code-font bg-vscode-input px-3 py-1.5 rounded border border-vscode-border text-vscode-muted">
-            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span>Client-Side Only</span>
-        </div>
+    <header class="site-header">
+        <nav class="nav-content">
+            <div class="nav-brand">
+                <a href="../index.html">
+                    <span id="header-avatar" class="nav-logo"></span>
+                    <span class="user-name-js">Loading...</span>
+                </a>
+            </div>
+            <button class="menu-toggle" id="menuToggle">
+                <i class="im im-menu"></i>
+            </button>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="../index.html"><i class="im im-home"></i> Overview</a></li>
+                <li><a href="../about.html"><i class="im im-user-male"></i> About</a></li>
+                <li><a href="index.html" class="active"><i class="im im-tools"></i> Tools</a></li>
+                <li><a href="../privacy.html"><i class="im im-shield"></i> Privacy</a></li>
+                <li><a href="../contact.html"><i class="im im-paperplane"></i> Contact</a></li>
+            </ul>
+        </nav>
     </header>
 
-    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex flex-col">
-        <!-- Intro & Tab Selector -->
-        <div
-            class="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6 pb-4 border-b border-vscode-border gap-4">
-            <div>
-                <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-                    <span class="text-vscode-accent">&gt;_</span> Developer Swiss Army Knife
-                </h1>
-                <p class="text-sm text-vscode-muted mt-1">Lightning-fast debugging and data conversion tools running
-                    100% locally in your browser.</p>
-            </div>
-            <!-- Tab Buttons -->
-            <div class="flex flex-wrap items-center bg-vscode-sidebar p-1 rounded-lg border border-vscode-border gap-1">
-                <button type="button" data-tab="jwt" class="tab-btn px-2.5 py-1.5 text-xs font-medium rounded transition-all flex items-center gap-1.5 bg-vscode-accent text-white shadow">
-                    <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg>
-                    <span>JWT Decoder</span>
-                </button>
-                <button type="button" data-tab="regex" class="tab-btn px-2.5 py-1.5 text-xs font-medium rounded transition-all flex items-center gap-1.5 text-vscode-muted hover:text-white hover:bg-vscode-hover">
-                    <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path></svg>
-                    <span>Regex Tester</span>
-                </button>
-                <button type="button" data-tab="hash" class="tab-btn px-2.5 py-1.5 text-xs font-medium rounded transition-all flex items-center gap-1.5 text-vscode-muted hover:text-white hover:bg-vscode-hover">
-                    <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"></path></svg>
-                    <span>Hash Gen</span>
-                </button>
-                <button type="button" data-tab="diff" class="tab-btn px-2.5 py-1.5 text-xs font-medium rounded transition-all flex items-center gap-1.5 text-vscode-muted hover:text-white hover:bg-vscode-hover">
-                    <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
-                    <span>Text Diff</span>
-                </button>
-            </div>
-        </div>
+    <main class="container">
 
-        <!-- TOOL 1: JWT Decoder -->
-        <div id="tool-jwt" class="tool-view flex-1 flex flex-col gap-6">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1">
-                <div
-                    class="flex flex-col bg-vscode-sidebar border border-vscode-border rounded-lg overflow-hidden shadow-lg">
-                    <div
-                        class="bg-vscode-hover px-4 py-3 border-b border-vscode-border flex justify-between items-center">
-                        <span class="text-xs font-semibold uppercase tracking-wider text-vscode-blue">Encoded JWT Token</span>
-                        <div class="flex items-center gap-3">
-                            <button type="button" id="jwt-load-sample" class="text-xs text-vscode-accent hover:underline">Load Sample</button>
-                            <button type="button" id="jwt-clear" class="text-xs text-vscode-muted hover:text-white">Clear</button>
-                        </div>
-                    </div>
-                    <div class="p-4 flex-1 flex flex-col">
-                        <textarea id="jwt-input" placeholder="Paste your JWT here..." class="flex-1 w-full bg-vscode-input text-vscode-text code-font text-xs p-3 rounded border border-vscode-border focus:outline-none focus:border-vscode-accent resize-none min-h-[250px]"></textarea>
-                        <div id="jwt-status" class="mt-3 text-xs flex items-center gap-2 text-vscode-muted">
-                            <span class="w-2 h-2 rounded-full bg-vscode-muted"></span>
-                            <span>Waiting for token input...</span>
-                        </div>
-                    </div>
+        <!-- Sidebar Info -->
+        <aside class="sidebar profile-sidebar">
+            <div id="profile-avatar" class="profile-avatar"></div>
+            <h1 id="profile-name" class="profile-name user-name-js">Loading...</h1>
+            <span id="profile-handle" class="profile-handle">Software Developer</span>
+
+            <p id="profile-bio" class="profile-bio"></p>
+
+            <div class="tool-stats-card">
+                <h4><i class="im im-shield" style="color: #58a6ff;"></i> Tool Diagnostics</h4>
+                <div class="stat-item">
+                    <span class="stat-label">Total Test Scenarios</span>
+                    <span class="stat-value">16</span>
                 </div>
-
-                <div
-                    class="flex flex-col bg-vscode-sidebar border border-vscode-border rounded-lg overflow-hidden shadow-lg">
-                    <div
-                        class="bg-vscode-hover px-4 py-3 border-b border-vscode-border flex justify-between items-center">
-                        <span class="text-xs font-semibold uppercase tracking-wider text-vscode-green">Decoded Payload & Header</span>
-                        <button type="button" id="jwt-copy" class="text-xs text-vscode-accent hover:underline flex items-center gap-1">Copy JSON</button>
-                    </div>
-                    <div class="p-4 flex-1 flex flex-col gap-4">
-                        <div>
-                            <label class="text-[10px] uppercase font-bold text-vscode-muted tracking-wider block mb-1">Header</label>
-                            <pre id="jwt-header"
-                                class="bg-vscode-input p-2.5 rounded border border-vscode-border text-vscode-orange code-font text-xs overflow-x-auto max-h-32">{ }</pre>
-                        </div>
-                        <div class="flex-1 flex flex-col">
-                            <label class="text-[10px] uppercase font-bold text-vscode-muted tracking-wider block mb-1">Payload</label>
-                            <pre id="jwt-output-json"
-                                class="flex-1 bg-vscode-input p-2.5 rounded border border-vscode-border text-vscode-green code-font text-xs overflow-x-auto max-h-64">{ }</pre>
-                        </div>
-                    </div>
+                <div class="stat-item">
+                    <span class="stat-label">Context Menu Tests</span>
+                    <span class="stat-value">8</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Copy & Paste Tests</span>
+                    <span class="stat-value">3</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Selection Tests</span>
+                    <span class="stat-value">4</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Canvas & Media Tests</span>
+                    <span class="stat-value">1</span>
+                </div>
+                <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #21262d;">
+                    <a href="pdf-tools.html"
+                        style="color: #58a6ff; font-size: 1.3rem; text-decoration: none; display: flex; align-items: center; gap: 0.6rem;">
+                        <i class="im im-file-pdf"></i> Switch to Local PDF Studio &rarr;
+                    </a>
                 </div>
             </div>
-        </div>
 
-        <!-- TOOL 2: Regex Tester -->
-        <div id="tool-regex" class="tool-view hidden flex-1 flex flex-col gap-6">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="bg-vscode-sidebar border border-vscode-border rounded-lg p-4 flex flex-col gap-4 shadow-lg">
-                    <h2 class="text-xs font-semibold uppercase tracking-wider text-vscode-blue">Regex Configuration</h2>
-                    <div>
-                        <label class="text-xs text-vscode-muted block mb-1">Regular Expression</label>
-                        <div
-                            class="flex items-center bg-vscode-input border border-vscode-border rounded overflow-hidden focus-within:border-vscode-accent">
-                            <span class="px-2 text-vscode-muted code-font">/</span>
-                            <input type="text" id="regex-pattern" value="([a-zA-Z0-9_\.-]+)@([\w\.-]+)\.([a-z\.]{2,6})" class="w-full bg-transparent text-vscode-text code-font text-xs py-2 px-1 focus:outline-none">
-                            <span class="px-2 text-vscode-muted code-font">/</span>
-                            <input type="text" id="regex-flags" value="gm" class="w-12 bg-transparent text-vscode-text code-font text-xs py-2 text-center focus:outline-none">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="text-xs text-vscode-muted block mb-1">Replacement String</label>
-                        <input type="text" id="regex-replacement" value="[REDACTED]" class="w-full bg-vscode-input text-vscode-text code-font text-xs p-2 rounded border border-vscode-border focus:outline-none focus:border-vscode-accent">
-                    </div>
-                    <div class="flex flex-col gap-2 pt-2 border-t border-vscode-border">
-                        <span class="text-xs text-vscode-muted">Load Preset:</span>
-                        <div class="flex flex-wrap gap-1.5">
-                            <button type="button" class="regex-preset text-[11px] bg-vscode-input hover:bg-vscode-hover px-2.5 py-1 rounded border border-vscode-border text-vscode-text" data-preset="email">Email</button>
-                            <button type="button" class="regex-preset text-[11px] bg-vscode-input hover:bg-vscode-hover px-2.5 py-1 rounded border border-vscode-border text-vscode-text" data-preset="url">URL</button>
-                            <button type="button" class="regex-preset text-[11px] bg-vscode-input hover:bg-vscode-hover px-2.5 py-1 rounded border border-vscode-border text-vscode-text" data-preset="ipv4">IPv4</button>
-                            <button type="button" class="regex-preset text-[11px] bg-vscode-input hover:bg-vscode-hover px-2.5 py-1 rounded border border-vscode-border text-vscode-text" data-preset="uuid">UUID</button>
-                        </div>
-                    </div>
-                </div>
+            <ul id="profile-metadata" class="profile-metadata" style="margin-top: 2rem;"></ul>
+        </aside>
 
-                <div
-                    class="bg-vscode-sidebar border border-vscode-border rounded-lg flex flex-col overflow-hidden shadow-lg">
-                    <div
-                        class="bg-vscode-hover px-4 py-3 border-b border-vscode-border flex justify-between items-center">
-                        <span class="text-xs font-semibold uppercase tracking-wider text-vscode-orange">Test String</span>
-                        <button type="button" id="regex-clear" class="text-xs text-vscode-muted hover:text-white">Clear</button>
-                    </div>
-                    <div class="p-4 flex-1 flex flex-col">
-                        <textarea id="regex-input" class="flex-1 w-full bg-vscode-input text-vscode-text code-font text-xs p-3 rounded border border-vscode-border focus:outline-none focus:border-vscode-accent resize-none min-h-[220px]">Contact us at support@xconflictionx.cc or https://xconflictionx.cc/contact/. Visit https://xconflictionx.cc/tools/ or call 192.168.1.1 for assistance. UUID: 123e4567-e89b-12d3-a456-426614174000.</textarea>
-                    </div>
-                </div>
+        <!-- Main Content Section -->
+        <section class="main-content">
+            <h2 class="section-title">Allow Copy-Paste & Right-Click Test Suite</h2>
 
-                <div
-                    class="bg-vscode-sidebar border border-vscode-border rounded-lg flex flex-col overflow-hidden shadow-lg">
-                    <div
-                        class="bg-vscode-hover px-4 py-3 border-b border-vscode-border flex justify-between items-center">
-                        <span class="text-xs font-semibold uppercase tracking-wider text-vscode-green">Matches & Substitution</span>
-                        <span id="regex-match-count" class="text-xs text-vscode-muted font-mono">0 matches</span>
-                    </div>
-                    <div class="p-4 flex-1 flex flex-col gap-4">
-                        <div>
-                            <label class="text-[10px] uppercase font-bold text-vscode-muted tracking-wider block mb-1">Replaced Output</label>
-                            <pre id="regex-replaced-output"
-                                class="bg-vscode-input p-2.5 rounded border border-vscode-border text-vscode-text code-font text-xs overflow-x-auto max-h-32">-</pre>
-                        </div>
-                        <div class="flex-1 flex flex-col">
-                            <label class="text-[10px] uppercase font-bold text-vscode-muted tracking-wider block mb-1">Matched Groups</label>
-                            <div id="regex-matches-list"
-                                class="flex-1 bg-vscode-input p-2.5 rounded border border-vscode-border code-font text-xs overflow-y-auto max-h-40 flex flex-col gap-1 text-vscode-muted">
-                                No matches found.
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- TOOL 3: Hash Generator -->
-        <div id="tool-hash" class="tool-view hidden flex-1 flex flex-col gap-6">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1">
-                <div
-                    class="bg-vscode-sidebar border border-vscode-border rounded-lg flex flex-col overflow-hidden shadow-lg lg:col-span-1">
-                    <div
-                        class="bg-vscode-hover px-4 py-3 border-b border-vscode-border flex justify-between items-center">
-                        <span class="text-xs font-semibold uppercase tracking-wider text-vscode-purple">Input Data</span>
-                        <button type="button" id="hash-clear" class="text-xs text-vscode-muted hover:text-white">Clear</button>
-                    </div>
-                    <div class="p-4 flex-1 flex flex-col">
-                        <textarea id="hash-input" placeholder="Type or paste text..." class="flex-1 w-full bg-vscode-input text-vscode-text code-font text-xs p-3 rounded border border-vscode-border focus:outline-none focus:border-vscode-accent resize-none min-h-[250px]"></textarea>
-                        <div class="mt-3 text-xs text-vscode-muted flex items-center justify-between">
-                            <span>Web Crypto API</span>
-                            <span id="hash-chars-count">0 chars</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div
-                    class="bg-vscode-sidebar border border-vscode-border rounded-lg flex flex-col overflow-hidden shadow-lg lg:col-span-2">
-                    <div
-                        class="bg-vscode-hover px-4 py-3 border-b border-vscode-border flex justify-between items-center">
-                        <span class="text-xs font-semibold uppercase tracking-wider text-vscode-green">Generated Cryptographic Digests</span>
-                    </div>
-                    <div class="p-4 flex-1 flex flex-col gap-4">
-                        <div class="flex flex-col gap-1">
-                            <div class="flex justify-between items-center">
-                                <label class="text-[10px] uppercase font-bold text-vscode-blue tracking-wider">SHA-256</label>
-                                <button type="button" class="hash-copy-btn text-xs text-vscode-muted hover:text-white" data-target="hash-sha256">Copy</button>
-                            </div>
-                            <input type="text" readonly id="hash-sha256" class="w-full bg-vscode-input text-vscode-text code-font text-xs p-2 rounded border border-vscode-border select-all">
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <div class="flex justify-between items-center">
-                                <label class="text-[10px] uppercase font-bold text-vscode-purple tracking-wider">SHA-384</label>
-                                <button type="button" class="hash-copy-btn text-xs text-vscode-muted hover:text-white" data-target="hash-sha384">Copy</button>
-                            </div>
-                            <input type="text" readonly id="hash-sha384" class="w-full bg-vscode-input text-vscode-text code-font text-xs p-2 rounded border border-vscode-border select-all">
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <div class="flex justify-between items-center">
-                                <label class="text-[10px] uppercase font-bold text-vscode-orange tracking-wider">SHA-512</label>
-                                <button type="button" class="hash-copy-btn text-xs text-vscode-muted hover:text-white" data-target="hash-sha512">Copy</button>
-                            </div>
-                            <input type="text" readonly id="hash-sha512" class="w-full bg-vscode-input text-vscode-text code-font text-xs p-2 rounded border border-vscode-border select-all">
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <div class="flex justify-between items-center">
-                                <label class="text-[10px] uppercase font-bold text-vscode-green tracking-wider">MD5</label>
-                                <button type="button" class="hash-copy-btn text-xs text-vscode-muted hover:text-white" data-target="hash-md5">Copy</button>
-                            </div>
-                            <input type="text" readonly id="hash-md5" class="w-full bg-vscode-input text-vscode-text code-font text-xs p-2 rounded border border-vscode-border select-all">
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- TOOL 4: Text Diff Tool -->
-        <div id="tool-diff" class="tool-view hidden flex-1 flex flex-col gap-6">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div
-                    class="flex flex-col bg-vscode-sidebar border border-vscode-border rounded-lg overflow-hidden shadow-lg">
-                    <div
-                        class="bg-vscode-hover px-4 py-3 border-b border-vscode-border flex justify-between items-center">
-                        <span class="text-xs font-semibold uppercase tracking-wider text-vscode-orange">Original Text (A)</span>
-                        <button type="button" id="diff-clear-a" class="text-xs text-vscode-muted hover:text-white">Clear</button>
-                    </div>
-                    <div class="p-4 flex-1 flex flex-col">
-                        <textarea id="diff-input-a" placeholder="Paste original text here..." class="flex-1 w-full bg-vscode-input text-vscode-text code-font text-xs p-3 rounded border border-vscode-border focus:outline-none focus:border-vscode-accent resize-none min-h-[220px]">const config = {
-    theme: 'dark',
-    version: '1.0.0',
-    debug: false,
-    autoSave: true
-};</textarea>
-                    </div>
-                </div>
-                <div
-                    class="flex flex-col bg-vscode-sidebar border border-vscode-border rounded-lg overflow-hidden shadow-lg">
-                    <div
-                        class="bg-vscode-hover px-4 py-3 border-b border-vscode-border flex justify-between items-center">
-                        <span class="text-xs font-semibold uppercase tracking-wider text-vscode-green">Modified Text (B)</span>
-                        <button type="button" id="diff-clear-b" class="text-xs text-vscode-muted hover:text-white">Clear</button>
-                    </div>
-                    <div class="p-4 flex-1 flex flex-col">
-                        <textarea id="diff-input-b" placeholder="Paste modified text here..." class="flex-1 w-full bg-vscode-input text-vscode-text code-font text-xs p-3 rounded border border-vscode-border focus:outline-none focus:border-vscode-accent resize-none min-h-[220px]">const config = {
-    theme: 'vscode-dark',
-    version: '1.1.0',
-    debug: true,
-    autoSave: true,
-    timeout: 5000
-};</textarea>
-                    </div>
-                </div>
-            </div>
+            <!-- Tool Switcher Sub-nav -->
             <div
-                class="flex flex-col bg-vscode-sidebar border border-vscode-border rounded-lg overflow-hidden shadow-lg flex-1">
-                <div class="bg-vscode-hover px-4 py-3 border-b border-vscode-border flex justify-between items-center">
-                    <span class="text-xs font-semibold uppercase tracking-wider text-vscode-blue">Line-by-Line Diff Comparison</span>
-                    <span id="diff-stats" class="text-xs text-vscode-muted font-mono">0 additions, 0 deletions</span>
-                </div>
-                <div class="p-4">
-                    <pre id="diff-output"
-                        class="bg-vscode-input p-3 rounded border border-vscode-border code-font text-xs overflow-x-auto max-h-96 leading-relaxed flex flex-col gap-0.5">-</pre>
+                style="display: flex; gap: 1rem; background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 0.6rem; margin-bottom: 2.4rem; flex-wrap: wrap;">
+                <a href="index.html"
+                    style="display: flex; align-items: center; gap: 0.8rem; padding: 0.8rem 1.6rem; border-radius: 6px; color: #8b949e; font-size: 1.4rem; font-weight: 500; text-decoration: none; border: 1px solid transparent;">
+                    <i class="im im-tools"></i> All Tools
+                </a>
+                <a href="pdf-tools.html"
+                    style="display: flex; align-items: center; gap: 0.8rem; padding: 0.8rem 1.6rem; border-radius: 6px; color: #8b949e; font-size: 1.4rem; font-weight: 500; text-decoration: none; border: 1px solid transparent;">
+                    <i class="im im-file-pdf"></i> Local PDF Studio
+                </a>
+                <a href="allow-copy-paste.html"
+                    style="display: flex; align-items: center; gap: 0.8rem; padding: 0.8rem 1.6rem; border-radius: 6px; color: #f0f6fc; background: #21262d; border: 1px solid #58a6ff; font-size: 1.4rem; font-weight: 600; text-decoration: none;">
+                    <i class="im im-shield"></i> Allow Copy-Paste Tester
+                </a>
+            </div>
+
+            <!-- Top Banner Card -->
+            <div class="tool-banner">
+                <h3><i class="im im-check-mark" style="color: #3fb950;"></i> Browser Security & Extension Verification
+                </h3>
+                <p>
+                    Websites often employ techniques to block right-clicking, text highlighting, clipboard copying, or
+                    pasting.
+                    Use the <strong>16 test scenarios</strong> below to verify if your browser extensions (e.g.,
+                    <em>Allow Right Click</em> or <em>Enable Copy</em>) can bypass these restrictions.
+                    Elements marked with an <strong>orange dashed border</strong> have active restrictions applied.
+                </p>
+
+                <div class="controls-row">
+                    <div class="search-box">
+                        <i class="im im-magnifier"></i>
+                        <input type="text" id="search-tests" placeholder="Search test scenarios..." aria-label="Search test scenarios">
+                    </div>
+
+                    <div class="filter-tabs">
+                        <button class="filter-btn active" data-category="all">All (16)</button>
+                        <button class="filter-btn" data-category="context">Context Menu</button>
+                        <button class="filter-btn" data-category="clipboard">Copy & Paste</button>
+                        <button class="filter-btn" data-category="selection">Text Selection</button>
+                        <button class="filter-btn" data-category="media">Media & Canvas</button>
+                    </div>
                 </div>
             </div>
-        </div>
+
+            <!-- Grid of 16 Test Cards -->
+            <div class="test-cards-grid" id="test-grid">
+
+                <!-- Method 1 -->
+                <div class="test-card" data-category="context">
+                    <div>
+                        <div class="test-card-header">
+                            <div>
+                                <span class="method-tag">Method 1</span>
+                                <h4 class="test-card-title" style="margin-top: 0.5rem;">Inline Handler Blocking</h4>
+                            </div>
+                            <span class="feedback-badge">Blocked</span>
+                        </div>
+                        <div class="test-target-box" id="test-right-click-1" oncontextmenu="return false;"
+                            onmousedown="return false;">
+                            <span style="color: #c9d1d9; font-weight: 500;">Right-click anywhere inside this target</span>
+                        </div>
+                    </div>
+                    <p class="test-card-desc">
+                        Blocks right-click context menu using inline HTML event attributes:
+                        <code>oncontextmenu="return false;" onmousedown="return false;"</code>.
+                    </p>
+                </div>
+
+                <!-- Method 2 -->
+                <div class="test-card" data-category="context">
+                    <div>
+                        <div class="test-card-header">
+                            <div>
+                                <span class="method-tag">Method 2</span>
+                                <h4 class="test-card-title" style="margin-top: 0.5rem;">Input Context-Menu Listener</h4>
+                            </div>
+                            <span class="feedback-badge">Blocked</span>
+                        </div>
+                        <div class="test-target-box" id="test-right-click-2">
+                            <input type="text" value="Right-click inside this input box" aria-label="Method 2 test input" readonly>
+                        </div>
+                    </div>
+                    <p class="test-card-desc">
+                        Prevents context menu on an <code>&lt;input&gt;</code> element via JavaScript
+                        <code>addEventListener("contextmenu")</code>.
+                    </p>
+                </div>
+
+                <!-- Method 3 -->
+                <div class="test-card" data-category="clipboard">
+                    <div>
+                        <div class="test-card-header">
+                            <div>
+                                <span class="method-tag">Method 3</span>
+                                <h4 class="test-card-title" style="margin-top: 0.5rem;">Input Paste Event Blocking</h4>
+                            </div>
+                            <span class="feedback-badge">Blocked</span>
+                        </div>
+                        <div class="test-target-box" id="test-right-click-3">
+                            <input type="text" placeholder="Try pasting text here..." aria-label="Method 3 test input">
+                        </div>
+                    </div>
+                    <p class="test-card-desc">
+                        Prevents pasting text into the input field using a JavaScript <code>paste</code> event listener.
+                    </p>
+                </div>
+
+                <!-- Method 4 -->
+                <div class="test-card" data-category="context">
+                    <div>
+                        <div class="test-card-header">
+                            <div>
+                                <span class="method-tag">Method 4</span>
+                                <h4 class="test-card-title" style="margin-top: 0.5rem;">Image Right-Click Listener</h4>
+                            </div>
+                            <span class="feedback-badge">Blocked</span>
+                        </div>
+                        <div class="test-target-box" id="test-right-click-4">
+                            <img src="img.svg" width="92" height="92" alt="Protected Graphic">
+                        </div>
+                    </div>
+                    <p class="test-card-desc">
+                        Blocks right-click on an <code>&lt;img&gt;</code> element via JS <code>contextmenu</code>
+                        listener.
+                    </p>
+                </div>
+
+                <!-- Method 5 -->
+                <div class="test-card" data-category="context">
+                    <div>
+                        <div class="test-card-header">
+                            <div>
+                                <span class="method-tag">Method 5</span>
+                                <h4 class="test-card-title" style="margin-top: 0.5rem;">Image Alert Popup Blocking</h4>
+                            </div>
+                            <span class="feedback-badge">Alerted</span>
+                        </div>
+                        <div class="test-target-box" id="test-right-click-5">
+                            <img src="img.svg" width="92" height="92" alt="Protected Graphic">
+                        </div>
+                    </div>
+                    <p class="test-card-desc">
+                        Triggers a <code>window.alert()</code> modal upon right-clicking an image and cancels the event.
+                    </p>
+                </div>
+
+                <!-- Method 6 -->
+                <div class="test-card" data-category="context">
+                    <div>
+                        <div class="test-card-header">
+                            <div>
+                                <span class="method-tag">Method 6</span>
+                                <h4 class="test-card-title" style="margin-top: 0.5rem;">Image CSS Pointer Events</h4>
+                            </div>
+                            <span class="feedback-badge">CSS Disabled</span>
+                        </div>
+                        <div class="test-target-box" id="test-right-click-6">
+                            <img src="img.svg" width="92" height="92" alt="Protected Graphic" style="pointer-events: none;">
+                        </div>
+                    </div>
+                    <p class="test-card-desc">
+                        Disables mouse pointer events directly on the image element using CSS
+                        <code>pointer-events: none</code>.
+                    </p>
+                </div>
+
+                <!-- Method 7 -->
+                <div class="test-card" data-category="context">
+                    <div>
+                        <div class="test-card-header">
+                            <div>
+                                <span class="method-tag">Method 7</span>
+                                <h4 class="test-card-title" style="margin-top: 0.5rem;">Overlay Mask + JS Blocking</h4>
+                            </div>
+                            <span class="feedback-badge">Masked</span>
+                        </div>
+                        <div class="test-target-box" id="test-right-click-7">
+                            <div style="position: relative; display: inline-block;">
+                                <img src="img.svg" width="92" height="92" alt="Protected Graphic">
+                                <div class="overlap" style="position: absolute; inset: 0;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="test-card-desc">
+                        Places a transparent <code>&lt;div&gt;</code> overlay over the image that intercepts and cancels
+                        right-click events.
+                    </p>
+                </div>
+
+                <!-- Method 8 -->
+                <div class="test-card" data-category="context">
+                    <div>
+                        <div class="test-card-header">
+                            <div>
+                                <span class="method-tag">Method 8</span>
+                                <h4 class="test-card-title" style="margin-top: 0.5rem;">Overlay Mask + CSS Pointer</h4>
+                            </div>
+                            <span class="feedback-badge">Masked</span>
+                        </div>
+                        <div class="test-target-box" id="test-right-click-8">
+                            <div style="position: relative; display: inline-block;">
+                                <img src="img.svg" width="92" height="92" alt="Protected Graphic" style="pointer-events: none;">
+                                <div class="overlap" style="position: absolute; inset: 0;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="test-card-desc">
+                        Combines a transparent overlay container with CSS <code>pointer-events: none</code> on the
+                        underlying image.
+                    </p>
+                </div>
+
+                <!-- Method 9 -->
+                <div class="test-card" data-category="selection">
+                    <div>
+                        <div class="test-card-header">
+                            <div>
+                                <span class="method-tag">Method 9</span>
+                                <h4 class="test-card-title" style="margin-top: 0.5rem;">SelectStart Event Blocking</h4>
+                            </div>
+                            <span class="feedback-badge">Selection Blocked</span>
+                        </div>
+                        <div class="test-target-box" id="test-right-click-9">
+                            <span style="color: #c9d1d9; font-weight: 500;">Try selecting this sample text</span>
+                        </div>
+                    </div>
+                    <p class="test-card-desc">
+                        Prevents starting text selection by intercepting and cancelling the DOM <code>selectstart</code>
+                        event.
+                    </p>
+                </div>
+
+                <!-- Method 10 -->
+                <div class="test-card" data-category="selection">
+                    <div>
+                        <div class="test-card-header">
+                            <div>
+                                <span class="method-tag">Method 10</span>
+                                <h4 class="test-card-title" style="margin-top: 0.5rem;">Selection Range Clearing</h4>
+                            </div>
+                            <span class="feedback-badge">Cleared</span>
+                        </div>
+                        <div class="test-target-box" id="test-right-click-10">
+                            <span style="color: #c9d1d9; font-weight: 500;">Try highlighting this sample text</span>
+                        </div>
+                    </div>
+                    <p class="test-card-desc">
+                        Programmatically clears active text selections instantly using
+                        <code>window.getSelection().removeAllRanges()</code>.
+                    </p>
+                </div>
+
+                <!-- Method 11 -->
+                <div class="test-card" data-category="clipboard">
+                    <div>
+                        <div class="test-card-header">
+                            <div>
+                                <span class="method-tag">Method 11</span>
+                                <h4 class="test-card-title" style="margin-top: 0.5rem;">Keyboard Hotkey Interception
+                                </h4>
+                            </div>
+                            <span class="feedback-badge">Hotkey Intercepted</span>
+                        </div>
+                        <div class="test-target-box" id="test-right-click-11">
+                            <input type="text" value="Try copying with Ctrl+C / Cmd+C" aria-label="Method 11 test input">
+                        </div>
+                    </div>
+                    <p class="test-card-desc">
+                        Blocks keyboard shortcuts like <kbd>Ctrl+C</kbd> / <kbd>Cmd+C</kbd> by listening to keydown
+                        modifier events.
+                    </p>
+                </div>
+
+                <!-- Method 12 -->
+                <div class="test-card" data-category="selection">
+                    <div>
+                        <div class="test-card-header">
+                            <div>
+                                <span class="method-tag">Method 12</span>
+                                <h4 class="test-card-title" style="margin-top: 0.5rem;">CSS ::selection Concealment</h4>
+                            </div>
+                            <span class="feedback-badge">Concealed</span>
+                        </div>
+                        <div class="test-target-box" id="test-right-click-12">
+                            <span style="color: #c9d1d9; font-weight: 500;">Select this text to test highlighting</span>
+                        </div>
+                    </div>
+                    <p class="test-card-desc">
+                        Hides visual text selection highlights using CSS
+                        <code>::selection { background-color: transparent; }</code>.
+                    </p>
+                </div>
+
+                <!-- Method 13 -->
+                <div class="test-card" data-category="selection">
+                    <div>
+                        <div class="test-card-header">
+                            <div>
+                                <span class="method-tag">Method 13</span>
+                                <h4 class="test-card-title" style="margin-top: 0.5rem;">Input Field Overlay Mask</h4>
+                            </div>
+                            <span class="feedback-badge">Masked</span>
+                        </div>
+                        <div class="test-target-box" id="test-right-click-13">
+                            <div style="position: relative; width: 100%;">
+                                <input type="text" value="Select or copy this text" aria-label="Method 13 test input" readonly>
+                                <div class="overlap" style="position: absolute; inset: 0;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="test-card-desc">
+                        Prevents clicking, dragging, or right-clicking on an input element by covering it with a
+                        transparent overlay.
+                    </p>
+                </div>
+
+                <!-- Method 14 -->
+                <div class="test-card" data-category="clipboard">
+                    <div>
+                        <div class="test-card-header">
+                            <div>
+                                <span class="method-tag">Method 14</span>
+                                <h4 class="test-card-title" style="margin-top: 0.5rem;">Input Length Delta Restriction
+                                </h4>
+                            </div>
+                            <span class="feedback-badge">Reverted</span>
+                        </div>
+                        <div class="test-target-box" id="test-right-click-14">
+                            <input type="text" placeholder="Pasting >2 characters will be blocked..." aria-label="Method 14 test input">
+                        </div>
+                    </div>
+                    <p class="test-card-desc">
+                        Restricts clipboard pasting by checking input length deltas on input events and reverting
+                        multi-character pastes.
+                    </p>
+                </div>
+
+                <!-- Method 15 -->
+                <div class="test-card" data-category="media">
+                    <div>
+                        <div class="test-card-header">
+                            <div>
+                                <span class="method-tag">Method 15</span>
+                                <h4 class="test-card-title" style="margin-top: 0.5rem;">HTML5 Canvas Overlay Protection
+                                </h4>
+                            </div>
+                            <span class="feedback-badge">Canvas Protected</span>
+                        </div>
+                        <div class="test-target-box" id="test-right-click-15">
+                            <div style="position: relative; display: inline-block;">
+                                <canvas id="asdsdwe" width="92" height="92" style="pointer-events: none;"></canvas>
+                                <div class="overlap" style="position: absolute; inset: 0;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="test-card-desc">
+                        Renders graphics onto an HTML5 <code>&lt;canvas&gt;</code> element combined with CSS
+                        <code>pointer-events: none</code> and overlay masking.
+                    </p>
+                </div>
+
+                <!-- Method 16 -->
+                <div class="test-card" data-category="context">
+                    <div>
+                        <div class="test-card-header">
+                            <div>
+                                <span class="method-tag">Method 16</span>
+                                <h4 class="test-card-title" style="margin-top: 0.5rem;">CSS Background Image Context
+                                </h4>
+                            </div>
+                            <span class="feedback-badge">No Image Menu</span>
+                        </div>
+                        <div class="test-target-box" id="test-right-click-16"
+                            style="background: url('img.svg') no-repeat center; background-size: contain; height: 92px;">
+                        </div>
+                    </div>
+                    <p class="test-card-desc">
+                        Displays image content as a CSS <code>background-image</code> property instead of an
+                        <code>&lt;img&gt;</code> tag to suppress image context menus.
+                    </p>
+                </div>
+
+            </div>
+        </section>
+
     </main>
 
+    <footer class="site-footer">
+        <div class="container" style="display: block;">
+            <p>&copy; 2026 <span class="user-name-js"></span>. Built with code and conviction.</p>
+        </div>
+    </footer>
+
+    <script src="../js/jquery-3.2.1.min.js"></script>
+    <script src="../js/github-fetch.js?v=24"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // Tab Switching
-            const tabButtons = document.querySelectorAll('.tab-btn');
-            tabButtons.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const tabId = btn.getAttribute('data-tab');
-                    tabButtons.forEach(b => {
-                        if (b.getAttribute('data-tab') === tabId) {
-                            b.className = "tab-btn px-2.5 py-1.5 text-xs font-medium rounded transition-all flex items-center gap-1.5 bg-vscode-accent text-white shadow";
-                        } else {
-                            b.className = "tab-btn px-2.5 py-1.5 text-xs font-medium rounded transition-all flex items-center gap-1.5 text-vscode-muted hover:text-white hover:bg-vscode-hover";
-                        }
-                    });
-                    ['jwt', 'regex', 'hash', 'diff'].forEach(t => {
-                        const view = document.getElementById(`tool-${t}`);
-                        if (t === tabId) view.classList.remove('hidden');
-                        else view.classList.add('hidden');
-                    });
-                    if (tabId === 'jwt') decodeJwt();
-                    if (tabId === 'regex') runRegex();
-                    if (tabId === 'hash') generateHashes();
-                    if (tabId === 'diff') computeDiff();
-                });
-            });
-
-            function showNotification(message) {
-                const notif = document.createElement('div');
-                notif.className = 'fixed bottom-4 right-4 bg-vscode-accent text-white text-xs px-4 py-2 rounded shadow-lg z-50 font-mono';
-                notif.textContent = message;
-                document.body.appendChild(notif);
-                setTimeout(() => notif.remove(), 2000);
-            }
-
-            // --- 1. JWT DECODER ---
-            const jwtInput = document.getElementById('jwt-input');
-            const jwtHeader = document.getElementById('jwt-header');
-            const jwtOutputJson = document.getElementById('jwt-output-json');
-            const jwtStatus = document.getElementById('jwt-status');
-            
-            function safeBase64Decode(str) {
-                let output = str.replace(/-/g, '+').replace(/_/g, '/');
-                switch (output.length % 4) {
-                    case 0: break;
-                    case 2: output += '=='; break;
-                    case 3: output += '='; break;
-                    default: throw new Error('Illegal base64url string!');
-                }
-                return decodeURIComponent(atob(output).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
-            }
-
-            function decodeJwt() {
-                const token = jwtInput.value.trim();
-                if (!token) {
-                    jwtHeader.textContent = '{ }';
-                    jwtOutputJson.textContent = '{ }';
-                    jwtStatus.innerHTML = `<span class="w-2 h-2 rounded-full bg-vscode-muted"></span><span>Waiting for token input...</span>`;
-                    return;
-                }
-                const parts = token.split('.');
-                if (parts.length !== 3) {
-                    jwtHeader.textContent = 'Invalid format';
-                    jwtOutputJson.textContent = 'JWT must have 3 parts separated by dots.';
-                    jwtStatus.innerHTML = `<span class="w-2 h-2 rounded-full bg-red-500"></span><span class="text-red-400">Malformed token</span>`;
-                    return;
-                }
-                try {
-                    const header = JSON.parse(safeBase64Decode(parts[0]));
-                    const payload = JSON.parse(safeBase64Decode(parts[1]));
-                    jwtHeader.textContent = JSON.stringify(header, null, 2);
-                    jwtOutputJson.textContent = JSON.stringify(payload, null, 2);
-                    jwtStatus.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400"></span><span class="text-vscode-green">Decoded Successfully</span>`;
-                } catch (e) {
-                    jwtHeader.textContent = 'Error';
-                    jwtOutputJson.textContent = e.message;
-                    jwtStatus.innerHTML = `<span class="w-2 h-2 rounded-full bg-red-500"></span><span class="text-red-400">Decoding failed</span>`;
-                }
-            }
-
-            jwtInput.addEventListener('input', decodeJwt);
-            document.getElementById('jwt-clear').addEventListener('click', () => { jwtInput.value = ''; decodeJwt(); });
-            document.getElementById('jwt-load-sample').addEventListener('click', () => {
-                jwtInput.value = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ4Q09ORkxpQ1RJT054IiwibmFtZSI6Ik1pY2hhZWwiLCJpYXQiOjE3NTAwMDAwMDAsImV4cCI6MjAwMDAwMDAwMH0.signature';
-                decodeJwt();
-            });
-            document.getElementById('jwt-copy').addEventListener('click', () => {
-                navigator.clipboard.writeText(jwtOutputJson.textContent);
-                showNotification('Copied JSON to clipboard!');
-            });
-
-            // --- 2. REGEX TESTER ---
-            const regexPattern = document.getElementById('regex-pattern');
-            const regexFlags = document.getElementById('regex-flags');
-            const regexReplacement = document.getElementById('regex-replacement');
-            const regexInput = document.getElementById('regex-input');
-            const regexMatchCount = document.getElementById('regex-match-count');
-            const regexReplacedOutput = document.getElementById('regex-replaced-output');
-            const regexMatchesList = document.getElementById('regex-matches-list');
-
-            const regexPresets = {
-                email: { pattern: '([a-zA-Z0-9_\\.-]+)@([\\w\\.-]+)\\.([a-z\\.]{2,6})', flags: 'gm', text: 'Reach us at support@xconflictionx.cc or https://xconflictionx.cc/contact/.' },
-                url: { pattern: 'https?:\\/\\/(?:[-\\w]+\\.)+[\\w-]+(?:\\/[\\w-./?%&=]*)?', flags: 'gm', text: 'Visit https://xconflictionx.cc/tools/ or https://github.com/xCONFLiCTiONx for source code.' },
-                ipv4: { pattern: '\\b(?:\\d{1,3}\\.){3}\\d{1,3}\\b', flags: 'gm', text: 'Server IP addresses: 192.168.1.1, 10.0.0.254, and 127.0.0.1.' },
-                uuid: { pattern: '\\b[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\\b', flags: 'gmi', text: 'Active Session ID: 123e4567-e89b-12d3-a456-426614174000.' }
-            };
-
-            document.querySelectorAll('.regex-preset').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const presetKey = btn.getAttribute('data-preset');
-                    const preset = regexPresets[presetKey];
-                    if (preset) {
-                        regexPattern.value = preset.pattern;
-                        regexFlags.value = preset.flags;
-                        regexInput.value = preset.text;
-                        runRegex();
-                        showNotification(`Loaded ${presetKey.toUpperCase()} preset!`);
-                    }
-                });
-            });
-
-            function escapeHtml(str) {
-                return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-            }
-
-            function runRegex() {
-                const pattern = regexPattern.value;
-                const flags = regexFlags.value;
-                const text = regexInput.value;
-                const replacement = regexReplacement.value;
-
-                if (!pattern) {
-                    regexMatchCount.textContent = '0 matches';
-                    regexMatchesList.innerHTML = '<span class="text-vscode-muted">Enter pattern...</span>';
-                    regexReplacedOutput.textContent = text;
-                    return;
-                }
-
-                try {
-                    const regex = new RegExp(pattern, flags);
-                    regexReplacedOutput.textContent = text.replace(regex, replacement);
-
-                    let matches = [];
-                    let match;
-                    if (regex.global) {
-                        while ((match = regex.exec(text)) !== null) {
-                            matches.push({ match: match[0], index: match.index, groups: match.slice(1) });
-                            if (match.index === regex.lastIndex) regex.lastIndex++;
-                        }
-                    } else {
-                        match = regex.exec(text);
-                        if (match) matches.push({ match: match[0], index: match.index, groups: match.slice(1) });
-                    }
-
-                    regexMatchCount.textContent = `${matches.length} match${matches.length === 1 ? '' : 'es'}`;
-                    if (matches.length === 0) {
-                        regexMatchesList.innerHTML = '<span class="text-vscode-muted">No matches found.</span>';
-                    } else {
-                        regexMatchesList.innerHTML = matches.map((m, i) => `
-                            <div class="bg-vscode-input p-2 rounded border border-vscode-border flex flex-col gap-1">
-                                <div class="flex justify-between text-[10px] text-vscode-muted font-bold uppercase">
-                                    <span>Match #${i + 1} (Index: ${m.index})</span>
-                                    <span class="text-vscode-green">${escapeHtml(m.match)}</span>
-                                </div>
-                                ${m.groups.length > 0 ? `<div class="text-[11px] text-vscode-orange pl-2 border-l border-vscode-accent">Groups: ${m.groups.map(g => `<span>${escapeHtml(g || '')}</span>`).join(', ')}</div>` : ''}
-                            </div>
-                        `).join('');
-                    }
-                } catch (e) {
-                    regexMatchCount.textContent = 'Error';
-                    regexMatchesList.innerHTML = `<span class="text-red-400">Invalid Regex: ${e.message}</span>`;
-                }
-            }
-
-            [regexPattern, regexFlags, regexReplacement, regexInput].forEach(el => {
-                el.addEventListener('input', runRegex);
-            });
-            document.getElementById('regex-clear').addEventListener('click', () => { regexInput.value = ''; runRegex(); });
-
-            // --- 3. HASH GENERATOR ---
-            const hashInput = document.getElementById('hash-input');
-            const hashCharsCount = document.getElementById('hash-chars-count');
-
-            async function generateHashes() {
-                const text = hashInput.value;
-                hashCharsCount.textContent = `${text.length} chars`;
-                if (!text) {
-                    ['hash-sha256', 'hash-sha384', 'hash-sha512', 'hash-md5'].forEach(id => document.getElementById(id).value = '');
-                    return;
-                }
-                const encoder = new TextEncoder();
-                const data = encoder.encode(text);
-
-                async function digest(algo) {
-                    const hashBuffer = await crypto.subtle.digest(algo, data);
-                    return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
-                }
-
-                document.getElementById('hash-sha256').value = await digest('SHA-256');
-                document.getElementById('hash-sha384').value = await digest('SHA-384');
-                document.getElementById('hash-sha512').value = await digest('SHA-512');
-                document.getElementById('hash-md5').value = (await digest('SHA-256')).substring(0, 32);
-            }
-
-            hashInput.addEventListener('input', generateHashes);
-            document.getElementById('hash-clear').addEventListener('click', () => { hashInput.value = ''; generateHashes(); });
-            document.querySelectorAll('.hash-copy-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const targetId = btn.getAttribute('data-target');
-                    const val = document.getElementById(targetId).value;
-                    if (val) {
-                        navigator.clipboard.writeText(val);
-                        showNotification('Copied hash to clipboard!');
-                    }
-                });
-            });
-
-            // --- 4. TEXT DIFF TOOL ---
-            const diffA = document.getElementById('diff-input-a');
-            const diffB = document.getElementById('diff-input-b');
-            const diffOutput = document.getElementById('diff-output');
-            const diffStats = document.getElementById('diff-stats');
-
-            function computeDiff() {
-                const linesA = diffA.value.split('\n');
-                const linesB = diffB.value.split('\n');
-                
-                let html = '';
-                let additions = 0;
-                let deletions = 0;
-
-                const maxLen = Math.max(linesA.length, linesB.length);
-                for (let i = 0; i < maxLen; i++) {
-                    const lineA = linesA[i];
-                    const lineB = linesB[i];
-
-                    if (lineA === lineB) {
-                        html += `<div class="text-vscode-muted px-2 py-0.5">&nbsp;&nbsp; ${escapeHtml(lineA !== undefined ? lineA : '')}</div>`;
-                    } else {
-                        if (lineA !== undefined) {
-                            deletions++;
-                            html += `<div class="bg-red-950/40 text-red-300 px-2 py-0.5">- &nbsp;${escapeHtml(lineA)}</div>`;
-                        }
-                        if (lineB !== undefined) {
-                            additions++;
-                            html += `<div class="bg-emerald-950/40 text-emerald-300 px-2 py-0.5">+ &nbsp;${escapeHtml(lineB)}</div>`;
-                        }
-                    }
-                }
-                diffOutput.innerHTML = html || '<span class="text-vscode-muted">No text to compare.</span>';
-                diffStats.textContent = `${additions} addition${additions === 1 ? '' : 's'}, ${deletions} deletion${deletions === 1 ? '' : 's'}`;
-            }
-
-            [diffA, diffB].forEach(el => el.addEventListener('input', computeDiff));
-            document.getElementById('diff-clear-a').addEventListener('click', () => { diffA.value = ''; computeDiff(); });
-            document.getElementById('diff-clear-b').addEventListener('click', () => { diffB.value = ''; computeDiff(); });
-
-            // Initial load trigger
-            decodeJwt();
-            runRegex();
-            generateHashes();
-            computeDiff();
+        // Mobile Menu Toggle
+        $('#menuToggle').click(function() {
+            $('#navLinks').toggleClass('active');
+            $(this).find('i').toggleClass('im-menu im-x-mark');
         });
+
+        // Event Feedback Helper
+        function showFeedback(element, text) {
+            const card = element.closest('.test-card');
+            if (!card) return;
+            const badge = card.querySelector('.feedback-badge');
+            if (badge) {
+                badge.textContent = text;
+                badge.classList.add('active');
+                clearTimeout(badge.timer);
+                badge.timer = setTimeout(() => {
+                    badge.classList.remove('active');
+                }, 1800);
+            }
+        }
+
+        // Test Methods Config Implementation
+        var config = {
+            stop: function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+                showFeedback(e.currentTarget || e.target, "Event Blocked");
+            },
+            remove: function(e) {
+                window.getSelection().removeAllRanges();
+                showFeedback(e.currentTarget || e.target, "Selection Cleared");
+            },
+            test: {
+                right: {
+                    click: {
+                        action: function() {
+                            // Method 1: Inline + feedback
+                            const m1 = document.getElementById("test-right-click-1");
+                            if (m1) {
+                                m1.addEventListener("contextmenu", function(e) {
+                                    showFeedback(e.currentTarget, "Inline Blocked");
+                                });
+                            }
+
+                            // Method 2: Input contextmenu
+                            const m2 = document.getElementById("test-right-click-2");
+                            if (m2 && m2.querySelector("input")) {
+                                m2.querySelector("input").addEventListener("contextmenu", config.stop);
+                            }
+
+                            // Method 3: Input paste
+                            const m3 = document.getElementById("test-right-click-3");
+                            if (m3 && m3.querySelector("input")) {
+                                m3.querySelector("input").addEventListener("paste", config.stop);
+                            }
+
+                            // Method 4: Image contextmenu
+                            const m4 = document.getElementById("test-right-click-4");
+                            if (m4 && m4.querySelector("img")) {
+                                m4.querySelector("img").addEventListener("contextmenu", config.stop);
+                            }
+
+                            // Method 5: Image contextmenu alert
+                            const m5 = document.getElementById("test-right-click-5");
+                            if (m5 && m5.querySelector("img")) {
+                                m5.querySelector("img").addEventListener("contextmenu", function(e) {
+                                    showFeedback(e.currentTarget, "Alert Triggered");
+                                    window.alert("Context-menu is not allowed!");
+                                    config.stop(e);
+                                    e.returnValue = true;
+                                }, true);
+                            }
+
+                            // Method 6: Image CSS pointer-events: none -> Container catches event
+                            const m6 = document.getElementById("test-right-click-6");
+                            if (m6) {
+                                m6.addEventListener("contextmenu", config.stop);
+                            }
+
+                            // Method 7: Overlay mask contextmenu
+                            const m7 = document.getElementById("test-right-click-7");
+                            if (m7) {
+                                const overlap = m7.querySelector(".overlap");
+                                if (overlap) overlap.addEventListener("contextmenu", config.stop);
+                                m7.addEventListener("contextmenu", config.stop);
+                            }
+
+                            // Method 8: Overlay mask + pointer-events: none
+                            const m8 = document.getElementById("test-right-click-8");
+                            if (m8) {
+                                const overlap = m8.querySelector(".overlap");
+                                if (overlap) overlap.addEventListener("contextmenu", config.stop);
+                                m8.addEventListener("contextmenu", config.stop);
+                            }
+
+                            // Method 9: selectstart
+                            const m9 = document.getElementById("test-right-click-9");
+                            if (m9) {
+                                m9.addEventListener("selectstart", config.stop, true);
+                                m9.addEventListener("contextmenu", config.stop);
+                            }
+
+                            // Method 10: Selection range removal
+                            const m10 = document.getElementById("test-right-click-10");
+                            if (m10) {
+                                m10.addEventListener("mouseup", config.remove);
+                                m10.addEventListener("keyup", config.remove);
+                                m10.addEventListener("contextmenu", config.remove);
+                                m10.addEventListener("touchend", config.remove);
+                            }
+
+                            // Method 11: Keyboard hotkey blocking (Ctrl+C / Cmd+C)
+                            const m11 = document.getElementById("test-right-click-11");
+                            if (m11 && m11.querySelector("input")) {
+                                m11.querySelector("input").onkeydown = function(e) {
+                                    if (e.ctrlKey || e.shiftKey || e.altKey || e.metaKey) {
+                                        showFeedback(e.currentTarget, "Hotkey Intercepted");
+                                        e.preventDefault();
+                                        return false;
+                                    }
+                                };
+                                m11.querySelector("input").addEventListener("contextmenu", config.stop);
+                            }
+
+                            // Method 13: Input overlay mask
+                            const m13 = document.getElementById("test-right-click-13");
+                            if (m13) {
+                                const overlap = m13.querySelector(".overlap");
+                                if (overlap) overlap.addEventListener("contextmenu", config.stop);
+                                m13.addEventListener("contextmenu", config.stop);
+                            }
+
+                            // Method 14: Input paste delta restriction (>2 chars)
+                            const m14 = document.getElementById("test-right-click-14");
+                            if (m14 && m14.querySelector("input")) {
+                                let lastValue = "";
+                                const inputEl = m14.querySelector("input");
+                                const revertMessage = target => {
+                                    target.classList.add("forbidden");
+                                    showFeedback(target, "Paste >2 Chars Blocked");
+                                    setTimeout(() => target.classList.remove("forbidden"), 500);
+                                    requestAnimationFrame(() => {
+                                        target.value = lastValue;
+                                    });
+                                };
+                                inputEl.addEventListener("input", function(e) {
+                                    if (e.target.value.length - lastValue.length > 2) {
+                                        return revertMessage(e.target);
+                                    }
+                                    lastValue = e.target.value;
+                                });
+                            }
+
+                            // Method 15: Canvas overlay protection
+                            const m15 = document.getElementById("test-right-click-15");
+                            if (m15) {
+                                const overlap = m15.querySelector(".overlap");
+                                if (overlap) overlap.addEventListener("contextmenu", config.stop);
+                                m15.addEventListener("contextmenu", config.stop);
+
+                                const canvas = document.getElementById("asdsdwe");
+                                if (canvas) {
+                                    const ctx = canvas.getContext("2d");
+                                    const img = new Image();
+                                    img.src = "img.svg";
+                                    img.onload = function() {
+                                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                                    };
+                                }
+                            }
+
+                            // Method 16: CSS Background image contextmenu
+                            const m16 = document.getElementById("test-right-click-16");
+                            if (m16) {
+                                m16.addEventListener("contextmenu", config.stop);
+                            }
+                        }
+                    }
+                }
+            }
+        };
+
+        // Initialize tests on page load
+        window.addEventListener("load", function() {
+            config.test.right.click.action();
+        });
+
+        // Search and Category Filter Logic
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        const searchInput = document.getElementById('search-tests');
+        const testCards = document.querySelectorAll('.test-card');
+
+        function filterScenarios() {
+            const activeCategory = document.querySelector('.filter-btn.active').getAttribute('data-category');
+            const searchQuery = searchInput.value.toLowerCase().trim();
+
+            testCards.forEach(card => {
+                const cardCategory = card.getAttribute('data-category');
+                const cardText = card.textContent.toLowerCase();
+
+                const categoryMatches = (activeCategory === 'all' || cardCategory === activeCategory);
+                const searchMatches = !searchQuery || cardText.includes(searchQuery);
+
+                if (categoryMatches && searchMatches) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                filterBtns.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                filterScenarios();
+            });
+        });
+
+        searchInput.addEventListener('input', filterScenarios);
     </script>
 </body>
 
