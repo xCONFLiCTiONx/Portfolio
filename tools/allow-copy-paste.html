@@ -522,7 +522,7 @@
                         <div class="test-target-box" id="test-right-click-8">
                             <div style="position: relative; display: inline-block;">
                                 <img src="img.svg" width="92" height="92" alt="Protected Graphic" style="pointer-events: none;">
-                                <div style="position: absolute; inset: 0;"></div>
+                                <div class="overlap" style="position: absolute; inset: 0;"></div>
                             </div>
                         </div>
                     </div>
@@ -620,7 +620,7 @@
                         <div class="test-target-box" id="test-right-click-13">
                             <div style="position: relative; width: 100%;">
                                 <input type="text" value="Select or copy this text" aria-label="Method 13 test input" readonly>
-                                <div style="position: absolute; inset: 0;"></div>
+                                <div class="overlap" style="position: absolute; inset: 0;"></div>
                             </div>
                         </div>
                     </div>
@@ -661,7 +661,7 @@
                         <div class="test-target-box" id="test-right-click-15">
                             <div style="position: relative; display: inline-block;">
                                 <canvas id="asdsdwe" width="92" height="92" style="pointer-events: none;"></canvas>
-                                <div style="position: absolute; inset: 0;"></div>
+                                <div class="overlap" style="position: absolute; inset: 0;"></div>
                             </div>
                         </div>
                     </div>
@@ -739,7 +739,7 @@
                 right: {
                     click: {
                         action: function() {
-                            // Method 1: Feedback listener
+                            // Method 1: Inline + feedback
                             const m1 = document.getElementById("test-right-click-1");
                             if (m1) {
                                 m1.addEventListener("contextmenu", function(e) {
@@ -776,19 +776,36 @@
                                 }, true);
                             }
 
-                            // Method 7: Overlay contextmenu
+                            // Method 6: Image CSS pointer-events: none -> Container catches event
+                            const m6 = document.getElementById("test-right-click-6");
+                            if (m6) {
+                                m6.addEventListener("contextmenu", config.stop);
+                            }
+
+                            // Method 7: Overlay mask contextmenu
                             const m7 = document.getElementById("test-right-click-7");
-                            if (m7 && m7.querySelector(".overlap")) {
-                                m7.querySelector(".overlap").addEventListener("contextmenu", config.stop);
+                            if (m7) {
+                                const overlap = m7.querySelector(".overlap");
+                                if (overlap) overlap.addEventListener("contextmenu", config.stop);
+                                m7.addEventListener("contextmenu", config.stop);
+                            }
+
+                            // Method 8: Overlay mask + pointer-events: none
+                            const m8 = document.getElementById("test-right-click-8");
+                            if (m8) {
+                                const overlap = m8.querySelector(".overlap");
+                                if (overlap) overlap.addEventListener("contextmenu", config.stop);
+                                m8.addEventListener("contextmenu", config.stop);
                             }
 
                             // Method 9: selectstart
                             const m9 = document.getElementById("test-right-click-9");
                             if (m9) {
                                 m9.addEventListener("selectstart", config.stop, true);
+                                m9.addEventListener("contextmenu", config.stop);
                             }
 
-                            // Method 10: removeAllRanges
+                            // Method 10: Selection range removal
                             const m10 = document.getElementById("test-right-click-10");
                             if (m10) {
                                 m10.addEventListener("mouseup", config.remove);
@@ -807,6 +824,15 @@
                                         return false;
                                     }
                                 };
+                                m11.querySelector("input").addEventListener("contextmenu", config.stop);
+                            }
+
+                            // Method 13: Input overlay mask
+                            const m13 = document.getElementById("test-right-click-13");
+                            if (m13) {
+                                const overlap = m13.querySelector(".overlap");
+                                if (overlap) overlap.addEventListener("contextmenu", config.stop);
+                                m13.addEventListener("contextmenu", config.stop);
                             }
 
                             // Method 14: Input paste delta restriction (>2 chars)
@@ -830,15 +856,28 @@
                                 });
                             }
 
-                            // Method 15: Canvas graphic drawing
-                            const canvas = document.getElementById("asdsdwe");
-                            if (canvas) {
-                                const ctx = canvas.getContext("2d");
-                                const img = new Image();
-                                img.src = "img.svg";
-                                img.onload = function() {
-                                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                                };
+                            // Method 15: Canvas overlay protection
+                            const m15 = document.getElementById("test-right-click-15");
+                            if (m15) {
+                                const overlap = m15.querySelector(".overlap");
+                                if (overlap) overlap.addEventListener("contextmenu", config.stop);
+                                m15.addEventListener("contextmenu", config.stop);
+
+                                const canvas = document.getElementById("asdsdwe");
+                                if (canvas) {
+                                    const ctx = canvas.getContext("2d");
+                                    const img = new Image();
+                                    img.src = "img.svg";
+                                    img.onload = function() {
+                                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                                    };
+                                }
+                            }
+
+                            // Method 16: CSS Background image contextmenu
+                            const m16 = document.getElementById("test-right-click-16");
+                            if (m16) {
+                                m16.addEventListener("contextmenu", config.stop);
                             }
                         }
                     }
