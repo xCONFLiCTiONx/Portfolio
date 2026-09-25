@@ -80,14 +80,14 @@
         <div
             class="flex items-center space-x-2 text-xs code-font bg-vscode-input px-3 py-1.5 rounded border border-vscode-border text-vscode-muted">
             <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span>Client-Side Only • Zero Server Calls</span>
+            <span>Client-Side Only</span>
         </div>
     </header>
 
     <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex flex-col">
         <!-- Intro & Tab Selector -->
         <div
-            class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 pb-4 border-b border-vscode-border gap-4">
+            class="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6 pb-4 border-b border-vscode-border gap-4">
             <div>
                 <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
                     <span class="text-vscode-accent">&gt;_</span> Developer Swiss Army Knife
@@ -96,23 +96,22 @@
                     100% locally in your browser.</p>
             </div>
             <!-- Tab Buttons -->
-            <div
-                class="flex flex-wrap bg-vscode-sidebar p-1 rounded-lg border border-vscode-border self-start sm:self-auto gap-1">
-                <button type="button" data-tab="jwt" class="tab-btn px-3 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-1.5 bg-vscode-accent text-white shadow">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg>
-                    JWT Decoder
+            <div class="flex flex-wrap items-center bg-vscode-sidebar p-1 rounded-lg border border-vscode-border gap-1">
+                <button type="button" data-tab="jwt" class="tab-btn px-2.5 py-1.5 text-xs font-medium rounded transition-all flex items-center gap-1.5 bg-vscode-accent text-white shadow">
+                    <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg>
+                    <span>JWT Decoder</span>
                 </button>
-                <button type="button" data-tab="regex" class="tab-btn px-3 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-1.5 text-vscode-muted hover:text-white hover:bg-vscode-hover">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path></svg>
-                    Regex Tester
+                <button type="button" data-tab="regex" class="tab-btn px-2.5 py-1.5 text-xs font-medium rounded transition-all flex items-center gap-1.5 text-vscode-muted hover:text-white hover:bg-vscode-hover">
+                    <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path></svg>
+                    <span>Regex Tester</span>
                 </button>
-                <button type="button" data-tab="hash" class="tab-btn px-3 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-1.5 text-vscode-muted hover:text-white hover:bg-vscode-hover">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"></path></svg>
-                    Hash Generator
+                <button type="button" data-tab="hash" class="tab-btn px-2.5 py-1.5 text-xs font-medium rounded transition-all flex items-center gap-1.5 text-vscode-muted hover:text-white hover:bg-vscode-hover">
+                    <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"></path></svg>
+                    <span>Hash Gen</span>
                 </button>
-                <button type="button" data-tab="diff" class="tab-btn px-3 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-1.5 text-vscode-muted hover:text-white hover:bg-vscode-hover">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
-                    Text Diff
+                <button type="button" data-tab="diff" class="tab-btn px-2.5 py-1.5 text-xs font-medium rounded transition-all flex items-center gap-1.5 text-vscode-muted hover:text-white hover:bg-vscode-hover">
+                    <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
+                    <span>Text Diff</span>
                 </button>
             </div>
         </div>
@@ -348,9 +347,9 @@
                     const tabId = btn.getAttribute('data-tab');
                     tabButtons.forEach(b => {
                         if (b.getAttribute('data-tab') === tabId) {
-                            b.className = "tab-btn px-3 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-1.5 bg-vscode-accent text-white shadow";
+                            b.className = "tab-btn px-2.5 py-1.5 text-xs font-medium rounded transition-all flex items-center gap-1.5 bg-vscode-accent text-white shadow";
                         } else {
-                            b.className = "tab-btn px-3 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-1.5 text-vscode-muted hover:text-white hover:bg-vscode-hover";
+                            b.className = "tab-btn px-2.5 py-1.5 text-xs font-medium rounded transition-all flex items-center gap-1.5 text-vscode-muted hover:text-white hover:bg-vscode-hover";
                         }
                     });
                     ['jwt', 'regex', 'hash', 'diff'].forEach(t => {
@@ -539,7 +538,6 @@
                 document.getElementById('hash-sha256').value = await digest('SHA-256');
                 document.getElementById('hash-sha384').value = await digest('SHA-384');
                 document.getElementById('hash-sha512').value = await digest('SHA-512');
-                // Client-side quick simulated MD5 / fallback digest for UI
                 document.getElementById('hash-md5').value = (await digest('SHA-256')).substring(0, 32);
             }
 
