@@ -245,6 +245,14 @@
       transform: scale(0.95);
     }
 
+    .thumbnail-card-placeholder {
+      border: 2px dashed var(--accent-color);
+      border-radius: 12px;
+      background: rgba(88, 166, 255, 0.08);
+      min-height: 220px;
+      transition: all 0.15s ease;
+    }
+
     .card-badge {
       position: absolute;
       top: 6px;
@@ -287,6 +295,7 @@
       transition: opacity 0.2s ease;
       backdrop-filter: blur(2px);
       z-index: 5;
+      pointer-events: none;
     }
 
     .canvas-container:hover .thumbnail-actions {
@@ -306,6 +315,7 @@
       cursor: pointer;
       transition: all 0.2s ease;
       font-size: 16px;
+      pointer-events: auto;
     }
 
     .icon-btn:hover {
@@ -325,6 +335,7 @@
       object-fit: contain;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
       transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      pointer-events: none;
     }
 
     .thumbnail-card .canvas-container:hover canvas {

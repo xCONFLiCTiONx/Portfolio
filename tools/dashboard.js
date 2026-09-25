@@ -411,6 +411,16 @@ async function processPdfFile(file) {
   }
 }
 
+let dragPlaceholder = null;
+
+function getOrCreatePlaceholder() {
+  if (!dragPlaceholder) {
+    dragPlaceholder = document.createElement('div');
+    dragPlaceholder.className = 'thumbnail-card-placeholder';
+  }
+  return dragPlaceholder;
+}
+
 function createCardElement(pageId, fileName, subtitleText) {
   const card = document.createElement('div');
   card.className = 'thumbnail-card';
@@ -433,13 +443,27 @@ function createCardElement(pageId, fileName, subtitleText) {
 
   const createIconBtn = (html, title, className, onClick) => {
     const btn = document.createElement('button');
+    btn.type = 'button';
     btn.className = `icon-btn ${className || ''}`;
     btn.innerHTML = html;
     btn.title = title;
-    btn.addEventListener('click', (e) => {
+    btn.setAttribute('draggable', 'false');
+
+    const handleAction = (e) => {
       e.stopPropagation();
+      e.preventDefault();
       onClick(e);
+    };
+
+    btn.addEventListener('mousedown', (e) => e.stopPropagation());
+    btn.addEventListener('pointerdown', (e) => e.stopPropagation());
+    btn.addEventListener('touchstart', (e) => e.stopPropagation(), { passive: true });
+    btn.addEventListener('dragstart', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
     });
+    btn.addEventListener('click', handleAction);
+
     return btn;
   };
 
@@ -474,14 +498,86 @@ function createCardElement(pageId, fileName, subtitleText) {
   meta.appendChild(subtitle);
   card.appendChild(meta);
 
+  // Native HTML5 Drag and Drop events
   card.addEventListener('dragstart', (e) => {
     card.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('text/plain', pageId);
+
+    const placeholder = getOrCreatePlaceholder();
+    placeholder.style.height = `${card.offsetHeight || 220}px`;
+    if (card.nextSibling) {
+      card.parentNode.insertBefore(placeholder, card.nextSibling);
+    } else {
+      card.parentNode.appendChild(placeholder);
+    }
   });
 
   card.addEventListener('dragend', () => {
     card.classList.remove('dragging');
+    if (dragPlaceholder && dragPlaceholder.parentNode) {
+      dragPlaceholder.parentNode.insertBefore(card, dragPlaceholder);
+      dragPlaceholder.remove();
+    }
     updateCardBadges();
+  });
+
+  // Touch support for mobile/tablet drag-and-drop
+  let touchStartX = 0;
+  let touchStartY = 0;
+  let isTouchDragging = false;
+
+  card.addEventListener('touchstart', (e) => {
+    if (e.target.closest('.icon-btn')) return;
+    const touch = e.touches[0];
+    touchStartX = touch.clientX;
+    touchStartY = touch.clientY;
+    isTouchDragging = false;
+  }, { passive: true });
+
+  card.addEventListener('touchmove', (e) => {
+    if (e.target.closest('.icon-btn')) return;
+    const touch = e.touches[0];
+    const dx = touch.clientX - touchStartX;
+    const dy = touch.clientY - touchStartY;
+
+    if (!isTouchDragging && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) {
+      isTouchDragging = true;
+      card.classList.add('dragging');
+      const placeholder = getOrCreatePlaceholder();
+      placeholder.style.height = `${card.offsetHeight || 220}px`;
+      if (card.nextSibling) {
+        card.parentNode.insertBefore(placeholder, card.nextSibling);
+      } else {
+        card.parentNode.appendChild(placeholder);
+      }
+    }
+
+    if (isTouchDragging) {
+      e.preventDefault();
+      const placeholder = getOrCreatePlaceholder();
+      const closest = getDragAfterElement(thumbnailContainer, touch.clientX, touch.clientY);
+
+      if (!closest.element) {
+        thumbnailContainer.appendChild(placeholder);
+      } else if (closest.isAfter) {
+        thumbnailContainer.insertBefore(placeholder, closest.element.nextSibling);
+      } else {
+        thumbnailContainer.insertBefore(placeholder, closest.element);
+      }
+    }
+  }, { passive: false });
+
+  card.addEventListener('touchend', () => {
+    if (isTouchDragging) {
+      card.classList.remove('dragging');
+      if (dragPlaceholder && dragPlaceholder.parentNode) {
+        dragPlaceholder.parentNode.insertBefore(card, dragPlaceholder);
+        dragPlaceholder.remove();
+      }
+      updateCardBadges();
+      isTouchDragging = false;
+    }
   });
 
   return card;
@@ -504,22 +600,64 @@ function loadImage(file) {
 
 // 2D Spatial drag-over insertion logic
 thumbnailContainer.addEventListener('dragover', (e) => {
-  e.preventDefault();
-  const draggingCard = document.querySelector('.dragging');
+  // If dragging external files from OS file explorer
+  if (e.dataTransfer && e.dataTransfer.types && Array.from(e.dataTransfer.types).includes('Files')) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+    return;
+  }
+
+  const draggingCard = document.querySelector('.thumbnail-card.dragging');
   if (!draggingCard) return;
 
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+
+  const placeholder = getOrCreatePlaceholder();
   const closest = getDragAfterElement(thumbnailContainer, e.clientX, e.clientY);
+
   if (!closest.element) {
-    thumbnailContainer.appendChild(draggingCard);
+    thumbnailContainer.appendChild(placeholder);
   } else if (closest.isAfter) {
-    thumbnailContainer.insertBefore(draggingCard, closest.element.nextSibling);
+    thumbnailContainer.insertBefore(placeholder, closest.element.nextSibling);
   } else {
-    thumbnailContainer.insertBefore(draggingCard, closest.element);
+    thumbnailContainer.insertBefore(placeholder, closest.element);
+  }
+});
+
+thumbnailContainer.addEventListener('drop', async (e) => {
+  e.preventDefault();
+
+  // Handle external files dropped on workspace
+  if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+    const allowedExtensions = ['.pdf', '.png', '.jpg', '.jpeg', '.webp'];
+    const allowedTypes = ['application/pdf', 'image/png', 'image/jpeg', 'image/webp'];
+
+    const files = Array.from(e.dataTransfer.files).filter(file =>
+      allowedTypes.includes(file.type) ||
+      allowedExtensions.some(ext => file.name.toLowerCase().endsWith(ext))
+    );
+    if (files.length > 0) {
+      await handleFiles(files);
+    }
+    if (dragPlaceholder && dragPlaceholder.parentNode) {
+      dragPlaceholder.remove();
+    }
+    return;
+  }
+
+  // Handle reordered internal cards
+  const draggingCard = document.querySelector('.thumbnail-card.dragging');
+  if (draggingCard && dragPlaceholder && dragPlaceholder.parentNode) {
+    dragPlaceholder.parentNode.insertBefore(draggingCard, dragPlaceholder);
+    dragPlaceholder.remove();
+    draggingCard.classList.remove('dragging');
+    updateCardBadges();
   }
 });
 
 function getDragAfterElement(container, x, y) {
-  const draggableCards = [...container.querySelectorAll('.thumbnail-card:not(.dragging)')];
+  const draggableCards = [...container.querySelectorAll('.thumbnail-card:not(.dragging):not(.thumbnail-card-placeholder)')];
   let closest = { offset: Number.POSITIVE_INFINITY, element: null, isAfter: false };
 
   for (const child of draggableCards) {
@@ -536,6 +674,30 @@ function getDragAfterElement(container, x, y) {
   }
   return closest;
 }
+
+// Window level handlers to prevent browser navigating on external file drops
+window.addEventListener('dragover', (e) => {
+  e.preventDefault();
+});
+
+window.addEventListener('drop', async (e) => {
+  e.preventDefault();
+  if (e.target && (e.target.closest('#dropzone') || e.target.closest('#thumbnail-container'))) {
+    return;
+  }
+  if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+    const allowedExtensions = ['.pdf', '.png', '.jpg', '.jpeg', '.webp'];
+    const allowedTypes = ['application/pdf', 'image/png', 'image/jpeg', 'image/webp'];
+
+    const files = Array.from(e.dataTransfer.files).filter(file =>
+      allowedTypes.includes(file.type) ||
+      allowedExtensions.some(ext => file.name.toLowerCase().endsWith(ext))
+    );
+    if (files.length > 0) {
+      await handleFiles(files);
+    }
+  }
+});
 
 // Update sequence badges
 function updateCardBadges() {
