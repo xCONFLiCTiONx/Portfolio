@@ -200,7 +200,7 @@
                         <button type="button" id="regex-clear" class="text-xs text-vscode-muted hover:text-white">Clear</button>
                     </div>
                     <div class="p-4 flex-1 flex flex-col">
-                        <textarea id="regex-input" class="flex-1 w-full bg-vscode-input text-vscode-text code-font text-xs p-3 rounded border border-vscode-border focus:outline-none focus:border-vscode-accent resize-none min-h-[220px]">Contact us at support@xconflictionx.cc or admin@domain.com. Visit https://xconflictionx.cc/tools/ or call 192.168.1.1 for assistance. UUID: 123e4567-e89b-12d3-a456-426614174000.</textarea>
+                        <textarea id="regex-input" class="flex-1 w-full bg-vscode-input text-vscode-text code-font text-xs p-3 rounded border border-vscode-border focus:outline-none focus:border-vscode-accent resize-none min-h-[220px]">Contact us at support@xconflictionx.cc or https://xconflictionx.cc/contact/. Visit https://xconflictionx.cc/tools/ or call 192.168.1.1 for assistance. UUID: 123e4567-e89b-12d3-a456-426614174000.</textarea>
                     </div>
                 </div>
 
@@ -439,7 +439,7 @@
             const regexMatchesList = document.getElementById('regex-matches-list');
 
             const regexPresets = {
-                email: { pattern: '([a-zA-Z0-9_\\.-]+)@([\\w\\.-]+)\\.([a-z\\.]{2,6})', flags: 'gm', text: 'Reach us at support@xconflictionx.cc or admin@domain.com.' },
+                email: { pattern: '([a-zA-Z0-9_\\.-]+)@([\\w\\.-]+)\\.([a-z\\.]{2,6})', flags: 'gm', text: 'Reach us at support@xconflictionx.cc or https://xconflictionx.cc/contact/.' },
                 url: { pattern: 'https?:\\/\\/(?:[-\\w]+\\.)+[\\w-]+(?:\\/[\\w-./?%&=]*)?', flags: 'gm', text: 'Visit https://xconflictionx.cc/tools/ or https://github.com/xCONFLiCTiONx for source code.' },
                 ipv4: { pattern: '\\b(?:\\d{1,3}\\.){3}\\d{1,3}\\b', flags: 'gm', text: 'Server IP addresses: 192.168.1.1, 10.0.0.254, and 127.0.0.1.' },
                 uuid: { pattern: '\\b[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\\b', flags: 'gmi', text: 'Active Session ID: 123e4567-e89b-12d3-a456-426614174000.' }
