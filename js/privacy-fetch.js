@@ -70,19 +70,23 @@ async function initPrivacy() {
 
             const policyCheckPromises = repos.map(async (repo) => {
                 const branch = repo.default_branch || 'main';
-                const rawUrl = `https://raw.githubusercontent.com/${username}/${repo.name}/${branch}/privacy.md`;
+                const filenames = ['privacy.md', 'PRIVACY.md'];
 
-                try {
-                    const check = await fetch(rawUrl, { method: 'HEAD', cache: 'no-cache' });
-                    if (check.ok) {
-                        return {
-                            name: repo.name,
-                            url: rawUrl,
-                            slug: repo.name.toLowerCase()
-                        };
+                for (const filename of filenames) {
+                    const rawUrl = `https://raw.githubusercontent.com/${username}/${repo.name}/${branch}/${filename}`;
+
+                    try {
+                        const check = await fetch(rawUrl, { method: 'HEAD', cache: 'no-cache' });
+                        if (check.ok) {
+                            return {
+                                name: repo.name,
+                                url: rawUrl,
+                                slug: repo.name.toLowerCase()
+                            };
+                        }
+                    } catch (e) {
+                        // Fail silently for individual repo checks
                     }
-                } catch (e) {
-                    // Fail silently for individual repo checks
                 }
                 return null;
             });
@@ -90,7 +94,7 @@ async function initPrivacy() {
             const foundPolicies = (await Promise.all(policyCheckPromises)).filter(p => p !== null);
 
             if (foundPolicies.length === 0) {
-                selector.html('<option value="" disabled selected>No privacy.md found in any repository.</option>');
+                selector.html('<option value="" disabled selected>No privacy.md or PRIVACY.md found in any repository.</option>');
                 return;
             }
 
