@@ -1,6 +1,6 @@
 /**
  * Dynamic Privacy Policy Fetcher
- * Version: 25 (Per-Repo Discovery)
+ * Version: 26 (Git Tree Discovery - Zero 404 Errors)
  */
 
 console.log('[DEBUG] PRIVACY-FETCH: Script File Loaded');
@@ -25,7 +25,7 @@ async function initPrivacy() {
         const targetPolicy = (urlParams.get('p') || urlParams.get('policy') || '').toLowerCase();
 
         // 1. Setup Change Listener
-        selector.off('change').on('change', async function() {
+        selector.off('change').on('change', async function () {
             const downloadUrl = $(this).val();
             const selectedSlug = $(this).find(':selected').data('slug');
             if (!downloadUrl) return;
@@ -64,29 +64,33 @@ async function initPrivacy() {
         if (reposResponse.ok) {
             const repos = await reposResponse.json();
 
-            // Filter out forks if desired, or keep them. Let's keep them for now.
-            // We need to check which repos have a privacy.md
-            // To avoid hitting rate limits with dozens of API calls, we'll try to check the raw content URL with a HEAD request
-
+            // Check each repo using the Git Tree API to avoid 404 network errors
             const policyCheckPromises = repos.map(async (repo) => {
                 const branch = repo.default_branch || 'main';
-                const filenames = ['privacy.md', 'PRIVACY.md'];
+                const treeUrl = `https://api.github.com/repos/${username}/${repo.name}/git/trees/${branch}?recursive=1`;
 
-                for (const filename of filenames) {
-                    const rawUrl = `https://raw.githubusercontent.com/${username}/${repo.name}/${branch}/${filename}`;
+                try {
+                    const treeResponse = await fetch(treeUrl, fetchOptions);
+                    if (treeResponse.ok) {
+                        const treeData = await treeResponse.json();
+                        if (treeData && treeData.tree) {
+                            // Find any file named privacy.md case-insensitively (handles PRIVACY.md, Privacy.md, etc.)
+                            const privacyFile = treeData.tree.find(
+                                item => item.path && item.path.toLowerCase() === 'privacy.md'
+                            );
 
-                    try {
-                        const check = await fetch(rawUrl, { method: 'HEAD', cache: 'no-cache' });
-                        if (check.ok) {
-                            return {
-                                name: repo.name,
-                                url: rawUrl,
-                                slug: repo.name.toLowerCase()
-                            };
+                            if (privacyFile) {
+                                const rawUrl = `https://raw.githubusercontent.com/${username}/${repo.name}/${branch}/${privacyFile.path}`;
+                                return {
+                                    name: repo.name,
+                                    url: rawUrl,
+                                    slug: repo.name.toLowerCase()
+                                };
+                            }
                         }
-                    } catch (e) {
-                        // Fail silently for individual repo checks
                     }
+                } catch (e) {
+                    // Fail silently for individual repo tree checks
                 }
                 return null;
             });
@@ -94,7 +98,7 @@ async function initPrivacy() {
             const foundPolicies = (await Promise.all(policyCheckPromises)).filter(p => p !== null);
 
             if (foundPolicies.length === 0) {
-                selector.html('<option value="" disabled selected>No privacy.md or PRIVACY.md found in any repository.</option>');
+                selector.html('<option value="" disabled selected>No privacy policy found in any repository.</option>');
                 return;
             }
 
@@ -118,11 +122,10 @@ async function initPrivacy() {
     }
 
     // 3. Handle copy link button
-    copyBtn.off('click').on('click', async function() {
+    copyBtn.off('click').on('click', async function () {
         try {
             await navigator.clipboard.writeText(window.location.href);
-            const originalHtml = $(this).html();
-            $(this).addClass('copied').html('<i class="im im-check-mark"></i> Copied!');
+            const originalHtml = $(this).html(); $(this).addClass('copied').html('<i class="im im-check-mark"></i> Copied!');
             setTimeout(() => { $(this).removeClass('copied').html(originalHtml); }, 2000);
         } catch (err) { console.error('Copy failed', err); }
     });
