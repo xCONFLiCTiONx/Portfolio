@@ -44,11 +44,24 @@
     <style>
       body {
         font-family: "Inter", sans-serif;
-        font-size: 28px!important;
+        font-size: 1.4rem;
       }
 
       .code-font {
         font-family: "JetBrains Mono", monospace;
+      }
+
+      /* Fix Tailwind text size classes scaling under 10px HTML root font-size */
+      main .text-\[10px\] { font-size: 1.0rem !important; }
+      main .text-xs { font-size: 1.15rem !important; }
+      main .text-sm { font-size: 1.2rem !important; }
+      main .text-base { font-size: 1.3rem !important; }
+      main .text-lg { font-size: 1.4rem !important; }
+      main .text-xl { font-size: 1.6rem !important; }
+      main .text-2xl { font-size: 1.8rem !important; }
+
+      main input, main pre, main div[id^="recon-"] {
+        word-break: break-all;
       }
 
       ::-webkit-scrollbar {
