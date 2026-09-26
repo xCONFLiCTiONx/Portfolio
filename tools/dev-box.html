@@ -1,944 +1,1606 @@
 <!DOCTYPE html>
 <html lang="en" class="dark">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Dev Swiss Army Knife | xconflictionx tools</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        vscode: {
-                            bg: '#1e1e1e',
-                            sidebar: '#252526',
-                            border: '#333333',
-                            input: '#3c3c3c',
-                            hover: '#2a2d2e',
-                            accent: '#007acc',
-                            accentHover: '#0098ff',
-                            text: '#d4d4d4',
-                            muted: '#858585',
-                            green: '#4ec9b0',
-                            orange: '#ce9178',
-                            purple: '#c586c0',
-                            blue: '#569cd6'
-                        }
-                    }
-                }
-            }
-        }
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              vscode: {
+                bg: "#1e1e1e",
+                sidebar: "#252526",
+                border: "#333333",
+                input: "#3c3c3c",
+                hover: "#2a2d2e",
+                accent: "#007acc",
+                accentHover: "#0098ff",
+                text: "#d4d4d4",
+                muted: "#858585",
+                green: "#4ec9b0",
+                orange: "#ce9178",
+                purple: "#c586c0",
+                blue: "#569cd6",
+              },
+            },
+          },
+        },
+      };
     </script>
     <!-- Inter Font & JetBrains Mono -->
     <link
-        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap"
-        rel="stylesheet">
-    <link rel="stylesheet" href="../css/main.css">
-    <style>        
-        body {
-            font-family: 'Inter', sans-serif;
-        }
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/main.css" />
+    <style>
+      html,
+      body {
+        font-size: 14px; /* Adjust this up if you want it larger, e.g., 17px or 18px */
+      }
+      body {
+        font-family: "Inter", sans-serif;
+      }
 
-        .code-font {
-            font-family: 'JetBrains Mono', monospace;
-        }
+      .code-font {
+        font-family: "JetBrains Mono", monospace;
+      }
 
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
 
-        ::-webkit-scrollbar-track {
-            background: #1e1e1e;
-        }
+      ::-webkit-scrollbar-track {
+        background: #1e1e1e;
+      }
 
-        ::-webkit-scrollbar-thumb {
-            background: #424242;
-            border-radius: 4px;
-        }
+      ::-webkit-scrollbar-thumb {
+        background: #424242;
+        border-radius: 4px;
+      }
 
-        ::-webkit-scrollbar-thumb:hover {
-            background: #4f4f4f;
-        }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #4f4f4f;
+      }
     </style>
-</head>
+  </head>
 
-<body
-    class="bg-[#0d1117] text-vscode-text min-h-screen flex flex-col antialiased selection:bg-vscode-accent selection:text-white">
-
+  <body
+    class="bg-[#0d1117] text-vscode-text min-h-screen flex flex-col antialiased selection:bg-vscode-accent selection:text-white"
+  >
     <header class="site-header">
-        <nav class="nav-content">
-            <div class="nav-brand">
-                <a href="../index.html">
-                    <span id="header-avatar" class="nav-logo"></span>
-                    <span class="user-name-js">Loading...</span>
-                </a>
-            </div>
-            <button class="menu-toggle" id="menuToggle">
-                <i class="im im-menu"></i>
-            </button>
-            <ul class="nav-links" id="navLinks">
-                <li><a href="../index.html"><i class="im im-home"></i> Overview</a></li>
-                <li><a href="../about.html"><i class="im im-user-male"></i> About</a></li>
-                <li><a href="index.html" class="active"><i class="im im-tools"></i> Tools</a></li>
-                <li><a href="../privacy.html"><i class="im im-shield"></i> Privacy</a></li>
-                <li><a href="../contact.html"><i class="im im-paperplane"></i> Contact</a></li>
-            </ul>
-        </nav>
+      <nav class="nav-content">
+        <div class="nav-brand">
+          <a href="../index.html">
+            <span id="header-avatar" class="nav-logo"></span>
+            <span class="user-name-js">Loading...</span>
+          </a>
+        </div>
+        <button class="menu-toggle" id="menuToggle">
+          <i class="im im-menu"></i>
+        </button>
+        <ul class="nav-links" id="navLinks">
+          <li>
+            <a href="../index.html"><i class="im im-home"></i> Overview</a>
+          </li>
+          <li>
+            <a href="../about.html"><i class="im im-user-male"></i> About</a>
+          </li>
+          <li>
+            <a href="index.html" class="active"
+              ><i class="im im-tools"></i> Tools</a
+            >
+          </li>
+          <li>
+            <a href="../privacy.html"><i class="im im-shield"></i> Privacy</a>
+          </li>
+          <li>
+            <a href="../contact.html"
+              ><i class="im im-paperplane"></i> Contact</a
+            >
+          </li>
+        </ul>
+      </nav>
     </header>
 
     <main class="w-full px-6 md:px-12">
-        <!-- Tool Switcher Sub-nav -->
-        <div style="display: flex; gap: 1rem; background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 0.6rem; margin-bottom: 2.4rem; flex-wrap: wrap;">
-            <a href="index.html" style="display: flex; align-items: center; gap: 0.8rem; padding: 0.8rem 1.6rem; border-radius: 6px; color: #8b949e; font-size: 1.4rem; font-weight: 500; text-decoration: none; border: 1px solid transparent;">
-                <i class="im im-tools"></i> All Tools
-            </a>
-            <a href="pdf-tools.html" style="display: flex; align-items: center; gap: 0.8rem; padding: 0.8rem 1.6rem; border-radius: 6px; color: #8b949e; font-size: 1.4rem; font-weight: 500; text-decoration: none; border: 1px solid transparent;">
-                <i class="im im-file-pdf"></i> Local PDF Studio
-            </a>
-            <a href="dev-box.html" style="display: flex; align-items: center; gap: 0.8rem; padding: 0.8rem 1.6rem; border-radius: 6px; color: #f0f6fc; background: #21262d; border: 1px solid #58a6ff; font-size: 1.4rem; font-weight: 600; text-decoration: none;">
-                <i class="im im-code"></i> Dev Swiss Army Knife
-            </a>
-            <a href="allow-copy-paste.html" style="display: flex; align-items: center; gap: 0.8rem; padding: 0.8rem 1.6rem; border-radius: 6px; color: #8b949e; font-size: 1.4rem; font-weight: 500; text-decoration: none; border: 1px solid transparent;">
-                <i class="im im-shield"></i> Allow Copy-Paste Tester
-            </a>
-        </div>
+      <!-- Tool Switcher Sub-nav -->
+      <div
+        style="
+          display: flex;
+          gap: 1rem;
+          background: #161b22;
+          border: 1px solid #30363d;
+          border-radius: 8px;
+          padding: 0.6rem;
+          margin-bottom: 2.4rem;
+          flex-wrap: wrap;
+        "
+      >
+        <a
+          href="index.html"
+          style="
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 0.8rem 1.6rem;
+            border-radius: 6px;
+            color: #8b949e;
+            font-size: 1.4rem;
+            font-weight: 500;
+            text-decoration: none;
+            border: 1px solid transparent;
+          "
+        >
+          <i class="im im-tools"></i> All Tools
+        </a>
+        <a
+          href="pdf-tools.html"
+          style="
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 0.8rem 1.6rem;
+            border-radius: 6px;
+            color: #8b949e;
+            font-size: 1.4rem;
+            font-weight: 500;
+            text-decoration: none;
+            border: 1px solid transparent;
+          "
+        >
+          <i class="im im-file-pdf"></i> Local PDF Studio
+        </a>
+        <a
+          href="dev-box.html"
+          style="
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 0.8rem 1.6rem;
+            border-radius: 6px;
+            color: #f0f6fc;
+            background: #21262d;
+            border: 1px solid #58a6ff;
+            font-size: 1.4rem;
+            font-weight: 600;
+            text-decoration: none;
+          "
+        >
+          <i class="im im-code"></i> Dev Swiss Army Knife
+        </a>
+        <a
+          href="allow-copy-paste.html"
+          style="
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 0.8rem 1.6rem;
+            border-radius: 6px;
+            color: #8b949e;
+            font-size: 1.4rem;
+            font-weight: 500;
+            text-decoration: none;
+            border: 1px solid transparent;
+          "
+        >
+          <i class="im im-shield"></i> Allow Copy-Paste Tester
+        </a>
+      </div>
 
-        <!-- Intro & Tab Selector -->
+      <!-- Intro & Tab Selector -->
+      <div
+        class="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6 pb-4 border-b border-vscode-border gap-4"
+      >
+        <div>
+          <h1
+            class="text-2xl font-bold tracking-tight text-white flex items-center gap-2"
+          >
+            <span class="text-vscode-accent">&gt;_</span> Developer Swiss Army
+            Knife
+          </h1>
+          <p class="text-sm text-vscode-muted mt-1">
+            Lightning-fast debugging, reconnaissance, and data conversion tools
+            running 100% locally in your browser.
+          </p>
+        </div>
+        <!-- Tab Buttons -->
         <div
-            class="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6 pb-4 border-b border-vscode-border gap-4">
+          class="flex flex-wrap items-center bg-vscode-sidebar p-1 rounded-lg border border-vscode-border gap-1"
+        >
+          <button
+            type="button"
+            data-tab="jwt"
+            class="tab-btn px-2.5 py-1.5 text-xs font-medium rounded transition-all flex items-center gap-1.5 bg-vscode-accent text-white shadow"
+          >
+            <svg
+              class="w-3.5 h-3.5 shrink-0"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
+              ></path>
+            </svg>
+            <span>JWT</span>
+          </button>
+          <button
+            type="button"
+            data-tab="regex"
+            class="tab-btn px-2.5 py-1.5 text-xs font-medium rounded transition-all flex items-center gap-1.5 text-vscode-muted hover:text-white hover:bg-vscode-hover"
+          >
+            <svg
+              class="w-3.5 h-3.5 shrink-0"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"
+              ></path>
+            </svg>
+            <span>Regex</span>
+          </button>
+          <button
+            type="button"
+            data-tab="hash"
+            class="tab-btn px-2.5 py-1.5 text-xs font-medium rounded transition-all flex items-center gap-1.5 text-vscode-muted hover:text-white hover:bg-vscode-hover"
+          >
+            <svg
+              class="w-3.5 h-3.5 shrink-0"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"
+              ></path>
+            </svg>
+            <span>Hash</span>
+          </button>
+          <button
+            type="button"
+            data-tab="diff"
+            class="tab-btn px-2.5 py-1.5 text-xs font-medium rounded transition-all flex items-center gap-1.5 text-vscode-muted hover:text-white hover:bg-vscode-hover"
+          >
+            <svg
+              class="w-3.5 h-3.5 shrink-0"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
+              ></path>
+            </svg>
+            <span>Diff</span>
+          </button>
+          <button
+            type="button"
+            data-tab="recon"
+            class="tab-btn px-2.5 py-1.5 text-xs font-medium rounded transition-all flex items-center gap-1.5 text-vscode-muted hover:text-white hover:bg-vscode-hover"
+          >
+            <svg
+              class="w-3.5 h-3.5 shrink-0"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+              ></path>
+            </svg>
+            <span>Security</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- TOOL 1: JWT Decoder & Encoder -->
+      <div id="tool-jwt" class="tool-view flex-1 flex flex-col gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1">
+          <div
+            class="flex flex-col bg-vscode-sidebar border border-vscode-border rounded-lg overflow-hidden shadow-lg"
+          >
+            <div
+              class="bg-vscode-hover px-4 py-3 border-b border-vscode-border flex justify-between items-center"
+            >
+              <span
+                class="text-xs font-semibold uppercase tracking-wider text-vscode-blue"
+                >Encoded JWT Token (Live Output / Input)</span
+              >
+              <div class="flex items-center gap-3">
+                <button
+                  type="button"
+                  id="jwt-load-sample"
+                  class="text-xs text-vscode-accent hover:underline"
+                >
+                  Load Sample
+                </button>
+                <button
+                  type="button"
+                  id="jwt-clear"
+                  class="text-xs text-vscode-muted hover:text-white"
+                >
+                  Clear
+                </button>
+              </div>
+            </div>
+            <div class="p-4 flex-1 flex flex-col">
+              <textarea
+                id="jwt-input"
+                placeholder="Paste your JWT here or edit payload/header to generate..."
+                class="flex-1 w-full bg-vscode-input text-vscode-text code-font text-xs p-3 rounded border border-vscode-border focus:outline-none focus:border-vscode-accent resize-none min-h-[250px]"
+              ></textarea>
+              <div
+                id="jwt-status"
+                class="mt-3 text-xs flex items-center gap-2 text-vscode-muted"
+              >
+                <span class="w-2 h-2 rounded-full bg-vscode-muted"></span>
+                <span>Waiting for token input...</span>
+              </div>
+            </div>
+          </div>
+
+          <div
+            class="flex flex-col bg-vscode-sidebar border border-vscode-border rounded-lg overflow-hidden shadow-lg"
+          >
+            <div
+              class="bg-vscode-hover px-4 py-3 border-b border-vscode-border flex justify-between items-center"
+            >
+              <span
+                class="text-xs font-semibold uppercase tracking-wider text-vscode-green"
+                >Decoded Payload & Header (Fully Editable)</span
+              >
+              <button
+                type="button"
+                id="jwt-copy"
+                class="text-xs text-vscode-accent hover:underline flex items-center gap-1"
+              >
+                Copy Token
+              </button>
+            </div>
+            <div class="p-4 flex-1 flex flex-col gap-4">
+              <div class="flex flex-col">
+                <label
+                  class="text-[10px] uppercase font-bold text-vscode-muted tracking-wider block mb-1"
+                  >Header (JSON)</label
+                >
+                <textarea
+                  id="jwt-header"
+                  spellcheck="false"
+                  class="w-full bg-vscode-input p-2.5 rounded border border-vscode-border text-vscode-orange code-font text-xs resize-none h-24 focus:outline-none focus:border-vscode-accent"
+                >
+{ }</textarea
+                >
+              </div>
+              <div class="flex-1 flex flex-col">
+                <label
+                  class="text-[10px] uppercase font-bold text-vscode-muted tracking-wider block mb-1"
+                  >Payload (JSON)</label
+                >
+                <textarea
+                  id="jwt-output-json"
+                  spellcheck="false"
+                  class="flex-1 w-full bg-vscode-input p-2.5 rounded border border-vscode-border text-vscode-green code-font text-xs resize-none min-h-[160px] focus:outline-none focus:border-vscode-accent"
+                >
+{ }</textarea
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TOOL 2: Regex Tester -->
+      <div id="tool-regex" class="tool-view hidden flex-1 flex flex-col gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div
+            class="bg-vscode-sidebar border border-vscode-border rounded-lg p-4 flex flex-col gap-4 shadow-lg"
+          >
+            <h2
+              class="text-xs font-semibold uppercase tracking-wider text-vscode-blue"
+            >
+              Regex Configuration
+            </h2>
             <div>
-                <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-                    <span class="text-vscode-accent">&gt;_</span> Developer Swiss Army Knife
-                </h1>
-                <p class="text-sm text-vscode-muted mt-1">Lightning-fast debugging, reconnaissance, and data conversion
-                    tools running 100% locally in your browser.</p>
+              <label class="text-xs text-vscode-muted block mb-1"
+                >Regular Expression</label
+              >
+              <div
+                class="flex items-center bg-vscode-input border border-vscode-border rounded overflow-hidden focus-within:border-vscode-accent"
+              >
+                <span class="px-2 text-vscode-muted code-font">/</span>
+                <input
+                  type="text"
+                  id="regex-pattern"
+                  value="([a-zA-Z0-9_\.-]+)@([\w\.-]+)\.([a-z\.]{2,6})"
+                  class="w-full bg-transparent text-vscode-text code-font text-xs py-2 px-1 focus:outline-none"
+                />
+                <span class="px-2 text-vscode-muted code-font">/</span>
+                <input
+                  type="text"
+                  id="regex-flags"
+                  value="gm"
+                  class="w-12 bg-transparent text-vscode-text code-font text-xs py-2 text-center focus:outline-none"
+                />
+              </div>
             </div>
-            <!-- Tab Buttons -->
-            <div class="flex flex-wrap items-center bg-vscode-sidebar p-1 rounded-lg border border-vscode-border gap-1">
-                <button type="button" data-tab="jwt" class="tab-btn px-2.5 py-1.5 text-xs font-medium rounded transition-all flex items-center gap-1.5 bg-vscode-accent text-white shadow">
-                    <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg>
-                    <span>JWT</span>
-                </button>
-                <button type="button" data-tab="regex" class="tab-btn px-2.5 py-1.5 text-xs font-medium rounded transition-all flex items-center gap-1.5 text-vscode-muted hover:text-white hover:bg-vscode-hover">
-                    <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path></svg>
-                    <span>Regex</span>
-                </button>
-                <button type="button" data-tab="hash" class="tab-btn px-2.5 py-1.5 text-xs font-medium rounded transition-all flex items-center gap-1.5 text-vscode-muted hover:text-white hover:bg-vscode-hover">
-                    <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"></path></svg>
-                    <span>Hash</span>
-                </button>
-                <button type="button" data-tab="diff" class="tab-btn px-2.5 py-1.5 text-xs font-medium rounded transition-all flex items-center gap-1.5 text-vscode-muted hover:text-white hover:bg-vscode-hover">
-                    <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
-                    <span>Diff</span>
-                </button>
-                <button type="button" data-tab="recon" class="tab-btn px-2.5 py-1.5 text-xs font-medium rounded transition-all flex items-center gap-1.5 text-vscode-muted hover:text-white hover:bg-vscode-hover">
-                    <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
-                    <span>Security</span>
-                </button>
+            <div>
+              <label class="text-xs text-vscode-muted block mb-1"
+                >Replacement String</label
+              >
+              <input
+                type="text"
+                id="regex-replacement"
+                value="[REDACTED]"
+                class="w-full bg-vscode-input text-vscode-text code-font text-xs p-2 rounded border border-vscode-border focus:outline-none focus:border-vscode-accent"
+              />
             </div>
+            <div class="flex flex-col gap-2 pt-2 border-t border-vscode-border">
+              <span class="text-xs text-vscode-muted">Load Preset:</span>
+              <div class="flex flex-wrap gap-1.5">
+                <button
+                  type="button"
+                  class="regex-preset text-[11px] bg-vscode-input hover:bg-vscode-hover px-2.5 py-1 rounded border border-vscode-border text-vscode-text"
+                  data-preset="email"
+                >
+                  Email
+                </button>
+                <button
+                  type="button"
+                  class="regex-preset text-[11px] bg-vscode-input hover:bg-vscode-hover px-2.5 py-1 rounded border border-vscode-border text-vscode-text"
+                  data-preset="url"
+                >
+                  URL
+                </button>
+                <button
+                  type="button"
+                  class="regex-preset text-[11px] bg-vscode-input hover:bg-vscode-hover px-2.5 py-1 rounded border border-vscode-border text-vscode-text"
+                  data-preset="ipv4"
+                >
+                  IPv4
+                </button>
+                <button
+                  type="button"
+                  class="regex-preset text-[11px] bg-vscode-input hover:bg-vscode-hover px-2.5 py-1 rounded border border-vscode-border text-vscode-text"
+                  data-preset="uuid"
+                >
+                  UUID
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div
+            class="bg-vscode-sidebar border border-vscode-border rounded-lg flex flex-col overflow-hidden shadow-lg"
+          >
+            <div
+              class="bg-vscode-hover px-4 py-3 border-b border-vscode-border flex justify-between items-center"
+            >
+              <span
+                class="text-xs font-semibold uppercase tracking-wider text-vscode-orange"
+                >Test String</span
+              >
+              <button
+                type="button"
+                id="regex-clear"
+                class="text-xs text-vscode-muted hover:text-white"
+              >
+                Clear
+              </button>
+            </div>
+            <div class="p-4 flex-1 flex flex-col">
+              <textarea
+                id="regex-input"
+                class="flex-1 w-full bg-vscode-input text-vscode-text code-font text-xs p-3 rounded border border-vscode-border focus:outline-none focus:border-vscode-accent resize-none min-h-[220px]"
+              >
+Contact us at support@xconflictionx.cc or https://xconflictionx.cc/contact/. Visit https://xconflictionx.cc/tools/ or call 192.168.1.1 for assistance. UUID: 123e4567-e89b-12d3-a456-426614174000.</textarea
+              >
+            </div>
+          </div>
+
+          <div
+            class="bg-vscode-sidebar border border-vscode-border rounded-lg flex flex-col overflow-hidden shadow-lg"
+          >
+            <div
+              class="bg-vscode-hover px-4 py-3 border-b border-vscode-border flex justify-between items-center"
+            >
+              <span
+                class="text-xs font-semibold uppercase tracking-wider text-vscode-green"
+                >Matches & Substitution</span
+              >
+              <span
+                id="regex-match-count"
+                class="text-xs text-vscode-muted font-mono"
+                >0 matches</span
+              >
+            </div>
+            <div class="p-4 flex-1 flex flex-col gap-4">
+              <div>
+                <label
+                  class="text-[10px] uppercase font-bold text-vscode-muted tracking-wider block mb-1"
+                  >Replaced Output</label
+                >
+                <pre
+                  id="regex-replaced-output"
+                  class="bg-vscode-input p-2.5 rounded border border-vscode-border text-vscode-text code-font text-xs overflow-x-auto max-h-32"
+                >
+-</pre
+                >
+              </div>
+              <div class="flex-1 flex flex-col">
+                <label
+                  class="text-[10px] uppercase font-bold text-vscode-muted tracking-wider block mb-1"
+                  >Matched Groups</label
+                >
+                <div
+                  id="regex-matches-list"
+                  class="flex-1 bg-vscode-input p-2.5 rounded border border-vscode-border code-font text-xs overflow-y-auto max-h-40 flex flex-col gap-1 text-vscode-muted"
+                >
+                  No matches found.
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
 
-        <!-- TOOL 1: JWT Decoder & Encoder -->
-        <div id="tool-jwt" class="tool-view flex-1 flex flex-col gap-6">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1">
-                <div
-                    class="flex flex-col bg-vscode-sidebar border border-vscode-border rounded-lg overflow-hidden shadow-lg">
-                    <div
-                        class="bg-vscode-hover px-4 py-3 border-b border-vscode-border flex justify-between items-center">
-                        <span class="text-xs font-semibold uppercase tracking-wider text-vscode-blue">Encoded JWT Token (Live Output / Input)</span>
-                        <div class="flex items-center gap-3">
-                            <button type="button" id="jwt-load-sample" class="text-xs text-vscode-accent hover:underline">Load Sample</button>
-                            <button type="button" id="jwt-clear" class="text-xs text-vscode-muted hover:text-white">Clear</button>
-                        </div>
-                    </div>
-                    <div class="p-4 flex-1 flex flex-col">
-                        <textarea id="jwt-input" placeholder="Paste your JWT here or edit payload/header to generate..." class="flex-1 w-full bg-vscode-input text-vscode-text code-font text-xs p-3 rounded border border-vscode-border focus:outline-none focus:border-vscode-accent resize-none min-h-[250px]"></textarea>
-                        <div id="jwt-status" class="mt-3 text-xs flex items-center gap-2 text-vscode-muted">
-                            <span class="w-2 h-2 rounded-full bg-vscode-muted"></span>
-                            <span>Waiting for token input...</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div
-                    class="flex flex-col bg-vscode-sidebar border border-vscode-border rounded-lg overflow-hidden shadow-lg">
-                    <div
-                        class="bg-vscode-hover px-4 py-3 border-b border-vscode-border flex justify-between items-center">
-                        <span class="text-xs font-semibold uppercase tracking-wider text-vscode-green">Decoded Payload & Header (Fully Editable)</span>
-                        <button type="button" id="jwt-copy" class="text-xs text-vscode-accent hover:underline flex items-center gap-1">Copy Token</button>
-                    </div>
-                    <div class="p-4 flex-1 flex flex-col gap-4">
-                        <div class="flex flex-col">
-                            <label class="text-[10px] uppercase font-bold text-vscode-muted tracking-wider block mb-1">Header (JSON)</label>
-                            <textarea id="jwt-header" spellcheck="false" class="w-full bg-vscode-input p-2.5 rounded border border-vscode-border text-vscode-orange code-font text-xs resize-none h-24 focus:outline-none focus:border-vscode-accent">{ }</textarea>
-                        </div>
-                        <div class="flex-1 flex flex-col">
-                            <label class="text-[10px] uppercase font-bold text-vscode-muted tracking-wider block mb-1">Payload (JSON)</label>
-                            <textarea id="jwt-output-json" spellcheck="false" class="flex-1 w-full bg-vscode-input p-2.5 rounded border border-vscode-border text-vscode-green code-font text-xs resize-none min-h-[160px] focus:outline-none focus:border-vscode-accent">{ }</textarea>
-                        </div>
-                    </div>
-                </div>
+      <!-- TOOL 3: Hash Generator -->
+      <div id="tool-hash" class="tool-view hidden flex-1 flex flex-col gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1">
+          <div
+            class="bg-vscode-sidebar border border-vscode-border rounded-lg flex flex-col overflow-hidden shadow-lg lg:col-span-1"
+          >
+            <div
+              class="bg-vscode-hover px-4 py-3 border-b border-vscode-border flex justify-between items-center"
+            >
+              <span
+                class="text-xs font-semibold uppercase tracking-wider text-vscode-purple"
+                >Input Data</span
+              >
+              <button
+                type="button"
+                id="hash-clear"
+                class="text-xs text-vscode-muted hover:text-white"
+              >
+                Clear
+              </button>
             </div>
-        </div>
-
-        <!-- TOOL 2: Regex Tester -->
-        <div id="tool-regex" class="tool-view hidden flex-1 flex flex-col gap-6">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="bg-vscode-sidebar border border-vscode-border rounded-lg p-4 flex flex-col gap-4 shadow-lg">
-                    <h2 class="text-xs font-semibold uppercase tracking-wider text-vscode-blue">Regex Configuration</h2>
-                    <div>
-                        <label class="text-xs text-vscode-muted block mb-1">Regular Expression</label>
-                        <div
-                            class="flex items-center bg-vscode-input border border-vscode-border rounded overflow-hidden focus-within:border-vscode-accent">
-                            <span class="px-2 text-vscode-muted code-font">/</span>
-                            <input type="text" id="regex-pattern" value="([a-zA-Z0-9_\.-]+)@([\w\.-]+)\.([a-z\.]{2,6})" class="w-full bg-transparent text-vscode-text code-font text-xs py-2 px-1 focus:outline-none">
-                            <span class="px-2 text-vscode-muted code-font">/</span>
-                            <input type="text" id="regex-flags" value="gm" class="w-12 bg-transparent text-vscode-text code-font text-xs py-2 text-center focus:outline-none">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="text-xs text-vscode-muted block mb-1">Replacement String</label>
-                        <input type="text" id="regex-replacement" value="[REDACTED]" class="w-full bg-vscode-input text-vscode-text code-font text-xs p-2 rounded border border-vscode-border focus:outline-none focus:border-vscode-accent">
-                    </div>
-                    <div class="flex flex-col gap-2 pt-2 border-t border-vscode-border">
-                        <span class="text-xs text-vscode-muted">Load Preset:</span>
-                        <div class="flex flex-wrap gap-1.5">
-                            <button type="button" class="regex-preset text-[11px] bg-vscode-input hover:bg-vscode-hover px-2.5 py-1 rounded border border-vscode-border text-vscode-text" data-preset="email">Email</button>
-                            <button type="button" class="regex-preset text-[11px] bg-vscode-input hover:bg-vscode-hover px-2.5 py-1 rounded border border-vscode-border text-vscode-text" data-preset="url">URL</button>
-                            <button type="button" class="regex-preset text-[11px] bg-vscode-input hover:bg-vscode-hover px-2.5 py-1 rounded border border-vscode-border text-vscode-text" data-preset="ipv4">IPv4</button>
-                            <button type="button" class="regex-preset text-[11px] bg-vscode-input hover:bg-vscode-hover px-2.5 py-1 rounded border border-vscode-border text-vscode-text" data-preset="uuid">UUID</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div
-                    class="bg-vscode-sidebar border border-vscode-border rounded-lg flex flex-col overflow-hidden shadow-lg">
-                    <div
-                        class="bg-vscode-hover px-4 py-3 border-b border-vscode-border flex justify-between items-center">
-                        <span class="text-xs font-semibold uppercase tracking-wider text-vscode-orange">Test String</span>
-                        <button type="button" id="regex-clear" class="text-xs text-vscode-muted hover:text-white">Clear</button>
-                    </div>
-                    <div class="p-4 flex-1 flex flex-col">
-                        <textarea id="regex-input" class="flex-1 w-full bg-vscode-input text-vscode-text code-font text-xs p-3 rounded border border-vscode-border focus:outline-none focus:border-vscode-accent resize-none min-h-[220px]">Contact us at support@xconflictionx.cc or https://xconflictionx.cc/contact/. Visit https://xconflictionx.cc/tools/ or call 192.168.1.1 for assistance. UUID: 123e4567-e89b-12d3-a456-426614174000.</textarea>
-                    </div>
-                </div>
-
-                <div
-                    class="bg-vscode-sidebar border border-vscode-border rounded-lg flex flex-col overflow-hidden shadow-lg">
-                    <div
-                        class="bg-vscode-hover px-4 py-3 border-b border-vscode-border flex justify-between items-center">
-                        <span class="text-xs font-semibold uppercase tracking-wider text-vscode-green">Matches & Substitution</span>
-                        <span id="regex-match-count" class="text-xs text-vscode-muted font-mono">0 matches</span>
-                    </div>
-                    <div class="p-4 flex-1 flex flex-col gap-4">
-                        <div>
-                            <label class="text-[10px] uppercase font-bold text-vscode-muted tracking-wider block mb-1">Replaced Output</label>
-                            <pre id="regex-replaced-output"
-                                class="bg-vscode-input p-2.5 rounded border border-vscode-border text-vscode-text code-font text-xs overflow-x-auto max-h-32">-</pre>
-                        </div>
-                        <div class="flex-1 flex flex-col">
-                            <label class="text-[10px] uppercase font-bold text-vscode-muted tracking-wider block mb-1">Matched Groups</label>
-                            <div id="regex-matches-list"
-                                class="flex-1 bg-vscode-input p-2.5 rounded border border-vscode-border code-font text-xs overflow-y-auto max-h-40 flex flex-col gap-1 text-vscode-muted">
-                                No matches found.
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <div class="p-4 flex-1 flex flex-col">
+              <textarea
+                id="hash-input"
+                placeholder="Type or paste text..."
+                class="flex-1 w-full bg-vscode-input text-vscode-text code-font text-xs p-3 rounded border border-vscode-border focus:outline-none focus:border-vscode-accent resize-none min-h-[250px]"
+              ></textarea>
+              <div
+                class="mt-3 text-xs text-vscode-muted flex items-center justify-between"
+              >
+                <span>Web Crypto API</span>
+                <span id="hash-chars-count">0 chars</span>
+              </div>
             </div>
-        </div>
+          </div>
 
-        <!-- TOOL 3: Hash Generator -->
-        <div id="tool-hash" class="tool-view hidden flex-1 flex flex-col gap-6">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1">
-                <div
-                    class="bg-vscode-sidebar border border-vscode-border rounded-lg flex flex-col overflow-hidden shadow-lg lg:col-span-1">
-                    <div
-                        class="bg-vscode-hover px-4 py-3 border-b border-vscode-border flex justify-between items-center">
-                        <span class="text-xs font-semibold uppercase tracking-wider text-vscode-purple">Input Data</span>
-                        <button type="button" id="hash-clear" class="text-xs text-vscode-muted hover:text-white">Clear</button>
-                    </div>
-                    <div class="p-4 flex-1 flex flex-col">
-                        <textarea id="hash-input" placeholder="Type or paste text..." class="flex-1 w-full bg-vscode-input text-vscode-text code-font text-xs p-3 rounded border border-vscode-border focus:outline-none focus:border-vscode-accent resize-none min-h-[250px]"></textarea>
-                        <div class="mt-3 text-xs text-vscode-muted flex items-center justify-between">
-                            <span>Web Crypto API</span>
-                            <span id="hash-chars-count">0 chars</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div
-                    class="bg-vscode-sidebar border border-vscode-border rounded-lg flex flex-col overflow-hidden shadow-lg lg:col-span-2">
-                    <div
-                        class="bg-vscode-hover px-4 py-3 border-b border-vscode-border flex justify-between items-center">
-                        <span class="text-xs font-semibold uppercase tracking-wider text-vscode-green">Generated Cryptographic Digests</span>
-                    </div>
-                    <div class="p-4 flex-1 flex flex-col gap-4">
-                        <div class="flex flex-col gap-1">
-                            <div class="flex justify-between items-center">
-                                <label class="text-[10px] uppercase font-bold text-vscode-blue tracking-wider">SHA-256</label>
-                                <button type="button" class="hash-copy-btn text-xs text-vscode-muted hover:text-white" data-target="hash-sha256">Copy</button>
-                            </div>
-                            <input type="text" readonly id="hash-sha256" class="w-full bg-vscode-input text-vscode-text code-font text-xs p-2 rounded border border-vscode-border select-all">
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <div class="flex justify-between items-center">
-                                <label class="text-[10px] uppercase font-bold text-vscode-purple tracking-wider">SHA-384</label>
-                                <button type="button" class="hash-copy-btn text-xs text-vscode-muted hover:text-white" data-target="hash-sha384">Copy</button>
-                            </div>
-                            <input type="text" readonly id="hash-sha384" class="w-full bg-vscode-input text-vscode-text code-font text-xs p-2 rounded border border-vscode-border select-all">
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <div class="flex justify-between items-center">
-                                <label class="text-[10px] uppercase font-bold text-vscode-orange tracking-wider">SHA-512</label>
-                                <button type="button" class="hash-copy-btn text-xs text-vscode-muted hover:text-white" data-target="hash-sha512">Copy</button>
-                            </div>
-                            <input type="text" readonly id="hash-sha512" class="w-full bg-vscode-input text-vscode-text code-font text-xs p-2 rounded border border-vscode-border select-all">
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <div class="flex justify-between items-center">
-                                <label class="text-[10px] uppercase font-bold text-vscode-green tracking-wider">MD5</label>
-                                <button type="button" class="hash-copy-btn text-xs text-vscode-muted hover:text-white" data-target="hash-md5">Copy</button>
-                            </div>
-                            <input type="text" readonly id="hash-md5" class="w-full bg-vscode-input text-vscode-text code-font text-xs p-2 rounded border border-vscode-border select-all">
-                        </div>
-                    </div>
-                </div>
+          <div
+            class="bg-vscode-sidebar border border-vscode-border rounded-lg flex flex-col overflow-hidden shadow-lg lg:col-span-2"
+          >
+            <div
+              class="bg-vscode-hover px-4 py-3 border-b border-vscode-border flex justify-between items-center"
+            >
+              <span
+                class="text-xs font-semibold uppercase tracking-wider text-vscode-green"
+                >Generated Cryptographic Digests</span
+              >
             </div>
+            <div class="p-4 flex-1 flex flex-col gap-4">
+              <div class="flex flex-col gap-1">
+                <div class="flex justify-between items-center">
+                  <label
+                    class="text-[10px] uppercase font-bold text-vscode-blue tracking-wider"
+                    >SHA-256</label
+                  >
+                  <button
+                    type="button"
+                    class="hash-copy-btn text-xs text-vscode-muted hover:text-white"
+                    data-target="hash-sha256"
+                  >
+                    Copy
+                  </button>
+                </div>
+                <input
+                  type="text"
+                  readonly
+                  id="hash-sha256"
+                  class="w-full bg-vscode-input text-vscode-text code-font text-xs p-2 rounded border border-vscode-border select-all"
+                />
+              </div>
+              <div class="flex flex-col gap-1">
+                <div class="flex justify-between items-center">
+                  <label
+                    class="text-[10px] uppercase font-bold text-vscode-purple tracking-wider"
+                    >SHA-384</label
+                  >
+                  <button
+                    type="button"
+                    class="hash-copy-btn text-xs text-vscode-muted hover:text-white"
+                    data-target="hash-sha384"
+                  >
+                    Copy
+                  </button>
+                </div>
+                <input
+                  type="text"
+                  readonly
+                  id="hash-sha384"
+                  class="w-full bg-vscode-input text-vscode-text code-font text-xs p-2 rounded border border-vscode-border select-all"
+                />
+              </div>
+              <div class="flex flex-col gap-1">
+                <div class="flex justify-between items-center">
+                  <label
+                    class="text-[10px] uppercase font-bold text-vscode-orange tracking-wider"
+                    >SHA-512</label
+                  >
+                  <button
+                    type="button"
+                    class="hash-copy-btn text-xs text-vscode-muted hover:text-white"
+                    data-target="hash-sha512"
+                  >
+                    Copy
+                  </button>
+                </div>
+                <input
+                  type="text"
+                  readonly
+                  id="hash-sha512"
+                  class="w-full bg-vscode-input text-vscode-text code-font text-xs p-2 rounded border border-vscode-border select-all"
+                />
+              </div>
+              <div class="flex flex-col gap-1">
+                <div class="flex justify-between items-center">
+                  <label
+                    class="text-[10px] uppercase font-bold text-vscode-green tracking-wider"
+                    >MD5</label
+                  >
+                  <button
+                    type="button"
+                    class="hash-copy-btn text-xs text-vscode-muted hover:text-white"
+                    data-target="hash-md5"
+                  >
+                    Copy
+                  </button>
+                </div>
+                <input
+                  type="text"
+                  readonly
+                  id="hash-md5"
+                  class="w-full bg-vscode-input text-vscode-text code-font text-xs p-2 rounded border border-vscode-border select-all"
+                />
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
 
-        <!-- TOOL 4: Text Diff Tool -->
-        <div id="tool-diff" class="tool-view hidden flex-1 flex flex-col gap-6">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div
-                    class="flex flex-col bg-vscode-sidebar border border-vscode-border rounded-lg overflow-hidden shadow-lg">
-                    <div
-                        class="bg-vscode-hover px-4 py-3 border-b border-vscode-border flex justify-between items-center">
-                        <span class="text-xs font-semibold uppercase tracking-wider text-vscode-orange">Original Text (A)</span>
-                        <button type="button" id="diff-clear-a" class="text-xs text-vscode-muted hover:text-white">Clear</button>
-                    </div>
-                    <div class="p-4 flex-1 flex flex-col">
-                        <textarea id="diff-input-a" placeholder="Paste original text here..." class="flex-1 w-full bg-vscode-input text-vscode-text code-font text-xs p-3 rounded border border-vscode-border focus:outline-none focus:border-vscode-accent resize-none min-h-[220px]">const config = {
+      <!-- TOOL 4: Text Diff Tool -->
+      <div id="tool-diff" class="tool-view hidden flex-1 flex flex-col gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div
+            class="flex flex-col bg-vscode-sidebar border border-vscode-border rounded-lg overflow-hidden shadow-lg"
+          >
+            <div
+              class="bg-vscode-hover px-4 py-3 border-b border-vscode-border flex justify-between items-center"
+            >
+              <span
+                class="text-xs font-semibold uppercase tracking-wider text-vscode-orange"
+                >Original Text (A)</span
+              >
+              <button
+                type="button"
+                id="diff-clear-a"
+                class="text-xs text-vscode-muted hover:text-white"
+              >
+                Clear
+              </button>
+            </div>
+            <div class="p-4 flex-1 flex flex-col">
+              <textarea
+                id="diff-input-a"
+                placeholder="Paste original text here..."
+                class="flex-1 w-full bg-vscode-input text-vscode-text code-font text-xs p-3 rounded border border-vscode-border focus:outline-none focus:border-vscode-accent resize-none min-h-[220px]"
+              >
+const config = {
     theme: 'dark',
     version: '1.0.0',
     debug: false,
     autoSave: true
-};</textarea>
-                    </div>
-                </div>
-                <div
-                    class="flex flex-col bg-vscode-sidebar border border-vscode-border rounded-lg overflow-hidden shadow-lg">
-                    <div
-                        class="bg-vscode-hover px-4 py-3 border-b border-vscode-border flex justify-between items-center">
-                        <span class="text-xs font-semibold uppercase tracking-wider text-vscode-green">Modified Text (B)</span>
-                        <button type="button" id="diff-clear-b" class="text-xs text-vscode-muted hover:text-white">Clear</button>
-                    </div>
-                    <div class="p-4 flex-1 flex flex-col">
-                        <textarea id="diff-input-b" placeholder="Paste modified text here..." class="flex-1 w-full bg-vscode-input text-vscode-text code-font text-xs p-3 rounded border border-vscode-border focus:outline-none focus:border-vscode-accent resize-none min-h-[220px]">const config = {
+};</textarea
+              >
+            </div>
+          </div>
+          <div
+            class="flex flex-col bg-vscode-sidebar border border-vscode-border rounded-lg overflow-hidden shadow-lg"
+          >
+            <div
+              class="bg-vscode-hover px-4 py-3 border-b border-vscode-border flex justify-between items-center"
+            >
+              <span
+                class="text-xs font-semibold uppercase tracking-wider text-vscode-green"
+                >Modified Text (B)</span
+              >
+              <button
+                type="button"
+                id="diff-clear-b"
+                class="text-xs text-vscode-muted hover:text-white"
+              >
+                Clear
+              </button>
+            </div>
+            <div class="p-4 flex-1 flex flex-col">
+              <textarea
+                id="diff-input-b"
+                placeholder="Paste modified text here..."
+                class="flex-1 w-full bg-vscode-input text-vscode-text code-font text-xs p-3 rounded border border-vscode-border focus:outline-none focus:border-vscode-accent resize-none min-h-[220px]"
+              >
+const config = {
     theme: 'vscode-dark',
     version: '1.1.0',
     debug: true,
     autoSave: true,
     timeout: 5000
-};</textarea>
-                    </div>
-                </div>
+};</textarea
+              >
             </div>
+          </div>
+        </div>
+        <div
+          class="flex flex-col bg-vscode-sidebar border border-vscode-border rounded-lg overflow-hidden shadow-lg flex-1"
+        >
+          <div
+            class="bg-vscode-hover px-4 py-3 border-b border-vscode-border flex justify-between items-center"
+          >
+            <span
+              class="text-xs font-semibold uppercase tracking-wider text-vscode-blue"
+              >Line-by-Line Diff Comparison</span
+            >
+            <span id="diff-stats" class="text-xs text-vscode-muted font-mono"
+              >0 additions, 0 deletions</span
+            >
+          </div>
+          <div class="p-4">
+            <pre
+              id="diff-output"
+              class="bg-vscode-input p-3 rounded border border-vscode-border code-font text-xs overflow-x-auto max-h-96 leading-relaxed flex flex-col gap-0.5"
+            >
+-</pre
+            >
+          </div>
+        </div>
+      </div>
+
+      <!-- TOOL 5: Client Recon & Security -->
+      <div id="tool-recon" class="tool-view hidden flex-1 flex flex-col gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- IP & Network Card -->
+          <div
+            class="bg-vscode-sidebar border border-vscode-border rounded-lg flex flex-col overflow-hidden shadow-lg"
+          >
             <div
-                class="flex flex-col bg-vscode-sidebar border border-vscode-border rounded-lg overflow-hidden shadow-lg flex-1">
-                <div class="bg-vscode-hover px-4 py-3 border-b border-vscode-border flex justify-between items-center">
-                    <span class="text-xs font-semibold uppercase tracking-wider text-vscode-blue">Line-by-Line Diff Comparison</span>
-                    <span id="diff-stats" class="text-xs text-vscode-muted font-mono">0 additions, 0 deletions</span>
-                </div>
-                <div class="p-4">
-                    <pre id="diff-output"
-                        class="bg-vscode-input p-3 rounded border border-vscode-border code-font text-xs overflow-x-auto max-h-96 leading-relaxed flex flex-col gap-0.5">-</pre>
-                </div>
+              class="bg-vscode-hover px-4 py-3 border-b border-vscode-border flex justify-between items-center"
+            >
+              <span
+                class="text-xs font-semibold uppercase tracking-wider text-vscode-blue"
+                >Network & Geo Recon</span
+              >
+              <button
+                type="button"
+                id="recon-refresh-ip"
+                class="text-xs text-vscode-accent hover:underline"
+              >
+                Refresh IP
+              </button>
             </div>
-        </div>
-
-        <!-- TOOL 5: Client Recon & Security -->
-        <div id="tool-recon" class="tool-view hidden flex-1 flex flex-col gap-6">
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <!-- IP & Network Card -->
+            <div class="p-4 flex flex-col gap-3 text-xs">
+              <div class="flex flex-col gap-1">
+                <span class="text-[10px] uppercase font-bold text-vscode-muted"
+                  >Public IP Address (IPv4)</span
+                >
                 <div
-                    class="bg-vscode-sidebar border border-vscode-border rounded-lg flex flex-col overflow-hidden shadow-lg">
-                    <div
-                        class="bg-vscode-hover px-4 py-3 border-b border-vscode-border flex justify-between items-center">
-                        <span class="text-xs font-semibold uppercase tracking-wider text-vscode-blue">Network & Geo Recon</span>
-                        <button type="button" id="recon-refresh-ip" class="text-xs text-vscode-accent hover:underline">Refresh IP</button>
-                    </div>
-                    <div class="p-4 flex flex-col gap-3 text-xs">
-                        <div class="flex flex-col gap-1">
-                            <span class="text-[10px] uppercase font-bold text-vscode-muted">Public IP Address (IPv4)</span>
-                            <div id="recon-ip"
-                                class="bg-vscode-input p-2 rounded border border-vscode-border code-font text-vscode-green select-all">
-                                Detecting...</div>
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <span class="text-[10px] uppercase font-bold text-vscode-muted">Location / ISP</span>
-                            <div id="recon-geo"
-                                class="bg-vscode-input p-2 rounded border border-vscode-border code-font text-vscode-text select-all">
-                                Detecting...</div>
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <span class="text-[10px] uppercase font-bold text-vscode-muted">WebRTC IP Leak Check</span>
-                            <div id="recon-webrtc"
-                                class="bg-vscode-input p-2 rounded border border-vscode-border code-font text-vscode-orange select-all">
-                                Scanning local candidates...</div>
-                        </div>
-                    </div>
+                  id="recon-ip"
+                  class="bg-vscode-input p-2 rounded border border-vscode-border code-font text-vscode-green select-all"
+                >
+                  Detecting...
                 </div>
-
-                <!-- OS & Browser Fingerprint Card -->
+              </div>
+              <div class="flex flex-col gap-1">
+                <span class="text-[10px] uppercase font-bold text-vscode-muted"
+                  >Location / ISP</span
+                >
                 <div
-                    class="bg-vscode-sidebar border border-vscode-border rounded-lg flex flex-col overflow-hidden shadow-lg">
-                    <div
-                        class="bg-vscode-hover px-4 py-3 border-b border-vscode-border flex justify-between items-center">
-                        <span class="text-xs font-semibold uppercase tracking-wider text-vscode-purple">Environment & OS</span>
-                    </div>
-                    <div class="p-4 flex flex-col gap-3 text-xs">
-                        <div class="flex flex-col gap-1">
-                            <span class="text-[10px] uppercase font-bold text-vscode-muted">Operating System / Platform</span>
-                            <div id="recon-os"
-                                class="bg-vscode-input p-2 rounded border border-vscode-border code-font text-vscode-text select-all">
-                                -</div>
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <span class="text-[10px] uppercase font-bold text-vscode-muted">Browser Engine & Version</span>
-                            <div id="recon-browser"
-                                class="bg-vscode-input p-2 rounded border border-vscode-border code-font text-vscode-text select-all">
-                                -</div>
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <span class="text-[10px] uppercase font-bold text-vscode-muted">Hardware Concurrency / RAM</span>
-                            <div id="recon-hardware"
-                                class="bg-vscode-input p-2 rounded border border-vscode-border code-font text-vscode-text select-all">
-                                -</div>
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <span class="text-[10px] uppercase font-bold text-vscode-muted">Screen Resolution & Color Depth</span>
-                            <div id="recon-screen"
-                                class="bg-vscode-input p-2 rounded border border-vscode-border code-font text-vscode-text select-all">
-                                -</div>
-                        </div>
-                    </div>
+                  id="recon-geo"
+                  class="bg-vscode-input p-2 rounded border border-vscode-border code-font text-vscode-text select-all"
+                >
+                  Detecting...
                 </div>
-
-                <!-- Security & Privacy Card -->
+              </div>
+              <div class="flex flex-col gap-1">
+                <span class="text-[10px] uppercase font-bold text-vscode-muted"
+                  >WebRTC IP Leak Check</span
+                >
                 <div
-                    class="bg-vscode-sidebar border border-vscode-border rounded-lg flex flex-col overflow-hidden shadow-lg">
-                    <div
-                        class="bg-vscode-hover px-4 py-3 border-b border-vscode-border flex justify-between items-center">
-                        <span class="text-xs font-semibold uppercase tracking-wider text-vscode-orange">Security & Privacy Posture</span>
-                    </div>
-                    <div class="p-4 flex flex-col gap-3 text-xs">
-                        <div class="flex flex-col gap-1">
-                            <span class="text-[10px] uppercase font-bold text-vscode-muted">Do Not Track (DNT) / GPC</span>
-                            <div id="recon-dnt"
-                                class="bg-vscode-input p-2 rounded border border-vscode-border code-font text-vscode-text">
-                                -</div>
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <span class="text-[10px] uppercase font-bold text-vscode-muted">Cookies Enabled</span>
-                            <div id="recon-cookies"
-                                class="bg-vscode-input p-2 rounded border border-vscode-border code-font text-vscode-text">
-                                -</div>
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <span class="text-[10px] uppercase font-bold text-vscode-muted">Connection Security (HTTPS/Protocol)</span>
-                            <div id="recon-protocol"
-                                class="bg-vscode-input p-2 rounded border border-vscode-border code-font text-vscode-text">
-                                -</div>
-                        </div>
-                        <div class="flex flex-col gap-1">
-                            <span class="text-[10px] uppercase font-bold text-vscode-muted">Canvas Fingerprint Hash</span>
-                            <div id="recon-canvas"
-                                class="bg-vscode-input p-2 rounded border border-vscode-border code-font text-vscode-green select-all truncate">
-                                -</div>
-                        </div>
-                    </div>
+                  id="recon-webrtc"
+                  class="bg-vscode-input p-2 rounded border border-vscode-border code-font text-vscode-orange select-all"
+                >
+                  Scanning local candidates...
                 </div>
+              </div>
             </div>
+          </div>
+
+          <!-- OS & Browser Fingerprint Card -->
+          <div
+            class="bg-vscode-sidebar border border-vscode-border rounded-lg flex flex-col overflow-hidden shadow-lg"
+          >
+            <div
+              class="bg-vscode-hover px-4 py-3 border-b border-vscode-border flex justify-between items-center"
+            >
+              <span
+                class="text-xs font-semibold uppercase tracking-wider text-vscode-purple"
+                >Environment & OS</span
+              >
+            </div>
+            <div class="p-4 flex flex-col gap-3 text-xs">
+              <div class="flex flex-col gap-1">
+                <span class="text-[10px] uppercase font-bold text-vscode-muted"
+                  >Operating System / Platform</span
+                >
+                <div
+                  id="recon-os"
+                  class="bg-vscode-input p-2 rounded border border-vscode-border code-font text-vscode-text select-all"
+                >
+                  -
+                </div>
+              </div>
+              <div class="flex flex-col gap-1">
+                <span class="text-[10px] uppercase font-bold text-vscode-muted"
+                  >Browser Engine & Version</span
+                >
+                <div
+                  id="recon-browser"
+                  class="bg-vscode-input p-2 rounded border border-vscode-border code-font text-vscode-text select-all"
+                >
+                  -
+                </div>
+              </div>
+              <div class="flex flex-col gap-1">
+                <span class="text-[10px] uppercase font-bold text-vscode-muted"
+                  >Hardware Concurrency / RAM</span
+                >
+                <div
+                  id="recon-hardware"
+                  class="bg-vscode-input p-2 rounded border border-vscode-border code-font text-vscode-text select-all"
+                >
+                  -
+                </div>
+              </div>
+              <div class="flex flex-col gap-1">
+                <span class="text-[10px] uppercase font-bold text-vscode-muted"
+                  >Screen Resolution & Color Depth</span
+                >
+                <div
+                  id="recon-screen"
+                  class="bg-vscode-input p-2 rounded border border-vscode-border code-font text-vscode-text select-all"
+                >
+                  -
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Security & Privacy Card -->
+          <div
+            class="bg-vscode-sidebar border border-vscode-border rounded-lg flex flex-col overflow-hidden shadow-lg"
+          >
+            <div
+              class="bg-vscode-hover px-4 py-3 border-b border-vscode-border flex justify-between items-center"
+            >
+              <span
+                class="text-xs font-semibold uppercase tracking-wider text-vscode-orange"
+                >Security & Privacy Posture</span
+              >
+            </div>
+            <div class="p-4 flex flex-col gap-3 text-xs">
+              <div class="flex flex-col gap-1">
+                <span class="text-[10px] uppercase font-bold text-vscode-muted"
+                  >Do Not Track (DNT) / GPC</span
+                >
+                <div
+                  id="recon-dnt"
+                  class="bg-vscode-input p-2 rounded border border-vscode-border code-font text-vscode-text"
+                >
+                  -
+                </div>
+              </div>
+              <div class="flex flex-col gap-1">
+                <span class="text-[10px] uppercase font-bold text-vscode-muted"
+                  >Cookies Enabled</span
+                >
+                <div
+                  id="recon-cookies"
+                  class="bg-vscode-input p-2 rounded border border-vscode-border code-font text-vscode-text"
+                >
+                  -
+                </div>
+              </div>
+              <div class="flex flex-col gap-1">
+                <span class="text-[10px] uppercase font-bold text-vscode-muted"
+                  >Connection Security (HTTPS/Protocol)</span
+                >
+                <div
+                  id="recon-protocol"
+                  class="bg-vscode-input p-2 rounded border border-vscode-border code-font text-vscode-text"
+                >
+                  -
+                </div>
+              </div>
+              <div class="flex flex-col gap-1">
+                <span class="text-[10px] uppercase font-bold text-vscode-muted"
+                  >Canvas Fingerprint Hash</span
+                >
+                <div
+                  id="recon-canvas"
+                  class="bg-vscode-input p-2 rounded border border-vscode-border code-font text-vscode-green select-all truncate"
+                >
+                  -
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
     </main>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // Tab Switching
-            const tabButtons = document.querySelectorAll('.tab-btn');
-            tabButtons.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const tabId = btn.getAttribute('data-tab');
-                    tabButtons.forEach(b => {
-                        if (b.getAttribute('data-tab') === tabId) {
-                            b.className = "tab-btn px-2.5 py-1.5 text-xs font-medium rounded transition-all flex items-center gap-1.5 bg-vscode-accent text-white shadow";
-                        } else {
-                            b.className = "tab-btn px-2.5 py-1.5 text-xs font-medium rounded transition-all flex items-center gap-1.5 text-vscode-muted hover:text-white hover:bg-vscode-hover";
-                        }
-                    });
-                    ['jwt', 'regex', 'hash', 'diff', 'recon'].forEach(t => {
-                        const view = document.getElementById(`tool-${t}`);
-                        if (t === tabId) view.classList.remove('hidden');
-                        else view.classList.add('hidden');
-                    });
-                    if (tabId === 'jwt') decodeJwt(true);
-                    if (tabId === 'regex') runRegex();
-                    if (tabId === 'hash') generateHashes();
-                    if (tabId === 'diff') computeDiff();
-                    if (tabId === 'recon') runRecon();
+      document.addEventListener("DOMContentLoaded", () => {
+        // Tab Switching
+        const tabButtons = document.querySelectorAll(".tab-btn");
+        tabButtons.forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const tabId = btn.getAttribute("data-tab");
+            tabButtons.forEach((b) => {
+              if (b.getAttribute("data-tab") === tabId) {
+                b.className =
+                  "tab-btn px-2.5 py-1.5 text-xs font-medium rounded transition-all flex items-center gap-1.5 bg-vscode-accent text-white shadow";
+              } else {
+                b.className =
+                  "tab-btn px-2.5 py-1.5 text-xs font-medium rounded transition-all flex items-center gap-1.5 text-vscode-muted hover:text-white hover:bg-vscode-hover";
+              }
+            });
+            ["jwt", "regex", "hash", "diff", "recon"].forEach((t) => {
+              const view = document.getElementById(`tool-${t}`);
+              if (t === tabId) view.classList.remove("hidden");
+              else view.classList.add("hidden");
+            });
+            if (tabId === "jwt") decodeJwt(true);
+            if (tabId === "regex") runRegex();
+            if (tabId === "hash") generateHashes();
+            if (tabId === "diff") computeDiff();
+            if (tabId === "recon") runRecon();
+          });
+        });
+
+        function showNotification(message) {
+          const notif = document.createElement("div");
+          notif.className =
+            "fixed bottom-4 right-4 bg-vscode-accent text-white text-xs px-4 py-2 rounded shadow-lg z-50 font-mono";
+          notif.textContent = message;
+          document.body.appendChild(notif);
+          setTimeout(() => notif.remove(), 2000);
+        }
+
+        // --- 1. TWO-WAY JWT DECODER & ENCODER ---
+        const jwtInput = document.getElementById("jwt-input");
+        const jwtHeader = document.getElementById("jwt-header");
+        const jwtOutputJson = document.getElementById("jwt-output-json");
+        const jwtStatus = document.getElementById("jwt-status");
+
+        let isUpdatingFromToken = false;
+        let isUpdatingFromJson = false;
+
+        function safeBase64Decode(str) {
+          let output = str.replace(/-/g, "+").replace(/_/g, "/");
+          switch (output.length % 4) {
+            case 0:
+              break;
+            case 2:
+              output += "==";
+              break;
+            case 3:
+              output += "=";
+              break;
+            default:
+              throw new Error("Illegal base64url string!");
+          }
+          return decodeURIComponent(
+            atob(output)
+              .split("")
+              .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+              .join("")
+          );
+        }
+
+        function base64UrlEncode(str) {
+          return btoa(unescape(encodeURIComponent(str)))
+            .replace(/=/g, "")
+            .replace(/\+/g, "-")
+            .replace(/\//g, "_");
+        }
+
+        // Decode Token -> JSON fields
+        function decodeJwt(forceReset = false) {
+          if (isUpdatingFromJson) return;
+          isUpdatingFromToken = true;
+
+          const token = jwtInput.value.trim();
+          if (!token) {
+            if (forceReset) {
+              jwtHeader.textContent = '{\n  "alg": "HS256",\n  "typ": "JWT"\n}';
+              jwtOutputJson.textContent =
+                '{\n  "sub": "xCONFLiCTiONx",\n  "name": "Michael"\n}';
+              encodeJwtFromFields();
+            } else {
+              jwtHeader.value = "{ }";
+              jwtOutputJson.value = "{ }";
+              jwtStatus.innerHTML = `<span class="w-2 h-2 rounded-full bg-vscode-muted"></span><span>Waiting for token input...</span>`;
+            }
+            isUpdatingFromToken = false;
+            return;
+          }
+
+          const parts = token.split(".");
+          if (parts.length < 2) {
+            jwtStatus.innerHTML = `<span class="w-2 h-2 rounded-full bg-red-500"></span><span class="text-red-400">Malformed token (missing parts)</span>`;
+            isUpdatingFromToken = false;
+            return;
+          }
+
+          try {
+            const headerDecoded = JSON.parse(safeBase64Decode(parts[0]));
+            const payloadDecoded = JSON.parse(safeBase64Decode(parts[1]));
+
+            jwtHeader.value = JSON.stringify(headerDecoded, null, 2);
+            jwtOutputJson.value = JSON.stringify(payloadDecoded, null, 2);
+
+            jwtStatus.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400"></span><span class="text-vscode-green">Decoded & Synced Successfully</span>`;
+          } catch (e) {
+            jwtStatus.innerHTML = `<span class="w-2 h-2 rounded-full bg-red-500"></span><span class="text-red-400">Decoding failed: ${e.message}</span>`;
+          }
+          isUpdatingFromToken = false;
+        }
+
+        // Encode JSON fields -> Token string
+        function encodeJwtFromFields() {
+          if (isUpdatingFromToken) return;
+          isUpdatingFromJson = true;
+
+          try {
+            const headerParsed = JSON.parse(jwtHeader.value);
+            const payloadParsed = JSON.parse(jwtOutputJson.value);
+
+            const encodedHeader = base64UrlEncode(JSON.stringify(headerParsed));
+            const encodedPayload = base64UrlEncode(
+              JSON.stringify(payloadParsed)
+            );
+
+            // Preserve signature from existing token if available, otherwise use a placeholder signature
+            const currentParts = jwtInput.value.trim().split(".");
+            const signature =
+              currentParts.length === 3 && currentParts[2]
+                ? currentParts[2]
+                : "signature";
+
+            jwtInput.value = `${encodedHeader}.${encodedPayload}.${signature}`;
+            jwtStatus.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400"></span><span class="text-vscode-green">Live Re-encoded Successfully</span>`;
+          } catch (e) {
+            jwtStatus.innerHTML = `<span class="w-2 h-2 rounded-full bg-yellow-500"></span><span class="text-yellow-400">JSON Syntax Error: ${e.message}</span>`;
+          }
+          isUpdatingFromJson = false;
+        }
+
+        jwtInput.addEventListener("input", () => decodeJwt(false));
+        jwtHeader.addEventListener("input", encodeJwtFromFields);
+        jwtOutputJson.addEventListener("input", encodeJwtFromFields);
+
+        document.getElementById("jwt-clear").addEventListener("click", () => {
+          jwtInput.value = "";
+          jwtHeader.value = "{ }";
+          jwtOutputJson.value = "{ }";
+          jwtStatus.innerHTML = `<span class="w-2 h-2 rounded-full bg-vscode-muted"></span><span>Waiting for token input...</span>`;
+        });
+
+        document
+          .getElementById("jwt-load-sample")
+          .addEventListener("click", () => {
+            jwtInput.value =
+              "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ4Q09ORkxpQ1RJT054IiwibmFtZSI6Ik1pY2hhZWwiLCJpYXQiOjE3NTAwMDAwMDAsImV4cCI6MjAwMDAwMDAwMH0.signature";
+            decodeJwt(false);
+            showNotification("Loaded sample JWT!");
+          });
+
+        document.getElementById("jwt-copy").addEventListener("click", () => {
+          navigator.clipboard.writeText(jwtInput.value);
+          showNotification("Copied encoded JWT to clipboard!");
+        });
+
+        // --- 2. REGEX TESTER ---
+        const regexPattern = document.getElementById("regex-pattern");
+        const regexFlags = document.getElementById("regex-flags");
+        const regexReplacement = document.getElementById("regex-replacement");
+        const regexInput = document.getElementById("regex-input");
+        const regexMatchCount = document.getElementById("regex-match-count");
+        const regexReplacedOutput = document.getElementById(
+          "regex-replaced-output"
+        );
+        const regexMatchesList = document.getElementById("regex-matches-list");
+
+        const regexPresets = {
+          email: {
+            pattern: "([a-zA-Z0-9_\\.-]+)@([\\w\\.-]+)\\.([a-z\\.]{2,6})",
+            flags: "gm",
+            text: "Reach us at support@xconflictionx.cc or https://xconflictionx.cc/contact/.",
+          },
+          url: {
+            pattern: "https?:\\/\\/(?:[-\\w]+\\.)+[\\w-]+(?:\\/[\\w-./?%&=]*)?",
+            flags: "gm",
+            text: "Visit https://xconflictionx.cc/tools/ or https://github.com/xCONFLiCTiONx for source code.",
+          },
+          ipv4: {
+            pattern: "\\b(?:\\d{1,3}\\.){3}\\d{1,3}\\b",
+            flags: "gm",
+            text: "Server IP addresses: 192.168.1.1, 10.0.0.254, and 127.0.0.1.",
+          },
+          uuid: {
+            pattern:
+              "\\b[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\\b",
+            flags: "gmi",
+            text: "Active Session ID: 123e4567-e89b-12d3-a456-426614174000.",
+          },
+        };
+
+        document.querySelectorAll(".regex-preset").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const presetKey = btn.getAttribute("data-preset");
+            const preset = regexPresets[presetKey];
+            if (preset) {
+              regexPattern.value = preset.pattern;
+              regexFlags.value = preset.flags;
+              regexInput.value = preset.text;
+              runRegex();
+              showNotification(`Loaded ${presetKey.toUpperCase()} preset!`);
+            }
+          });
+        });
+
+        function escapeHtml(str) {
+          return str
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;");
+        }
+
+        function runRegex() {
+          const pattern = regexPattern.value;
+          const flags = regexFlags.value;
+          const text = regexInput.value;
+          const replacement = regexReplacement.value;
+
+          if (!pattern) {
+            regexMatchCount.textContent = "0 matches";
+            regexMatchesList.innerHTML =
+              '<span class="text-vscode-muted">Enter pattern...</span>';
+            regexReplacedOutput.textContent = text;
+            return;
+          }
+
+          try {
+            const regex = new RegExp(pattern, flags);
+            regexReplacedOutput.textContent = text.replace(regex, replacement);
+
+            let matches = [];
+            let match;
+            if (regex.global) {
+              while ((match = regex.exec(text)) !== null) {
+                matches.push({
+                  match: match[0],
+                  index: match.index,
+                  groups: match.slice(1),
                 });
-            });
-
-            function showNotification(message) {
-                const notif = document.createElement('div');
-                notif.className = 'fixed bottom-4 right-4 bg-vscode-accent text-white text-xs px-4 py-2 rounded shadow-lg z-50 font-mono';
-                notif.textContent = message;
-                document.body.appendChild(notif);
-                setTimeout(() => notif.remove(), 2000);
-            }
-
-            // --- 1. TWO-WAY JWT DECODER & ENCODER ---
-            const jwtInput = document.getElementById('jwt-input');
-            const jwtHeader = document.getElementById('jwt-header');
-            const jwtOutputJson = document.getElementById('jwt-output-json');
-            const jwtStatus = document.getElementById('jwt-status');
-            
-            let isUpdatingFromToken = false;
-            let isUpdatingFromJson = false;
-
-            function safeBase64Decode(str) {
-                let output = str.replace(/-/g, '+').replace(/_/g, '/');
-                switch (output.length % 4) {
-                    case 0: break;
-                    case 2: output += '=='; break;
-                    case 3: output += '='; break;
-                    default: throw new Error('Illegal base64url string!');
-                }
-                return decodeURIComponent(atob(output).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
-            }
-
-            function base64UrlEncode(str) {
-                return btoa(unescape(encodeURIComponent(str)))
-                    .replace(/=/g, '')
-                    .replace(/\+/g, '-')
-                    .replace(/\//g, '_');
-            }
-
-            // Decode Token -> JSON fields
-            function decodeJwt(forceReset = false) {
-                if (isUpdatingFromJson) return;
-                isUpdatingFromToken = true;
-
-                const token = jwtInput.value.trim();
-                if (!token) {
-                    if (forceReset) {
-                        jwtHeader.textContent = '{\n  "alg": "HS256",\n  "typ": "JWT"\n}';
-                        jwtOutputJson.textContent = '{\n  "sub": "xCONFLiCTiONx",\n  "name": "Michael"\n}';
-                        encodeJwtFromFields();
-                    } else {
-                        jwtHeader.value = '{ }';
-                        jwtOutputJson.value = '{ }';
-                        jwtStatus.innerHTML = `<span class="w-2 h-2 rounded-full bg-vscode-muted"></span><span>Waiting for token input...</span>`;
-                    }
-                    isUpdatingFromToken = false;
-                    return;
-                }
-
-                const parts = token.split('.');
-                if (parts.length < 2) {
-                    jwtStatus.innerHTML = `<span class="w-2 h-2 rounded-full bg-red-500"></span><span class="text-red-400">Malformed token (missing parts)</span>`;
-                    isUpdatingFromToken = false;
-                    return;
-                }
-
-                try {
-                    const headerDecoded = JSON.parse(safeBase64Decode(parts[0]));
-                    const payloadDecoded = JSON.parse(safeBase64Decode(parts[1]));
-
-                    jwtHeader.value = JSON.stringify(headerDecoded, null, 2);
-                    jwtOutputJson.value = JSON.stringify(payloadDecoded, null, 2);
-                    
-                    jwtStatus.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400"></span><span class="text-vscode-green">Decoded & Synced Successfully</span>`;
-                } catch (e) {
-                    jwtStatus.innerHTML = `<span class="w-2 h-2 rounded-full bg-red-500"></span><span class="text-red-400">Decoding failed: ${e.message}</span>`;
-                }
-                isUpdatingFromToken = false;
-            }
-
-            // Encode JSON fields -> Token string
-            function encodeJwtFromFields() {
-                if (isUpdatingFromToken) return;
-                isUpdatingFromJson = true;
-
-                try {
-                    const headerParsed = JSON.parse(jwtHeader.value);
-                    const payloadParsed = JSON.parse(jwtOutputJson.value);
-
-                    const encodedHeader = base64UrlEncode(JSON.stringify(headerParsed));
-                    const encodedPayload = base64UrlEncode(JSON.stringify(payloadParsed));
-                    
-                    // Preserve signature from existing token if available, otherwise use a placeholder signature
-                    const currentParts = jwtInput.value.trim().split('.');
-                    const signature = (currentParts.length === 3 && currentParts[2]) ? currentParts[2] : 'signature';
-
-                    jwtInput.value = `${encodedHeader}.${encodedPayload}.${signature}`;
-                    jwtStatus.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400"></span><span class="text-vscode-green">Live Re-encoded Successfully</span>`;
-                } catch (e) {
-                    jwtStatus.innerHTML = `<span class="w-2 h-2 rounded-full bg-yellow-500"></span><span class="text-yellow-400">JSON Syntax Error: ${e.message}</span>`;
-                }
-                isUpdatingFromJson = false;
-            }
-
-            jwtInput.addEventListener('input', () => decodeJwt(false));
-            jwtHeader.addEventListener('input', encodeJwtFromFields);
-            jwtOutputJson.addEventListener('input', encodeJwtFromFields);
-
-            document.getElementById('jwt-clear').addEventListener('click', () => { 
-                jwtInput.value = ''; 
-                jwtHeader.value = '{ }';
-                jwtOutputJson.value = '{ }';
-                jwtStatus.innerHTML = `<span class="w-2 h-2 rounded-full bg-vscode-muted"></span><span>Waiting for token input...</span>`;
-            });
-
-            document.getElementById('jwt-load-sample').addEventListener('click', () => {
-                jwtInput.value = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ4Q09ORkxpQ1RJT054IiwibmFtZSI6Ik1pY2hhZWwiLCJpYXQiOjE3NTAwMDAwMDAsImV4cCI6MjAwMDAwMDAwMH0.signature';
-                decodeJwt(false);
-                showNotification('Loaded sample JWT!');
-            });
-
-            document.getElementById('jwt-copy').addEventListener('click', () => {
-                navigator.clipboard.writeText(jwtInput.value);
-                showNotification('Copied encoded JWT to clipboard!');
-            });
-
-            // --- 2. REGEX TESTER ---
-            const regexPattern = document.getElementById('regex-pattern');
-            const regexFlags = document.getElementById('regex-flags');
-            const regexReplacement = document.getElementById('regex-replacement');
-            const regexInput = document.getElementById('regex-input');
-            const regexMatchCount = document.getElementById('regex-match-count');
-            const regexReplacedOutput = document.getElementById('regex-replaced-output');
-            const regexMatchesList = document.getElementById('regex-matches-list');
-
-            const regexPresets = {
-                email: { pattern: '([a-zA-Z0-9_\\.-]+)@([\\w\\.-]+)\\.([a-z\\.]{2,6})', flags: 'gm', text: 'Reach us at support@xconflictionx.cc or https://xconflictionx.cc/contact/.' },
-                url: { pattern: 'https?:\\/\\/(?:[-\\w]+\\.)+[\\w-]+(?:\\/[\\w-./?%&=]*)?', flags: 'gm', text: 'Visit https://xconflictionx.cc/tools/ or https://github.com/xCONFLiCTiONx for source code.' },
-                ipv4: { pattern: '\\b(?:\\d{1,3}\\.){3}\\d{1,3}\\b', flags: 'gm', text: 'Server IP addresses: 192.168.1.1, 10.0.0.254, and 127.0.0.1.' },
-                uuid: { pattern: '\\b[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\\b', flags: 'gmi', text: 'Active Session ID: 123e4567-e89b-12d3-a456-426614174000.' }
-            };
-
-            document.querySelectorAll('.regex-preset').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const presetKey = btn.getAttribute('data-preset');
-                    const preset = regexPresets[presetKey];
-                    if (preset) {
-                        regexPattern.value = preset.pattern;
-                        regexFlags.value = preset.flags;
-                        regexInput.value = preset.text;
-                        runRegex();
-                        showNotification(`Loaded ${presetKey.toUpperCase()} preset!`);
-                    }
+                if (match.index === regex.lastIndex) regex.lastIndex++;
+              }
+            } else {
+              match = regex.exec(text);
+              if (match)
+                matches.push({
+                  match: match[0],
+                  index: match.index,
+                  groups: match.slice(1),
                 });
-            });
-
-            function escapeHtml(str) {
-                return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
             }
 
-            function runRegex() {
-                const pattern = regexPattern.value;
-                const flags = regexFlags.value;
-                const text = regexInput.value;
-                const replacement = regexReplacement.value;
-
-                if (!pattern) {
-                    regexMatchCount.textContent = '0 matches';
-                    regexMatchesList.innerHTML = '<span class="text-vscode-muted">Enter pattern...</span>';
-                    regexReplacedOutput.textContent = text;
-                    return;
-                }
-
-                try {
-                    const regex = new RegExp(pattern, flags);
-                    regexReplacedOutput.textContent = text.replace(regex, replacement);
-
-                    let matches = [];
-                    let match;
-                    if (regex.global) {
-                        while ((match = regex.exec(text)) !== null) {
-                            matches.push({ match: match[0], index: match.index, groups: match.slice(1) });
-                            if (match.index === regex.lastIndex) regex.lastIndex++;
-                        }
-                    } else {
-                        match = regex.exec(text);
-                        if (match) matches.push({ match: match[0], index: match.index, groups: match.slice(1) });
-                    }
-
-                    regexMatchCount.textContent = `${matches.length} match${matches.length === 1 ? '' : 'es'}`;
-                    if (matches.length === 0) {
-                        regexMatchesList.innerHTML = '<span class="text-vscode-muted">No matches found.</span>';
-                    } else {
-                        regexMatchesList.innerHTML = matches.map((m, i) => `
+            regexMatchCount.textContent = `${matches.length} match${
+              matches.length === 1 ? "" : "es"
+            }`;
+            if (matches.length === 0) {
+              regexMatchesList.innerHTML =
+                '<span class="text-vscode-muted">No matches found.</span>';
+            } else {
+              regexMatchesList.innerHTML = matches
+                .map(
+                  (m, i) => `
                             <div class="bg-vscode-input p-2 rounded border border-vscode-border flex flex-col gap-1">
                                 <div class="flex justify-between text-[10px] text-vscode-muted font-bold uppercase">
-                                    <span>Match #${i + 1} (Index: ${m.index})</span>
-                                    <span class="text-vscode-green">${escapeHtml(m.match)}</span>
+                                    <span>Match #${i + 1} (Index: ${
+                    m.index
+                  })</span>
+                                    <span class="text-vscode-green">${escapeHtml(
+                                      m.match
+                                    )}</span>
                                 </div>
-                                ${m.groups.length > 0 ? `<div class="text-[11px] text-vscode-orange pl-2 border-l border-vscode-accent">Groups: ${m.groups.map(g => `<span>${escapeHtml(g || '')}</span>`).join(', ')}</div>` : ''}
+                                ${
+                                  m.groups.length > 0
+                                    ? `<div class="text-[11px] text-vscode-orange pl-2 border-l border-vscode-accent">Groups: ${m.groups
+                                        .map(
+                                          (g) =>
+                                            `<span>${escapeHtml(
+                                              g || ""
+                                            )}</span>`
+                                        )
+                                        .join(", ")}</div>`
+                                    : ""
+                                }
                             </div>
-                        `).join('');
-                    }
-                } catch (e) {
-                    regexMatchCount.textContent = 'Error';
-                    regexMatchesList.innerHTML = `<span class="text-red-400">Invalid Regex: ${e.message}</span>`;
-                }
+                        `
+                )
+                .join("");
             }
+          } catch (e) {
+            regexMatchCount.textContent = "Error";
+            regexMatchesList.innerHTML = `<span class="text-red-400">Invalid Regex: ${e.message}</span>`;
+          }
+        }
 
-            [regexPattern, regexFlags, regexReplacement, regexInput].forEach(el => {
-                el.addEventListener('input', runRegex);
-            });
-            document.getElementById('regex-clear').addEventListener('click', () => { regexInput.value = ''; runRegex(); });
-
-            // --- 3. HASH GENERATOR ---
-            const hashInput = document.getElementById('hash-input');
-            const hashCharsCount = document.getElementById('hash-chars-count');
-
-            async function generateHashes() {
-                const text = hashInput.value;
-                hashCharsCount.textContent = `${text.length} chars`;
-                if (!text) {
-                    ['hash-sha256', 'hash-sha384', 'hash-sha512', 'hash-md5'].forEach(id => document.getElementById(id).value = '');
-                    return;
-                }
-                const encoder = new TextEncoder();
-                const data = encoder.encode(text);
-
-                async function digest(algo) {
-                    const hashBuffer = await crypto.subtle.digest(algo, data);
-                    return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
-                }
-
-                document.getElementById('hash-sha256').value = await digest('SHA-256');
-                document.getElementById('hash-sha384').value = await digest('SHA-384');
-                document.getElementById('hash-sha512').value = await digest('SHA-512');
-                document.getElementById('hash-md5').value = (await digest('SHA-256')).substring(0, 32);
-            }
-
-            hashInput.addEventListener('input', generateHashes);
-            document.getElementById('hash-clear').addEventListener('click', () => { hashInput.value = ''; generateHashes(); });
-            document.querySelectorAll('.hash-copy-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const targetId = btn.getAttribute('data-target');
-                    const val = document.getElementById(targetId).value;
-                    if (val) {
-                        navigator.clipboard.writeText(val);
-                        showNotification('Copied hash to clipboard!');
-                    }
-                });
-            });
-
-            // --- 4. TEXT DIFF TOOL ---
-            const diffA = document.getElementById('diff-input-a');
-            const diffB = document.getElementById('diff-input-b');
-            const diffOutput = document.getElementById('diff-output');
-            const diffStats = document.getElementById('diff-stats');
-
-            function computeDiff() {
-                const linesA = diffA.value.split('\n');
-                const linesB = diffB.value.split('\n');
-                
-                let html = '';
-                let additions = 0;
-                let deletions = 0;
-
-                const maxLen = Math.max(linesA.length, linesB.length);
-                for (let i = 0; i < maxLen; i++) {
-                    const lineA = linesA[i];
-                    const lineB = linesB[i];
-
-                    if (lineA === lineB) {
-                        html += `<div class="text-vscode-muted px-2 py-0.5">&nbsp;&nbsp; ${escapeHtml(lineA !== undefined ? lineA : '')}</div>`;
-                    } else {
-                        if (lineA !== undefined) {
-                            deletions++;
-                            html += `<div class="bg-red-950/40 text-red-300 px-2 py-0.5">- &nbsp;${escapeHtml(lineA)}</div>`;
-                        }
-                        if (lineB !== undefined) {
-                            additions++;
-                            html += `<div class="bg-emerald-950/40 text-emerald-300 px-2 py-0.5">+ &nbsp;${escapeHtml(lineB)}</div>`;
-                        }
-                    }
-                }
-                diffOutput.innerHTML = html || '<span class="text-vscode-muted">No text to compare.</span>';
-                diffStats.textContent = `${additions} addition${additions === 1 ? '' : 's'}, ${deletions} deletion${deletions === 1 ? '' : 's'}`;
-            }
-
-            [diffA, diffB].forEach(el => el.addEventListener('input', computeDiff));
-            document.getElementById('diff-clear-a').addEventListener('click', () => { diffA.value = ''; computeDiff(); });
-            document.getElementById('diff-clear-b').addEventListener('click', () => { diffB.value = ''; computeDiff(); });
-
-            // --- 5. CLIENT RECON & SECURITY TOOL ---
-            async function runRecon() {
-                // IP & Geo Lookup via ipapi.co (Free JSON API)
-                const ipEl = document.getElementById('recon-ip');
-                const geoEl = document.getElementById('recon-geo');
-                try {
-                    const res = await fetch('https://ipapi.co/json/');
-                    const data = await res.json();
-                    if (data.error) {
-                        ipEl.textContent = 'Error fetching IP';
-                        geoEl.textContent = data.reason || 'Unknown location';
-                    } else {
-                        ipEl.textContent = `${data.ip} (${data.version || 'IPv4'})`;
-                        geoEl.textContent = `${data.city || 'Unknown City'}, ${data.region || ''}, ${data.country_name || ''} — ISP: ${data.org || 'Unknown'}`;
-                    }
-                } catch (err) {
-                    ipEl.textContent = 'Network lookup failed (CORS/Adblocker)';
-                    geoEl.textContent = 'Unable to fetch geolocation.';
-                }
-
-                // WebRTC Local/Public IP Leak Detection
-                const webRtcEl = document.getElementById('recon-webrtc');
-                webRtcEl.textContent = 'Scanning...';
-                try {
-                    const ips = new Set();
-                    const pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
-                    pc.createDataChannel('');
-                    pc.createOffer().then(offer => pc.setLocalDescription(offer));
-                    pc.onicecandidate = (ice) => {
-                        if (ice && ice.candidate && ice.candidate.candidate) {
-                            const parts = ice.candidate.candidate.split(' ');
-                            const ip = parts[4];
-                            if (ip) {
-                                ips.add(ip);
-                                webRtcEl.textContent = Array.from(ips).join(', ');
-                            }
-                        }
-                    };
-                    setTimeout(() => {
-                        if (ips.size === 0) webRtcEl.textContent = 'No WebRTC IP leaks exposed (or blocked)';
-                    }, 2000);
-                } catch (e) {
-                    webRtcEl.textContent = 'WebRTC disabled or unsupported';
-                }
-
-                // OS & Browser Details from UA and Platform
-                const ua = navigator.userAgent;
-                const platform = navigator.platform || navigator.userAgentData?.platform || 'Unknown';
-                const osEl = document.getElementById('recon-os');
-                
-                let osName = 'Unknown OS';
-                if (/Windows NT 10.0/.test(ua)) osName = 'Windows 10 / Windows 11';
-                else if (/Windows NT 6.3/.test(ua)) osName = 'Windows 8.1';
-                else if (/Windows NT 6.2/.test(ua)) osName = 'Windows 8';
-                else if (/Windows NT 6.1/.test(ua)) osName = 'Windows 7';
-                else if (/Mac OS X/.test(ua)) osName = 'macOS';
-                else if (/Linux/.test(ua)) osName = 'Linux';
-                else if (/Android/.test(ua)) osName = 'Android';
-                else if (/like Mac OS X/.test(ua)) osName = 'iOS / iPadOS';
-                
-                osEl.textContent = `${osName} (Platform: ${platform})`;
-
-                // Browser Version Detection
-                const browserEl = document.getElementById('recon-browser');
-                let browserName = 'Unknown Browser';
-                let browserVer = '';
-                if (/Edg\//.test(ua)) {
-                    browserName = 'Microsoft Edge';
-                    browserVer = ua.match(/Edg\/([0-9.]+)/)?.[1] || '';
-                } else if (/Chrome\//.test(ua) && !/Chromium/.test(ua)) {
-                    browserName = 'Google Chrome';
-                    browserVer = ua.match(/Chrome\/([0-9.]+)/)?.[1] || '';
-                } else if (/Firefox\//.test(ua)) {
-                    browserName = 'Mozilla Firefox';
-                    browserVer = ua.match(/Firefox\/([0-9.]+)/)?.[1] || '';
-                } else if (/Safari\//.test(ua) && !/Chrome/.test(ua)) {
-                    browserName = 'Apple Safari';
-                    browserVer = ua.match(/Version\/([0-9.]+)/)?.[1] || '';
-                }
-                browserEl.textContent = `${browserName} v${browserVer} (User-Agent: ${ua})`;
-
-                // Hardware Concurrency & Memory
-                const hwEl = document.getElementById('recon-hardware');
-                const cores = navigator.hardwareConcurrency || 'Unknown';
-                const memory = navigator.deviceMemory ? `${navigator.deviceMemory} GB+` : 'Unknown / Restricted';
-                hwEl.textContent = `${cores} CPU Logical Cores | Approx. RAM: ${memory}`;
-
-                // Screen Resolution & Color Depth
-                const screenEl = document.getElementById('recon-screen');
-                screenEl.textContent = `${window.screen.width}x${window.screen.height} (Available: ${window.screen.availWidth}x${window.screen.availHeight}) — Color Depth: ${window.screen.colorDepth}-bit`;
-
-                // Security & Privacy Posture
-                const dntEl = document.getElementById('recon-dnt');
-                const dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
-                const gpcVal = navigator.globalPrivacyControl;
-                dntEl.textContent = `DoNotTrack: ${dntVal ? 'Enabled' : 'Disabled/Not Set'} | GPC: ${gpcVal ? 'Enabled' : 'Disabled'}`;
-
-                const cookiesEl = document.getElementById('recon-cookies');
-                cookiesEl.textContent = navigator.cookieEnabled ? 'Enabled' : 'Disabled (Blocked)';
-
-                const protocolEl = document.getElementById('recon-protocol');
-                protocolEl.textContent = `${window.location.protocol.toUpperCase()} (Secure Context: ${window.isSecureContext ? 'Yes' : 'No'})`;
-
-                // Canvas Fingerprint Hash
-                const canvasEl = document.getElementById('recon-canvas');
-                try {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = 200;
-                    canvas.height = 50;
-                    const ctx = canvas.getContext('2d');
-                    ctx.textBaseline = 'top';
-                    ctx.font = '14px "Inter", sans-serif';
-                    ctx.fillStyle = '#007acc';
-                    ctx.fillRect(10, 5, 120, 30);
-                    ctx.fillStyle = '#4ec9b0';
-                    ctx.fillText('xCONFLiCTiONx recon', 12, 10);
-                    const dataUrl = canvas.toDataURL();
-                    
-                    // Simple hash generator for canvas
-                    let hash = 0;
-                    for (let i = 0; i < dataUrl.length; i++) {
-                        hash = ((hash << 5) - hash) + dataUrl.charCodeAt(i);
-                        hash |= 0;
-                    }
-                    canvasEl.textContent = `Hash: 0x${Math.abs(hash).toString(16)} (DataURL Length: ${dataUrl.length})`;
-                } catch (e) {
-                    canvasEl.textContent = 'Canvas fingerprinting blocked or restricted';
-                }
-            }
-
-            document.getElementById('recon-refresh-ip').addEventListener('click', runRecon);
-
-            // Initial load triggers (Load sample token by default so encoder is ready)
-            jwtInput.value = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ4Q09ORkxpQ1RJT054IiwibmFtZSI6Ik1pY2hhZWwiLCJpYXQiOjE3NTAwMDAwMDAsImV4cCI6MjAwMDAwMDAwMH0.signature';
-            decodeJwt(true);
-            runRegex();
-            generateHashes();
-            computeDiff();
+        [regexPattern, regexFlags, regexReplacement, regexInput].forEach(
+          (el) => {
+            el.addEventListener("input", runRegex);
+          }
+        );
+        document.getElementById("regex-clear").addEventListener("click", () => {
+          regexInput.value = "";
+          runRegex();
         });
+
+        // --- 3. HASH GENERATOR ---
+        const hashInput = document.getElementById("hash-input");
+        const hashCharsCount = document.getElementById("hash-chars-count");
+
+        async function generateHashes() {
+          const text = hashInput.value;
+          hashCharsCount.textContent = `${text.length} chars`;
+          if (!text) {
+            ["hash-sha256", "hash-sha384", "hash-sha512", "hash-md5"].forEach(
+              (id) => (document.getElementById(id).value = "")
+            );
+            return;
+          }
+          const encoder = new TextEncoder();
+          const data = encoder.encode(text);
+
+          async function digest(algo) {
+            const hashBuffer = await crypto.subtle.digest(algo, data);
+            return Array.from(new Uint8Array(hashBuffer))
+              .map((b) => b.toString(16).padStart(2, "0"))
+              .join("");
+          }
+
+          document.getElementById("hash-sha256").value = await digest(
+            "SHA-256"
+          );
+          document.getElementById("hash-sha384").value = await digest(
+            "SHA-384"
+          );
+          document.getElementById("hash-sha512").value = await digest(
+            "SHA-512"
+          );
+          document.getElementById("hash-md5").value = (
+            await digest("SHA-256")
+          ).substring(0, 32);
+        }
+
+        hashInput.addEventListener("input", generateHashes);
+        document.getElementById("hash-clear").addEventListener("click", () => {
+          hashInput.value = "";
+          generateHashes();
+        });
+        document.querySelectorAll(".hash-copy-btn").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const targetId = btn.getAttribute("data-target");
+            const val = document.getElementById(targetId).value;
+            if (val) {
+              navigator.clipboard.writeText(val);
+              showNotification("Copied hash to clipboard!");
+            }
+          });
+        });
+
+        // --- 4. TEXT DIFF TOOL ---
+        const diffA = document.getElementById("diff-input-a");
+        const diffB = document.getElementById("diff-input-b");
+        const diffOutput = document.getElementById("diff-output");
+        const diffStats = document.getElementById("diff-stats");
+
+        function computeDiff() {
+          const linesA = diffA.value.split("\n");
+          const linesB = diffB.value.split("\n");
+
+          let html = "";
+          let additions = 0;
+          let deletions = 0;
+
+          const maxLen = Math.max(linesA.length, linesB.length);
+          for (let i = 0; i < maxLen; i++) {
+            const lineA = linesA[i];
+            const lineB = linesB[i];
+
+            if (lineA === lineB) {
+              html += `<div class="text-vscode-muted px-2 py-0.5">&nbsp;&nbsp; ${escapeHtml(
+                lineA !== undefined ? lineA : ""
+              )}</div>`;
+            } else {
+              if (lineA !== undefined) {
+                deletions++;
+                html += `<div class="bg-red-950/40 text-red-300 px-2 py-0.5">- &nbsp;${escapeHtml(
+                  lineA
+                )}</div>`;
+              }
+              if (lineB !== undefined) {
+                additions++;
+                html += `<div class="bg-emerald-950/40 text-emerald-300 px-2 py-0.5">+ &nbsp;${escapeHtml(
+                  lineB
+                )}</div>`;
+              }
+            }
+          }
+          diffOutput.innerHTML =
+            html ||
+            '<span class="text-vscode-muted">No text to compare.</span>';
+          diffStats.textContent = `${additions} addition${
+            additions === 1 ? "" : "s"
+          }, ${deletions} deletion${deletions === 1 ? "" : "s"}`;
+        }
+
+        [diffA, diffB].forEach((el) =>
+          el.addEventListener("input", computeDiff)
+        );
+        document
+          .getElementById("diff-clear-a")
+          .addEventListener("click", () => {
+            diffA.value = "";
+            computeDiff();
+          });
+        document
+          .getElementById("diff-clear-b")
+          .addEventListener("click", () => {
+            diffB.value = "";
+            computeDiff();
+          });
+
+        // --- 5. CLIENT RECON & SECURITY TOOL ---
+        async function runRecon() {
+          // IP & Geo Lookup via ipapi.co (Free JSON API)
+          const ipEl = document.getElementById("recon-ip");
+          const geoEl = document.getElementById("recon-geo");
+          try {
+            const res = await fetch("https://ipapi.co/json/");
+            const data = await res.json();
+            if (data.error) {
+              ipEl.textContent = "Error fetching IP";
+              geoEl.textContent = data.reason || "Unknown location";
+            } else {
+              ipEl.textContent = `${data.ip} (${data.version || "IPv4"})`;
+              geoEl.textContent = `${data.city || "Unknown City"}, ${
+                data.region || ""
+              }, ${data.country_name || ""} — ISP: ${data.org || "Unknown"}`;
+            }
+          } catch (err) {
+            ipEl.textContent = "Network lookup failed (CORS/Adblocker)";
+            geoEl.textContent = "Unable to fetch geolocation.";
+          }
+
+          // WebRTC Local/Public IP Leak Detection
+          const webRtcEl = document.getElementById("recon-webrtc");
+          webRtcEl.textContent = "Scanning...";
+          try {
+            const ips = new Set();
+            const pc = new RTCPeerConnection({
+              iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+            });
+            pc.createDataChannel("");
+            pc.createOffer().then((offer) => pc.setLocalDescription(offer));
+            pc.onicecandidate = (ice) => {
+              if (ice && ice.candidate && ice.candidate.candidate) {
+                const parts = ice.candidate.candidate.split(" ");
+                const ip = parts[4];
+                if (ip) {
+                  ips.add(ip);
+                  webRtcEl.textContent = Array.from(ips).join(", ");
+                }
+              }
+            };
+            setTimeout(() => {
+              if (ips.size === 0)
+                webRtcEl.textContent =
+                  "No WebRTC IP leaks exposed (or blocked)";
+            }, 2000);
+          } catch (e) {
+            webRtcEl.textContent = "WebRTC disabled or unsupported";
+          }
+
+          // OS & Browser Details from UA and Platform
+          const ua = navigator.userAgent;
+          const platform =
+            navigator.platform ||
+            navigator.userAgentData?.platform ||
+            "Unknown";
+          const osEl = document.getElementById("recon-os");
+
+          let osName = "Unknown OS";
+          if (/Windows NT 10.0/.test(ua)) osName = "Windows 10 / Windows 11";
+          else if (/Windows NT 6.3/.test(ua)) osName = "Windows 8.1";
+          else if (/Windows NT 6.2/.test(ua)) osName = "Windows 8";
+          else if (/Windows NT 6.1/.test(ua)) osName = "Windows 7";
+          else if (/Mac OS X/.test(ua)) osName = "macOS";
+          else if (/Linux/.test(ua)) osName = "Linux";
+          else if (/Android/.test(ua)) osName = "Android";
+          else if (/like Mac OS X/.test(ua)) osName = "iOS / iPadOS";
+
+          osEl.textContent = `${osName} (Platform: ${platform})`;
+
+          // Browser Version Detection
+          const browserEl = document.getElementById("recon-browser");
+          let browserName = "Unknown Browser";
+          let browserVer = "";
+          if (/Edg\//.test(ua)) {
+            browserName = "Microsoft Edge";
+            browserVer = ua.match(/Edg\/([0-9.]+)/)?.[1] || "";
+          } else if (/Chrome\//.test(ua) && !/Chromium/.test(ua)) {
+            browserName = "Google Chrome";
+            browserVer = ua.match(/Chrome\/([0-9.]+)/)?.[1] || "";
+          } else if (/Firefox\//.test(ua)) {
+            browserName = "Mozilla Firefox";
+            browserVer = ua.match(/Firefox\/([0-9.]+)/)?.[1] || "";
+          } else if (/Safari\//.test(ua) && !/Chrome/.test(ua)) {
+            browserName = "Apple Safari";
+            browserVer = ua.match(/Version\/([0-9.]+)/)?.[1] || "";
+          }
+          browserEl.textContent = `${browserName} v${browserVer} (User-Agent: ${ua})`;
+
+          // Hardware Concurrency & Memory
+          const hwEl = document.getElementById("recon-hardware");
+          const cores = navigator.hardwareConcurrency || "Unknown";
+          const memory = navigator.deviceMemory
+            ? `${navigator.deviceMemory} GB+`
+            : "Unknown / Restricted";
+          hwEl.textContent = `${cores} CPU Logical Cores | Approx. RAM: ${memory}`;
+
+          // Screen Resolution & Color Depth
+          const screenEl = document.getElementById("recon-screen");
+          screenEl.textContent = `${window.screen.width}x${window.screen.height} (Available: ${window.screen.availWidth}x${window.screen.availHeight}) — Color Depth: ${window.screen.colorDepth}-bit`;
+
+          // Security & Privacy Posture
+          const dntEl = document.getElementById("recon-dnt");
+          const dntVal =
+            navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+          const gpcVal = navigator.globalPrivacyControl;
+          dntEl.textContent = `DoNotTrack: ${
+            dntVal ? "Enabled" : "Disabled/Not Set"
+          } | GPC: ${gpcVal ? "Enabled" : "Disabled"}`;
+
+          const cookiesEl = document.getElementById("recon-cookies");
+          cookiesEl.textContent = navigator.cookieEnabled
+            ? "Enabled"
+            : "Disabled (Blocked)";
+
+          const protocolEl = document.getElementById("recon-protocol");
+          protocolEl.textContent = `${window.location.protocol.toUpperCase()} (Secure Context: ${
+            window.isSecureContext ? "Yes" : "No"
+          })`;
+
+          // Canvas Fingerprint Hash
+          const canvasEl = document.getElementById("recon-canvas");
+          try {
+            const canvas = document.createElement("canvas");
+            canvas.width = 200;
+            canvas.height = 50;
+            const ctx = canvas.getContext("2d");
+            ctx.textBaseline = "top";
+            ctx.font = '14px "Inter", sans-serif';
+            ctx.fillStyle = "#007acc";
+            ctx.fillRect(10, 5, 120, 30);
+            ctx.fillStyle = "#4ec9b0";
+            ctx.fillText("xCONFLiCTiONx recon", 12, 10);
+            const dataUrl = canvas.toDataURL();
+
+            // Simple hash generator for canvas
+            let hash = 0;
+            for (let i = 0; i < dataUrl.length; i++) {
+              hash = (hash << 5) - hash + dataUrl.charCodeAt(i);
+              hash |= 0;
+            }
+            canvasEl.textContent = `Hash: 0x${Math.abs(hash).toString(
+              16
+            )} (DataURL Length: ${dataUrl.length})`;
+          } catch (e) {
+            canvasEl.textContent =
+              "Canvas fingerprinting blocked or restricted";
+          }
+        }
+
+        document
+          .getElementById("recon-refresh-ip")
+          .addEventListener("click", runRecon);
+
+        // Initial load triggers (Load sample token by default so encoder is ready)
+        jwtInput.value =
+          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ4Q09ORkxpQ1RJT054IiwibmFtZSI6Ik1pY2hhZWwiLCJpYXQiOjE3NTAwMDAwMDAsImV4cCI6MjAwMDAwMDAwMH0.signature";
+        decodeJwt(true);
+        runRegex();
+        generateHashes();
+        computeDiff();
+      });
     </script>
 
-    <footer class="site-footer" style="margin-top: 4rem;">
-        <div class="container" style="display: block; max-width: 1200px; margin: 0 auto; padding: 2rem;">
-            <p>&copy; 2026 <span class="user-name-js"></span>. Built with pure logic and the GitHub API.</p>
-        </div>
+    <footer class="site-footer" style="margin-top: 4rem">
+      <div
+        class="container"
+        style="display: block; max-width: 1200px; margin: 0 auto; padding: 2rem"
+      >
+        <p>
+          &copy; 2026 <span class="user-name-js"></span>. Built with pure logic
+          and the GitHub API.
+        </p>
+      </div>
     </footer>
 
     <script src="../js/jquery-3.2.1.min.js"></script>
     <script src="../js/github-fetch.js?v=24"></script>
     <script>
-        // Mobile Menu Toggle
-        $('#menuToggle').click(function() {
-            $('#navLinks').toggleClass('active');
-            $(this).find('i').toggleClass('im-menu im-x-mark');
-        });
+      // Mobile Menu Toggle
+      $("#menuToggle").click(function () {
+        $("#navLinks").toggleClass("active");
+        $(this).find("i").toggleClass("im-menu im-x-mark");
+      });
     </script>
-</body>
-
+  </body>
 </html>
