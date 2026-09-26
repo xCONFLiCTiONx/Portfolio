@@ -76,11 +76,12 @@ async function initPortfolio() {
         cache: 'no-cache'
     };
 
+    let userData = null;
     try {
         const userURL = `https://api.github.com/users/${username}`;
         const userResponse = await fetch(userURL, fetchOptions);
         if (userResponse.ok) {
-            const userData = await userResponse.json();
+            userData = await userResponse.json();
             populateProfile(userData, username);
         } else {
             document.querySelectorAll('.user-name-js').forEach(el => el.textContent = username);
@@ -111,7 +112,7 @@ async function initPortfolio() {
 
         const metaDesc = document.getElementById('meta-description-js');
         if (metaDesc) {
-            metaDesc.content = `Software Developer Portfolio for ${userData.name || username} - Building tools for freedom & productivity.`;
+            metaDesc.content = `Software Developer Portfolio for ${(userData && userData.name) || username} - Building tools for freedom & productivity.`;
         }
 
     } catch (error) {
