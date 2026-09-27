@@ -361,6 +361,63 @@
             </div>
         </div>
 
+        <h2 class="section-title">Connection Speed Test</h2>
+        
+        <div class="card">
+            <div class="grid">
+        
+                <div class="card">
+                    <h2>Latency</h2>
+                    <div class="value" id="speedLatency">—</div>
+                    <div class="detail">Round-trip request time</div>
+                </div>
+        
+                <div class="card">
+                    <h2>Download</h2>
+                    <div class="value" id="speedDownload">—</div>
+                    <div class="detail" id="speedDownloadDetail">
+                        Waiting for test
+                    </div>
+                </div>
+        
+                <div class="card">
+                    <h2>Upload</h2>
+                    <div class="value" id="speedUpload">—</div>
+                    <div class="detail" id="speedUploadDetail">
+                        Waiting for test
+                    </div>
+                </div>
+        
+            </div>
+        
+            <div style="margin-top:18px;">
+                <button id="speedTestButton" onclick="runSpeedTest()">
+                    ⚡ Run Speed Test
+                </button>
+            </div>
+        
+            <div id="speedProgress" style="
+                    margin-top:15px;
+                    height:8px;
+                    background:#283244;
+                    border-radius:10px;
+                    overflow:hidden;
+                    display:none;
+                 ">
+                <div id="speedProgressBar" style="
+                        height:100%;
+                        width:0%;
+                        background:#5794ff;
+                        transition:width .2s;
+                     ">
+                </div>
+            </div>
+        
+            <div id="speedStatus" class="detail" style="margin-top:10px;">
+                Ready.
+            </div>
+        </div>
+
         <h2 class="section-title">Test Activity</h2>
         <div class="log" id="log" aria-live="polite">
             <div class="log-entry">
@@ -603,6 +660,129 @@ async function runTests() {
 }
 
 showBrowserInfo();
+
+async function measureLatency() {
+const samples = 5;
+const results = [];
+
+for (let i = 0; i < samples; i++) { const start=performance.now(); try { const response=await
+    fetch( "/tools/test?latency=" + Date.now() + "-" + i, { method: "HEAD" , cache: "no-store" } ); if (!response.ok) {
+    throw new Error("HTTP " + response.status);
+            }
+
+            const elapsed = performance.now() - start;
+            results.push(elapsed);
+
+        } catch (error) {
+            log(" Latency sample failed: " + error.message, " error"); } } if (!results.length) { return null; }
+    results.sort((a, b)=> a - b);
+
+    // Remove the highest and lowest sample when possible.
+    const trimmed =
+    results.length >= 3
+    ? results.slice(1, -1)
+    : results;
+
+    const average =
+    trimmed.reduce((a, b) => a + b, 0) / trimmed.length;
+
+    return average;
+    }
+
+
+    async function measureDownload() {
+
+    /*
+    This downloads a same-origin file.
+
+    IMPORTANT:
+    Create this file on your website:
+
+    /tools/speedtest.bin
+
+    Make it at least 50 MB for useful results.
+    */
+
+    const url =
+    "/tools/speedtest.bin?cache=" +
+    Date.now();
+
+    const start = performance.now();
+    let bytes = 0;
+
+    try {
+
+    const response = await fetch(url, {
+    cache: "no-store"
+    });
+
+    if (!response.ok) {
+    throw new Error("HTTP " + response.status);
+    }
+
+    if (!response.body) {
+    throw new Error("Streaming response unavailable.");
+    }
+
+    const reader = response.body.getReader();
+
+    while (true) {
+
+    const { value, done } =
+    await reader.read();
+
+    if (done) {
+    break;
+    }
+
+    bytes += value.byteLength;
+
+    updateSpeedProgress(
+    Math.min(
+    100,
+    (bytes / (50 * 1024 * 1024)) * 100
+    )
+    );
+    }
+
+    const seconds =
+    (performance.now() - start) / 1000;
+
+    if (seconds <= 0) { throw new Error("Invalid timing."); } return { bytes, seconds, mbps: (bytes * 8 / seconds) /
+        1000000 }; } catch (error) { throw error; } } async function measureUpload() { /* This posts generated data back
+        to the same origin. Your server must accept POST requests to: /tools/speedtest-upload */ const size=10 * 1024 *
+        1024; const data=new Uint8Array(size); /* Fill the buffer so the browser actually generates the payload. */
+        crypto.getRandomValues( data.subarray(0, 65536) ); for ( let offset=65536; offset < data.length; offset +=65536
+        ) { data.set( data.subarray( 0, Math.min( 65536, data.length - offset ) ), offset ); } const
+        start=performance.now(); const response=await fetch( "/tools/speedtest-upload?cache=" + Date.now(), {
+        method: "POST" , body: data, cache: "no-store" , headers: { "Content-Type" : "application/octet-stream" } } );
+        if (!response.ok) { throw new Error( "Upload endpoint returned HTTP " + response.status ); } const
+        seconds=(performance.now() - start) / 1000; return { bytes: size, seconds, mbps: (size * 8 / seconds) / 1000000
+        }; } function updateSpeedProgress(percent) { $("speedProgress").style.display="block" ;
+        $("speedProgressBar").style.width=percent.toFixed(1) + "%" ; } async function runSpeedTest() { const
+        button=$("speedTestButton"); button.disabled=true; button.textContent="Testing..." ;
+        $("speedProgress").style.display="block" ; $("speedProgressBar").style.width="0%" ;
+        $("speedStatus").textContent="Measuring latency..." ; $("speedLatency").textContent="Testing..." ;
+        $("speedDownload").textContent="Waiting..." ; $("speedUpload").textContent="Waiting..." ;
+        log( "Starting speed test..." , "info" ); try { /* * LATENCY */ const latency=await measureLatency(); if
+        (latency !==null) { $("speedLatency").textContent=latency.toFixed(1) + " ms" ;
+        $("speedLatency").className="value good" ; log( "Average latency: " + latency.toFixed(1) + " ms" , "ok" ); }
+        else { $("speedLatency").textContent="Failed" ; $("speedLatency").className="value bad" ; } /* * DOWNLOAD */
+        $("speedStatus").textContent="Measuring download speed..." ; log( "Starting download test..." , "info" ); const
+        download=await measureDownload(); $("speedDownload").textContent=download.mbps.toFixed(2) + " Mbps" ;
+        $("speedDownload").className="value good" ; $("speedDownloadDetail").textContent=formatBytes(download.bytes)
+        + " downloaded in " + download.seconds.toFixed(2) + " seconds" ; log( "Download: " + download.mbps.toFixed(2)
+        + " Mbps" , "ok" ); /* * UPLOAD */ $("speedStatus").textContent="Measuring upload speed..." ;
+        $("speedProgressBar").style.width="50%" ; log( "Starting upload test..." , "info" ); const upload=await
+        measureUpload(); $("speedUpload").textContent=upload.mbps.toFixed(2) + " Mbps" ;
+        $("speedUpload").className="value good" ; $("speedUploadDetail").textContent=formatBytes(upload.bytes)
+        + " uploaded in " + upload.seconds.toFixed(2) + " seconds" ; log( "Upload: " + upload.mbps.toFixed(2) + " Mbps"
+        , "ok" ); $("speedProgressBar").style.width="100%" ; $("speedStatus").textContent="Speed test complete." ;
+        log( "Speed test completed." , "ok" ); } catch (error) { $("speedStatus").textContent="Speed test failed: " +
+        error.message; log( "Speed test failed: " + error.message, "error" ); } finally { button.disabled=false;
+        button.textContent="⚡ Run Speed Test" ; } } function formatBytes(bytes) { if (bytes < 1024) return bytes + " B"
+        ; if (bytes < 1024 * 1024) return ( bytes / 1024 ).toFixed(1) + " KB" ; if (bytes < 1024 * 1024 * 1024) return (
+        bytes / (1024 * 1024) ).toFixed(2) + " MB" ; return ( bytes / (1024 * 1024 * 1024) ).toFixed(2) + " GB" ; }
     </script>
 </body>
 
