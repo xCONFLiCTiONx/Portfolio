@@ -4,19 +4,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WARP Split Tunnel Test</title>
+
+    <title>xCONFLiCTiONx Network Diagnostic</title>
+
     <style>
         :root {
             color-scheme: dark;
-            --bg: #0b0e14;
-            --panel: #141923;
-            --border: #283244;
-            --text: #e5eaf2;
-            --muted: #8995a8;
-            --blue: #5794ff;
-            --green: #35d49a;
-            --red: #ff6577;
-            --yellow: #f5c451;
+
+            --bg: #080b10;
+            --panel: #0f141b;
+            --panel2: #131a23;
+            --border: #26313d;
+
+            --text: #e7edf4;
+            --muted: #8b98a7;
+
+            --green: #35d07f;
+            --red: #ff5d6c;
+            --yellow: #f2c94c;
+            --blue: #4da3ff;
+            --cyan: #39d8ff;
+
+            --radius: 12px;
         }
 
         * {
@@ -25,180 +34,258 @@
 
         body {
             margin: 0;
+            padding: 30px;
             background: var(--bg);
             color: var(--text);
-            font: 14px/1.6 "Segoe UI", Arial, sans-serif;
-        }
-
-        header {
-            padding: 28px 20px;
-            border-bottom: 1px solid var(--border);
-            background: #10151e;
+            font-family:
+                Inter,
+                Segoe UI,
+                Arial,
+                sans-serif;
         }
 
         .container {
             max-width: 1100px;
-            margin: auto;
-            padding: 0 20px;
-        }
-
-        .brand {
-            color: var(--blue);
-            font-size: 12px;
-            font-weight: 700;
-            letter-spacing: 3px;
-            text-transform: uppercase;
+            margin: 0 auto;
         }
 
         h1 {
-            font-size: 28px;
-            margin: 5px 0;
+            margin: 0 0 8px;
+            font-size: 30px;
+            font-weight: 700;
         }
 
         .subtitle {
             color: var(--muted);
-        }
-
-        main {
-            padding: 25px 0 50px;
-        }
-
-        .toolbar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 15px;
-            flex-wrap: wrap;
-            margin-bottom: 22px;
-        }
-
-        button {
-            background: var(--blue);
-            color: white;
-            border: 0;
-            border-radius: 7px;
-            padding: 12px 22px;
-            font-size: 14px;
-            font-weight: 700;
-            cursor: pointer;
-        }
-
-        button:hover {
-            filter: brightness(1.15);
-        }
-
-        button:disabled {
-            opacity: .5;
-            cursor: wait;
-        }
-
-        .secondary {
-            background: #242d3b;
-            border: 1px solid var(--border);
-        }
-
-        #lastRun {
-            color: var(--muted);
-            font-size: 12px;
+            margin-bottom: 28px;
         }
 
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            grid-template-columns:
+                repeat(auto-fit, minmax(240px, 1fr));
             gap: 15px;
         }
 
         .card {
             background: var(--panel);
             border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 18px;
-            min-width: 0;
+            border-radius: var(--radius);
+            padding: 20px;
         }
 
         .card h2 {
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: var(--muted);
-            margin: 0 0 12px;
+            margin: 0 0 16px;
+            font-size: 16px;
+            font-weight: 600;
         }
 
         .value {
-            font-size: 20px;
+            font-size: 24px;
             font-weight: 700;
-            overflow-wrap: anywhere;
+            word-break: break-word;
         }
 
-        .detail {
-            color: var(--muted);
-            font-size: 12px;
-            margin-top: 7px;
-        }
-
-        .status {
-            display: inline-block;
-            padding: 3px 9px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 700;
-            background: #283244;
-            color: var(--muted);
-        }
-
-        .good {
+        .value.good {
             color: var(--green);
         }
 
-        .bad {
+        .value.bad {
             color: var(--red);
         }
 
-        .warn {
+        .value.warn {
             color: var(--yellow);
         }
 
-        .section-title {
-            margin: 30px 0 12px;
-            font-size: 17px;
+        .value.info {
+            color: var(--blue);
         }
 
-        table {
+        .detail {
+            margin-top: 7px;
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .wide {
+            grid-column: 1 / -1;
+        }
+
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--muted);
+            box-shadow: 0 0 10px currentColor;
+        }
+
+        .dot.green {
+            background: var(--green);
+            color: var(--green);
+        }
+
+        .dot.red {
+            background: var(--red);
+            color: var(--red);
+        }
+
+        .dot.yellow {
+            background: var(--yellow);
+            color: var(--yellow);
+        }
+
+        .table {
             width: 100%;
             border-collapse: collapse;
         }
 
-        td {
-            padding: 10px 5px;
+        .table td {
+            padding: 9px 0;
             border-bottom: 1px solid var(--border);
             vertical-align: top;
         }
 
-        td:first-child {
-            color: var(--muted);
-            width: 40%;
+        .table tr:last-child td {
+            border-bottom: 0;
         }
 
-        td:last-child {
-            overflow-wrap: anywhere;
+        .table td:first-child {
+            width: 180px;
+            color: var(--muted);
+        }
+
+        code {
+            font-family:
+                Consolas,
+                "Courier New",
+                monospace;
+
+            color: var(--cyan);
+            word-break: break-all;
+        }
+
+        button {
+            border: 1px solid var(--border);
+            background: var(--panel2);
+            color: var(--text);
+
+            padding: 11px 18px;
+            border-radius: 8px;
+
+            cursor: pointer;
+
+            font-size: 14px;
+            font-weight: 600;
+
+            transition:
+                background 0.15s,
+                border-color 0.15s,
+                transform 0.1s;
+        }
+
+        button:hover {
+            background: #1a232e;
+            border-color: #3b4b5d;
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        button:disabled {
+            opacity: 0.55;
+            cursor: wait;
+        }
+
+        .button-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .speed-grid {
+            display: grid;
+            grid-template-columns:
+                repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 18px;
+        }
+
+        .speed-card {
+            background: var(--panel2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 18px;
+        }
+
+        .speed-title {
+            color: var(--muted);
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+        .speed-value {
+            font-size: 26px;
+            font-weight: 700;
+        }
+
+        .progress {
+            height: 8px;
+            background: #1b222b;
+            border-radius: 999px;
+            overflow: hidden;
+            margin-top: 18px;
+            display: none;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: var(--blue);
+            transition: width 0.15s linear;
+        }
+
+        .speed-status {
+            margin-top: 12px;
+            color: var(--muted);
+            font-size: 13px;
         }
 
         .log {
-            background: #080b10;
+            background: #05070a;
             border: 1px solid var(--border);
             border-radius: 8px;
-            padding: 12px;
-            height: 220px;
+
+            padding: 14px;
+
+            max-height: 280px;
             overflow-y: auto;
-            font: 12px/1.8 Consolas, monospace;
+
+            font-family:
+                Consolas,
+                "Courier New",
+                monospace;
+
+            font-size: 12px;
+            line-height: 1.6;
         }
 
-        .log-entry {
-            border-bottom: 1px solid #161c26;
+        .log-line {
+            white-space: pre-wrap;
+            word-break: break-word;
         }
 
-        .log-time {
-            color: #65748b;
+        .log-info {
+            color: var(--blue);
         }
 
         .log-ok {
@@ -209,34 +296,51 @@
             color: var(--red);
         }
 
-        .log-info {
-            color: var(--blue);
+        .log-warn {
+            color: var(--yellow);
         }
 
-        .notice {
-            border: 1px solid #66552a;
-            background: #211d13;
-            border-radius: 8px;
+        .routing-box {
+            margin-top: 15px;
             padding: 15px;
-            margin-top: 20px;
-            color: #e8d6a5;
+
+            border: 1px solid var(--border);
+            border-radius: 10px;
+
+            background: var(--panel2);
         }
 
-        footer {
+        .routing-title {
             color: var(--muted);
             font-size: 12px;
-            text-align: center;
-            padding: 20px;
-            border-top: 1px solid var(--border);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 7px;
         }
 
-        @media(max-width:600px) {
-            h1 {
-                font-size: 23px;
+        .routing-result {
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .footer {
+            margin-top: 25px;
+            text-align: center;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        @media (max-width: 700px) {
+            body {
+                padding: 18px;
             }
 
-            .container {
-                padding: 0 14px;
+            .speed-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .table td:first-child {
+                width: 130px;
             }
         }
     </style>
@@ -244,546 +348,1300 @@
 
 <body>
 
-    <header>
-        <div class="container">
-            <div class="brand">xCONFLiCTiONx / NETWORK TOOLS</div>
-            <h1>WARP Split Tunnel Test</h1>
-            <div class="subtitle">
-                Inspect your browser's network connectivity and public IP addresses.
-            </div>
-        </div>
-    </header>
+    <div class="container">
 
-    <main class="container">
+        <h1>xCONFLiCTiONx Network Diagnostic</h1>
 
-        <div class="toolbar">
-            <div>
-                <button id="run" onclick="runTests()">▶ Run Connection Tests</button>
-                <button class="secondary" onclick="clearLog()">Clear Log</button>
-            </div>
-            <div id="lastRun">Not tested yet</div>
+        <div class="subtitle">
+            Cloudflare WARP / Gateway routing, connection information,
+            and same-origin speed test.
         </div>
+
+
+        <!-- ROUTING STATUS -->
 
         <div class="grid">
-            <div class="card">
-                <h2>IPv4 Address</h2>
-                <div class="value" id="ipv4">Not tested</div>
-                <div class="detail" id="ipv4Status">Waiting for test</div>
+
+            <div class="card wide">
+
+                <div class="status">
+                    <div id="routingDot" class="dot"></div>
+
+                    <div>
+                        <div id="routingResult" class="routing-result">
+                            Checking...
+                        </div>
+
+                        <div id="routingDetail" class="detail">
+                            Reading Cloudflare connection information...
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
-            <div class="card">
-                <h2>IPv6 Address</h2>
-                <div class="value" id="ipv6">Not tested</div>
-                <div class="detail" id="ipv6Status">Waiting for test</div>
-            </div>
+
+            <!-- WARP -->
 
             <div class="card">
-                <h2>Website Connectivity</h2>
-                <div class="value" id="siteStatus">Not tested</div>
-                <div class="detail" id="siteDetail">Same-origin connection test</div>
+
+                <h2>Cloudflare WARP</h2>
+
+                <div id="warpValue" class="value">
+                    Checking...
+                </div>
+
+                <div class="detail">
+                    Cloudflare trace WARP status
+                </div>
+
             </div>
 
+
+            <!-- GATEWAY -->
+
             <div class="card">
-                <h2>Cloudflare Trace</h2>
-                <div class="value" id="traceStatus">Not tested</div>
-                <div class="detail" id="traceDetail">Checking /cdn-cgi/trace</div>
+
+                <h2>Cloudflare Gateway</h2>
+
+                <div id="gatewayValue" class="value">
+                    Checking...
+                </div>
+
+                <div class="detail">
+                    Cloudflare trace Gateway status
+                </div>
+
             </div>
+
+
+            <!-- IP -->
+
+            <div class="card">
+
+                <h2>Observed IP</h2>
+
+                <div id="traceIp" class="value">
+                    Checking...
+                </div>
+
+                <div class="detail">
+                    IP reported by Cloudflare
+                </div>
+
+            </div>
+
+
+            <!-- COLO -->
+
+            <div class="card">
+
+                <h2>Cloudflare POP</h2>
+
+                <div id="coloValue" class="value">
+                    Checking...
+                </div>
+
+                <div class="detail">
+                    Cloudflare edge location
+                </div>
+
+            </div>
+
         </div>
 
-        <h2 class="section-title">Connection Information</h2>
-        <div class="card">
-            <table>
+
+        <!-- CONNECTION INFORMATION -->
+
+        <div class="card wide" style="margin-top:15px;">
+
+            <h2>Connection Information</h2>
+
+            <table class="table">
+
                 <tr>
-                    <td>Website hostname</td>
-                    <td id="hostname">—</td>
+                    <td>Hostname</td>
+                    <td>
+                        <code id="hostname">Checking...</code>
+                    </td>
                 </tr>
+
                 <tr>
                     <td>Current URL</td>
-                    <td id="url">—</td>
+                    <td>
+                        <code id="currentUrl">Checking...</code>
+                    </td>
                 </tr>
+
                 <tr>
-                    <td>Browser connection type</td>
-                    <td id="connectionType">—</td>
+                    <td>Browser IPv4</td>
+                    <td>
+                        <code id="ipv4">Checking...</code>
+                    </td>
                 </tr>
+
                 <tr>
-                    <td>Effective connection type</td>
-                    <td id="effectiveType">—</td>
+                    <td>Browser IPv6</td>
+                    <td>
+                        <code id="ipv6">Checking...</code>
+                    </td>
                 </tr>
+
                 <tr>
-                    <td>Estimated downlink</td>
-                    <td id="downlink">—</td>
+                    <td>HTTP Version</td>
+                    <td>
+                        <code id="httpVersion">Checking...</code>
+                    </td>
                 </tr>
+
                 <tr>
-                    <td>Browser online status</td>
-                    <td id="online">—</td>
+                    <td>TLS</td>
+                    <td>
+                        <code id="tls">Checking...</code>
+                    </td>
                 </tr>
-                <tr>
-                    <td>Browser user agent</td>
-                    <td id="userAgent">—</td>
-                </tr>
-                <tr>
-                    <td>Test timestamp</td>
-                    <td id="timestamp">—</td>
-                </tr>
+
             </table>
+
         </div>
 
-        <h2 class="section-title">Cloudflare Trace Details</h2>
-        <div class="card">
-            <table>
-                <tr>
-                    <td>Observed IP</td>
-                    <td id="traceIp">—</td>
-                </tr>
-                <tr>
-                    <td>Cloudflare location</td>
-                    <td id="traceColo">—</td>
-                </tr>
-                <tr>
-                    <td>HTTP protocol</td>
-                    <td id="traceHttp">—</td>
-                </tr>
-                <tr>
-                    <td>Cloudflare connection</td>
-                    <td id="traceWarp">—</td>
-                </tr>
-                <tr>
-                    <td>Trace TLS</td>
-                    <td id="traceTls">—</td>
-                </tr>
-                <tr>
-                    <td>Other trace data</td>
-                    <td id="traceOther">—</td>
-                </tr>
-            </table>
+
+        <!-- SPEED TEST -->
+
+        <div class="card wide" style="margin-top:15px;">
+
+            <h2>Same-Origin Speed Test</h2>
+
             <div class="detail">
-                These fields are only populated when the trace endpoint is accessible.
+                This test downloads data directly from this website.
+                That makes it useful for comparing the route with
+                WARP enabled versus a split-tunnel exclusion.
             </div>
-        </div>
 
-        <h2 class="section-title">Connection Speed Test</h2>
-        
-        <div class="card">
-            <div class="grid">
-        
-                <div class="card">
-                    <h2>Latency</h2>
-                    <div class="value" id="speedLatency">—</div>
-                    <div class="detail">Round-trip request time</div>
-                </div>
-        
-                <div class="card">
-                    <h2>Download</h2>
-                    <div class="value" id="speedDownload">—</div>
-                    <div class="detail" id="speedDownloadDetail">
-                        Waiting for test
-                    </div>
-                </div>
-        
-                <div class="card">
-                    <h2>Upload</h2>
-                    <div class="value" id="speedUpload">—</div>
-                    <div class="detail" id="speedUploadDetail">
-                        Waiting for test
-                    </div>
-                </div>
-        
+            <div class="button-row" style="margin-top:16px;">
+
+                <button
+                id="speedTestButton"
+                onclick="runSpeedTest()"
+            >
+                ⚡ Run Speed Test
+            </button>
+
             </div>
-        
-            <div style="margin-top:18px;">
-                <button id="speedTestButton" onclick="runSpeedTest()">
-                    ⚡ Run Speed Test
-                </button>
+
+
+            <div id="speedProgress" class="progress">
+                <div id="speedProgressBar" class="progress-bar"></div>
             </div>
-        
-            <div id="speedProgress" style="
-                    margin-top:15px;
-                    height:8px;
-                    background:#283244;
-                    border-radius:10px;
-                    overflow:hidden;
-                    display:none;
-                 ">
-                <div id="speedProgressBar" style="
-                        height:100%;
-                        width:0%;
-                        background:#5794ff;
-                        transition:width .2s;
-                     ">
-                </div>
-            </div>
-        
-            <div id="speedStatus" class="detail" style="margin-top:10px;">
+
+
+            <div id="speedStatus" class="speed-status">
                 Ready.
             </div>
-        </div>
 
-        <h2 class="section-title">Test Activity</h2>
-        <div class="log" id="log" aria-live="polite">
-            <div class="log-entry">
-                <span class="log-info">[READY]</span>
-                Waiting for you to start the tests.
+
+            <div class="speed-grid">
+
+                <div class="speed-card">
+
+                    <div class="speed-title">
+                        LATENCY
+                    </div>
+
+                    <div id="speedLatency" class="speed-value">
+                        —
+                    </div>
+
+                    <div id="speedLatencyDetail" class="detail">
+                        Round-trip request time
+                    </div>
+
+                </div>
+
+
+                <div class="speed-card">
+
+                    <div class="speed-title">
+                        DOWNLOAD
+                    </div>
+
+                    <div id="speedDownload" class="speed-value">
+                        —
+                    </div>
+
+                    <div id="speedDownloadDetail" class="detail">
+                        Same-origin download
+                    </div>
+
+                </div>
+
+
+                <div class="speed-card">
+
+                    <div class="speed-title">
+                        UPLOAD
+                    </div>
+
+                    <div id="speedUpload" class="speed-value">
+                        N/A
+                    </div>
+
+                    <div id="speedUploadDetail" class="detail">
+                        Requires a server-side POST endpoint
+                    </div>
+
+                </div>
+
             </div>
+
         </div>
 
-        <div class="notice">
-            <strong>Important: Split-tunnel detection</strong><br>
-        This page can identify the public IP addresses used by its external
-        IP-check services and display Cloudflare trace information.
-        However, browser JavaScript cannot directly identify the Windows
-        network interface or prove that a request passed through WARP.
 
-        To verify split tunneling conclusively, compare the IP observed
-        by a server you control with your known direct and WARP egress IPs.
-        If this website is behind Cloudflare's proxy, the server may see
-        Cloudflare's proxy address instead of your actual client address.
+        <!-- CLOUDFLARE TRACE -->
+
+        <div class="card wide" style="margin-top:15px;">
+
+            <h2>Cloudflare Trace</h2>
+
+            <table class="table">
+
+                <tbody id="traceTable">
+
+                    <tr>
+                        <td>Status</td>
+                        <td>Loading...</td>
+                    </tr>
+
+                </tbody>
+
+            </table>
+
         </div>
 
-    </main>
 
-    <footer>
-        xCONFLiCTiONx Network Diagnostics
-    </footer>
+        <!-- LOG -->
+
+        <div class="card wide" style="margin-top:15px;">
+
+            <h2>Diagnostic Log</h2>
+
+            <div id="log" class="log"></div>
+
+        </div>
+
+
+        <div class="footer">
+            xCONFLiCTiONx Network Diagnostic
+        </div>
+
+    </div>
+
 
     <script>
-        const $ = id => document.getElementById(id);
+        "use strict";
+
+
+function $(id) {
+    return document.getElementById(id);
+}
+
+
+/* =========================================================
+   LOGGING
+   ========================================================= */
 
 function log(message, type = "info") {
-    const box = $("log");
-    const entry = document.createElement("div");
-    entry.className = "log-entry";
 
-    const time = new Date().toLocaleTimeString();
+    const container = $("log");
 
-    const stamp = document.createElement("span");
-    stamp.className = "log-time";
-    stamp.textContent = "[" + time + "] ";
+    const line =
+        document.createElement("div");
 
-    const content = document.createElement("span");
-    content.className = "log-" + type;
-    content.textContent = message;
+    line.className =
+        "log-line log-" + type;
 
-    entry.append(stamp, content);
-    box.appendChild(entry);
-    box.scrollTop = box.scrollHeight;
+    const time =
+        new Date().toLocaleTimeString();
+
+    line.textContent =
+        "[" + time + "] " + message;
+
+    container.appendChild(line);
+
+    container.scrollTop =
+        container.scrollHeight;
 }
 
-function clearLog() {
-    $("log").replaceChildren();
-    log("Activity log cleared.");
+
+/* =========================================================
+   BASIC PAGE INFORMATION
+   ========================================================= */
+
+function populateBasicInfo() {
+
+    $("hostname").textContent =
+        window.location.hostname;
+
+    $("currentUrl").textContent =
+        window.location.href;
+
+    log(
+        "Hostname: " +
+        window.location.hostname,
+        "info"
+    );
+
+    log(
+        "URL: " +
+        window.location.href,
+        "info"
+    );
 }
 
-function setResult(id, value, statusId, status) {
-    $(id).textContent = value;
-    $(statusId).textContent = status;
-}
 
-async function fetchWithTimeout(url, timeout = 10000) {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), timeout);
+/* =========================================================
+   PUBLIC IP TESTS
+   ========================================================= */
+
+async function getIPv4() {
 
     try {
-        return await fetch(url, {
-            cache: "no-store",
-            signal: controller.signal
-        });
-    } finally {
-        clearTimeout(timer);
-    }
-}
 
-async function testIP(version, url) {
-    const valueId = version.toLowerCase();
-    const statusId = valueId + "Status";
-
-    setResult(valueId, "Testing...", statusId, "Request in progress");
-    log("Checking public " + version + " address...");
-
-    try {
-        const response = await fetchWithTimeout(url);
+        const response =
+            await fetch(
+                "https://api.ipify.org?format=json&cache=" +
+                Date.now(),
+                {
+                    cache: "no-store"
+                }
+            );
 
         if (!response.ok) {
-            throw new Error("HTTP " + response.status);
+            throw new Error(
+                "HTTP " + response.status
+            );
         }
 
-        const ip = (await response.text()).trim();
+        const data =
+            await response.json();
 
-        if (!ip || ip.length > 100) {
-            throw new Error("Invalid response");
-        }
+        $("ipv4").textContent =
+            data.ip || "Unavailable";
 
-        setResult(valueId, ip, statusId, "Successfully detected");
-        log("Public " + version + ": " + ip, "ok");
+        log(
+            "IPv4: " +
+            (data.ip || "Unavailable"),
+            "ok"
+        );
 
-        return ip;
     } catch (error) {
-        setResult(
-            valueId,
-            "Unavailable",
-            statusId,
-            error.message || "Request failed"
+
+        $("ipv4").textContent =
+            "Unavailable";
+
+        log(
+            "IPv4 lookup failed: " +
+            error.message,
+            "error"
         );
-        log(version + " test failed: " + error.message, "error");
-        return null;
     }
 }
 
-async function testWebsite() {
-    $("siteStatus").textContent = "Testing...";
+
+async function getIPv6() {
 
     try {
-        const response = await fetchWithTimeout(
-            location.href.split("#")[0].split("?")[0] +
-            "?connection_test=" + Date.now()
-        );
+
+        const response =
+            await fetch(
+                "https://api6.ipify.org?format=json&cache=" +
+                Date.now(),
+                {
+                    cache: "no-store"
+                }
+            );
 
         if (!response.ok) {
-            throw new Error("HTTP " + response.status);
+            throw new Error(
+                "HTTP " + response.status
+            );
         }
 
-        $("siteStatus").textContent = "Reachable";
-        $("siteStatus").className = "value good";
-        $("siteDetail").textContent =
-            "Same-origin HTTP " + response.status;
+        const data =
+            await response.json();
 
-        log("Website successfully reached.", "ok");
+        $("ipv6").textContent =
+            data.ip || "Unavailable";
+
+        log(
+            "IPv6: " +
+            (data.ip || "Unavailable"),
+            "ok"
+        );
+
     } catch (error) {
-        $("siteStatus").textContent = "Failed";
-        $("siteStatus").className = "value bad";
-        $("siteDetail").textContent = error.message;
-        log("Website test failed: " + error.message, "error");
+
+        $("ipv6").textContent =
+            "Unavailable";
+
+        log(
+            "IPv6 lookup failed: " +
+            error.message,
+            "warn"
+        );
     }
 }
 
-async function testTrace() {
-    $("traceStatus").textContent = "Testing...";
+
+/* =========================================================
+   CLOUDFLARE TRACE
+   ========================================================= */
+
+async function getCloudflareTrace() {
+
+    log(
+        "Requesting Cloudflare trace...",
+        "info"
+    );
 
     try {
-        const response = await fetchWithTimeout(
-            "/cdn-cgi/trace?test=" + Date.now()
-        );
+
+        const response =
+            await fetch(
+                "/cdn-cgi/trace?cache=" +
+                Date.now(),
+                {
+                    cache: "no-store"
+                }
+            );
 
         if (!response.ok) {
-            throw new Error("HTTP " + response.status);
+
+            throw new Error(
+                "HTTP " + response.status
+            );
         }
 
-        const text = await response.text();
+        const text =
+            await response.text();
+
         const data = {};
 
-        for (const line of text.split(/\r?\n/)) {
-            const index = line.indexOf("=");
-            if (index > 0) {
-                data[line.slice(0, index)] = line.slice(index + 1);
-            }
+        text
+            .trim()
+            .split(/\r?\n/)
+            .forEach(line => {
+
+                const index =
+                    line.indexOf("=");
+
+                if (index === -1) {
+                    return;
+                }
+
+                const key =
+                    line.substring(
+                        0,
+                        index
+                    );
+
+                const value =
+                    line.substring(
+                        index + 1
+                    );
+
+                data[key] = value;
+            });
+
+
+        /* -----------------------------------------
+           WARP
+        ----------------------------------------- */
+
+        const warp =
+            (data.warp || "")
+                .toLowerCase();
+
+        const gateway =
+            (data.gateway || "")
+                .toLowerCase();
+
+
+        $("warpValue").textContent =
+            data.warp || "Not provided";
+
+        $("gatewayValue").textContent =
+            data.gateway || "Not provided";
+
+
+        /* -----------------------------------------
+           WARP COLOR
+        ----------------------------------------- */
+
+        if (warp === "on") {
+
+            $("warpValue").className =
+                "value good";
+
+        } else if (warp === "off") {
+
+            $("warpValue").className =
+                "value bad";
+
+        } else {
+
+            $("warpValue").className =
+                "value warn";
         }
 
-        $("traceStatus").textContent = "Available";
-        $("traceStatus").className = "value good";
-        $("traceDetail").textContent = "Trace endpoint responded";
 
-        $("traceIp").textContent = data.ip || "Not provided";
-        $("traceColo").textContent = data.colo || "Not provided";
-        $("traceHttp").textContent = data.http || "Not provided";
-        $("traceWarp").textContent = data.warp || "Not provided";
-        $("traceTls").textContent = data.tls || "Not provided";
+        /* -----------------------------------------
+           GATEWAY COLOR
+        ----------------------------------------- */
 
-        const excluded = ["ip", "colo", "http", "warp", "tls"];
-        $("traceOther").textContent = Object.entries(data)
-            .filter(([key]) => !excluded.includes(key))
-            .map(([key, value]) => key + "=" + value)
-            .join(", ") || "None";
+        if (gateway === "on") {
 
-        log("Cloudflare trace retrieved.", "ok");
-        log("Trace IP: " + (data.ip || "Unknown"));
-        log("Trace WARP field: " + (data.warp || "Not provided"));
+            $("gatewayValue").className =
+                "value good";
+
+        } else if (gateway === "off") {
+
+            $("gatewayValue").className =
+                "value bad";
+
+        } else {
+
+            $("gatewayValue").className =
+                "value warn";
+        }
+
+
+        /* -----------------------------------------
+           TRACE IP
+        ----------------------------------------- */
+
+        $("traceIp").textContent =
+            data.ip || "Not provided";
+
+
+        $("coloValue").textContent =
+            data.colo || "Not provided";
+
+
+        $("httpVersion").textContent =
+            data.http || "Not provided";
+
+
+        $("tls").textContent =
+            data.tls || "Not provided";
+
+
+        /* -----------------------------------------
+           ROUTING RESULT
+        ----------------------------------------- */
+
+        const dot =
+            $("routingDot");
+
+        const result =
+            $("routingResult");
+
+        const detail =
+            $("routingDetail");
+
+
+        if (
+            warp === "off" &&
+            gateway === "off"
+        ) {
+
+            result.textContent =
+                "BYPASSED / SPLIT TUNNEL";
+
+            result.style.color =
+                "var(--green)";
+
+            detail.textContent =
+                "Cloudflare reports WARP and Gateway are both OFF for this request.";
+
+            dot.className =
+                "dot green";
+
+            log(
+                "Routing result: WARP OFF / Gateway OFF — traffic is bypassing Cloudflare WARP.",
+                "ok"
+            );
+
+        } else if (
+            warp === "on"
+        ) {
+
+            result.textContent =
+                "TUNNELED THROUGH WARP";
+
+            result.style.color =
+                "var(--blue)";
+
+            detail.textContent =
+                "Cloudflare reports WARP ON for this request.";
+
+            dot.className =
+                "dot green";
+
+            log(
+                "Routing result: WARP ON — request reached Cloudflare through WARP.",
+                "ok"
+            );
+
+        } else if (
+            gateway === "on"
+        ) {
+
+            result.textContent =
+                "CLOUDFLARE GATEWAY";
+
+            result.style.color =
+                "var(--blue)";
+
+            detail.textContent =
+                "Cloudflare Gateway is ON for this request.";
+
+            dot.className =
+                "dot green";
+
+            log(
+                "Routing result: Gateway ON.",
+                "ok"
+            );
+
+        } else {
+
+            result.textContent =
+                "UNKNOWN";
+
+            result.style.color =
+                "var(--yellow)";
+
+            detail.textContent =
+                "Cloudflare did not provide enough routing information.";
+
+            dot.className =
+                "dot yellow";
+
+            log(
+                "Could not determine WARP/Gateway state.",
+                "warn"
+            );
+        }
+
+
+        /* -----------------------------------------
+           TRACE TABLE
+        ----------------------------------------- */
+
+        const table =
+            $("traceTable");
+
+        table.innerHTML = "";
+
+        const fields = [
+            ["ip", "Observed IP"],
+            ["colo", "Cloudflare POP"],
+            ["http", "HTTP"],
+            ["tls", "TLS"],
+            ["warp", "WARP"],
+            ["gateway", "Gateway"],
+            ["s", "Scheme"],
+            ["visit_scheme", "Visit Scheme"],
+            ["uag", "User Agent"],
+            ["loc", "Location"]
+        ];
+
+        fields.forEach(
+            ([key, label]) => {
+
+                if (
+                    data[key] === undefined
+                ) {
+                    return;
+                }
+
+                const row =
+                    document.createElement("tr");
+
+                const name =
+                    document.createElement("td");
+
+                const value =
+                    document.createElement("td");
+
+                name.textContent =
+                    label;
+
+                const code =
+                    document.createElement("code");
+
+                code.textContent =
+                    data[key];
+
+                value.appendChild(code);
+
+                row.appendChild(name);
+                row.appendChild(value);
+
+                table.appendChild(row);
+            }
+        );
+
+
+        log(
+            "Cloudflare trace loaded successfully.",
+            "ok"
+        );
+
     } catch (error) {
-        $("traceStatus").textContent = "Unavailable";
-        $("traceStatus").className = "value warn";
-        $("traceDetail").textContent =
-            "Trace unavailable: " + error.message;
 
-        log("Cloudflare trace unavailable: " + error.message, "error");
+        $("routingResult").textContent =
+            "TRACE UNAVAILABLE";
+
+        $("routingResult").style.color =
+            "var(--yellow)";
+
+        $("routingDetail").textContent =
+            error.message;
+
+        $("routingDot").className =
+            "dot yellow";
+
+        $("warpValue").textContent =
+            "Unavailable";
+
+        $("gatewayValue").textContent =
+            "Unavailable";
+
+        $("traceIp").textContent =
+            "Unavailable";
+
+        $("coloValue").textContent =
+            "Unavailable";
+
+        log(
+            "Cloudflare trace failed: " +
+            error.message,
+            "error"
+        );
     }
 }
 
-function showBrowserInfo() {
-    $("hostname").textContent = location.hostname;
-    $("url").textContent = location.href;
-    $("online").textContent = navigator.onLine ? "Online" : "Offline";
-    $("userAgent").textContent = navigator.userAgent;
-    $("timestamp").textContent = new Date().toLocaleString();
 
-    const connection =
-        navigator.connection ||
-        navigator.mozConnection ||
-        navigator.webkitConnection;
-
-    if (connection) {
-        $("connectionType").textContent =
-            connection.type || "Not exposed by browser";
-        $("effectiveType").textContent =
-            connection.effectiveType || "Unavailable";
-        $("downlink").textContent =
-            connection.downlink != null
-                ? connection.downlink + " Mbps"
-                : "Unavailable";
-    } else {
-        $("connectionType").textContent = "Not exposed by browser";
-        $("effectiveType").textContent = "Not supported";
-        $("downlink").textContent = "Not supported";
-    }
-}
-
-async function runTests() {
-    const button = $("run");
-    button.disabled = true;
-    button.textContent = "Testing...";
-
-    showBrowserInfo();
-    log("Starting network diagnostics...", "info");
-
-    await Promise.all([
-        testIP("IPv4", "https://api.ipify.org"),
-        testIP("IPv6", "https://api6.ipify.org"),
-        testWebsite(),
-        testTrace()
-    ]);
-
-    $("timestamp").textContent = new Date().toLocaleString();
-    $("lastRun").textContent =
-        "Last run: " + new Date().toLocaleTimeString();
-
-    log("All tests completed.", "ok");
-
-    button.disabled = false;
-    button.textContent = "▶ Run Connection Tests";
-}
-
-showBrowserInfo();
+/* =========================================================
+   LATENCY
+   ========================================================= */
 
 async function measureLatency() {
-const samples = 5;
-const results = [];
 
-for (let i = 0; i < samples; i++) { const start=performance.now(); try { const response=await
-    fetch( "/tools/test?latency=" + Date.now() + "-" + i, { method: "HEAD" , cache: "no-store" } ); if (!response.ok) {
-    throw new Error("HTTP " + response.status);
+    const samples = 5;
+
+    const results = [];
+
+
+    for (
+        let i = 0;
+        i < samples;
+        i++
+    ) {
+
+        const start =
+            performance.now();
+
+        try {
+
+            const response =
+                await fetch(
+                    "/tools/test.html?latency=" +
+                    Date.now() +
+                    "-" +
+                    i,
+                    {
+                        method: "HEAD",
+                        cache: "no-store"
+                    }
+                );
+
+            if (!response.ok) {
+
+                throw new Error(
+                    "HTTP " +
+                    response.status
+                );
             }
 
-            const elapsed = performance.now() - start;
+            const elapsed =
+                performance.now() -
+                start;
+
             results.push(elapsed);
 
+            log(
+                "Latency sample " +
+                (i + 1) +
+                ": " +
+                elapsed.toFixed(1) +
+                " ms",
+                "info"
+            );
+
         } catch (error) {
-            log(" Latency sample failed: " + error.message, " error"); } } if (!results.length) { return null; }
-    results.sort((a, b)=> a - b);
 
-    // Remove the highest and lowest sample when possible.
-    const trimmed =
-    results.length >= 3
-    ? results.slice(1, -1)
-    : results;
-
-    const average =
-    trimmed.reduce((a, b) => a + b, 0) / trimmed.length;
-
-    return average;
+            log(
+                "Latency sample failed: " +
+                error.message,
+                "error"
+            );
+        }
     }
 
 
-    async function measureDownload() {
+    if (!results.length) {
+        return null;
+    }
+
+
+    results.sort(
+        (a, b) => a - b
+    );
+
 
     /*
-    This downloads a same-origin file.
-
-    IMPORTANT:
-    Create this file on your website:
-
-    /tools/speedtest.bin
-
-    Make it at least 50 MB for useful results.
+        Remove the highest and lowest
+        sample when we have enough samples.
     */
 
-    const url =
-    "/tools/speedtest.bin?cache=" +
-    Date.now();
+    const trimmed =
+        results.length >= 3
+            ? results.slice(1, -1)
+            : results;
 
-    const start = performance.now();
+
+    return (
+        trimmed.reduce(
+            (a, b) => a + b,
+            0
+        ) /
+        trimmed.length
+    );
+}
+
+
+/* =========================================================
+   DOWNLOAD SPEED
+   ========================================================= */
+
+async function measureDownload() {
+
+    /*
+        IMPORTANT:
+
+        Put speedtest.bin in:
+
+            tools/speedtest.bin
+
+        Change this number if you use
+        a different file size.
+    */
+
+    const TEST_SIZE =
+        50 * 1024 * 1024;
+
+
+    const url =
+        "/tools/speedtest.bin?cache=" +
+        Date.now();
+
+
+    const start =
+        performance.now();
+
+
     let bytes = 0;
 
-    try {
 
-    const response = await fetch(url, {
-    cache: "no-store"
-    });
+    const response =
+        await fetch(
+            url,
+            {
+                cache: "no-store"
+            }
+        );
+
 
     if (!response.ok) {
-    throw new Error("HTTP " + response.status);
+
+        throw new Error(
+            "Download returned HTTP " +
+            response.status
+        );
     }
+
 
     if (!response.body) {
-    throw new Error("Streaming response unavailable.");
+
+        throw new Error(
+            "Streaming response unavailable."
+        );
     }
 
-    const reader = response.body.getReader();
+
+    const reader =
+        response.body.getReader();
+
 
     while (true) {
 
-    const { value, done } =
-    await reader.read();
+        const {
+            value,
+            done
+        } = await reader.read();
 
-    if (done) {
-    break;
+
+        if (done) {
+            break;
+        }
+
+
+        if (value) {
+
+            bytes +=
+                value.byteLength;
+
+
+            updateSpeedProgress(
+                Math.min(
+                    100,
+                    (bytes / TEST_SIZE) *
+                    100
+                )
+            );
+        }
     }
 
-    bytes += value.byteLength;
-
-    updateSpeedProgress(
-    Math.min(
-    100,
-    (bytes / (50 * 1024 * 1024)) * 100
-    )
-    );
-    }
 
     const seconds =
-    (performance.now() - start) / 1000;
+        (
+            performance.now() -
+            start
+        ) / 1000;
 
-    if (seconds <= 0) { throw new Error("Invalid timing."); } return { bytes, seconds, mbps: (bytes * 8 / seconds) /
-        1000000 }; } catch (error) { throw error; } } async function measureUpload() { /* This posts generated data back
-        to the same origin. Your server must accept POST requests to: /tools/speedtest-upload */ const size=10 * 1024 *
-        1024; const data=new Uint8Array(size); /* Fill the buffer so the browser actually generates the payload. */
-        crypto.getRandomValues( data.subarray(0, 65536) ); for ( let offset=65536; offset < data.length; offset +=65536
-        ) { data.set( data.subarray( 0, Math.min( 65536, data.length - offset ) ), offset ); } const
-        start=performance.now(); const response=await fetch( "/tools/speedtest-upload?cache=" + Date.now(), {
-        method: "POST" , body: data, cache: "no-store" , headers: { "Content-Type" : "application/octet-stream" } } );
-        if (!response.ok) { throw new Error( "Upload endpoint returned HTTP " + response.status ); } const
-        seconds=(performance.now() - start) / 1000; return { bytes: size, seconds, mbps: (size * 8 / seconds) / 1000000
-        }; } function updateSpeedProgress(percent) { $("speedProgress").style.display="block" ;
-        $("speedProgressBar").style.width=percent.toFixed(1) + "%" ; } async function runSpeedTest() { const
-        button=$("speedTestButton"); button.disabled=true; button.textContent="Testing..." ;
-        $("speedProgress").style.display="block" ; $("speedProgressBar").style.width="0%" ;
-        $("speedStatus").textContent="Measuring latency..." ; $("speedLatency").textContent="Testing..." ;
-        $("speedDownload").textContent="Waiting..." ; $("speedUpload").textContent="Waiting..." ;
-        log( "Starting speed test..." , "info" ); try { /* * LATENCY */ const latency=await measureLatency(); if
-        (latency !==null) { $("speedLatency").textContent=latency.toFixed(1) + " ms" ;
-        $("speedLatency").className="value good" ; log( "Average latency: " + latency.toFixed(1) + " ms" , "ok" ); }
-        else { $("speedLatency").textContent="Failed" ; $("speedLatency").className="value bad" ; } /* * DOWNLOAD */
-        $("speedStatus").textContent="Measuring download speed..." ; log( "Starting download test..." , "info" ); const
-        download=await measureDownload(); $("speedDownload").textContent=download.mbps.toFixed(2) + " Mbps" ;
-        $("speedDownload").className="value good" ; $("speedDownloadDetail").textContent=formatBytes(download.bytes)
-        + " downloaded in " + download.seconds.toFixed(2) + " seconds" ; log( "Download: " + download.mbps.toFixed(2)
-        + " Mbps" , "ok" ); /* * UPLOAD */ $("speedStatus").textContent="Measuring upload speed..." ;
-        $("speedProgressBar").style.width="50%" ; log( "Starting upload test..." , "info" ); const upload=await
-        measureUpload(); $("speedUpload").textContent=upload.mbps.toFixed(2) + " Mbps" ;
-        $("speedUpload").className="value good" ; $("speedUploadDetail").textContent=formatBytes(upload.bytes)
-        + " uploaded in " + upload.seconds.toFixed(2) + " seconds" ; log( "Upload: " + upload.mbps.toFixed(2) + " Mbps"
-        , "ok" ); $("speedProgressBar").style.width="100%" ; $("speedStatus").textContent="Speed test complete." ;
-        log( "Speed test completed." , "ok" ); } catch (error) { $("speedStatus").textContent="Speed test failed: " +
-        error.message; log( "Speed test failed: " + error.message, "error" ); } finally { button.disabled=false;
-        button.textContent="⚡ Run Speed Test" ; } } function formatBytes(bytes) { if (bytes < 1024) return bytes + " B"
-        ; if (bytes < 1024 * 1024) return ( bytes / 1024 ).toFixed(1) + " KB" ; if (bytes < 1024 * 1024 * 1024) return (
-        bytes / (1024 * 1024) ).toFixed(2) + " MB" ; return ( bytes / (1024 * 1024 * 1024) ).toFixed(2) + " GB" ; }
+
+    if (seconds <= 0) {
+
+        throw new Error(
+            "Invalid download timing."
+        );
+    }
+
+
+    return {
+
+        bytes,
+
+        seconds,
+
+        mbps:
+            (
+                bytes *
+                8 /
+                seconds
+            ) /
+            1000000
+    };
+}
+
+
+/* =========================================================
+   SPEED PROGRESS
+   ========================================================= */
+
+function updateSpeedProgress(
+    percent
+) {
+
+    $("speedProgress").style.display =
+        "block";
+
+    $("speedProgressBar").style.width =
+        percent.toFixed(1) +
+        "%";
+}
+
+
+/* =========================================================
+   SPEED TEST
+   ========================================================= */
+
+async function runSpeedTest() {
+
+    const button =
+        $("speedTestButton");
+
+
+    button.disabled =
+        true;
+
+
+    button.textContent =
+        "Testing...";
+
+
+    $("speedProgress").style.display =
+        "block";
+
+
+    $("speedProgressBar").style.width =
+        "0%";
+
+
+    $("speedStatus").textContent =
+        "Measuring latency...";
+
+
+    $("speedLatency").textContent =
+        "Testing...";
+
+
+    $("speedDownload").textContent =
+        "Waiting...";
+
+
+    $("speedUpload").textContent =
+        "N/A";
+
+
+    $("speedUploadDetail").textContent =
+        "Requires a server-side POST endpoint";
+
+
+    log(
+        "Starting speed test...",
+        "info"
+    );
+
+
+    try {
+
+        /* -----------------------------------------
+           LATENCY
+        ----------------------------------------- */
+
+        const latency =
+            await measureLatency();
+
+
+        if (latency !== null) {
+
+            $("speedLatency").textContent =
+                latency.toFixed(1) +
+                " ms";
+
+            $("speedLatency").className =
+                "speed-value good";
+
+            $("speedLatencyDetail").textContent =
+                "Average of test samples";
+
+            log(
+                "Average latency: " +
+                latency.toFixed(1) +
+                " ms",
+                "ok"
+            );
+
+        } else {
+
+            $("speedLatency").textContent =
+                "Failed";
+
+            $("speedLatency").className =
+                "speed-value bad";
+        }
+
+
+        /* -----------------------------------------
+           DOWNLOAD
+        ----------------------------------------- */
+
+        $("speedStatus").textContent =
+            "Measuring download speed...";
+
+
+        $("speedProgressBar").style.width =
+            "0%";
+
+
+        log(
+            "Starting 50 MB download test...",
+            "info"
+        );
+
+
+        const download =
+            await measureDownload();
+
+
+        $("speedDownload").textContent =
+            download.mbps.toFixed(2) +
+            " Mbps";
+
+
+        $("speedDownload").className =
+            "speed-value good";
+
+
+        $("speedDownloadDetail").textContent =
+            formatBytes(
+                download.bytes
+            ) +
+            " downloaded in " +
+            download.seconds.toFixed(2) +
+            " seconds";
+
+
+        log(
+            "Download: " +
+            download.mbps.toFixed(2) +
+            " Mbps",
+            "ok"
+        );
+
+
+        $("speedProgressBar").style.width =
+            "100%";
+
+
+        $("speedStatus").textContent =
+            "Speed test complete.";
+
+
+        log(
+            "Speed test completed.",
+            "ok"
+        );
+
+
+    } catch (error) {
+
+        $("speedStatus").textContent =
+            "Speed test failed: " +
+            error.message;
+
+
+        log(
+            "Speed test failed: " +
+            error.message,
+            "error"
+        );
+
+
+    } finally {
+
+        button.disabled =
+            false;
+
+        button.textContent =
+            "⚡ Run Speed Test";
+    }
+}
+
+
+/* =========================================================
+   FORMAT BYTES
+   ========================================================= */
+
+function formatBytes(bytes) {
+
+    if (bytes < 1024) {
+
+        return (
+            bytes +
+            " B"
+        );
+    }
+
+
+    if (
+        bytes <
+        1024 * 1024
+    ) {
+
+        return (
+            bytes / 1024
+        ).toFixed(1) +
+        " KB";
+    }
+
+
+    if (
+        bytes <
+        1024 *
+        1024 *
+        1024
+    ) {
+
+        return (
+            bytes /
+            (1024 * 1024)
+        ).toFixed(2) +
+        " MB";
+    }
+
+
+    return (
+        bytes /
+        (1024 *
+        1024 *
+        1024)
+    ).toFixed(2) +
+    " GB";
+}
+
+
+/* =========================================================
+   STARTUP
+   ========================================================= */
+
+async function initialize() {
+
+    populateBasicInfo();
+
+    log(
+        "Initializing network diagnostic...",
+        "info"
+    );
+
+
+    /*
+        Run these independently so one failure
+        does not prevent the others.
+    */
+
+    getIPv4();
+
+    getIPv6();
+
+    getCloudflareTrace();
+
+
+    log(
+        "Diagnostic initialization complete.",
+        "ok"
+    );
+}
+
+
+initialize();
+
     </script>
+
 </body>
 
 </html>
