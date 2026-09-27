@@ -1,4 +1,5 @@
-const CACHE_NAME = 'portfolio-v24';
+const CACHE_NAME = 'portfolio-v25';
+
 const ASSETS = [
   './',
   './index.html',
@@ -10,79 +11,316 @@ const ASSETS = [
   './js/jquery-3.2.1.min.js'
 ];
 
-// Install Service Worker - Cache essential assets
+
+// ============================================================
+// INSTALL
+// ============================================================
+
 self.addEventListener('install', event => {
+
   self.skipWaiting();
-  event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll(ASSETS).catch(err => {
-        console.warn('Service Worker: Some assets failed to cache during install', err);
-      });
-    })
-  );
-});
 
-// Activate Service Worker - Cleanup old caches and take control immediately
-self.addEventListener('activate', event => {
   event.waitUntil(
-    Promise.all([
-      caches.keys().then(keys => {
-        return Promise.all(
-          keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
+
+    caches.open(CACHE_NAME)
+      .then(cache => {
+
+        return cache.addAll(ASSETS);
+
+      })
+      .catch(error => {
+
+        console.warn(
+          'Service Worker: Some assets failed to cache during install.',
+          error
         );
-      }),
-      self.clients.claim()
-    ])
+
+      })
+
   );
 });
 
-// Fetch event
+
+// ============================================================
+// ACTIVATE
+// ============================================================
+
+self.addEventListener('activate', event => {
+
+  event.waitUntil(
+
+    Promise.all([
+
+      caches.keys()
+        .then(keys => {
+
+          return Promise.all(
+
+            keys
+              .filter(
+                key => key !== CACHE_NAME
+              )
+              .map(
+                key => caches.delete(key)
+              )
+
+          );
+
+        }),
+
+      self.clients.claim()
+
+    ])
+
+  );
+});
+
+
+// ============================================================
+// FETCH
+// ============================================================
+
 self.addEventListener('fetch', event => {
-  // 1. Only handle GET requests for caching
-  if (event.request.method !== 'GET') {
+
+  const request = event.request;
+
+
+  // --------------------------------------------------------
+  // Only GET requests can be cached
+  // --------------------------------------------------------
+
+  if (request.method !== 'GET') {
     return;
   }
 
-  const url = new URL(event.request.url);
 
-  // 2. Skip caching for GitHub API calls - Always fetch fresh
-  if (url.hostname === 'api.github.com') {
+  const url =
+    new URL(request.url);
+
+
+  // --------------------------------------------------------
+  // Never intercept external requests
+  // --------------------------------------------------------
+
+  if (
+    url.origin !== self.location.origin
+  ) {
     return;
   }
 
-  const isHtml = event.request.mode === 'navigate' ||
-                 (event.request.headers.get('accept') && event.request.headers.get('accept').includes('text/html'));
+
+  // --------------------------------------------------------
+  // Never intercept Cloudflare internal endpoints
+  // --------------------------------------------------------
+
+  if (
+    url.pathname.startsWith('/cdn-cgi/')
+  ) {
+    return;
+  }
+
+
+  // --------------------------------------------------------
+  // Never intercept the WARP diagnostic
+  //
+  // This is important because the diagnostic needs to
+  // measure the real network request.
+  // --------------------------------------------------------
+
+  if (
+    url.pathname === '/tools/warp-test' ||
+    url.pathname === '/tools/warp-test.html'
+  ) {
+    return;
+  }
+
+
+  // --------------------------------------------------------
+  // Never cache speed-test data
+  // --------------------------------------------------------
+
+  if (
+    url.pathname === '/tools/speedtest.bin'
+  ) {
+    return;
+  }
+
+
+  // --------------------------------------------------------
+  // GitHub API should always go directly to the network
+  // --------------------------------------------------------
+
+  if (
+    url.hostname === 'api.github.com'
+  ) {
+    return;
+  }
+
+
+  // --------------------------------------------------------
+  // Determine whether this is an HTML request
+  // --------------------------------------------------------
+
+  const accept =
+    request.headers.get('accept') || '';
+
+  const isHtml =
+    request.mode === 'navigate' ||
+    accept.includes('text/html');
+
+
+  // ========================================================
+  // HTML
+  // Network-first
+  // ========================================================
 
   if (isHtml) {
-    // Network-First strategy for HTML
+
     event.respondWith(
-      fetch(event.request)
+
+      fetch(request)
+
         .then(response => {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
-          return response;
-        })
-        .catch(() => caches.match(event.request))
-    );
-  } else {
-    // Cache-First strategy for static assets
-    event.respondWith(
-      caches.match(event.request).then(response => {
-        return response || fetch(event.request).then(fetchRes => {
-          // Verify response is valid before caching
-          if (!fetchRes || fetchRes.status !== 200 || fetchRes.type !== 'basic') {
-            return fetchRes;
+
+          /*
+           * Only cache a valid successful response.
+           */
+
+          if (
+            response &&
+            response.ok &&
+            response.type === 'basic'
+          ) {
+
+            const copy =
+              response.clone();
+
+
+            caches.open(CACHE_NAME)
+              .then(cache => {
+
+                return cache.put(
+                  request,
+                  copy
+                );
+
+              })
+              .catch(error => {
+
+                /*
+                 * Cache failure must never
+                 * break the actual request.
+                 */
+
+                console.warn(
+                  'Service Worker: HTML cache failed:',
+                  error
+                );
+
+              });
+
           }
-          const responseToCache = fetchRes.clone();
-          caches.open(CACHE_NAME).then(cache => {
-            cache.put(event.request, responseToCache);
-          });
-          return fetchRes;
-        });
-      }).catch(() => {
-        // Fallback for failed fetches
-        return new Response('Network error occurred', { status: 408, headers: { 'Content-Type': 'text/plain' } });
-      })
+
+          return response;
+
+        })
+
+        .catch(() => {
+
+          return caches.match(request);
+
+        })
+
     );
+
+    return;
   }
+
+
+  // ========================================================
+  // STATIC ASSETS
+  // Cache-first
+  // ========================================================
+
+  event.respondWith(
+
+    caches.match(request)
+
+      .then(cachedResponse => {
+
+        if (cachedResponse) {
+          return cachedResponse;
+        }
+
+
+        return fetch(request)
+
+          .then(fetchResponse => {
+
+            /*
+             * Don't cache invalid responses.
+             */
+
+            if (
+              !fetchResponse ||
+              !fetchResponse.ok ||
+              fetchResponse.type !== 'basic'
+            ) {
+
+              return fetchResponse;
+            }
+
+
+            const responseToCache =
+              fetchResponse.clone();
+
+
+            caches.open(CACHE_NAME)
+              .then(cache => {
+
+                return cache.put(
+                  request,
+                  responseToCache
+                );
+
+              })
+              .catch(error => {
+
+                /*
+                 * Ignore cache failures.
+                 * The network response is still
+                 * returned normally.
+                 */
+
+                console.warn(
+                  'Service Worker: Asset cache failed:',
+                  error
+                );
+
+              });
+
+
+            return fetchResponse;
+
+          });
+
+      })
+
+      .catch(() => {
+
+        return new Response(
+          'Network error occurred',
+          {
+            status: 408,
+            headers: {
+              'Content-Type':
+                'text/plain'
+            }
+          }
+        );
+
+      })
+
+  );
+
 });
