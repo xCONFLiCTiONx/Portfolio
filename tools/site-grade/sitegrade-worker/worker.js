@@ -1219,7 +1219,7 @@ async function scanTarget(targetUrl) {
             "low",
             "Duplicate HTML IDs detected",
             `${duplicateIds.length} duplicate ID value(s) were detected.`,
-            duplicateIds.slice(0, 20)
+            duplicateIds.map(d => `ID "${d.id}" appears ${d.count} times`).slice(0, 20)
         );
     }
 
@@ -1271,7 +1271,7 @@ async function scanTarget(targetUrl) {
             "info",
             "Redirects detected",
             `${fetched.redirects.length} redirect(s) were followed before reaching the final page.`,
-            fetched.redirects
+            fetched.redirects.map(r => `${r.status}: ${r.from} -> ${r.to} (${r.responseMs}ms)`)
         );
     }
 
