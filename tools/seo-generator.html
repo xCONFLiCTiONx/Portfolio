@@ -1,2144 +1,706 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>SEO Generator for Static Websites</title>
-
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Static Website SEO Generator</title>
+    <meta name="description" content="Crawl a static website, audit its pages, and generate SEO files.">
     <style>
         :root {
-            --bg: #0b1120;
-            --panel: #111827;
-            --panel2: #0f172a;
-            --input: #080d18;
-            --border: #263449;
-            --text: #f8fafc;
-            --muted: #94a3b8;
-            --accent: #3b82f6;
-            --accent-hover: #2563eb;
-            --green: #22c55e;
-            --yellow: #f59e0b;
-            --red: #ef4444;
-            --cyan: #22d3ee;
-            --shadow: 0 10px 30px rgba(0, 0, 0, .25);
+            color-scheme: dark;
+            --bg: #0b0d10;
+            --panel: #12161b;
+            --panel2: #171c22;
+            --line: #29313a;
+            --text: #e8edf2;
+            --muted: #9ca8b4;
+            --blue: #6ea8fe;
+            --green: #49d17d;
+            --yellow: #f2c94c;
+            --red: #ff7777
         }
 
         * {
-            box-sizing: border-box;
-        }
-
-        html {
-            scroll-behavior: smooth;
+            box-sizing: border-box
         }
 
         body {
             margin: 0;
-            background:
-                radial-gradient(circle at top, #172554 0, transparent 35%),
-                var(--bg);
+            background: var(--bg);
             color: var(--text);
-            font-family:
-                system-ui,
-                -apple-system,
-                BlinkMacSystemFont,
-                "Segoe UI",
-                Roboto,
-                Arial,
-                sans-serif;
-            line-height: 1.5;
-        }
-
-        .container {
-            width: min(1200px, calc(100% - 32px));
-            margin: 0 auto;
-            padding: 36px 0 70px;
+            font: 14px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif
         }
 
         header {
-            text-align: center;
-            margin-bottom: 32px;
+            background: #0e1115;
+            border-bottom: 1px solid var(--line);
+            padding: 20px 24px
         }
 
-        header h1 {
-            margin: 0 0 8px;
-            font-size: clamp(1.8rem, 4vw, 2.7rem);
-            letter-spacing: -0.03em;
+        .wrap {
+            max-width: 1600px;
+            margin: auto;
+            padding: 20px
         }
 
-        header p {
-            margin: 0 auto;
-            max-width: 760px;
+        header .wrap {
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px
+        }
+
+        h1 {
+            font-size: 24px;
+            margin: 0
+        }
+
+        h2 {
+            font-size: 17px;
+            margin: 0 0 14px
+        }
+
+        p {
             color: var(--muted);
+            margin: 5px 0 0
+        }
+
+        .back {
+            color: #a9cbff;
+            text-decoration: none;
+            border: 1px solid var(--line);
+            border-radius: 7px;
+            padding: 8px 12px;
+            white-space: nowrap
+        }
+
+        .back:hover {
+            background: var(--panel2)
         }
 
         .grid {
             display: grid;
             grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-            gap: 20px;
-        }
-
-        .full {
-            grid-column: 1 / -1;
+            gap: 18px
         }
 
         .card {
-            background: rgba(17, 24, 39, .94);
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            padding: 22px;
-            box-shadow: var(--shadow);
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 11px;
+            padding: 17px;
+            margin-bottom: 18px
         }
 
-        .card h2 {
-            margin: 0 0 5px;
-            font-size: 1.15rem;
-        }
-
-        .card-description {
-            color: var(--muted);
-            font-size: .88rem;
-            margin: 0 0 20px;
-        }
-
-        .form-grid {
+        .row {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px
         }
 
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        .form-group.full-width {
-            grid-column: 1 / -1;
+        .row3 {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px
         }
 
         label {
             display: block;
-            color: #cbd5e1;
-            font-size: .85rem;
-            font-weight: 650;
-            margin-bottom: 6px;
-        }
-
-        .hint {
+            font-size: 12px;
             color: var(--muted);
-            font-size: .76rem;
-            font-weight: 400;
-            margin-left: 4px;
+            margin: 0 0 5px
         }
 
         input,
         textarea,
         select {
             width: 100%;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            background: var(--input);
+            background: #0b0e12;
             color: var(--text);
-            padding: 10px 12px;
-            font: inherit;
+            border: 1px solid var(--line);
+            border-radius: 7px;
+            padding: 9px;
+            font: inherit
         }
 
         textarea {
-            min-height: 90px;
-            resize: vertical;
+            min-height: 76px;
+            resize: vertical
         }
 
         input:focus,
         textarea:focus,
         select:focus {
-            outline: none;
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, .12);
-        }
-
-        input[type="checkbox"] {
-            width: auto;
-            accent-color: var(--accent);
-        }
-
-        .checkbox-row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin: 8px 0;
-            color: #cbd5e1;
-            font-size: .9rem;
-        }
-
-        .counter {
-            text-align: right;
-            color: var(--muted);
-            font-size: .75rem;
-            margin-top: 4px;
-        }
-
-        .counter.good {
-            color: var(--green);
-        }
-
-        .counter.warning {
-            color: var(--yellow);
-        }
-
-        .counter.bad {
-            color: var(--red);
-        }
-
-        .pages-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .pages-table th,
-        .pages-table td {
-            padding: 9px;
-            border-bottom: 1px solid var(--border);
-            text-align: left;
-            vertical-align: middle;
-        }
-
-        .pages-table th {
-            color: var(--muted);
-            font-size: .76rem;
-            text-transform: uppercase;
-            letter-spacing: .04em;
-        }
-
-        .pages-table input,
-        .pages-table select {
-            padding: 8px;
-        }
-
-        .button-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 9px;
-            margin-top: 16px;
+            outline: 1px solid var(--blue)
         }
 
         button {
-            border: 0;
-            border-radius: 8px;
-            padding: 10px 14px;
-            background: var(--accent);
-            color: white;
-            font-weight: 650;
-            cursor: pointer;
-            transition: .15s ease;
+            background: #1b2733;
+            color: var(--text);
+            border: 1px solid #354555;
+            border-radius: 7px;
+            padding: 8px 12px;
+            font: inherit;
+            cursor: pointer
         }
 
         button:hover {
-            background: var(--accent-hover);
-            transform: translateY(-1px);
+            background: #263748
         }
 
-        button.secondary {
-            background: #334155;
-        }
-
-        button.secondary:hover {
-            background: #475569;
+        button.primary {
+            background: #245f9f;
+            border-color: #397fc6
         }
 
         button.danger {
-            background: #7f1d1d;
+            background: #321c20;
+            border-color: #633039;
+            color: #ffaaaa
         }
 
-        button.danger:hover {
-            background: #991b1b;
-        }
-
-        button.small {
-            padding: 7px 10px;
-            font-size: .8rem;
-        }
-
-        .output {
-            position: relative;
-        }
-
-        .output-header {
+        .actions {
             display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 12px
+        }
+
+        .check {
+            display: flex;
+            gap: 8px;
             align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            margin-bottom: 10px;
+            margin: 9px 0
         }
 
-        .output-header h3 {
+        .check input {
+            width: auto
+        }
+
+        .check label {
             margin: 0;
-            font-size: 1rem;
+            color: var(--text)
         }
 
-        pre {
-            margin: 0;
-            background: #050912;
-            border: 1px solid var(--border);
-            border-radius: 9px;
-            padding: 15px;
-            overflow: auto;
-            max-height: 500px;
-            color: #67e8f9;
-            font: .82rem/1.6 "Cascadia Code", "Consolas", monospace;
-            white-space: pre-wrap;
-            overflow-wrap: anywhere;
-        }
-
-        .status-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-            margin-top: 15px;
+        .note {
+            margin-top: 12px;
+            padding: 10px;
+            border: 1px solid var(--line);
+            border-radius: 7px;
+            color: var(--muted);
+            font-size: 12px;
+            background: #101419
         }
 
         .status {
-            padding: 12px;
-            border-radius: 9px;
-            background: var(--panel2);
-            border: 1px solid var(--border);
+            display: none;
+            padding: 9px 11px;
+            margin-top: 12px;
+            border-radius: 7px
         }
 
-        .status strong {
+        .status.info {
             display: block;
-            font-size: 1.15rem;
-        }
-
-        .status span {
-            color: var(--muted);
-            font-size: .75rem;
+            background: #172332;
+            border: 1px solid #34577b
         }
 
         .status.good {
-            border-color: rgba(34, 197, 94, .35);
-        }
-
-        .status.warning {
-            border-color: rgba(245, 158, 11, .35);
-        }
-
-        .status.bad {
-            border-color: rgba(239, 68, 68, .35);
-        }
-
-        .issues {
-            margin-top: 15px;
-        }
-
-        .issue {
-            padding: 10px 12px;
-            border-radius: 8px;
-            margin-bottom: 7px;
-            font-size: .85rem;
-        }
-
-        .issue.good {
-            background: rgba(34, 197, 94, .09);
-            border: 1px solid rgba(34, 197, 94, .25);
-        }
-
-        .issue.warning {
-            background: rgba(245, 158, 11, .09);
-            border: 1px solid rgba(245, 158, 11, .25);
-        }
-
-        .issue.error {
-            background: rgba(239, 68, 68, .09);
-            border: 1px solid rgba(239, 68, 68, .25);
-        }
-
-        .preview {
-            background: white;
-            color: #111827;
-            border-radius: 10px;
-            padding: 18px;
-        }
-
-        .preview-title {
-            color: #1a0dab;
-            font-size: 1.15rem;
-            margin-bottom: 3px;
-            overflow-wrap: anywhere;
-        }
-
-        .preview-url {
-            color: #188038;
-            font-size: .82rem;
-            margin-bottom: 5px;
-            overflow-wrap: anywhere;
-        }
-
-        .preview-description {
-            color: #4b5563;
-            font-size: .88rem;
-        }
-
-        .tabs {
-            display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
-            margin-bottom: 12px;
-        }
-
-        .tab {
-            background: #1e293b;
-            color: #cbd5e1;
-        }
-
-        .tab.active {
-            background: var(--accent);
-            color: white;
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
-        .help {
-            color: var(--muted);
-            font-size: .8rem;
-            margin-top: 7px;
-        }
-
-        .file-list {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-        }
-
-        .file-card {
-            border: 1px solid var(--border);
-            background: var(--panel2);
-            border-radius: 9px;
-            padding: 12px;
-        }
-
-        .file-card strong {
             display: block;
-            margin-bottom: 3px;
+            background: #11271b;
+            border: 1px solid #245e3b;
+            color: #8ce5ab
         }
 
-        .file-card span {
-            color: var(--muted);
-            font-size: .78rem;
+        .status.warn {
+            display: block;
+            background: #302912;
+            border: 1px solid #665322;
+            color: #f6d979
         }
 
-        @media (max-width: 850px) {
+        .status.error {
+            display: block;
+            background: #30171a;
+            border: 1px solid #71343b;
+            color: #ffaaaa
+        }
 
-            .grid,
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            margin-top: 12px
+        }
 
-            .full {
-                grid-column: auto;
-            }
+        .stat {
+            background: var(--panel2);
+            border: 1px solid var(--line);
+            border-radius: 7px;
+            padding: 9px
+        }
 
-            .status-grid {
-                grid-template-columns: 1fr 1fr;
+        .stat strong {
+            display: block;
+            font-size: 19px
+        }
+
+        .stat span {
+            font-size: 11px;
+            color: var(--muted)
+        }
+
+        .progress {
+            height: 8px;
+            background: #080a0d;
+            border: 1px solid var(--line);
+            border-radius: 20px;
+            overflow: hidden;
+            margin-top: 10px
+        }
+
+        .progress div {
+            height: 100%;
+            width: 0;
+            background: var(--blue)
+        }
+
+        .tablebox {
+            overflow: auto;
+            border: 1px solid var(--line);
+            border-radius: 8px
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            min-width: 900px
+        }
+
+        th,
+        td {
+            text-align: left;
+            vertical-align: top;
+            padding: 8px;
+            border-bottom: 1px solid var(--line);
+            font-size: 12px
+        }
+
+        th {
+            background: var(--panel2);
+            color: #c4ced8;
+            position: sticky;
+            top: 0
+        }
+
+        tr:last-child td {
+            border-bottom: 0
+        }
+
+        .url {
+            max-width: 280px;
+            overflow-wrap: anywhere;
+            font-family: ui-monospace, Consolas, monospace
+        }
+
+        .ok {
+            color: var(--green)
+        }
+
+        .bad {
+            color: var(--red)
+        }
+
+        .warntext {
+            color: var(--yellow)
+        }
+
+        pre {
+            white-space: pre-wrap;
+            overflow: auto;
+            overflow-wrap: anywhere;
+            max-height: 420px;
+            background: #090c0f;
+            border: 1px solid var(--line);
+            border-radius: 7px;
+            padding: 11px;
+            font: 12px/1.5 ui-monospace, Consolas, monospace
+        }
+
+        details {
+            margin-top: 9px;
+            padding: 10px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #0f1317
+        }
+
+        summary {
+            cursor: pointer;
+            color: #cbd5df
+        }
+
+        .validation {
+            padding: 9px 11px;
+            border-radius: 7px;
+            margin-bottom: 8px
+        }
+
+        .vbad {
+            background: #30171a;
+            border: 1px solid #71343b;
+            color: #ffaaaa
+        }
+
+        .vwarn {
+            background: #302912;
+            border: 1px solid #665322;
+            color: #f6d979
+        }
+
+        .vgood {
+            background: #11271b;
+            border: 1px solid #245e3b;
+            color: #8ce5ab
+        }
+
+        @media(max-width:1000px) {
+            .grid {
+                grid-template-columns: 1fr
             }
         }
 
-        @media (max-width: 600px) {
-            .container {
-                width: min(100% - 20px, 1200px);
-                padding-top: 20px;
+        @media(max-width:650px) {
+            .wrap {
+                padding: 12px
             }
 
-            .card {
-                padding: 16px;
+            header {
+                padding: 16px
             }
 
-            .pages-table {
-                display: block;
-                overflow-x: auto;
+            .row,
+            .row3 {
+                grid-template-columns: 1fr
             }
 
-            .file-list {
-                grid-template-columns: 1fr;
+            .stats {
+                grid-template-columns: repeat(2, 1fr)
+            }
+
+            header .wrap {
+                align-items: flex-start;
+                flex-direction: column
             }
         }
     </style>
 </head>
 
 <body>
-
-    <div class="container">
-
-        <header>
-            <h1>Static Website SEO Generator</h1>
-            <p>
-                Generate production-ready SEO files and page metadata for a static website,
-                including Cloudflare Pages, GitHub Pages and other static hosts.
-                Everything runs locally in your browser.
-            </p>
-        </header>
-
-        <div class="grid">
-
-            <!-- SITE CONFIGURATION -->
-            <section class="card full">
-                <h2>1. Website Configuration</h2>
-                <p class="card-description">
-                    These values are used throughout the generated SEO files.
-                </p>
-
-                <div class="form-grid">
-
-                    <div class="form-group">
-                        <label for="siteUrl">Website URL</label>
-                        <input id="siteUrl"
-                           type="url"
-                           value="https://xconflictionx.cc"
-                           placeholder="https://example.com">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="siteName">Site Name</label>
-                        <input id="siteName"
-                           type="text"
-                           value="xCONFLiCTiONx"
-                           placeholder="My Website">
-                    </div>
-
-                    <div class="form-group full-width">
-                        <label for="title">
-                        Homepage Title
-                        <span class="hint">Recommended: roughly 50–60 characters</span>
-                    </label>
-
-                        <input id="title"
-                           type="text"
-                           value="xCONFLiCTiONx — Privacy, Security & Technology"
-                           maxlength="70">
-
-                        <div id="titleCounter" class="counter"></div>
-                    </div>
-
-                    <div class="form-group full-width">
-                        <label for="description">
-                        Meta Description
-                        <span class="hint">Recommended: roughly 140–160 characters</span>
-                    </label>
-
-                        <textarea id="description"
-                              maxlength="320">xCONFLiCTiONx is a technology and privacy-focused site covering Windows tools, security, networking, software and technical projects.</textarea>
-
-                        <div id="descriptionCounter" class="counter"></div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="canonical">Canonical URL</label>
-                        <input id="canonical"
-                           type="url"
-                           placeholder="Leave blank to use homepage URL">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="author">Author / Publisher</label>
-                        <input id="author"
-                           type="text"
-                           value="xCONFLiCTiONx">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="ogImage">Social / Open Graph Image URL</label>
-                        <input id="ogImage"
-                           type="url"
-                           placeholder="https://example.com/images/social-card.jpg">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="favicon">Favicon URL</label>
-                        <input id="favicon"
-                           type="url"
-                           placeholder="/favicon.ico"
-                           value="/favicon.ico">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="themeColor">Browser Theme Color</label>
-                        <input id="themeColor"
-                           type="text"
-                           value="#0f172a"
-                           placeholder="#0f172a">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="robotsPolicy">Robots Policy</label>
-                        <select id="robotsPolicy">
-                        <option value="index, follow">Index + Follow</option>
-                        <option value="noindex, follow">No Index + Follow</option>
-                        <option value="index, nofollow">Index + No Follow</option>
-                        <option value="noindex, nofollow">No Index + No Follow</option>
-                    </select>
-                    </div>
-
-                </div>
-            </section>
-
-            <!-- STRUCTURED DATA -->
-            <section class="card">
-                <h2>2. Structured Data</h2>
-                <p class="card-description">
-                    Generates Schema.org JSON-LD for search engines and other crawlers.
-                </p>
-
-                <div class="form-group">
-                    <label for="schemaType">Website Type</label>
-                    <select id="schemaType">
-                    <option value="WebSite">WebSite</option>
-                    <option value="WebPage">WebPage</option>
-                    <option value="Organization">Organization</option>
-                    <option value="Person">Person</option>
-                </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="schemaDescription">Structured Data Description</label>
-                    <textarea id="schemaDescription">Technology, privacy, security, Windows utilities and software projects.</textarea>
-                </div>
-
-                <label class="checkbox-row">
-                <input type="checkbox" id="enableSearchAction">
-                Add WebSite search action
-            </label>
-
-                <div id="searchActionFields" class="hidden">
-
-                    <div class="form-group">
-                        <label for="searchUrl">
-                        Search URL Template
-                        <span class="hint">Example: /search?q={search_term_string}</span>
-                    </label>
-
-                        <input id="searchUrl"
-                           type="text"
-                           value="/search?q={search_term_string}">
-                    </div>
-
-                </div>
-            </section>
-
-            <!-- SOCIAL -->
-            <section class="card">
-                <h2>3. Social Metadata</h2>
-                <p class="card-description">
-                    Generates Open Graph and Twitter/X metadata.
-                </p>
-
-                <div class="form-group">
-                    <label for="ogTitle">Social Title</label>
-                    <input id="ogTitle"
-                       type="text"
-                       placeholder="Leave blank to use homepage title">
-                </div>
-
-                <div class="form-group">
-                    <label for="ogDescription">Social Description</label>
-                    <textarea id="ogDescription"
-                          placeholder="Leave blank to use meta description"></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label for="twitterCard">Twitter/X Card</label>
-                    <select id="twitterCard">
-                    <option value="summary_large_image">Summary Large Image</option>
-                    <option value="summary">Summary</option>
-                </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="twitterSite">Twitter/X Username <span class="hint">Optional</span></label>
-                    <input id="twitterSite"
-                       type="text"
-                       placeholder="@username">
-                </div>
-            </section>
-
-            <!-- SITEMAP -->
-            <section class="card full">
-                <h2>4. Sitemap Pages</h2>
-                <p class="card-description">
-                    Add the actual publicly indexable URLs on your site.
-                    Do not add redirects, login pages, private pages, duplicate URLs or blocked pages.
-                </p>
-
-                <div style="overflow-x:auto;">
-                    <table class="pages-table">
-                        <thead>
-                            <tr>
-                                <th style="width:35%">Path</th>
-                                <th>Last Modified</th>
-                                <th>Change Frequency</th>
-                                <th>Priority</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-
-                        <tbody id="pagesBody"></tbody>
-                    </table>
-                </div>
-
-                <div class="button-row">
-                    <button onclick="addPage()">+ Add Page</button>
-                    <button class="secondary" onclick="addCommonPages()">Add Common Pages</button>
-                </div>
-            </section>
-
-            <!-- VALIDATION -->
-            <section class="card full">
-                <h2>5. SEO Validation</h2>
-                <p class="card-description">
-                    These checks are designed to catch common configuration problems before you deploy.
-                </p>
-
-                <div class="status-grid" id="statusGrid"></div>
-                <div class="issues" id="issues"></div>
-            </section>
-
-            <!-- SEARCH PREVIEW -->
-            <section class="card">
-                <h2>6. Search Preview</h2>
-                <p class="card-description">
-                    Approximate search-result preview. Actual Google/Bing rendering can differ.
-                </p>
-
-                <div class="preview">
-                    <div class="preview-title" id="previewTitle"></div>
-                    <div class="preview-url" id="previewUrl"></div>
-                    <div class="preview-description" id="previewDescription"></div>
-                </div>
-            </section>
-
-            <!-- GENERATED FILES -->
-            <section class="card">
-                <h2>7. Generated Files</h2>
-                <p class="card-description">
-                    Download the individual files and place them at your website root.
-                </p>
-
-                <div class="file-list">
-
-                    <div class="file-card">
-                        <strong>robots.txt</strong>
-                        <span>Search crawler directives + sitemap location.</span>
-                    </div>
-
-                    <div class="file-card">
-                        <strong>sitemap.xml</strong>
-                        <span>XML sitemap containing your submitted URLs.</span>
-                    </div>
-
-                    <div class="file-card">
-                        <strong>seo-head.html</strong>
-                        <span>Meta tags, canonical, Open Graph, Twitter and JSON-LD.</span>
-                    </div>
-
-                    <div class="file-card">
-                        <strong>site.webmanifest</strong>
-                        <span>Basic browser/PWA metadata.</span>
-                    </div>
-
-                    <div class="file-card">
-                        <strong>llms.txt</strong>
-                        <span>Optional machine-readable site description.</span>
-                    </div>
-
-                    <div class="file-card">
-                        <strong>SEO report</strong>
-                        <span>Human-readable configuration report.</span>
-                    </div>
-
-                </div>
-
-                <div class="button-row">
-                    <button onclick="downloadAll()">Download All SEO Files</button>
-                </div>
-            </section>
-
-            <!-- ROBOTS -->
-            <section class="card full output">
-                <div class="output-header">
-                    <h2>robots.txt</h2>
-                    <button class="small" onclick="downloadFile('robots.txt', generateRobots())">
-                    Download
-                </button>
-                </div>
-
-                <pre id="robotsOutput"></pre>
-            </section>
-
-            <!-- SITEMAP -->
-            <section class="card full output">
-                <div class="output-header">
-                    <h2>sitemap.xml</h2>
-                    <button class="small" onclick="downloadFile('sitemap.xml', generateSitemap())">
-                    Download
-                </button>
-                </div>
-
-                <pre id="sitemapOutput"></pre>
-            </section>
-
-            <!-- HEAD -->
-            <section class="card full output">
-                <div class="output-header">
-                    <h2>seo-head.html</h2>
-                    <button class="small" onclick="downloadFile('seo-head.html', generateHead())">
-                    Download
-                </button>
-                </div>
-
-                <pre id="headOutput"></pre>
-            </section>
-
-            <!-- JSON LD -->
-            <section class="card full output">
-                <div class="output-header">
-                    <h2>JSON-LD Structured Data</h2>
-                    <button class="small" onclick="copyText(generateJsonLd())">
-                    Copy
-                </button>
-                </div>
-
-                <pre id="jsonOutput"></pre>
-            </section>
-
-            <!-- MANIFEST -->
-            <section class="card full output">
-                <div class="output-header">
-                    <h2>site.webmanifest</h2>
-                    <button class="small" onclick="downloadFile('site.webmanifest', generateManifest())">
-                    Download
-                </button>
-                </div>
-
-                <pre id="manifestOutput"></pre>
-            </section>
-
-            <!-- LLMS -->
-            <section class="card full output">
-                <div class="output-header">
-                    <h2>llms.txt</h2>
-                    <button class="small" onclick="downloadFile('llms.txt', generateLlms())">
-                    Download
-                </button>
-                </div>
-
-                <pre id="llmsOutput"></pre>
-            </section>
-
+    <header>
+        <div class="wrap">
+            <div>
+                <h1>Static Website SEO Generator</h1>
+                <p>Crawl internal pages, audit SEO, and generate files for your static site.</p>
+            </div><a class="back" href="../index.html">← Back to index.html</a>
         </div>
-    </div>
-
+    </header>
+    <main class="wrap">
+        <div class="grid">
+            <section>
+                <div class="card">
+                    <h2>Website Crawler</h2>
+                    <div class="row">
+                        <div><label for="siteUrl">Website URL</label><input id="siteUrl" value="https://xconflictionx.cc" placeholder="https://example.com">
+                        </div>
+                        <div><label for="siteName">Site Name</label><input id="siteName" value="xCONFLiCTiONx"></div>
+                    </div>
+                    <div class="row" style="margin-top:12px">
+                        <div><label for="maxPages">Maximum pages (safety limit)</label><input id="maxPages" type="number" min="1" max="100000" value="10000">
+                        </div>
+                        <div><label for="delay">Delay between requests (ms)</label><input id="delay" type="number" min="0" max="10000" value="0">
+                        </div>
+                    </div>
+                    <div class="check">
+                        <input id="queryUrls" type="checkbox"><label for="queryUrls">Treat query-string URLs as separate pages</label>
+                    </div>
+                    <div class="check">
+                        <input id="nonHtml" type="checkbox"><label for="nonHtml">Include linked non-HTML resources in results</label>
+                    </div>
+                    <div class="check">
+                        <input id="respectRobots" type="checkbox" checked><label for="respectRobots">Respect robots.txt rules when accessible</label>
+                    </div>
+                    <div class="actions">
+                        <button class="primary" id="crawlBtn">Crawl Site</button><button id="stopBtn">Stop</button><button id="clearBtn" class="danger">Clear Results</button>
+                    </div>
+                    <div id="status" class="status"></div>
+                    <div class="progress">
+                        <div id="progress"></div>
+                    </div>
+                    <div class="stats">
+                        <div class="stat"><strong id="discovered">0</strong><span>Discovered</span></div>
+                        <div class="stat"><strong id="crawled">0</strong><span>Analyzed</span></div>
+                        <div class="stat"><strong id="queued">0</strong><span>Queued</span></div>
+                        <div class="stat"><strong id="failed">0</strong><span>Failed</span></div>
+                        <div class="stat"><strong id="depth">0</strong><span>Max depth</span></div>
+                    </div>
+                    <div class="note">The crawler reads HTML directly into browser memory using fetch(); it does not
+                        require downloading pages. Run this tool from your own site for same-origin access. Browsers
+                        block cross-origin reads unless the target site permits them with CORS. Link crawling cannot
+                        discover orphan pages that are not linked; sitemap URLs are also used as discovery seeds when
+                        available.</div>
+                </div>
+                <div class="card">
+                    <h2>SEO Defaults</h2>
+                    <label for="title">Homepage / default title</label><input id="title" value="xCONFLiCTiONx — Privacy, Security &amp; Technology">
+                    <label for="description" style="margin-top:10px">Default meta description</label><textarea id="description">Privacy, security, technology, software projects, tools and technical resources from xCONFLiCTiONx.</textarea>
+                    <div class="row" style="margin-top:10px">
+                        <div><label for="author">Author</label><input id="author"></div>
+                        <div><label for="publisher">Publisher</label><input id="publisher" value="xCONFLiCTiONx"></div>
+                    </div>
+                    <div class="row" style="margin-top:10px">
+                        <div><label for="canonical">Default canonical URL</label><input id="canonical" value="https://xconflictionx.cc/">
+                        </div>
+                        <div><label for="favicon">Favicon URL</label><input id="favicon" value="/favicon.ico"></div>
+                    </div>
+                    <div class="row" style="margin-top:10px">
+                        <div><label for="ogImage">Open Graph image URL</label><input id="ogImage"></div>
+                        <div><label for="theme">Theme color</label><input id="theme" value="#0b0d10"></div>
+                    </div>
+                    <label for="robots" style="margin-top:10px">Robots meta policy</label><input id="robots" value="index, follow">
+                </div>
+                <div class="card">
+                    <h2>Structured Data</h2>
+                    <div class="row">
+                        <div>
+                            <label for="schemaType">Schema type</label><select id="schemaType"><option>WebSite</option><option>WebPage</option><option>Organization</option><option>Person</option></select>
+                        </div>
+                        <div><label for="schemaDescription">Schema description (optional)</label><input id="schemaDescription">
+                        </div>
+                    </div>
+                    <div class="check">
+                        <input id="searchAction" type="checkbox"><label for="searchAction">Include WebSite SearchAction</label>
+                    </div><label for="searchUrl">Search URL template (use {search_term_string})</label><input id="searchUrl" placeholder="https://example.com/search?q={search_term_string}">
+                </div>
+                <div class="card">
+                    <h2>Social Metadata</h2>
+                    <div class="row">
+                        <div><label for="ogTitle">Open Graph title</label><input id="ogTitle"></div>
+                        <div><label for="ogDescription">Open Graph description</label><input id="ogDescription"></div>
+                    </div>
+                    <div class="row" style="margin-top:10px">
+                        <div>
+                            <label for="twitterCard">X / Twitter card</label><select id="twitterCard"><option value="summary_large_image">summary_large_image</option><option value="summary">summary</option></select>
+                        </div>
+                        <div><label for="twitterSite">X / Twitter username</label><input id="twitterSite" placeholder="@username">
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <section>
+                <div class="card">
+                    <h2>Crawl Results</h2>
+                    <div id="validation"></div>
+                    <div class="tablebox">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>URL</th>
+                                    <th>HTTP</th>
+                                    <th>Depth</th>
+                                    <th>Title</th>
+                                    <th>Description</th>
+                                    <th>Canonical</th>
+                                    <th>Index</th>
+                                    <th>H1</th>
+                                    <th>Links</th>
+                                </tr>
+                            </thead>
+                            <tbody id="crawlRows"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card">
+                    <h2>Sitemap Pages</h2>
+                    <div class="actions">
+                        <button id="addPage">Add Page</button><button id="addCommon">Add Common Pages</button><button id="useCrawl" class="primary">Use Crawled Pages</button><button id="validateBtn">Validate</button>
+                    </div>
+                    <div class="tablebox" style="margin-top:12px">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Path</th>
+                                    <th>Last modified</th>
+                                    <th>Change frequency</th>
+                                    <th>Priority</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="pageRows"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card">
+                    <h2>Search Preview</h2>
+                    <div style="background:white;color:#202124;padding:15px;border-radius:8px">
+                        <div id="previewUrl" style="color:#188038;font-size:12px"></div>
+                        <div id="previewTitle" style="color:#1a0dab;font-size:20px"></div>
+                        <div id="previewDesc" style="color:#4d5156"></div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h2>Generated Files</h2>
+                    <div class="actions">
+                        <button class="primary" id="all">Download All SEO Files</button><button id="dlRobots">robots.txt</button><button id="dlSitemap">sitemap.xml</button><button id="dlHead">seo-head.html</button><button id="dlJson">structured-data.json</button><button id="dlManifest">site.webmanifest</button><button id="dlLlms">llms.txt</button><button id="dlReport">seo-report.txt</button>
+                    </div>
+                    <details>
+                        <summary>robots.txt</summary>
+                        <pre id="outRobots"></pre><button id="copyRobots">Copy</button>
+                    </details>
+                    <details>
+                        <summary>sitemap.xml</summary>
+                        <pre id="outSitemap"></pre><button id="copySitemap">Copy</button>
+                    </details>
+                    <details>
+                        <summary>seo-head.html</summary>
+                        <pre id="outHead"></pre><button id="copyHead">Copy</button>
+                    </details>
+                    <details>
+                        <summary>structured-data.json</summary>
+                        <pre id="outJson"></pre><button id="copyJson">Copy</button>
+                    </details>
+                </div>
+            </section>
+        </div>
+    </main>
     <script>
         "use strict";
-    
-    /* =========================================================
-       STATE
-    ========================================================= */
-    
-    let pages = [
-        {
-            path: "/",
-            lastmod: "",
-            changefreq: "weekly",
-            priority: "1.0"
-        },
-        {
-            path: "/about",
-            lastmod: "",
-            changefreq: "monthly",
-            priority: "0.8"
-        },
-        {
-            path: "/projects",
-            lastmod: "",
-            changefreq: "weekly",
-            priority: "0.9"
-        }
-    ];
-    
-    /* =========================================================
-       HELPERS
-    ========================================================= */
-    
-    function $(id) {
-        return document.getElementById(id);
-    }
-    
-    function escapeHtml(value) {
-        return String(value ?? "")
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
-    }
-    
-    function escapeXml(value) {
-        return String(value ?? "")
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&apos;");
-    }
-    
-    function normalizeUrl(url) {
-        return String(url || "").trim().replace(/\/+$/, "");
-    }
-    
-    function getSiteUrl() {
-        return normalizeUrl($("siteUrl")?.value || "");
-    }
-    
-    function getValue(id, fallback = "") {
-        const el = $(id);
-        return el ? String(el.value || "").trim() : fallback;
-    }
-    
-    function getChecked(id, fallback = false) {
-        const el = $(id);
-        return el ? !!el.checked : fallback;
-    }
-    
-    function todayIso() {
-        return new Date().toISOString().slice(0, 10);
-    }
-    
-    function downloadFile(filename, content, mime = "text/plain;charset=utf-8") {
-        const blob = new Blob([content], { type: mime });
-        const url = URL.createObjectURL(blob);
-    
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-    
-        setTimeout(() => URL.revokeObjectURL(url), 1000);
-    }
-    
-    function showStatus(message, type = "success") {
-        const status =
-            $("status") ||
-            $("validationStatus") ||
-            $("outputStatus");
-    
-        if (!status) return;
-    
-        status.textContent = message;
-        status.className = "status " + type;
-        status.style.display = "block";
-    
-        clearTimeout(showStatus.timer);
-    
-        showStatus.timer = setTimeout(() => {
-            status.style.display = "none";
-        }, 5000);
-    }
-    
-    /* =========================================================
-       PAGE TABLE
-    ========================================================= */
-    
-    function renderPages() {
-        const tbody =
-            $("pagesBody") ||
-            $("pageTableBody") ||
-            $("sitemapBody");
-    
-        if (!tbody) return;
-    
-        tbody.innerHTML = "";
-    
-        pages.forEach((page, index) => {
-            const tr = document.createElement("tr");
-    
-            tr.innerHTML = `
-                <td>
-                    <input
-                        type="text"
-                        value="${escapeHtml(page.path)}"
-                        data-field="path"
-                        data-index="${index}"
-                    >
-                </td>
-    
-                <td>
-                    <input
-                        type="date"
-                        value="${escapeHtml(page.lastmod)}"
-                        data-field="lastmod"
-                        data-index="${index}"
-                    >
-                </td>
-    
-                <td>
-                    <select data-field="changefreq" data-index="${index}">
-                        ${[
-                            "always",
-                            "hourly",
-                            "daily",
-                            "weekly",
-                            "monthly",
-                            "yearly",
-                            "never"
-                        ].map(freq => `
-                            <option value="${freq}" ${page.changefreq === freq ? "selected" : ""}>
-                                ${freq}
-                            </option>
-                        `).join("")}
-                    </select>
-                </td>
-    
-                <td>
-                    <input
-                        type="number"
-                        min="0"
-                        max="1"
-                        step="0.1"
-                        value="${escapeHtml(page.priority)}"
-                        data-field="priority"
-                        data-index="${index}"
-                    >
-                </td>
-    
-                <td>
-                    <button
-                        type="button"
-                        class="danger"
-                        onclick="removePage(${index})"
-                    >
-                        Remove
-                    </button>
-                </td>
-            `;
-    
-            tbody.appendChild(tr);
-        });
-    
-        tbody.querySelectorAll("[data-field]").forEach(input => {
-            input.addEventListener("input", updatePageFromInput);
-            input.addEventListener("change", updatePageFromInput);
-        });
-    
-        updatePreview();
-    }
-    
-    function updatePageFromInput(event) {
-        const input = event.target;
-        const index = Number(input.dataset.index);
-        const field = input.dataset.field;
-    
-        if (!Number.isInteger(index) || !pages[index]) return;
-    
-        pages[index][field] = input.value;
-    
-        updatePreview();
-    }
-    
-    function addPage() {
-        pages.push({
-            path: "/new-page",
-            lastmod: "",
-            changefreq: "monthly",
-            priority: "0.5"
-        });
-    
-        renderPages();
-    }
-    
-    function removePage(index) {
-        if (!Number.isInteger(index)) return;
-    
-        if (pages.length <= 1) {
-            showStatus("You must keep at least one page.", "error");
-            return;
-        }
-    
-        pages.splice(index, 1);
-        renderPages();
-    }
-    
-    function addCommonPages() {
-        const commonPages = [
-            {
-                path: "/",
-                changefreq: "weekly",
-                priority: "1.0"
-            },
-            {
-                path: "/about",
-                changefreq: "monthly",
-                priority: "0.8"
-            },
-            {
-                path: "/projects",
-                changefreq: "weekly",
-                priority: "0.9"
-            },
-            {
-                path: "/contact",
-                changefreq: "monthly",
-                priority: "0.7"
-            },
-            {
-                path: "/privacy",
-                changefreq: "yearly",
-                priority: "0.5"
-            },
-            {
-                path: "/terms",
-                changefreq: "yearly",
-                priority: "0.5"
-            }
-        ];
-    
-        for (const common of commonPages) {
-            const exists = pages.some(
-                page => normalizePath(page.path) === normalizePath(common.path)
-            );
-    
-            if (!exists) {
-                pages.push({
-                    ...common,
-                    lastmod: ""
-                });
-            }
-        }
-    
-        renderPages();
-        showStatus("Common pages added.");
-    }
-    
-    function normalizePath(path) {
-        let value = String(path || "").trim();
-    
-        if (!value) return "/";
-    
-        if (!value.startsWith("/")) {
-            value = "/" + value;
-        }
-    
-        if (value.length > 1) {
-            value = value.replace(/\/+$/, "");
-        }
-    
-        return value;
-    }
-    
-    /* =========================================================
-       CONFIGURATION
-    ========================================================= */
-    
-    function getConfig() {
-        const siteUrl = getSiteUrl();
-    
-        return {
-            siteUrl,
-    
-            siteName: getValue(
-                "siteName",
-                "xCONFLiCTiONx"
-            ),
-    
-            homeTitle: getValue(
-                "homeTitle",
-                "xCONFLiCTiONx — Privacy, Security & Technology"
-            ),
-    
-            description: getValue(
-                "metaDescription",
-                ""
-            ),
-    
-            canonical: getValue(
-                "canonical",
-                siteUrl
-            ) || siteUrl,
-    
-            author: getValue(
-                "author",
-                ""
-            ),
-    
-            publisher: getValue(
-                "publisher",
-                ""
-            ),
-    
-            ogImage: getValue(
-                "ogImage",
-                ""
-            ),
-    
-            favicon: getValue(
-                "favicon",
-                "/favicon.ico"
-            ),
-    
-            themeColor: getValue(
-                "themeColor",
-                "#0b0d10"
-            ),
-    
-            robots: getValue(
-                "robots",
-                "index, follow"
-            ),
-    
-            schemaType: getValue(
-                "schemaType",
-                "WebSite"
-            ),
-    
-            schemaDescription: getValue(
-                "schemaDescription",
-                ""
-            ),
-    
-            searchAction: getChecked(
-                "searchAction",
-                false
-            ),
-    
-            searchUrl: getValue(
-                "searchUrl",
-                ""
-            ),
-    
-            ogTitle: getValue(
-                "ogTitle",
-                ""
-            ),
-    
-            ogDescription: getValue(
-                "ogDescription",
-                ""
-            ),
-    
-            twitterCard: getValue(
-                "twitterCard",
-                "summary_large_image"
-            ),
-    
-            twitterSite: getValue(
-                "twitterSite",
-                ""
-            )
-        };
-    }
-    
-    /* =========================================================
-       VALIDATION
-    ========================================================= */
-    
-    function validate() {
-        const config = getConfig();
-        const errors = [];
-        const warnings = [];
-    
-        if (!config.siteUrl) {
-            errors.push("Website URL is required.");
-        } else {
-            try {
-                const url = new URL(config.siteUrl);
-    
-                if (!["http:", "https:"].includes(url.protocol)) {
-                    errors.push("Website URL must use HTTP or HTTPS.");
-                }
-            } catch {
-                errors.push("Website URL is not valid.");
-            }
-        }
-    
-        if (!config.siteName) {
-            errors.push("Site name is required.");
-        }
-    
-        if (!config.homeTitle) {
-            errors.push("Homepage title is required.");
-        }
-    
-        if (!config.description) {
-            warnings.push("Meta description is empty.");
-        } else if (config.description.length > 160) {
-            warnings.push(
-                `Meta description is ${config.description.length} characters long.`
-            );
-        }
-    
-        if (!config.ogImage) {
-            warnings.push("No Open Graph image URL is configured.");
-        }
-    
-        if (!config.favicon) {
-            warnings.push("No favicon URL is configured.");
-        }
-    
-        if (pages.length === 0) {
-            errors.push("At least one sitemap page is required.");
-        }
-    
-        pages.forEach((page, index) => {
-            if (!page.path) {
-                errors.push(`Page ${index + 1} has no path.`);
-            }
-    
-            const priority = Number(page.priority);
-    
-            if (
-                Number.isNaN(priority) ||
-                priority < 0 ||
-                priority > 1
-            ) {
-                errors.push(
-                    `Page ${index + 1} has an invalid priority.`
-                );
-            }
-        });
-    
-        if (config.searchAction && !config.searchUrl) {
-            warnings.push(
-                "SearchAction is enabled but no search URL is configured."
-            );
-        }
-    
-        const result = {
-            valid: errors.length === 0,
-            errors,
-            warnings
-        };
-    
-        renderValidation(result);
-    
-        return result;
-    }
-    
-    function renderValidation(result) {
-        const container =
-            $("validationResults") ||
-            $("validationOutput");
-    
-        if (!container) return;
-    
-        let html = "";
-    
-        if (result.errors.length) {
-            html += `
-                <div class="validation-error">
-                    <strong>Errors</strong>
-                    <ul>
-                        ${result.errors.map(error =>
-                            `<li>${escapeHtml(error)}</li>`
-                        ).join("")}
-                    </ul>
-                </div>
-            `;
-        }
-    
-        if (result.warnings.length) {
-            html += `
-                <div class="validation-warning">
-                    <strong>Warnings</strong>
-                    <ul>
-                        ${result.warnings.map(warning =>
-                            `<li>${escapeHtml(warning)}</li>`
-                        ).join("")}
-                    </ul>
-                </div>
-            `;
-        }
-    
-        if (!result.errors.length && !result.warnings.length) {
-            html = `
-                <div class="validation-success">
-                    SEO configuration looks good.
-                </div>
-            `;
-        }
-    
-        container.innerHTML = html;
-    }
-    
-    /* =========================================================
-       JSON-LD
-    ========================================================= */
-    
-    function generateJsonLd() {
-        const config = getConfig();
-    
-        const schemaType =
-            config.schemaType || "WebSite";
-    
-        const description =
-            config.schemaDescription ||
-            config.description;
-    
-        const data = {
-            "@context": "https://schema.org",
-            "@type": schemaType,
-            "name": config.siteName,
-            "url": config.siteUrl
-        };
-    
-        if (description) {
-            data.description = description;
-        }
-    
-        if (config.author) {
-            data.author = {
-                "@type": "Person",
-                "name": config.author
-            };
-        }
-    
-        if (config.publisher) {
-            data.publisher = {
-                "@type": "Organization",
-                "name": config.publisher
-            };
-        }
-    
-        if (
-            schemaType === "WebSite" &&
-            config.searchAction &&
-            config.searchUrl
-        ) {
-            data.potentialAction = {
-                "@type": "SearchAction",
-                "target": {
-                    "@type": "EntryPoint",
-                    "urlTemplate": config.searchUrl
-                },
-                "query-input": "required name=search_term_string"
-            };
-        }
-    
-        return JSON.stringify(data, null, 2);
-    }
-    
-    /* =========================================================
-       SEO HEAD
-    ========================================================= */
-    
-    function generateHead() {
-        const config = getConfig();
-    
-        const title =
-            config.homeTitle ||
-            config.siteName;
-    
-        const description =
-            config.description;
-    
-        const canonical =
-            config.canonical ||
-            config.siteUrl;
-    
-        const ogTitle =
-            config.ogTitle ||
-            title;
-    
-        const ogDescription =
-            config.ogDescription ||
-            description;
-    
-        const lines = [];
-    
-        lines.push(
-            `<title>${escapeHtml(title)}</title>`
-        );
-    
-        if (description) {
-            lines.push(
-                `<meta name="description" content="${escapeHtml(description)}">`
-            );
-        }
-    
-        if (config.robots) {
-            lines.push(
-                `<meta name="robots" content="${escapeHtml(config.robots)}">`
-            );
-        }
-    
-        if (canonical) {
-            lines.push(
-                `<link rel="canonical" href="${escapeHtml(canonical)}">`
-            );
-        }
-    
-        if (config.author) {
-            lines.push(
-                `<meta name="author" content="${escapeHtml(config.author)}">`
-            );
-        }
-    
-        if (config.themeColor) {
-            lines.push(
-                `<meta name="theme-color" content="${escapeHtml(config.themeColor)}">`
-            );
-        }
-    
-        if (config.favicon) {
-            lines.push(
-                `<link rel="icon" href="${escapeHtml(config.favicon)}">`
-            );
-        }
-    
-        lines.push(
-            "",
-            "<!-- Open Graph -->",
-            `<meta property="og:type" content="website">`,
-            `<meta property="og:title" content="${escapeHtml(ogTitle)}">`,
-            `<meta property="og:description" content="${escapeHtml(ogDescription)}">`,
-            `<meta property="og:url" content="${escapeHtml(canonical || config.siteUrl)}">`
-        );
-    
-        if (config.siteName) {
-            lines.push(
-                `<meta property="og:site_name" content="${escapeHtml(config.siteName)}">`
-            );
-        }
-    
-        if (config.ogImage) {
-            lines.push(
-                `<meta property="og:image" content="${escapeHtml(config.ogImage)}">`,
-                `<meta property="og:image:width" content="1200">`,
-                `<meta property="og:image:height" content="630">`
-            );
-        }
-    
-        lines.push(
-            "",
-            "<!-- Twitter / X -->",
-            `<meta name="twitter:card" content="${escapeHtml(config.twitterCard || "summary_large_image")}">`,
-            `<meta name="twitter:title" content="${escapeHtml(ogTitle)}">`,
-            `<meta name="twitter:description" content="${escapeHtml(ogDescription)}">`
-        );
-    
-        if (config.ogImage) {
-            lines.push(
-                `<meta name="twitter:image" content="${escapeHtml(config.ogImage)}">`
-            );
-        }
-    
-        if (config.twitterSite) {
-            lines.push(
-                `<meta name="twitter:site" content="${escapeHtml(config.twitterSite)}">`
-            );
-        }
-    
-        lines.push(
-            "",
-            "<!-- Structured Data -->",
-            `<script type="application/ld+json">`,
-            generateJsonLd(),
-            "<" + "/script>"
-        );
-    
-        return lines.join("\n");
-    }
-    
-    /* =========================================================
-       ROBOTS.TXT
-    ========================================================= */
-    
-    function generateRobots() {
-        const config = getConfig();
-    
-        const sitemapUrl = config.siteUrl
-            ? `${config.siteUrl}/sitemap.xml`
-            : "/sitemap.xml";
-    
-        return [
-            "User-agent: *",
-            "Allow: /",
-            "",
-            `Sitemap: ${sitemapUrl}`,
-            ""
-        ].join("\n");
-    }
-    
-    /* =========================================================
-       SITEMAP.XML
-    ========================================================= */
-    
-    function generateSitemap() {
-        const config = getConfig();
-    
-        const baseUrl = config.siteUrl;
-    
-        const urls = pages.map(page => {
-            const path = normalizePath(page.path);
-    
-            let loc;
-    
-            if (path === "/") {
-                loc = `${baseUrl}/`;
-            } else {
-                loc = `${baseUrl}${path}`;
-            }
-    
-            const parts = [
-                "  <url>",
-                `    <loc>${escapeXml(loc)}</loc>`
-            ];
-    
-            if (page.lastmod) {
-                parts.push(
-                    `    <lastmod>${escapeXml(page.lastmod)}</lastmod>`
-                );
-            }
-    
-            if (page.changefreq) {
-                parts.push(
-                    `    <changefreq>${escapeXml(page.changefreq)}</changefreq>`
-                );
-            }
-    
-            if (page.priority !== "") {
-                parts.push(
-                    `    <priority>${escapeXml(page.priority)}</priority>`
-                );
-            }
-    
-            parts.push("  </url>");
-    
-            return parts.join("\n");
-        });
-    
-        return [
-            `<?xml version="1.0" encoding="UTF-8"?>`,
-            `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">`,
-            urls.join("\n"),
-            `</urlset>`,
-            ""
-        ].join("\n");
-    }
-    
-    /* =========================================================
-       WEB MANIFEST
-    ========================================================= */
-    
-    function generateManifest() {
-        const config = getConfig();
-    
-        const manifest = {
-            name: config.siteName,
-            short_name: config.siteName,
-            start_url: "/",
-            display: "standalone",
-            theme_color: config.themeColor || "#0b0d10",
-            background_color: config.themeColor || "#0b0d10"
-        };
-    
-        if (config.favicon) {
-            manifest.icons = [
-                {
-                    src: config.favicon,
-                    sizes: "any",
-                    type: "image/x-icon"
-                }
-            ];
-        }
-    
-        return JSON.stringify(manifest, null, 2) + "\n";
-    }
-    
-    /* =========================================================
-       LLMS.TXT
-    ========================================================= */
-    
-    function generateLlms() {
-        const config = getConfig();
-    
-        const lines = [
-            `# ${config.siteName}`,
-            ""
-        ];
-    
-        if (config.description) {
-            lines.push(
-                config.description,
-                ""
-            );
-        }
-    
-        if (config.siteUrl) {
-            lines.push(
-                `Website: ${config.siteUrl}`,
-                ""
-            );
-        }
-    
-        lines.push(
-            "## Pages",
-            ""
-        );
-    
-        pages.forEach(page => {
-            const path = normalizePath(page.path);
-            const url =
-                path === "/"
-                    ? `${config.siteUrl}/`
-                    : `${config.siteUrl}${path}`;
-    
-            lines.push(
-                `- [${path}](${url})`
-            );
-        });
-    
-        lines.push("");
-    
-        return lines.join("\n");
-    }
-    
-    /* =========================================================
-       SEO REPORT
-    ========================================================= */
-    
-    function generateReport() {
-        const config = getConfig();
-        const validation = validate();
-    
-        const titleLength =
-            config.homeTitle.length;
-    
-        const descriptionLength =
-            config.description.length;
-    
-        const lines = [
-            `SEO GENERATOR REPORT`,
-            `====================`,
-            ``,
-            `Generated: ${new Date().toISOString()}`,
-            ``,
-            `SITE`,
-            `----`,
-            `Name: ${config.siteName}`,
-            `URL: ${config.siteUrl}`,
-            `Canonical: ${config.canonical}`,
-            ``,
-            `TITLE`,
-            `-----`,
-            `Title: ${config.homeTitle}`,
-            `Length: ${titleLength} characters`,
-            ``,
-            `DESCRIPTION`,
-            `-----------`,
-            `Length: ${descriptionLength} characters`,
-            `Description: ${config.description}`,
-            ``,
-            `PAGES`,
-            `-----`,
-            `Pages in sitemap: ${pages.length}`,
-            ``
-        ];
-    
-        if (validation.errors.length) {
-            lines.push(
-                "ERRORS",
-                "------"
-            );
-    
-            validation.errors.forEach(error => {
-                lines.push(`- ${error}`);
-            });
-    
-            lines.push("");
-        }
-    
-        if (validation.warnings.length) {
-            lines.push(
-                "WARNINGS",
-                "--------"
-            );
-    
-            validation.warnings.forEach(warning => {
-                lines.push(`- ${warning}`);
-            });
-    
-            lines.push("");
-        }
-    
-        if (
-            !validation.errors.length &&
-            !validation.warnings.length
-        ) {
-            lines.push(
-                "STATUS",
-                "------",
-                "No validation errors or warnings.",
-                ""
-            );
-        }
-    
-        return lines.join("\n");
-    }
-    
-    /* =========================================================
-       PREVIEW
-    ========================================================= */
-    
-    function updatePreview() {
-        const config = getConfig();
-    
-        const title =
-            config.homeTitle ||
-            config.siteName ||
-            "Your Website";
-    
-        const description =
-            config.description ||
-            "Your website description will appear here.";
-    
-        const url =
-            config.siteUrl ||
-            "https://example.com";
-    
-        const titleElement =
-            $("previewTitle") ||
-            $("searchTitle");
-    
-        const descriptionElement =
-            $("previewDescription") ||
-            $("searchDescription");
-    
-        const urlElement =
-            $("previewUrl") ||
-            $("searchUrlPreview");
-    
-        if (titleElement) {
-            titleElement.textContent = title;
-        }
-    
-        if (descriptionElement) {
-            descriptionElement.textContent = description;
-        }
-    
-        if (urlElement) {
-            urlElement.textContent = url;
-        }
-    }
-    
-    /* =========================================================
-       GENERATE ALL
-    ========================================================= */
-    
-    function generateAll() {
-        const validation = validate();
-    
-        if (!validation.valid) {
-            showStatus(
-                "Fix the validation errors before generating files.",
-                "error"
-            );
-            return null;
-        }
-    
-        return {
-            "robots.txt": generateRobots(),
-            "sitemap.xml": generateSitemap(),
-            "seo-head.html": generateHead(),
-            "structured-data.json": generateJsonLd() + "\n",
-            "site.webmanifest": generateManifest(),
-            "llms.txt": generateLlms(),
-            "seo-report.txt": generateReport()
-        };
-    }
-    
-    /* =========================================================
-       INDIVIDUAL DOWNLOADS
-    ========================================================= */
-    
-    function downloadRobots() {
-        downloadFile(
-            "robots.txt",
-            generateRobots()
-        );
-    }
-    
-    function downloadSitemap() {
-        downloadFile(
-            "sitemap.xml",
-            generateSitemap(),
-            "application/xml;charset=utf-8"
-        );
-    }
-    
-    function downloadHead() {
-        downloadFile(
-            "seo-head.html",
-            generateHead(),
-            "text/html;charset=utf-8"
-        );
-    }
-    
-    function downloadJsonLd() {
-        downloadFile(
-            "structured-data.json",
-            generateJsonLd() + "\n",
-            "application/ld+json;charset=utf-8"
-        );
-    }
-    
-    function downloadManifest() {
-        downloadFile(
-            "site.webmanifest",
-            generateManifest(),
-            "application/manifest+json;charset=utf-8"
-        );
-    }
-    
-    function downloadLlms() {
-        downloadFile(
-            "llms.txt",
-            generateLlms()
-        );
-    }
-    
-    function downloadReport() {
-        downloadFile(
-            "seo-report.txt",
-            generateReport()
-        );
-    }
-    
-    /* =========================================================
-       DOWNLOAD ALL
-    ========================================================= */
-    
-    function downloadAll() {
-        const files = generateAll();
-    
-        if (!files) return;
-    
-        Object.entries(files).forEach(
-            ([filename, content], index) => {
-                setTimeout(() => {
-                    downloadFile(
-                        filename,
-                        content,
-                        filename.endsWith(".xml")
-                            ? "application/xml;charset=utf-8"
-                            : filename.endsWith(".html")
-                                ? "text/html;charset=utf-8"
-                                : "text/plain;charset=utf-8"
-                    );
-                }, index * 250);
-            }
-        );
-    
-        showStatus(
-            "All SEO files generated and downloaded."
-        );
-    }
-    
-    /* =========================================================
-       COPY OUTPUT
-    ========================================================= */
-    
-    function copyText(text) {
-        if (
-            navigator.clipboard &&
-            window.isSecureContext
-        ) {
-            return navigator.clipboard.writeText(text);
-        }
-    
-        const textarea =
-            document.createElement("textarea");
-    
-        textarea.value = text;
-        textarea.style.position = "fixed";
-        textarea.style.opacity = "0";
-    
-        document.body.appendChild(textarea);
-    
-        textarea.focus();
-        textarea.select();
-    
-        try {
-            document.execCommand("copy");
-        } finally {
-            textarea.remove();
-        }
-    
-        return Promise.resolve();
-    }
-    
-    function copyHead() {
-        copyText(generateHead())
-            .then(() => showStatus("SEO head copied."));
-    }
-    
-    function copyRobots() {
-        copyText(generateRobots())
-            .then(() => showStatus("robots.txt copied."));
-    }
-    
-    function copySitemap() {
-        copyText(generateSitemap())
-            .then(() => showStatus("sitemap.xml copied."));
-    }
-    
-    function copyJsonLd() {
-        copyText(generateJsonLd())
-            .then(() => showStatus("JSON-LD copied."));
-    }
-    
-    /* =========================================================
-       OUTPUT PREVIEW
-    ========================================================= */
-    
-    function updateOutputPreview() {
-        const headOutput = $("headOutput");
-        const robotsOutput = $("robotsOutput");
-        const sitemapOutput = $("sitemapOutput");
-        const jsonLdOutput = $("jsonLdOutput");
-    
-        if (headOutput) {
-            headOutput.textContent = generateHead();
-        }
-    
-        if (robotsOutput) {
-            robotsOutput.textContent = generateRobots();
-        }
-    
-        if (sitemapOutput) {
-            sitemapOutput.textContent = generateSitemap();
-        }
-    
-        if (jsonLdOutput) {
-            jsonLdOutput.textContent = generateJsonLd();
-        }
-    }
-    
-    /* =========================================================
-       FORM EVENTS
-    ========================================================= */
-    
-    function bindInputs() {
-        document.querySelectorAll("input, textarea, select")
-            .forEach(element => {
-                element.addEventListener(
-                    "input",
-                    updateOutputPreview
-                );
-    
-                element.addEventListener(
-                    "change",
-                    updateOutputPreview
-                );
-    
-                element.addEventListener(
-                    "input",
-                    updatePreview
-                );
-    
-                element.addEventListener(
-                    "change",
-                    updatePreview
-                );
-            });
-    }
-    
-    /* =========================================================
-       BUTTON DISCOVERY
-    ========================================================= */
-    
-    function bindButtons() {
-        const mappings = {
-            addPageBtn: addPage,
-            addCommonPagesBtn: addCommonPages,
-            validateBtn: validate,
-            generateBtn: generateAll,
-            downloadAllBtn: downloadAll,
-            downloadRobotsBtn: downloadRobots,
-            downloadSitemapBtn: downloadSitemap,
-            downloadHeadBtn: downloadHead,
-            downloadJsonLdBtn: downloadJsonLd,
-            downloadManifestBtn: downloadManifest,
-            downloadLlmsBtn: downloadLlms,
-            downloadReportBtn: downloadReport,
-            copyHeadBtn: copyHead,
-            copyRobotsBtn: copyRobots,
-            copySitemapBtn: copySitemap,
-            copyJsonLdBtn: copyJsonLd
-        };
-    
-        Object.entries(mappings).forEach(
-            ([id, handler]) => {
-                const element = $(id);
-    
-                if (!element) return;
-    
-                element.addEventListener(
-                    "click",
-                    handler
-                );
-            }
-        );
-    }
-    
-    /* =========================================================
-       INITIALIZATION
-    ========================================================= */
-    
-    function initialize() {
-        renderPages();
-        bindInputs();
-        bindButtons();
-        updatePreview();
-        updateOutputPreview();
-        validate();
-    }
-    
-    if (document.readyState === "loading") {
-        document.addEventListener(
-            "DOMContentLoaded",
-            initialize
-        );
-    } else {
-        initialize();
-    }
-    
-    /* =========================================================
-       GLOBAL FUNCTIONS
-       Needed by existing inline onclick="" attributes.
-    ========================================================= */
-    
-    window.addPage = addPage;
-    window.removePage = removePage;
-    window.addCommonPages = addCommonPages;
-    
-    window.validate = validate;
-    window.generateAll = generateAll;
-    
-    window.downloadRobots = downloadRobots;
-    window.downloadSitemap = downloadSitemap;
-    window.downloadHead = downloadHead;
-    window.downloadJsonLd = downloadJsonLd;
-    window.downloadManifest = downloadManifest;
-    window.downloadLlms = downloadLlms;
-    window.downloadReport = downloadReport;
-    window.downloadAll = downloadAll;
-    
-    window.copyHead = copyHead;
-    window.copyRobots = copyRobots;
-    window.copySitemap = copySitemap;
-    window.copyJsonLd = copyJsonLd;
+const $=id=>document.getElementById(id);
+let pages=[{path:"/",lastmod:"",changefreq:"weekly",priority:"1.0"}],results=[],queue=[],seen=new Map(),running=false,stopRequested=false,robotsRules=null;
+const val=(id,def="")=>($(id)?.value??def).trim();
+const checked=id=>!!$(id)?.checked;
+const esc=s=>String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+const xml=s=>esc(s).replace(/&#39;/g,"&apos;");
+function site(){return val("siteUrl").replace(/\/+$/,"")}
+function status(msg,type="good"){$("status").textContent=msg;$("status").className="status "+type}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
+function urlKey(raw,base){try{let u=new URL(raw,base);if(!/^https?:$/.test(u.protocol))return null;u.hash="";if(!checked("queryUrls"))u.search="";if(u.pathname.length>1)u.pathname=u.pathname.replace(/\/+$/,"");return u.href}catch{return null}}
+function sameSite(u){try{return new URL(u).hostname.toLowerCase()===new URL(site()).hostname.toLowerCase()}catch{return false}}
+const assetExt=/\.(?:css|js|mjs|json|xml|txt|png|jpe?g|gif|webp|avif|svg|ico|woff2?|ttf|otf|mp[34]|webm|mov|zip|rar|7z|gz|tar|exe|msi|dmg|iso|pdf|docx?|xlsx?|pptx?|csv)$/i;
+function htmlUrl(u){try{return !assetExt.test(new URL(u).pathname)}catch{return false}}
+function pathOf(u){try{let x=new URL(u),p=x.pathname||"/";if(p.length>1)p=p.replace(/\/+$/,"");return p+(checked("queryUrls")?x.search:"")}catch{return "/"}}
+function stats(){$("discovered").textContent=seen.size;$("crawled").textContent=results.length;$("queued").textContent=queue.length;$("failed").textContent=results.filter(x=>x.error||x.status>=400).length;$("depth").textContent=results.reduce((m,x)=>Math.max(m,x.depth||0),0);$("progress").style.width=Math.min(100,results.length/Math.max(seen.size,1)*100)+"%"}
+function parseRobots(txt){let active=false,out=[];for(let raw of txt.split(/\r?\n/)){let line=raw.split("#")[0].trim(),i=line.indexOf(":");if(!line||i<0)continue;let k=line.slice(0,i).trim().toLowerCase(),v=line.slice(i+1).trim();if(k==="user-agent")active=v==="*";else if(active&&(k==="allow"||k==="disallow")&&v)out.push({k,v})}return out}
+function allowed(u){if(!robotsRules)return true;let p=new URL(u).pathname,best=-1,allow=true;for(let r of robotsRules){let pattern=r.v,end=pattern.endsWith("$");if(end)pattern=pattern.slice(0,-1);let re=new RegExp("^"+pattern.replace(/[.*+?^${}()|[\]\\]/g,"\\$&").replace(/\\\*/g,".*")+(end?"$":""));if(re.test(p)&&pattern.length>=best){best=pattern.length;allow=r.k==="allow"}}return allow}
+async function loadRobots(){robotsRules=null;if(!checked("respectRobots"))return;try{let r=await fetch(new URL("/robots.txt",site()),{cache:"no-store",credentials:"omit"});if(r.ok)robotsRules=parseRobots(await r.text())}catch{}}
+async function addSitemapSeeds(){
+  const origin=new URL(site()).origin;
+  const candidates=new Set([new URL("/sitemap.xml",site()).href]);
+  if(robotsRules){try{let r=await fetch(new URL("/robots.txt",site()),{cache:"no-store"});if(r.ok)for(let line of (await r.text()).split(/\r?\n/)){let m=line.match(/^\s*Sitemap:\s*(\S+)/i);if(m)candidates.add(m[1])}}catch{}}
+  const visited=new Set();
+  while(candidates.size){
+    const sm=candidates.values().next().value;candidates.delete(sm);if(visited.has(sm)||visited.size>=25)continue;visited.add(sm);
+    try{
+      const r=await fetch(sm,{cache:"no-store",credentials:"omit"});if(!r.ok)continue;
+      const doc=new DOMParser().parseFromString(await r.text(),"application/xml");
+      if(doc.querySelector("parsererror"))continue;
+      for(const loc of doc.querySelectorAll("sitemap > loc")){const u=loc.textContent.trim();if(u)candidates.add(u)}
+      for(const loc of doc.querySelectorAll("url > loc")){
+        const u=urlKey(loc.textContent.trim(),origin);
+        if(u&&sameSite(u)&&htmlUrl(u)&&!seen.has(u)){seen.set(u,{url:u,depth:0,from:"sitemap"});queue.push({url:u,depth:0,from:"sitemap"})}
+      }
+    }catch{}
+  }
+}
+async function crawlOne(item){
+  let response;
+  try{response=await fetch(item.url,{redirect:"follow",cache:"no-store",credentials:"omit"})}
+  catch(e){results.push({url:item.url,depth:item.depth,status:0,error:e.message||String(e)});return}
+  const type=response.headers.get("content-type")||"";
+  if(!/text\/html/i.test(type)){
+    if(checked("nonHtml"))results.push({url:item.url,depth:item.depth,status:response.status,error:"Non-HTML resource"});
+    return;
+  }
+  let doc;
+  try{doc=new DOMParser().parseFromString(await response.text(),"text/html")}
+  catch(e){results.push({url:item.url,depth:item.depth,status:response.status,error:e.message||String(e)});return}
+  const title=(doc.querySelector("title")?.textContent||"").trim();
+  const description=(doc.querySelector('meta[name="description"]')?.content||"").trim();
+  const canonicalRaw=doc.querySelector('link[rel~="canonical"]')?.href||"";
+  const canonical=canonicalRaw?urlKey(canonicalRaw,item.url)||canonicalRaw:"";
+  const robots=(doc.querySelector('meta[name="robots"]')?.content||"")+" "+(doc.querySelector('meta[name="googlebot"]')?.content||"");
+  const noindex=/\bnoindex\b/i.test(robots);
+  const h1=[...doc.querySelectorAll("h1")].map(x=>x.textContent.trim()).filter(Boolean);
+  const links=[...doc.querySelectorAll("a[href]")];let internal=0,external=0;
+  for(const a of links){let u=urlKey(a.getAttribute("href"),item.url);if(!u)continue;if(sameSite(u)){internal++;if(htmlUrl(u)&&!seen.has(u)){seen.set(u,{url:u,depth:item.depth+1,from:item.url});queue.push({url:u,depth:item.depth+1,from:item.url})}}else external++}
+  const imgs=[...doc.images];
+  results.push({url:item.url,depth:item.depth,status:response.status,error:"",title,description,canonical,noindex,indexable:response.ok&&!noindex,h1:h1.length,h1Text:h1.slice(0,2).join(" | "),links:links.length,internal,external,missingAlt:imgs.filter(i=>!i.hasAttribute("alt")).length,images:imgs.length,viewport:!!doc.querySelector('meta[name="viewport"]'),lang:!!doc.documentElement.getAttribute("lang"),jsonLd:doc.querySelectorAll('script[type="application/ld+json"]').length});
+}
+async function crawlSite(){
+ if(running)return;try{let u=new URL(site());if(!/^https?:$/.test(u.protocol))throw 0}catch{status("Enter a valid HTTP or HTTPS website URL.","error");return}
+ running=true;stopRequested=false;results=[];queue=[];seen.clear();robotsRules=null;
+ let start=urlKey(site(),site());seen.set(start,{url:start,depth:0});queue.push({url:start,depth:0});renderResults();stats();status("Preparing crawl…","info");
+ await loadRobots();await addSitemapSeeds();
+ const limit=Math.max(1,Math.min(100000,Number(val("maxPages","10000"))||10000));
+ while(queue.length&&!stopRequested&&results.length<limit){
+   const item=queue.shift();
+   if(!allowed(item.url)){results.push({url:item.url,depth:item.depth,status:0,error:"Blocked by robots.txt"});stats();renderResults();continue}
+   await crawlOne(item);stats();renderResults();
+   await sleep(Math.max(0,Math.min(10000,Number(val("delay","0"))||0)));
+ }
+ running=false;
+ status(stopRequested?"Crawl stopped. "+results.length+" page(s) analyzed.":results.length>=limit&&queue.length?"Safety limit reached ("+limit+" pages).":"Crawl complete. "+results.length+" page(s) analyzed.",stopRequested||queue.length?"warn":"good");
+ useCrawledPages();renderPages();updateAll();validate();
+}
+function stopCrawl(){if(running){stopRequested=true;status("Stopping after the current request…","warn")}}
+function renderResults(){
+ const body=$("crawlRows");body.innerHTML="";
+ for(const r of results){let tr=document.createElement("tr"),ok=r.status>=200&&r.status<400&&!r.error;
+ const cell=x=>"<td>"+x+"</td>";
+ tr.innerHTML=cell('<span class="url">'+esc(r.url)+'</span>')+cell('<span class="'+(ok?"ok":"bad")+'">'+esc(r.error||r.status)+'</span>')+cell(r.depth)+cell(r.title?esc(r.title):'<span class="bad">Missing</span>')+cell(r.description?esc(r.description):'<span class="bad">Missing</span>')+cell(r.canonical?esc(r.canonical):'<span class="bad">Missing</span>')+cell(r.noindex?'<span class="warntext">noindex</span>':r.indexable?'<span class="ok">indexable</span>':'—')+cell(r.h1===1?esc(r.h1Text):r.h1===0?'<span class="bad">Missing</span>':'<span class="warntext">'+r.h1+'</span>')+cell((r.links||0)+" ("+(r.internal||0)+" internal)");
+ body.appendChild(tr)}
+}
+function addPage(){pages.push({path:"/new-page",lastmod:"",changefreq:"monthly",priority:"0.5"});renderPages();updateAll()}
+function addCommon(){for(const p of [{path:"/",changefreq:"weekly",priority:"1.0"},{path:"/about",changefreq:"monthly",priority:"0.8"},{path:"/projects",changefreq:"weekly",priority:"0.8"},{path:"/contact",changefreq:"monthly",priority:"0.7"},{path:"/privacy",changefreq:"yearly",priority:"0.5"},{path:"/terms",changefreq:"yearly",priority:"0.5"}])if(!pages.some(x=>normPath(x.path)===normPath(p.path)))pages.push({...p,lastmod:""});renderPages();updateAll()}
+function normPath(p){p=String(p||"").trim();if(!p.startsWith("/"))p="/"+p;if(p.length>1)p=p.replace(/\/+$/,"");return p||"/"}
+function useCrawledPages(){let found=results.filter(r=>r.status>=200&&r.status<400&&!r.error&&htmlUrl(r.url)),arr=[];for(const r of found){let p=pathOf(r.url);if(!arr.some(x=>normPath(x.path)===normPath(p)))arr.push({path:p,lastmod:"",changefreq:p==="/"?"weekly":"monthly",priority:p==="/"?"1.0":r.depth<=1?"0.8":"0.5"})}arr.sort((a,b)=>a.path==="/"?-1:b.path==="/"?1:a.path.localeCompare(b.path));if(arr.length)pages=arr}
+function renderPages(){let body=$("pageRows");body.innerHTML="";pages.forEach((p,i)=>{let tr=document.createElement("tr");tr.innerHTML='<td><input data-i="'+i+'" data-k="path" value="'+esc(p.path)+'"></td><td><input type="date" data-i="'+i+'" data-k="lastmod" value="'+esc(p.lastmod)+'"></td><td><select data-i="'+i+'" data-k="changefreq">'+["always","hourly","daily","weekly","monthly","yearly","never"].map(x=>'<option '+(p.changefreq===x?"selected":"")+'>'+x+'</option>').join("")+'</select></td><td><input type="number" min="0" max="1" step=".1" data-i="'+i+'" data-k="priority" value="'+esc(p.priority)+'"></td><td><button class="danger" data-remove="'+i+'">Remove</button></td>';body.appendChild(tr)});body.querySelectorAll("[data-k]").forEach(el=>{let f=()=>{pages[+el.dataset.i][el.dataset.k]=el.value;updateAll()};el.addEventListener("input",f);el.addEventListener("change",f)});body.querySelectorAll("[data-remove]").forEach(el=>el.addEventListener("click",()=>{pages.splice(+el.dataset.remove,1);renderPages();updateAll()}))}
+function cfg(){return {site:site(),name:val("siteName","Website"),title:val("title"),desc:val("description"),author:val("author"),publisher:val("publisher"),canonical:val("canonical")||site()+"/",favicon:val("favicon"),ogImage:val("ogImage"),theme:val("theme","#0b0d10"),robots:val("robots","index, follow"),schema:val("schemaType","WebSite"),schemaDesc:val("schemaDescription"),search:checked("searchAction"),searchUrl:val("searchUrl"),ogTitle:val("ogTitle"),ogDesc:val("ogDescription"),card:val("twitterCard","summary_large_image"),twitter:val("twitterSite")}}
+function jsonLd(){let c=cfg(),o={"@context":"https://schema.org","@type":c.schema,"name":c.name,"url":c.site};if(c.schemaDesc||c.desc)o.description=c.schemaDesc||c.desc;if(c.author)o.author={"@type":"Person","name":c.author};if(c.publisher)o.publisher={"@type":"Organization","name":c.publisher};if(c.schema==="WebSite"&&c.search&&c.searchUrl)o.potentialAction={"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":c.searchUrl},"query-input":"required name=search_term_string"};return JSON.stringify(o,null,2)}
+function head(){let c=cfg(),t=c.title||c.name,d=c.desc,ot=c.ogTitle||t,od=c.ogDesc||d,lines=['<title>'+esc(t)+'</title>'];if(d)lines.push('<meta name="description" content="'+esc(d)+'">');if(c.robots)lines.push('<meta name="robots" content="'+esc(c.robots)+'">');if(c.canonical)lines.push('<link rel="canonical" href="'+esc(c.canonical)+'">');if(c.author)lines.push('<meta name="author" content="'+esc(c.author)+'">');if(c.theme)lines.push('<meta name="theme-color" content="'+esc(c.theme)+'">');if(c.favicon)lines.push('<link rel="icon" href="'+esc(c.favicon)+'">');lines.push("","<!-- Open Graph -->",'<meta property="og:type" content="website">','<meta property="og:title" content="'+esc(ot)+'">','<meta property="og:description" content="'+esc(od)+'">','<meta property="og:url" content="'+esc(c.canonical||c.site)+'">');if(c.name)lines.push('<meta property="og:site_name" content="'+esc(c.name)+'">');if(c.ogImage)lines.push('<meta property="og:image" content="'+esc(c.ogImage)+'">');lines.push("","<!-- X / Twitter -->",'<meta name="twitter:card" content="'+esc(c.card)+'">','<meta name="twitter:title" content="'+esc(ot)+'">','<meta name="twitter:description" content="'+esc(od)+'">');if(c.ogImage)lines.push('<meta name="twitter:image" content="'+esc(c.ogImage)+'">');if(c.twitter)lines.push('<meta name="twitter:site" content="'+esc(c.twitter)+'">');lines.push("","<!-- Structured Data -->",'<script type="application/ld+json">',jsonLd(),"<"+"/script>");return lines.join("\n")}
+function robotsTxt(){let c=cfg();return "User-agent: *\nAllow: /\n\nSitemap: "+c.site+"/sitemap.xml\n"}
+function sitemap(){let c=cfg(),urls=pages.map(p=>{let path=normPath(p.path),loc=c.site+(path==="/"?"/":path),a=["  <url>","    <loc>"+xml(loc)+"</loc>"];if(p.lastmod)a.push("    <lastmod>"+xml(p.lastmod)+"</lastmod>");if(p.changefreq)a.push("    <changefreq>"+xml(p.changefreq)+"</changefreq>");if(p.priority!=="")a.push("    <priority>"+xml(p.priority)+"</priority>");a.push("  </url>");return a.join("\n")});return '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'+urls.join("\n")+"\n</urlset>\n"}
+function manifest(){let c=cfg(),o={name:c.name,short_name:c.name,start_url:"/",display:"standalone",theme_color:c.theme,background_color:c.theme};if(c.favicon)o.icons=[{src:c.favicon,sizes:"any",type:"image/x-icon"}];return JSON.stringify(o,null,2)+"\n"}
+function llms(){let c=cfg(),s=["# "+c.name,"",c.desc,"","Website: "+c.site,"","## Pages",""];for(let p of pages){let path=normPath(p.path);s.push("- ["+path+"]("+c.site+(path==="/"?"/":path)+")")}return s.join("\n")+"\n"}
+function report(){let errors=[],warnings=[];for(let r of results){if(r.error){errors.push(r.url+" — "+r.error);continue}if(r.status>=400)errors.push(r.url+" — HTTP "+r.status);if(!r.title)warnings.push(r.url+" — missing title");else if(r.title.length>60)warnings.push(r.url+" — title longer than 60 characters");if(!r.description)warnings.push(r.url+" — missing meta description");else if(r.description.length>160)warnings.push(r.url+" — description longer than 160 characters");if(!r.canonical)warnings.push(r.url+" — missing canonical");if(r.h1===0)warnings.push(r.url+" — missing H1");if(r.h1>1)warnings.push(r.url+" — multiple H1 elements");if(!r.viewport)warnings.push(r.url+" — missing viewport");if(!r.lang)warnings.push(r.url+" — missing html lang");if(r.missingAlt)warnings.push(r.url+" — "+r.missingAlt+" image(s) missing alt")};return ["STATIC WEBSITE SEO REPORT","==========================","Generated: "+new Date().toISOString(),"Site: "+site(),"","Discovered URLs: "+seen.size,"Analyzed pages: "+results.length,"Sitemap entries: "+pages.length,"Maximum crawl depth: "+results.reduce((m,r)=>Math.max(m,r.depth||0),0),"","ERRORS","------",errors.join("\n")||"None","","WARNINGS","--------",warnings.join("\n")||"None"].join("\n")+"\n"}
+function updatePreview(){let c=cfg();$("previewUrl").textContent=c.site||"https://example.com";$("previewTitle").textContent=c.title||c.name||"Website title";$("previewDesc").textContent=c.desc||"Your page description will appear here."}
+function updateAll(){$("outRobots").textContent=robotsTxt();$("outSitemap").textContent=sitemap();$("outHead").textContent=head();$("outJson").textContent=jsonLd();updatePreview()}
+function download(name,text,mime="text/plain;charset=utf-8"){let blob=new Blob([text],{type:mime}),u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1200)}
+function downloadAll(){let files=[["robots.txt",robotsTxt(),"text/plain"],["sitemap.xml",sitemap(),"application/xml"],["seo-head.html",head(),"text/html"],["structured-data.json",jsonLd()+"\n","application/ld+json"],["site.webmanifest",manifest(),"application/manifest+json"],["llms.txt",llms(),"text/plain"],["seo-report.txt",report(),"text/plain"]];files.forEach((f,i)=>setTimeout(()=>download(f[0],f[1],f[2]),i*300));status("Generated all seven SEO files. Your browser may ask to allow multiple downloads.","good")}
+function validate(){let c=cfg(),e=[],w=[];try{let u=new URL(c.site);if(!/^https?:$/.test(u.protocol))throw 0}catch{e.push("Website URL must be a valid HTTP or HTTPS URL.")}if(!c.name)e.push("Site name is required.");if(!c.title)w.push("Default title is empty.");if(!c.desc)w.push("Default description is empty.");if(c.desc.length>160)w.push("Default description is longer than 160 characters.");if(!c.ogImage)w.push("Open Graph image is not configured.");if(!pages.length)e.push("Sitemap has no entries.");pages.forEach((p,i)=>{let n=Number(p.priority);if(!p.path)e.push("Sitemap row "+(i+1)+" has no path.");if(!Number.isFinite(n)||n<0||n>1)e.push("Sitemap row "+(i+1)+" priority must be between 0 and 1.")});$("validation").innerHTML=(e.length?'<div class="validation vbad"><b>Errors</b><ul>'+e.map(x=>"<li>"+esc(x)+"</li>").join("")+"</ul></div>":"")+(w.length?'<div class="validation vwarn"><b>Warnings</b><ul>'+w.map(x=>"<li>"+esc(x)+"</li>").join("")+"</ul></div>":"")+(e.length+w.length===0?'<div class="validation vgood">Configuration passed basic validation.</div>':"");return !e.length}
+async function copy(s){try{await navigator.clipboard.writeText(s)}catch{let t=document.createElement("textarea");t.value=s;document.body.appendChild(t);t.select();document.execCommand("copy");t.remove()}status("Copied to clipboard.","good")}
+function init(){
+ renderPages();renderResults();updateAll();validate();
+ $("crawlBtn").onclick=crawlSite;$("stopBtn").onclick=stopCrawl;
+ $("clearBtn").onclick=()=>{if(running){status("Stop the crawl before clearing.","warn");return}results=[];queue=[];seen.clear();pages=[];renderPages();renderResults();stats();$("progress").style.width="0";updateAll();validate();status("Results cleared.","good")};
+ $("addPage").onclick=addPage;$("addCommon").onclick=addCommon;
+ $("useCrawl").onclick=()=>{useCrawledPages();renderPages();updateAll();status("Sitemap populated from successful crawled HTML pages.","good")};
+ $("validateBtn").onclick=validate;
+ $("all").onclick=downloadAll;
+ $("dlRobots").onclick=()=>download("robots.txt",robotsTxt());
+ $("dlSitemap").onclick=()=>download("sitemap.xml",sitemap(),"application/xml");
+ $("dlHead").onclick=()=>download("seo-head.html",head(),"text/html");
+ $("dlJson").onclick=()=>download("structured-data.json",jsonLd()+"\n","application/ld+json");
+ $("dlManifest").onclick=()=>download("site.webmanifest",manifest(),"application/manifest+json");
+ $("dlLlms").onclick=()=>download("llms.txt",llms());
+ $("dlReport").onclick=()=>download("seo-report.txt",report());
+ $("copyRobots").onclick=()=>copy(robotsTxt());$("copySitemap").onclick=()=>copy(sitemap());$("copyHead").onclick=()=>copy(head());$("copyJson").onclick=()=>copy(jsonLd());
+ document.querySelectorAll("input:not([data-i]),textarea,select").forEach(el=>{el.addEventListener("input",updateAll);el.addEventListener("change",updateAll)});
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
     </script>
-
 </body>
 
 </html>
