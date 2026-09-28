@@ -758,15 +758,9 @@ function detectFormIssues(html) {
         }
 
         const hasIdLabel = attrs.id && labels.has(attrs.id);
-        const hasAria = Boolean(attrs['aria-label'] || attrs['aria-labelledby']);
+        const hasAriaLabel = Boolean(attrs["aria-label"] || attrs["aria-labelledby"]);
 
-        // Check if the input is wrapped inside a <label>...</label> block
-        // (Simple substring check or look for preceding open tag)
-        const tagIndex = match.index;
-        const precedingHtml = html.slice(Math.max(0, tagIndex - 300), tagIndex);
-        const hasParentLabel = /<label\b[^>]*>[^<]*$/i.test(precedingHtml);
-
-        if (!hasIdLabel && !hasAria && !hasParentLabel) {
+        if (!hasIdLabel && !hasAriaLabel) {
             issues.push({
                 element: match[1].toLowerCase(),
                 name: attrs.name || "",
