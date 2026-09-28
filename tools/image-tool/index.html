@@ -4,45 +4,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Manipulator</title>
+    <title>Image Tool</title>
     <style>
         * {
-            box-sizing: border-box;
+            box-sizing: border-box
         }
 
         body {
             margin: 0;
             font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
             background: #111;
-            color: #eee;
+            color: #eee
         }
 
         header {
             padding: 24px;
             text-align: center;
-            border-bottom: 1px solid #333;
+            border-bottom: 1px solid #333
         }
 
         header h1 {
-            margin: 0 0 8px;
+            margin: 0 0 8px
         }
 
         header p {
             margin: 0;
-            color: #aaa;
+            color: #aaa
         }
 
         main {
             max-width: 1200px;
             margin: auto;
-            padding: 24px;
+            padding: 24px
         }
 
         .tabs {
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
-            margin-bottom: 24px;
+            margin-bottom: 24px
         }
 
         .tabs button {
@@ -51,55 +51,55 @@
             border-radius: 6px;
             background: #1d1d1d;
             color: #eee;
-            cursor: pointer;
+            cursor: pointer
         }
 
         .tabs button.active {
             background: #fff;
-            color: #111;
+            color: #111
         }
 
         .tool {
-            display: none;
+            display: none
         }
 
         .tool.active {
-            display: block;
+            display: block
         }
 
         .grid {
             display: grid;
             grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-            gap: 20px;
+            gap: 20px
         }
 
         .card {
             padding: 20px;
             border: 1px solid #333;
             border-radius: 10px;
-            background: #181818;
+            background: #181818
         }
 
         .card h2 {
-            margin-top: 0;
+            margin-top: 0
         }
 
         label {
             display: block;
             margin: 14px 0 6px;
-            color: #ccc;
+            color: #ccc
         }
 
         input,
         select,
         textarea,
         button {
-            font: inherit;
+            font: inherit
         }
 
-        input[type="file"],
-        input[type="number"],
-        input[type="text"],
+        input[type=file],
+        input[type=number],
+        input[type=text],
         select,
         textarea {
             width: 100%;
@@ -107,28 +107,28 @@
             border: 1px solid #444;
             border-radius: 6px;
             background: #101010;
-            color: #eee;
+            color: #eee
         }
 
-        input[type="range"] {
-            width: 100%;
+        input[type=range] {
+            width: 100%
         }
 
-        input[type="color"] {
+        input[type=color] {
             width: 60px;
-            height: 40px;
+            height: 40px
         }
 
         textarea {
             resize: vertical;
-            font-family: Consolas, monospace;
+            font-family: Consolas, monospace
         }
 
         .actions {
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
-            margin-top: 18px;
+            margin-top: 18px
         }
 
         button {
@@ -137,21 +137,21 @@
             border-radius: 6px;
             background: #222;
             color: #eee;
-            cursor: pointer;
+            cursor: pointer
         }
 
         button:hover:not(:disabled) {
-            background: #333;
+            background: #333
         }
 
         button.primary {
             background: #fff;
-            color: #111;
+            color: #111
         }
 
         button:disabled {
             opacity: .45;
-            cursor: not-allowed;
+            cursor: not-allowed
         }
 
         .stat {
@@ -159,13 +159,13 @@
             padding: 10px;
             border-radius: 6px;
             background: #101010;
-            color: #aaa;
+            color: #aaa
         }
 
         .notice {
             margin-top: 14px;
             color: #999;
-            line-height: 1.5;
+            line-height: 1.5
         }
 
         .preview {
@@ -176,19 +176,15 @@
             padding: 16px;
             border: 1px dashed #444;
             border-radius: 8px;
-            background:
-                linear-gradient(45deg, #202020 25%, transparent 25%),
-                linear-gradient(-45deg, #202020 25%, transparent 25%),
-                linear-gradient(45deg, transparent 75%, #202020 75%),
-                linear-gradient(-45deg, transparent 75%, #202020 75%);
+            background: linear-gradient(45deg, #202020 25%, transparent 25%), linear-gradient(-45deg, #202020 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #202020 75%), linear-gradient(-45deg, transparent 75%, #202020 75%);
             background-size: 20px 20px;
-            background-position: 0 0, 0 10px, 10px -10px, -10px 0;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0
         }
 
         .preview img,
         .preview canvas {
             max-width: 100%;
-            max-height: 500px;
+            max-height: 500px
         }
 
         .icon-preview {
@@ -196,59 +192,55 @@
             flex-wrap: wrap;
             align-items: center;
             gap: 20px;
-            min-height: 200px;
+            min-height: 200px
         }
 
         .icon-preview div {
-            text-align: center;
+            text-align: center
         }
 
         .icon-preview img {
             display: block;
-            margin: 0 auto 6px;
-            image-rendering: auto;
+            margin: 0 auto 6px
         }
 
         .code-box {
             margin-top: 24px;
             padding-top: 20px;
-            border-top: 1px solid #333;
+            border-top: 1px solid #333
         }
 
         .code-box textarea {
             margin-top: 12px;
             min-height: 180px;
-            line-height: 1.5;
+            line-height: 1.5
         }
 
         .code-actions {
             display: flex;
             align-items: center;
             gap: 10px;
-            margin-top: 10px;
+            margin-top: 10px
         }
 
         .copy-status {
-            color: #999;
+            color: #999
         }
 
-        @media (max-width: 800px) {
+        @media(max-width:800px) {
             .grid {
-                grid-template-columns: 1fr;
+                grid-template-columns: 1fr
             }
         }
     </style>
 </head>
 
 <body>
-
     <header>
         <h1>xCONFLiCTiONx Image Manipulator</h1>
         <p>Crop, resize, convert, generate icons, and edit SVG graphics entirely in your browser.</p>
     </header>
-
     <main>
-
         <nav class="tabs">
             <button class="tab active" data-tool="crop">Crop &amp; Resize</button>
             <button class="tab" data-tool="ico">PNG → ICO</button>
@@ -256,1862 +248,141 @@
             <button class="tab" data-tool="exticon">Chrome Extension Icons</button>
             <button class="tab" data-tool="svgedit">SVG Generator / Editor</button>
         </nav>
-
-        <!-- CROP -->
         <section id="crop" class="tool active">
             <div class="grid">
-
                 <div class="card">
                     <h2>Crop &amp; Resize</h2>
-
-                    <label for="cropFile">Image</label>
-                    <input id="cropFile" type="file" accept="image/*">
-
-                    <label for="cw">Target width</label>
-                    <input id="cw" type="number" value="1200" min="1">
-
-                    <label for="ch">Target height</label>
-                    <input id="ch" type="number" value="630" min="1">
-
-                    <label>
-                        <input id="centerCrop" type="checkbox" checked>
-                        Center crop automatically
-                    </label>
-
-                    <label for="cropFormat">Output format</label>
-                    <select id="cropFormat">
-                        <option value="image/png">PNG</option>
-                        <option value="image/jpeg">JPEG</option>
-                        <option value="image/webp">WebP</option>
-                    </select>
-
-                    <label for="quality">
-                        Quality: <span id="qv">92%</span>
-                    </label>
-                    <input id="quality" type="range" min="1" max="100" value="92">
-
+                    <label for="cropFile">Image</label><input id="cropFile" type="file" accept="image/*"><label for="cw">Target width</label><input id="cw" type="number" value="1200" min="1"><label for="ch">Target height</label><input id="ch" type="number" value="630" min="1"><label><input id="centerCrop" type="checkbox" checked> Center crop automatically</label><label for="cropFormat">Output format</label><select id="cropFormat"><option value="image/png">PNG</option><option value="image/jpeg">JPEG</option><option value="image/webp">WebP</option></select><label for="quality">Quality: <span id="qv">92%</span></label><input id="quality" type="range" min="1" max="100" value="92">
                     <div class="actions">
-                        <button class="primary" id="cropRun">Crop &amp; Resize</button>
-                        <button id="cropDownload" disabled>Download</button>
+                        <button class="primary" id="cropRun">Crop &amp; Resize</button><button id="cropDownload" disabled>Download</button>
                     </div>
-
                     <div id="cropInfo" class="stat">No image loaded.</div>
                 </div>
-
                 <div class="card">
                     <h2>Preview</h2>
-                    <div class="preview" id="cropPreview">
-                        Upload an image to preview it here.
-                    </div>
+                    <div class="preview" id="cropPreview">Upload an image to preview it here.</div>
                 </div>
-
             </div>
         </section>
-
-        <!-- ICO -->
         <section id="ico" class="tool">
             <div class="grid">
-
                 <div class="card">
                     <h2>PNG → ICO</h2>
-
-                    <label for="icoFile">Source image</label>
-                    <input id="icoFile" type="file" accept="image/png,image/*">
-
-                    <label for="icoSizes">Icon sizes</label>
-                    <input id="icoSizes" type="text" value="16,32,48,64,128,256">
-
+                    <label for="icoFile">Source image</label><input id="icoFile" type="file" accept="image/png,image/*"><label for="icoSizes">Icon sizes</label><input id="icoSizes" type="text" value="16,32,48,64,128,256">
                     <div class="actions">
-                        <button class="primary" id="icoRun">
-                            Generate All Icons
-                        </button>
-
-                        <button id="icoZip" disabled>
-                            Download ZIP
-                        </button>
+                        <button class="primary" id="icoRun">Generate All Icons</button><button id="icoZip" disabled>Download ZIP</button>
                     </div>
-
-                    <div id="icoInfo" class="stat">
-                        No package generated.
-                    </div>
-
-                    <div class="notice">
-                        Generates one PNG for every requested size and one
-                        combined ICO containing every requested size.
-                        The ZIP contains all PNG files plus the ICO.
-                    </div>
+                    <div id="icoInfo" class="stat">No package generated.</div>
+                    <div class="notice">Generates one PNG for every requested size and one combined ICO containing every
+                        requested size. The ZIP contains all PNG files plus the ICO.</div>
                 </div>
-
                 <div class="card">
                     <h2>Preview</h2>
-
-                    <div class="preview">
-                        <img id="icoPreview" hidden alt="Icon preview">
-                    </div>
+                    <div class="preview"><img id="icoPreview" hidden alt="Icon preview"></div>
                 </div>
-
             </div>
         </section>
-
-        <!-- SVG TO PNG -->
         <section id="svgpng" class="tool">
             <div class="grid">
-
                 <div class="card">
                     <h2>SVG → PNG</h2>
-
-                    <label for="svgFile">SVG file</label>
-                    <input id="svgFile" type="file" accept=".svg,image/svg+xml">
-
-                    <label for="sw">Output width</label>
-                    <input id="sw" type="number" value="1200" min="1">
-
-                    <label for="sh">Output height</label>
-                    <input id="sh" type="number" value="630" min="1">
-
+                    <label for="svgFile">SVG file</label><input id="svgFile" type="file" accept=".svg,image/svg+xml"><label for="sw">Output width</label><input id="sw" type="number" value="1200" min="1"><label for="sh">Output height</label><input id="sh" type="number" value="630" min="1">
                     <div class="actions">
-                        <button class="primary" id="svgRun">
-                            Convert to PNG
-                        </button>
-
-                        <button id="svgDownload" disabled>
-                            Download
-                        </button>
+                        <button class="primary" id="svgRun">Convert to PNG</button><button id="svgDownload" disabled>Download</button>
                     </div>
-
-                    <div id="svgInfo" class="stat">
-                        No SVG loaded.
-                    </div>
-
-                    <div class="notice">
-                        The PNG preserves the SVG's original appearance and transparency.
-                    </div>
+                    <div id="svgInfo" class="stat">No SVG loaded.</div>
+                    <div class="notice">The PNG uses the SVG's native dimensions and preserves its original appearance
+                        and transparency.</div>
                 </div>
-
                 <div class="card">
                     <h2>Preview</h2>
-
-                    <div class="preview" id="svgPreview">
-                        Choose an SVG.
-                    </div>
+                    <div class="preview" id="svgPreview">Choose an SVG.</div>
                 </div>
-
             </div>
         </section>
-
-        <!-- CHROME EXTENSION -->
         <section id="exticon" class="tool">
             <div class="grid">
-
                 <div class="card">
                     <h2>Chrome Extension Icon Generator</h2>
-
-                    <label for="extFile">Source image</label>
-                    <input id="extFile" type="file" accept="image/*">
-
-                    <label for="extShape">Icon shape</label>
-                    <select id="extShape">
-                        <option value="square">Square</option>
-                        <option value="rounded">Rounded square</option>
-                        <option value="circle">Circle</option>
-                    </select>
-
-                    <label for="extPad">
-                        Padding: <span id="padVal">8%</span>
-                    </label>
-                    <input id="extPad" type="range" min="0" max="30" value="8">
-
+                    <label for="extFile">Source image</label><input id="extFile" type="file" accept="image/*"><label for="extShape">Icon shape</label><select id="extShape"><option value="square">Square</option><option value="rounded">Rounded square</option><option value="circle">Circle</option></select><label for="extPad">Padding: <span id="padVal">8%</span></label><input id="extPad" type="range" min="0" max="30" value="8">
                     <div class="actions">
-                        <button class="primary" id="extRun">
-                            Generate Icons
-                        </button>
-
-                        <button id="extDownload" disabled>
-                            Download ZIP
-                        </button>
+                        <button class="primary" id="extRun">Generate Icons</button><button id="extDownload" disabled>Download ZIP</button>
                     </div>
-
-                    <div class="notice">
-                        Creates the following Chrome extension icons:
-                        <br>
-                        icon128.png
-                        <br>
-                        icon16.png
-                        <br>
-                        icon32.png
-                        <br>
-                        icon48.png
-                        <br>
-                        All four icons are packaged into one ZIP file.
-                    </div>
+                    <div class="notice">Creates icon128.png, icon16.png, icon32.png, and icon48.png. All four icons are
+                        packaged into one ZIP file.</div>
                 </div>
-
                 <div class="card">
                     <h2>Generated Icons</h2>
-
                     <div id="extPreview" class="icon-preview"></div>
-
                     <div class="code-box">
-                        <div>
-                            Copy this code into your manifest.json file.
-                        </div>
-
-                        <div class="notice">
-                            After putting the icons folder into your project.
-                        </div>
-
-                        <textarea id="manifestCode" rows="8" readonly spellcheck="false">        "icons": {
+                        <div>Copy this code into your manifest.json file.</div>
+                        <div class="notice">After putting the icons folder into your project.</div><textarea id="manifestCode" rows="8" readonly spellcheck="false">        "icons": {
           "16": "icons/icon16.png",
           "32": "icons/icon32.png",
           "48": "icons/icon48.png",
           "128": "icons/icon128.png"
-        },
-        </textarea>
-
+        },</textarea>
                         <div class="code-actions">
-                            <button id="manifestCopy">Copy Code</button>
-                            <span id="manifestCopyStatus" class="copy-status" aria-live="polite"></span>
+                            <button id="manifestCopy">Copy Code</button><span id="manifestCopyStatus" class="copy-status" aria-live="polite"></span>
                         </div>
                     </div>
                 </div>
-
             </div>
         </section>
-
-        <!-- SVG EDITOR -->
         <section id="svgedit" class="tool">
             <div class="grid">
-
                 <div class="card">
                     <h2>SVG Generator / Editor</h2>
-
-                    <label for="ew">Canvas width</label>
-                    <input id="ew" type="number" value="512" min="1">
-
-                    <label for="eh">Canvas height</label>
-                    <input id="eh" type="number" value="512" min="1">
-
-                    <label for="ebg">Background</label>
-                    <input id="ebg" type="color" value="#ffffff">
-
-                    <label for="svgCode">SVG markup</label>
-                    <textarea id="svgCode" rows="18"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                    <label for="ew">Canvas width</label><input id="ew" type="number" value="512" min="1"><label for="eh">Canvas height</label><input id="eh" type="number" value="512" min="1"><label for="ebg">Background</label><input id="ebg" type="color" value="#ffffff"><label for="svgCode">SVG markup</label><textarea id="svgCode" rows="18"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
 <rect width="512" height="512" rx="72" fill="#5b42e8"/>
 <circle cx="256" cy="220" r="110" fill="#fff"/>
-<path d="M120 390 Q256 300 392 390"
-      fill="none"
-      stroke="#fff"
-      stroke-width="28"
-      stroke-linecap="round"/>
+<path d="M120 390 Q256 300 392 390" fill="none" stroke="#fff" stroke-width="28" stroke-linecap="round"/>
 </svg></textarea>
-
                     <div class="actions">
-                        <button class="primary" id="svgUpdate">
-                            Update Preview
-                        </button>
-
-                        <button id="svgSave">
-                            Download SVG
-                        </button>
+                        <button class="primary" id="svgUpdate">Update Preview</button><button id="svgSave">Download SVG</button>
                     </div>
                 </div>
-
                 <div class="card">
                     <h2>SVG Preview</h2>
-
                     <div class="preview" id="editPreview"></div>
                 </div>
-
             </div>
         </section>
-
     </main>
-
     <script>
         "use strict";
-
-        const $ = selector => document.querySelector(selector);
-
-        const state = {
-            cropImage: null,
-            cropBlob: null,
-            icoImage: null,
-            icoZip: null,
-            svgText: null,
-            svgBlob: null,
-            extImage: null,
-            extBlobs: [],
-            extZip: null
-        };
-
-
-        /* ---------------------------------------------------------
-           TABS
-        --------------------------------------------------------- */
-
-        document.querySelectorAll(".tab").forEach(button => {
-            button.addEventListener("click", () => {
-                document.querySelectorAll(".tab").forEach(tab => {
-                    tab.classList.remove("active");
-                });
-
-                document.querySelectorAll(".tool").forEach(tool => {
-                    tool.classList.remove("active");
-                });
-
-                button.classList.add("active");
-
-                const target =
-                    document.getElementById(button.dataset.tool);
-
-                if (target) {
-                    target.classList.add("active");
-                }
-            });
-        });
-
-
-        /* ---------------------------------------------------------
-           COMMON HELPERS
-        --------------------------------------------------------- */
-
-        function loadImage(file) {
-            return new Promise((resolve, reject) => {
-                const url = URL.createObjectURL(file);
-                const image = new Image();
-
-                image.onload = () => {
-                    URL.revokeObjectURL(url);
-                    resolve(image);
-                };
-
-                image.onerror = () => {
-                    URL.revokeObjectURL(url);
-                    reject(new Error("Unable to load image."));
-                };
-
-                image.src = url;
-            });
-        }
-
-
-        function canvasBlob(canvas, type, quality) {
-            return new Promise((resolve, reject) => {
-                canvas.toBlob(blob => {
-                    if (blob) {
-                        resolve(blob);
-                    } else {
-                        reject(new Error("Unable to create image."));
-                    }
-                }, type, quality);
-            });
-        }
-
-
-        function downloadBlob(blob, filename) {
-            if (!blob) {
-                return;
-            }
-
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement("a");
-
-            link.href = url;
-            link.download = filename;
-
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
-
-            setTimeout(() => {
-                URL.revokeObjectURL(url);
-            }, 1000);
-        }
-
-
-        function imageToCanvas(image, width, height, centerCrop) {
-            const canvas = document.createElement("canvas");
-
-            canvas.width = width;
-            canvas.height = height;
-
-            const ctx = canvas.getContext("2d");
-
-            if (!centerCrop) {
-                ctx.drawImage(image, 0, 0, width, height);
-                return canvas;
-            }
-
-            const sourceRatio = image.width / image.height;
-            const targetRatio = width / height;
-
-            let sourceWidth = image.width;
-            let sourceHeight = image.height;
-            let sourceX = 0;
-            let sourceY = 0;
-
-            if (sourceRatio > targetRatio) {
-                sourceWidth = image.height * targetRatio;
-                sourceX = (image.width - sourceWidth) / 2;
-            } else if (sourceRatio < targetRatio) {
-                sourceHeight = image.width / targetRatio;
-                sourceY = (image.height - sourceHeight) / 2;
-            }
-
-            ctx.imageSmoothingEnabled = true;
-            ctx.imageSmoothingQuality = "high";
-
-            ctx.drawImage(
-                image,
-                sourceX,
-                sourceY,
-                sourceWidth,
-                sourceHeight,
-                0,
-                0,
-                width,
-                height
-            );
-
-            return canvas;
-        }
-
-
-        /* ---------------------------------------------------------
-           CROP / RESIZE
-        --------------------------------------------------------- */
-
-        $("#quality").addEventListener("input", () => {
-            $("#qv").textContent =
-                $("#quality").value + "%";
-        });
-
-
-        $("#cropFile").addEventListener("change", async event => {
-            const file = event.target.files[0];
-
-            if (!file) {
-                return;
-            }
-
-            try {
-                state.cropImage =
-                    await loadImage(file);
-
-                $("#cropInfo").textContent =
-                    `Original: ${state.cropImage.width} × ${state.cropImage.height}px`;
-
-                const preview = $("#cropPreview");
-                preview.innerHTML = "";
-
-                const image =
-                    document.createElement("img");
-
-                image.src =
-                    URL.createObjectURL(file);
-
-                image.onload = () => {
-                    URL.revokeObjectURL(image.src);
-                };
-
-                preview.appendChild(image);
-            } catch (error) {
-                alert(error.message);
-            }
-        });
-
-
-        $("#cropRun").addEventListener("click", async () => {
-            if (!state.cropImage) {
-                alert("Choose an image first.");
-                return;
-            }
-
-            const width = Number($("#cw").value);
-            const height = Number($("#ch").value);
-            const format = $("#cropFormat").value;
-            const quality =
-                Number($("#quality").value) / 100;
-            const centerCrop =
-                $("#centerCrop").checked;
-
-            if (!Number.isInteger(width) || width < 1 ||
-                !Number.isInteger(height) || height < 1) {
-                alert("Enter valid dimensions.");
-                return;
-            }
-
-            try {
-                const canvas =
-                    imageToCanvas(
-                        state.cropImage,
-                        width,
-                        height,
-                        centerCrop
-                    );
-
-                state.cropBlob =
-                    await canvasBlob(
-                        canvas,
-                        format,
-                        quality
-                    );
-
-                const preview =
-                    $("#cropPreview");
-
-                preview.innerHTML = "";
-
-                const image =
-                    document.createElement("img");
-
-                image.src =
-                    URL.createObjectURL(
-                        state.cropBlob
-                    );
-
-                image.onload = () => {
-                    URL.revokeObjectURL(
-                        image.src
-                    );
-                };
-
-                preview.appendChild(image);
-
-                const extension =
-                    format === "image/jpeg"
-                        ? "jpg"
-                        : format.split("/")[1];
-
-                $("#cropInfo").textContent =
-                    `Output: ${width} × ${height}px • ${extension.toUpperCase()}`;
-
-                $("#cropDownload").disabled = false;
-            } catch (error) {
-                alert(error.message);
-            }
-        });
-
-
-        $("#cropDownload").addEventListener("click", () => {
-            if (!state.cropBlob) {
-                return;
-            }
-
-            const format =
-                $("#cropFormat").value;
-
-            const extension =
-                format === "image/jpeg"
-                    ? "jpg"
-                    : format.split("/")[1];
-
-            downloadBlob(
-                state.cropBlob,
-                `cropped-image.${extension}`
-            );
-        });
-
-
-        /* ---------------------------------------------------------
-           ICO GENERATION
-        --------------------------------------------------------- */
-
-        $("#icoFile").addEventListener("change", async event => {
-            const file = event.target.files[0];
-
-            if (!file) {
-                return;
-            }
-
-            try {
-                state.icoImage =
-                    await loadImage(file);
-
-                const preview =
-                    $("#icoPreview");
-
-                preview.hidden = false;
-
-                const oldUrl =
-                    preview.dataset.url;
-
-                if (oldUrl) {
-                    URL.revokeObjectURL(oldUrl);
-                }
-
-                const url =
-                    URL.createObjectURL(file);
-
-                preview.dataset.url = url;
-                preview.src = url;
-            } catch (error) {
-                alert(error.message);
-            }
-        });
-
-
-        function parseIconSizes(value) {
-            return [...new Set(
-                value
-                    .split(",")
-                    .map(value => Number(value.trim()))
-                    .filter(value =>
-                        Number.isInteger(value) &&
-                        value >= 16 &&
-                        value <= 256
-                    )
-            )];
-        }
-
-
-        async function createPngForSize(image, size) {
-            const canvas =
-                imageToCanvas(
-                    image,
-                    size,
-                    size,
-                    true
-                );
-
-            return canvasBlob(
-                canvas,
-                "image/png"
-            );
-        }
-
-
-        async function createIco(image, sizes) {
-            const entries = [];
-
-            /*
-                Preserve the exact order entered by the user.
-            */
-
-            for (const size of sizes) {
-                const png =
-                    await createPngForSize(
-                        image,
-                        size
-                    );
-
-                entries.push({
-                    size,
-                    data: new Uint8Array(
-                        await png.arrayBuffer()
-                    )
-                });
-            }
-
-            const headerSize = 6;
-            const directoryEntrySize = 16;
-
-            const imageDataSize =
-                entries.reduce(
-                    (total, entry) =>
-                        total + entry.data.length,
-                    0
-                );
-
-            const totalSize =
-                headerSize +
-                directoryEntrySize * entries.length +
-                imageDataSize;
-
-            const bytes =
-                new Uint8Array(totalSize);
-
-            const view =
-                new DataView(bytes.buffer);
-
-            view.setUint16(0, 0, true);
-            view.setUint16(2, 1, true);
-            view.setUint16(
-                4,
-                entries.length,
-                true
-            );
-
-            let directoryOffset = 6;
-
-            let imageOffset =
-                headerSize +
-                directoryEntrySize * entries.length;
-
-            for (const entry of entries) {
-                const sizeByte =
-                    entry.size === 256
-                        ? 0
-                        : entry.size;
-
-                bytes[directoryOffset] =
-                    sizeByte;
-
-                bytes[directoryOffset + 1] =
-                    sizeByte;
-
-                bytes[directoryOffset + 2] = 0;
-                bytes[directoryOffset + 3] = 0;
-
-                view.setUint16(
-                    directoryOffset + 4,
-                    1,
-                    true
-                );
-
-                view.setUint16(
-                    directoryOffset + 6,
-                    32,
-                    true
-                );
-
-                view.setUint32(
-                    directoryOffset + 8,
-                    entry.data.length,
-                    true
-                );
-
-                view.setUint32(
-                    directoryOffset + 12,
-                    imageOffset,
-                    true
-                );
-
-                bytes.set(
-                    entry.data,
-                    imageOffset
-                );
-
-                directoryOffset +=
-                    directoryEntrySize;
-
-                imageOffset +=
-                    entry.data.length;
-            }
-
-            return new Blob(
-                [bytes],
-                { type: "image/x-icon" }
-            );
-        }
-
-
-        /* ---------------------------------------------------------
-           ZIP CREATION
-        --------------------------------------------------------- */
-
-        function crc32(data) {
-            let crc = 0xffffffff;
-
-            for (const byte of data) {
-                crc ^= byte;
-
-                for (let i = 0; i < 8; i++) {
-                    if (crc & 1) {
-                        crc =
-                            (crc >>> 1) ^
-                            0xedb88320;
-                    } else {
-                        crc >>>= 1;
-                    }
-                }
-            }
-
-            return (
-                (crc ^ 0xffffffff) >>> 0
-            );
-        }
-
-
-        function writeUint16(
-            array,
-            offset,
-            value
-        ) {
-            new DataView(
-                array.buffer,
-                array.byteOffset + offset,
-                2
-            ).setUint16(
-                0,
-                value,
-                true
-            );
-        }
-
-
-        function writeUint32(
-            array,
-            offset,
-            value
-        ) {
-            new DataView(
-                array.buffer,
-                array.byteOffset + offset,
-                4
-            ).setUint32(
-                0,
-                value,
-                true
-            );
-        }
-
-
-        function createZip(files) {
-            const encoder =
-                new TextEncoder();
-
-            const localParts = [];
-            const centralParts = [];
-
-            let offset = 0;
-
-            for (const file of files) {
-                const name =
-                    encoder.encode(file.name);
-
-                const data = file.data;
-
-                const crc =
-                    crc32(data);
-
-                const local =
-                    new Uint8Array(
-                        30 + name.length
-                    );
-
-                writeUint32(
-                    local,
-                    0,
-                    0x04034b50
-                );
-
-                writeUint16(
-                    local,
-                    4,
-                    20
-                );
-
-                writeUint16(
-                    local,
-                    6,
-                    0
-                );
-
-                writeUint16(
-                    local,
-                    8,
-                    0
-                );
-
-                writeUint16(
-                    local,
-                    10,
-                    0
-                );
-
-                writeUint16(
-                    local,
-                    12,
-                    0
-                );
-
-                writeUint32(
-                    local,
-                    14,
-                    crc
-                );
-
-                writeUint32(
-                    local,
-                    18,
-                    data.length
-                );
-
-                writeUint32(
-                    local,
-                    22,
-                    data.length
-                );
-
-                writeUint16(
-                    local,
-                    26,
-                    name.length
-                );
-
-                writeUint16(
-                    local,
-                    28,
-                    0
-                );
-
-                local.set(name, 30);
-
-                localParts.push(local);
-                localParts.push(data);
-
-                const central =
-                    new Uint8Array(
-                        46 + name.length
-                    );
-
-                writeUint32(
-                    central,
-                    0,
-                    0x02014b50
-                );
-
-                writeUint16(
-                    central,
-                    4,
-                    20
-                );
-
-                writeUint16(
-                    central,
-                    6,
-                    20
-                );
-
-                writeUint16(
-                    central,
-                    8,
-                    0
-                );
-
-                writeUint16(
-                    central,
-                    10,
-                    0
-                );
-
-                writeUint16(
-                    central,
-                    12,
-                    0
-                );
-
-                writeUint16(
-                    central,
-                    14,
-                    0
-                );
-
-                writeUint32(
-                    central,
-                    16,
-                    crc
-                );
-
-                writeUint32(
-                    central,
-                    20,
-                    data.length
-                );
-
-                writeUint32(
-                    central,
-                    24,
-                    data.length
-                );
-
-                writeUint16(
-                    central,
-                    28,
-                    name.length
-                );
-
-                writeUint16(
-                    central,
-                    30,
-                    0
-                );
-
-                writeUint16(
-                    central,
-                    32,
-                    0
-                );
-
-                writeUint16(
-                    central,
-                    34,
-                    0
-                );
-
-                writeUint16(
-                    central,
-                    36,
-                    0
-                );
-
-                writeUint32(
-                    central,
-                    38,
-                    0
-                );
-
-                writeUint32(
-                    central,
-                    42,
-                    offset
-                );
-
-                central.set(name, 46);
-
-                centralParts.push(central);
-
-                offset +=
-                    local.length +
-                    data.length;
-            }
-
-            const centralOffset =
-                offset;
-
-            const centralSize =
-                centralParts.reduce(
-                    (total, part) =>
-                        total + part.length,
-                    0
-                );
-
-            const end =
-                new Uint8Array(22);
-
-            writeUint32(
-                end,
-                0,
-                0x06054b50
-            );
-
-            writeUint16(
-                end,
-                4,
-                0
-            );
-
-            writeUint16(
-                end,
-                6,
-                0
-            );
-
-            writeUint16(
-                end,
-                8,
-                files.length
-            );
-
-            writeUint16(
-                end,
-                10,
-                files.length
-            );
-
-            writeUint32(
-                end,
-                12,
-                centralSize
-            );
-
-            writeUint32(
-                end,
-                16,
-                centralOffset
-            );
-
-            writeUint16(
-                end,
-                20,
-                0
-            );
-
-            return new Blob(
-                [
-                    ...localParts,
-                    ...centralParts,
-                    end
-                ],
-                {
-                    type:
-                        "application/zip"
-                }
-            );
-        }
-
-
-        $("#icoRun").addEventListener(
-            "click",
-            async () => {
-                if (!state.icoImage) {
-                    alert(
-                        "Choose an image first."
-                    );
-                    return;
-                }
-
-                const sizes =
-                    parseIconSizes(
-                        $("#icoSizes").value
-                    );
-
-                if (!sizes.length) {
-                    alert(
-                        "Enter valid icon sizes between 16 and 256."
-                    );
-                    return;
-                }
-
-                try {
-                    const files = [];
-
-                    for (const size of sizes) {
-                        const png =
-                            await createPngForSize(
-                                state.icoImage,
-                                size
-                            );
-
-                        files.push({
-                            name:
-                                `icon-${size}x${size}.png`,
-                            data:
-                                new Uint8Array(
-                                    await png.arrayBuffer()
-                                )
-                        });
-                    }
-
-                    const icoBlob =
-                        await createIco(
-                            state.icoImage,
-                            sizes
-                        );
-
-                    files.push({
-                        name: "icon.ico",
-                        data:
-                            new Uint8Array(
-                                await icoBlob.arrayBuffer()
-                            )
-                    });
-
-                    state.icoZip =
-                        createZip(files);
-
-                    $("#icoInfo").textContent =
-                        `Generated ${sizes.length} PNGs + 1 combined ICO. ` +
-                        `ZIP contains ${files.length} files.`;
-
-                    $("#icoZip").disabled = false;
-
-                    downloadBlob(
-                        state.icoZip,
-                        "icon-package.zip"
-                    );
-
-                } catch (error) {
-                    console.error(error);
-
-                    alert(
-                        "Icon generation failed: " +
-                        error.message
-                    );
-                }
-            }
-        );
-
-
-        $("#icoZip").addEventListener(
-            "click",
-            () => {
-                if (!state.icoZip) {
-                    return;
-                }
-
-                downloadBlob(
-                    state.icoZip,
-                    "icon-package.zip"
-                );
-            }
-        );
-
-
-        /* ---------------------------------------------------------
-           SVG → PNG
-        --------------------------------------------------------- */
-
-        $("#svgFile").addEventListener(
-            "change",
-            async event => {
-                const file =
-                    event.target.files[0];
-
-                if (!file) {
-                    return;
-                }
-
-                try {
-                    state.svgText =
-                        await file.text();
-
-                    const blob =
-                        new Blob(
-                            [state.svgText],
-                            {
-                                type:
-                                    "image/svg+xml"
-                            }
-                        );
-
-                    const url =
-                        URL.createObjectURL(blob);
-
-                    const image =
-                        new Image();
-
-                    image.onload = () => {
-                        URL.revokeObjectURL(url);
-
-                        $("#svgPreview")
-                            .innerHTML = "";
-
-                        $("#svgPreview")
-                            .appendChild(image);
-                    };
-
-                    image.onerror = () => {
-                        URL.revokeObjectURL(url);
-
-                        alert(
-                            "Unable to render SVG."
-                        );
-                    };
-
-                    image.src = url;
-
-                    $("#svgInfo").textContent =
-                        "SVG loaded.";
-
-                } catch (error) {
-                    alert(error.message);
-                }
-            }
-        );
-
-
-        $("#svgRun").addEventListener(
-            "click",
-            async () => {
-                if (!state.svgText) {
-                    alert(
-                        "Choose an SVG first."
-                    );
-                    return;
-                }
-
-                const width =
-                    Number($("#sw").value);
-
-                const height =
-                    Number($("#sh").value);
-
-                if (
-                    !Number.isInteger(width) ||
-                    width < 1 ||
-                    !Number.isInteger(height) ||
-                    height < 1
-                ) {
-                    alert(
-                        "Enter valid dimensions."
-                    );
-                    return;
-                }
-
-                /*
-                    IMPORTANT:
-
-                    Do NOT fill the canvas with a background
-                    color. A fresh canvas is transparent, which
-                    preserves the SVG's transparency exactly.
-                */
-
-                const canvas =
-                    document.createElement(
-                        "canvas"
-                    );
-
-                canvas.width = width;
-                canvas.height = height;
-
-                const ctx =
-                    canvas.getContext("2d");
-
-                ctx.clearRect(
-                    0,
-                    0,
-                    width,
-                    height
-                );
-
-                const svgBlob =
-                    new Blob(
-                        [state.svgText],
-                        {
-                            type:
-                                "image/svg+xml"
-                        }
-                    );
-
-                const url =
-                    URL.createObjectURL(
-                        svgBlob
-                    );
-
-                const image =
-                    new Image();
-
-                image.onload =
-                    async () => {
-                        try {
-                            ctx.clearRect(
-                                0,
-                                0,
-                                width,
-                                height
-                            );
-
-                            ctx.drawImage(
-                                image,
-                                0,
-                                0,
-                                width,
-                                height
-                            );
-
-                            URL.revokeObjectURL(
-                                url
-                            );
-
-                            state.svgBlob =
-                                await canvasBlob(
-                                    canvas,
-                                    "image/png"
-                                );
-
-                            $("#svgPreview")
-                                .innerHTML = "";
-
-                            const preview =
-                                document.createElement(
-                                    "img"
-                                );
-
-                            preview.src =
-                                URL.createObjectURL(
-                                    state.svgBlob
-                                );
-
-                            preview.onload = () => {
-                                URL.revokeObjectURL(
-                                    preview.src
-                                );
-                            };
-
-                            $("#svgPreview")
-                                .appendChild(
-                                    preview
-                                );
-
-                            $("#svgDownload")
-                                .disabled = false;
-
-                            $("#svgInfo")
-                                .textContent =
-                                `PNG: ${width} × ${height}px • Transparent background`;
-
-                        } catch (error) {
-                            alert(
-                                error.message
-                            );
-                        }
-                    };
-
-                image.onerror = () => {
-                    URL.revokeObjectURL(url);
-
-                    alert(
-                        "Unable to render SVG."
-                    );
-                };
-
-                image.src = url;
-            }
-        );
-
-
-        $("#svgDownload").addEventListener(
-            "click",
-            () => {
-                if (!state.svgBlob) {
-                    return;
-                }
-
-                downloadBlob(
-                    state.svgBlob,
-                    "converted.png"
-                );
-            }
-        );
-
-
-        /* ---------------------------------------------------------
-           CHROME EXTENSION ICONS
-        --------------------------------------------------------- */
-
-        $("#extPad").addEventListener(
-            "input",
-            () => {
-                $("#padVal").textContent =
-                    $("#extPad").value + "%";
-            }
-        );
-
-
-        $("#extFile").addEventListener(
-            "change",
-            async event => {
-                const file =
-                    event.target.files[0];
-
-                if (!file) {
-                    return;
-                }
-
-                try {
-                    state.extImage =
-                        await loadImage(file);
-
-                    state.extZip = null;
-
-                    $("#extDownload")
-                        .disabled = true;
-
-                } catch (error) {
-                    alert(error.message);
-                }
-            }
-        );
-
-
-        $("#extRun").addEventListener(
-            "click",
-            async () => {
-                if (!state.extImage) {
-                    alert(
-                        "Choose an image first."
-                    );
-                    return;
-                }
-
-                const sizes = [
-                    16,
-                    32,
-                    48,
-                    128
-                ];
-
-                const padding =
-                    Number(
-                        $("#extPad").value
-                    ) / 100;
-
-                const shape =
-                    $("#extShape").value;
-
-                const preview =
-                    $("#extPreview");
-
-                preview.innerHTML = "";
-
-                state.extBlobs = [];
-                state.extZip = null;
-
-                $("#extDownload")
-                    .disabled = true;
-
-                try {
-                    for (const size of sizes) {
-                        const canvas =
-                            document.createElement(
-                                "canvas"
-                            );
-
-                        canvas.width = size;
-                        canvas.height = size;
-
-                        const ctx =
-                            canvas.getContext(
-                                "2d"
-                            );
-
-                        const pad =
-                            size * padding;
-
-                        ctx.clearRect(
-                            0,
-                            0,
-                            size,
-                            size
-                        );
-
-                        if (
-                            shape ===
-                            "circle"
-                        ) {
-                            ctx.beginPath();
-
-                            ctx.arc(
-                                size / 2,
-                                size / 2,
-                                size / 2,
-                                0,
-                                Math.PI * 2
-                            );
-
-                            ctx.clip();
-
-                        } else if (
-                            shape ===
-                            "rounded"
-                        ) {
-                            ctx.beginPath();
-
-                            ctx.roundRect(
-                                0,
-                                0,
-                                size,
-                                size,
-                                size * 0.18
-                            );
-
-                            ctx.clip();
-                        }
-
-                        ctx.drawImage(
-                            state.extImage,
-                            pad,
-                            pad,
-                            size - pad * 2,
-                            size - pad * 2
-                        );
-
-                        const blob =
-                            await canvasBlob(
-                                canvas,
-                                "image/png"
-                            );
-
-                        const filename =
-                            `icon${size}.png`;
-
-                        state.extBlobs.push({
-                            size,
-                            blob,
-                            filename
-                        });
-
-                        const wrapper =
-                            document.createElement(
-                                "div"
-                            );
-
-                        const image =
-                            document.createElement(
-                                "img"
-                            );
-
-                        image.src =
-                            URL.createObjectURL(
-                                blob
-                            );
-
-                        image.width = size;
-                        image.height = size;
-
-                        const label =
-                            document.createElement(
-                                "div"
-                            );
-
-                        label.textContent =
-                            `${size} × ${size}`;
-
-                        wrapper.appendChild(
-                            image
-                        );
-
-                        wrapper.appendChild(
-                            label
-                        );
-
-                        preview.appendChild(
-                            wrapper
-                        );
-                    }
-
-                    const zipOrder = [
-                        128,
-                        16,
-                        32,
-                        48
-                    ];
-
-                    const zipFiles = [];
-
-                    for (
-                        const size of zipOrder
-                    ) {
-                        const item =
-                            state.extBlobs.find(
-                                entry =>
-                                    entry.size ===
-                                    size
-                            );
-
-                        if (!item) {
-                            throw new Error(
-                                `Missing ${size}x${size} icon.`
-                            );
-                        }
-
-                        zipFiles.push({
-                            name:
-                                `icon${size}.png`,
-                            data:
-                                new Uint8Array(
-                                    await item.blob.arrayBuffer()
-                                )
-                        });
-                    }
-
-                    state.extZip =
-                        createZip(zipFiles);
-
-                    $("#extDownload")
-                        .disabled = false;
-
-                } catch (error) {
-                    console.error(error);
-
-                    alert(
-                        "Icon generation failed: " +
-                        error.message
-                    );
-                }
-            }
-        );
-
-
-        $("#extDownload").addEventListener(
-            "click",
-            () => {
-                if (!state.extZip) {
-                    return;
-                }
-
-                downloadBlob(
-                    state.extZip,
-                    "chrome-extension-icons.zip"
-                );
-            }
-        );
-
-
-        /* ---------------------------------------------------------
-           MANIFEST CODE COPY
-        --------------------------------------------------------- */
-
-        $("#manifestCopy").addEventListener(
-            "click",
-            async () => {
-                const code =
-                    $("#manifestCode").value;
-
-                try {
-                    if (
-                        navigator.clipboard &&
-                        window.isSecureContext
-                    ) {
-                        await navigator.clipboard
-                            .writeText(code);
-                    } else {
-                        $("#manifestCode").focus();
-                        $("#manifestCode").select();
-
-                        document.execCommand(
-                            "copy"
-                        );
-                    }
-
-                    $("#manifestCopyStatus")
-                        .textContent =
-                        "Copied!";
-
-                } catch (error) {
-                    try {
-                        $("#manifestCode").focus();
-                        $("#manifestCode").select();
-
-                        document.execCommand(
-                            "copy"
-                        );
-
-                        $("#manifestCopyStatus")
-                            .textContent =
-                            "Copied!";
-                    } catch {
-                        $("#manifestCopyStatus")
-                            .textContent =
-                            "Copy failed.";
-                    }
-                }
-
-                setTimeout(() => {
-                    $("#manifestCopyStatus")
-                        .textContent = "";
-                }, 1500);
-            }
-        );
-
-
-        /* ---------------------------------------------------------
-           SVG EDITOR
-        --------------------------------------------------------- */
-
-        function validateSvg(svg) {
-            const document =
-                new DOMParser()
-                    .parseFromString(
-                        svg,
-                        "image/svg+xml"
-                    );
-
-            if (
-                document.querySelector(
-                    "parsererror"
-                ) ||
-                !document.documentElement ||
-                document.documentElement
-                    .tagName
-                    .toLowerCase() !==
-                    "svg"
-            ) {
-                throw new Error(
-                    "Invalid SVG."
-                );
-            }
-
-            return new XMLSerializer()
-                .serializeToString(
-                    document.documentElement
-                );
-        }
-
-
-        function updateSvgPreview() {
-            try {
-                const svg =
-                    validateSvg(
-                        $("#svgCode").value
-                    );
-
-                const blob =
-                    new Blob(
-                        [svg],
-                        {
-                            type:
-                                "image/svg+xml"
-                        }
-                    );
-
-                const url =
-                    URL.createObjectURL(blob);
-
-                const image =
-                    document.createElement(
-                        "img"
-                    );
-
-                image.src = url;
-
-                image.onload = () => {
-                    URL.revokeObjectURL(url);
-                };
-
-                image.onerror = () => {
-                    URL.revokeObjectURL(url);
-
-                    alert(
-                        "Unable to render SVG."
-                    );
-                };
-
-                $("#editPreview")
-                    .innerHTML = "";
-
-                $("#editPreview")
-                    .appendChild(image);
-
-            } catch (error) {
-                alert(error.message);
-            }
-        }
-
-
-        $("#svgUpdate").addEventListener(
-            "click",
-            updateSvgPreview
-        );
-
-
-        $("#svgSave").addEventListener(
-            "click",
-            () => {
-                try {
-                    const svg =
-                        validateSvg(
-                            $("#svgCode").value
-                        );
-
-                    const blob =
-                        new Blob(
-                            [svg],
-                            {
-                                type:
-                                    "image/svg+xml"
-                            }
-                        );
-
-                    downloadBlob(
-                        blob,
-                        "graphic.svg"
-                    );
-
-                } catch (error) {
-                    alert(error.message);
-                }
-            }
-        );
-
-
-        /* Initial SVG preview */
-        updateSvgPreview();
-
+const $=s=>document.querySelector(s);
+const state={cropImage:null,cropBlob:null,icoImage:null,icoZip:null,svgText:null,svgBlob:null,extImage:null,extBlobs:[],extZip:null};
+document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));document.querySelectorAll(".tool").forEach(x=>x.classList.remove("active"));b.classList.add("active");document.getElementById(b.dataset.tool)?.classList.add("active")}));
+function loadImage(file){return new Promise((resolve,reject)=>{const u=URL.createObjectURL(file),i=new Image();i.onload=()=>{URL.revokeObjectURL(u);resolve(i)};i.onerror=()=>{URL.revokeObjectURL(u);reject(new Error("Unable to load image."))};i.src=u})}
+function canvasBlob(c,type,q){return new Promise((resolve,reject)=>c.toBlob(b=>b?resolve(b):reject(new Error("Unable to create image.")),type,q))}
+function downloadBlob(b,n){if(!b)return;const u=URL.createObjectURL(b),a=document.createElement("a");a.href=u;a.download=n;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1000)}
+function imageToCanvas(i,w,h,crop){const c=document.createElement("canvas");c.width=w;c.height=h;const x=c.getContext("2d");if(!crop){x.drawImage(i,0,0,w,h);return c}const sr=i.width/i.height,tr=w/h;let sw=i.width,sh=i.height,sx=0,sy=0;if(sr>tr){sw=i.height*tr;sx=(i.width-sw)/2}else if(sr<tr){sh=i.width/tr;sy=(i.height-sh)/2}x.imageSmoothingEnabled=true;x.imageSmoothingQuality="high";x.drawImage(i,sx,sy,sw,sh,0,0,w,h);return c}
+$("#quality").addEventListener("input",()=>$("#qv").textContent=$("#quality").value+"%");
+$("#cropFile").addEventListener("change",async e=>{const f=e.target.files[0];if(!f)return;try{state.cropImage=await loadImage(f);$("#cropInfo").textContent=`Original: ${state.cropImage.width} × ${state.cropImage.height}px`;const p=$("#cropPreview");p.innerHTML="";const i=document.createElement("img"),u=URL.createObjectURL(f);i.src=u;i.onload=()=>URL.revokeObjectURL(u);p.appendChild(i)}catch(err){alert(err.message)}});
+$("#cropRun").addEventListener("click",async()=>{if(!state.cropImage)return alert("Choose an image first.");const w=Number($("#cw").value),h=Number($("#ch").value),f=$("#cropFormat").value,q=Number($("#quality").value)/100;if(!Number.isInteger(w)||w<1||!Number.isInteger(h)||h<1)return alert("Enter valid dimensions.");try{state.cropBlob=await canvasBlob(imageToCanvas(state.cropImage,w,h,$("#centerCrop").checked),f,q);const p=$("#cropPreview");p.innerHTML="";const i=document.createElement("img"),u=URL.createObjectURL(state.cropBlob);i.src=u;i.onload=()=>URL.revokeObjectURL(u);p.appendChild(i);const ext=f==="image/jpeg"?"jpg":f.split("/")[1];$("#cropInfo").textContent=`Output: ${w} × ${h}px • ${ext.toUpperCase()}`;$("#cropDownload").disabled=false}catch(err){alert(err.message)}});
+$("#cropDownload").addEventListener("click",()=>{const f=$("#cropFormat").value;if(state.cropBlob)downloadBlob(state.cropBlob,`cropped-image.${f==="image/jpeg"?"jpg":f.split("/")[1]}`)});
+$("#icoFile").addEventListener("change",async e=>{const f=e.target.files[0];if(!f)return;try{state.icoImage=await loadImage(f);const p=$("#icoPreview"),old=p.dataset.url;if(old)URL.revokeObjectURL(old);const u=URL.createObjectURL(f);p.dataset.url=u;p.hidden=false;p.src=u}catch(err){alert(err.message)}});
+function parseIconSizes(v){return[...new Set(v.split(",").map(Number).filter(x=>Number.isInteger(x)&&x>=16&&x<=256))]}
+async function createPngForSize(i,s){return canvasBlob(imageToCanvas(i,s,s,true),"image/png")}
+async function createIco(i,sizes){const es=[];for(const s of sizes){const p=await createPngForSize(i,s);es.push({size:s,data:new Uint8Array(await p.arrayBuffer())})}const bytes=new Uint8Array(6+16*es.length+es.reduce((n,e)=>n+e.data.length,0)),v=new DataView(bytes.buffer);v.setUint16(2,1,true);v.setUint16(4,es.length,true);let d=6,o=6+16*es.length;for(const e of es){const z=e.size===256?0:e.size;bytes[d]=z;bytes[d+1]=z;v.setUint16(d+4,1,true);v.setUint16(d+6,32,true);v.setUint32(d+8,e.data.length,true);v.setUint32(d+12,o,true);bytes.set(e.data,o);d+=16;o+=e.data.length}return new Blob([bytes],{type:"image/x-icon"})}
+function crc32(data){let c=0xffffffff;for(const b of data){c^=b;for(let i=0;i<8;i++)c=c&1?(c>>>1)^0xedb88320:c>>>1}return(c^0xffffffff)>>>0}
+function w16(a,o,v){new DataView(a.buffer,a.byteOffset+o,2).setUint16(0,v,true)}function w32(a,o,v){new DataView(a.buffer,a.byteOffset+o,4).setUint32(0,v,true)}
+function createZip(files){const enc=new TextEncoder(),locals=[],centrals=[];let off=0;for(const f of files){const n=enc.encode(f.name),d=f.data,c=crc32(d),l=new Uint8Array(30+n.length);w32(l,0,0x04034b50);w16(l,4,20);w32(l,14,c);w32(l,18,d.length);w32(l,22,d.length);w16(l,26,n.length);l.set(n,30);locals.push(l,d);const z=new Uint8Array(46+n.length);w32(z,0,0x02014b50);w16(z,4,20);w16(z,6,20);w32(z,16,c);w32(z,20,d.length);w32(z,24,d.length);w16(z,28,n.length);w32(z,42,off);z.set(n,46);centrals.push(z);off+=l.length+d.length}const end=new Uint8Array(22);w32(end,0,0x06054b50);w16(end,8,files.length);w16(end,10,files.length);const cs=centrals.reduce((n,x)=>n+x.length,0);w32(end,12,cs);w32(end,16,off);return new Blob([...locals,...centrals,end],{type:"application/zip"})}
+$("#icoRun").addEventListener("click",async()=>{if(!state.icoImage)return alert("Choose an image first.");const sizes=parseIconSizes($("#icoSizes").value);if(!sizes.length)return alert("Enter valid icon sizes between 16 and 256.");try{const files=[];for(const s of sizes){const p=await createPngForSize(state.icoImage,s);files.push({name:`icon-${s}x${s}.png`,data:new Uint8Array(await p.arrayBuffer())})}const ico=await createIco(state.icoImage,sizes);files.push({name:"icon.ico",data:new Uint8Array(await ico.arrayBuffer())});state.icoZip=createZip(files);$("#icoInfo").textContent=`Generated ${sizes.length} PNGs + 1 combined ICO. ZIP contains ${files.length} files.`;$("#icoZip").disabled=false;downloadBlob(state.icoZip,"icon-package.zip")}catch(err){alert("Icon generation failed: "+err.message)}});$("#icoZip").addEventListener("click",()=>state.icoZip&&downloadBlob(state.icoZip,"icon-package.zip"));
+
+/* SVG → PNG: detect native SVG size, put it in the fields, and render at exactly that size. */
+function getSvgDimensions(text){const doc=new DOMParser().parseFromString(text,"image/svg+xml");if(doc.querySelector("parsererror")||!doc.documentElement||doc.documentElement.tagName.toLowerCase()!=="svg")return null;const svg=doc.documentElement;const parseLen=v=>{if(!v)return null;const m=String(v).trim().match(/^([0-9]+(?:\.[0-9]+)?)(?:px)?$/i);if(!m)return null;const n=Number(m[1]);return Number.isFinite(n)&&n>0?n:null};let w=parseLen(svg.getAttribute("width")),h=parseLen(svg.getAttribute("height"));const vb=svg.getAttribute("viewBox");if(vb){const p=vb.trim().split(/[\s,]+/).map(Number);if(p.length===4&&p.every(Number.isFinite)&&p[2]>0&&p[3]>0){if(!(w>0))w=p[2];if(!(h>0))h=p[3]}}if(!(w>0)||!(h>0))return null;return{width:Math.max(1,Math.round(w)),height:Math.max(1,Math.round(h))}}
+$("#svgFile").addEventListener("change",async e=>{const f=e.target.files[0];if(!f)return;try{state.svgText=await f.text();state.svgBlob=null;$("#svgDownload").disabled=true;const d=getSvgDimensions(state.svgText);if(d){$("#sw").value=d.width;$("#sh").value=d.height}const b=new Blob([state.svgText],{type:"image/svg+xml"}),u=URL.createObjectURL(b),i=new Image();i.onload=()=>{URL.revokeObjectURL(u);$("#svgPreview").innerHTML="";$("#svgPreview").appendChild(i)};i.onerror=()=>{URL.revokeObjectURL(u);alert("Unable to render SVG.")};i.src=u;$("#svgInfo").textContent=d?`SVG loaded • Native size: ${d.width} × ${d.height}px • PNG will use the same size`:"SVG loaded. Native dimensions could not be detected."}catch(err){alert(err.message)}});
+$("#svgRun").addEventListener("click",async()=>{if(!state.svgText)return alert("Choose an SVG first.");const w=Number($("#sw").value),h=Number($("#sh").value);if(!Number.isInteger(w)||w<1||!Number.isInteger(h)||h<1)return alert("Enter valid dimensions.");const c=document.createElement("canvas");c.width=w;c.height=h;const x=c.getContext("2d");x.clearRect(0,0,w,h);const b=new Blob([state.svgText],{type:"image/svg+xml"}),u=URL.createObjectURL(b),i=new Image();i.onload=async()=>{try{x.clearRect(0,0,w,h);x.drawImage(i,0,0,w,h);URL.revokeObjectURL(u);state.svgBlob=await canvasBlob(c,"image/png");$("#svgPreview").innerHTML="";const p=document.createElement("img"),pu=URL.createObjectURL(state.svgBlob);p.src=pu;p.onload=()=>URL.revokeObjectURL(pu);$("#svgPreview").appendChild(p);$("#svgDownload").disabled=false;$("#svgInfo").textContent=`PNG: ${w} × ${h}px • Same dimensions as SVG • Transparent background`}catch(err){URL.revokeObjectURL(u);alert(err.message)}};i.onerror=()=>{URL.revokeObjectURL(u);alert("Unable to render SVG.")};i.src=u});$("#svgDownload").addEventListener("click",()=>state.svgBlob&&downloadBlob(state.svgBlob,"converted.png"));
+
+$("#extPad").addEventListener("input",()=>$("#padVal").textContent=$("#extPad").value+"%");$("#extFile").addEventListener("change",async e=>{const f=e.target.files[0];if(!f)return;try{state.extImage=await loadImage(f);state.extZip=null;$("#extDownload").disabled=true}catch(err){alert(err.message)}});
+$("#extRun").addEventListener("click",async()=>{if(!state.extImage)return alert("Choose an image first.");const sizes=[16,32,48,128],pad=Number($("#extPad").value)/100,shape=$("#extShape").value,p=$("#extPreview");p.innerHTML="";state.extBlobs=[];state.extZip=null;$("#extDownload").disabled=true;try{for(const s of sizes){const c=document.createElement("canvas");c.width=s;c.height=s;const x=c.getContext("2d"),d=s*pad;x.clearRect(0,0,s,s);if(shape==="circle"){x.beginPath();x.arc(s/2,s/2,s/2,0,Math.PI*2);x.clip()}else if(shape==="rounded"){x.beginPath();x.roundRect(0,0,s,s,s*.18);x.clip()}x.drawImage(state.extImage,d,d,s-d*2,s-d*2);const b=await canvasBlob(c,"image/png");state.extBlobs.push({size:s,blob:b,filename:`icon${s}.png`});const wrap=document.createElement("div"),im=document.createElement("img"),lab=document.createElement("div");im.src=URL.createObjectURL(b);im.width=s;im.height=s;lab.textContent=`${s} × ${s}`;wrap.append(im,lab);p.appendChild(wrap)}const files=[];for(const s of [128,16,32,48]){const it=state.extBlobs.find(x=>x.size===s);files.push({name:`icon${s}.png`,data:new Uint8Array(await it.blob.arrayBuffer())})}state.extZip=createZip(files);$("#extDownload").disabled=false}catch(err){alert("Icon generation failed: "+err.message)}});$("#extDownload").addEventListener("click",()=>state.extZip&&downloadBlob(state.extZip,"chrome-extension-icons.zip"));
+$("#manifestCopy").addEventListener("click",async()=>{const code=$("#manifestCode").value;try{if(navigator.clipboard&&window.isSecureContext)await navigator.clipboard.writeText(code);else{$("#manifestCode").focus();$("#manifestCode").select();document.execCommand("copy")}$("#manifestCopyStatus").textContent="Copied!"}catch{$("#manifestCopyStatus").textContent="Copy failed."}setTimeout(()=>$("#manifestCopyStatus").textContent="",1500)});
+function validateSvg(s){const d=new DOMParser().parseFromString(s,"image/svg+xml");if(d.querySelector("parsererror")||!d.documentElement||d.documentElement.tagName.toLowerCase()!=="svg")throw new Error("Invalid SVG.");return new XMLSerializer().serializeToString(d.documentElement)}
+function updateSvgPreview(){try{const s=validateSvg($("#svgCode").value),b=new Blob([s],{type:"image/svg+xml"}),u=URL.createObjectURL(b),i=document.createElement("img");i.src=u;i.onload=()=>URL.revokeObjectURL(u);i.onerror=()=>{URL.revokeObjectURL(u);alert("Unable to render SVG.")};$("#editPreview").innerHTML="";$("#editPreview").appendChild(i)}catch(err){alert(err.message)}}
+$("#svgUpdate").addEventListener("click",updateSvgPreview);$("#svgSave").addEventListener("click",()=>{try{downloadBlob(new Blob([validateSvg($("#svgCode").value)],{type:"image/svg+xml"}),"graphic.svg")}catch(err){alert(err.message)}});updateSvgPreview();
     </script>
-
 </body>
 
 </html>
