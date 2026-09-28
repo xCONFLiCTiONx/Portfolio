@@ -1627,3 +1627,24 @@ export default {
         );
     }
 };
+
+function getSourceLocation(htmlString, matchIndex) {
+    if (matchIndex === undefined || matchIndex < 0) {
+        return { line: null, snippet: null };
+    }
+
+    // Split the raw HTML into individual lines
+    const lines = htmlString.split(/\r?\n/);
+
+    // Count how many newlines appear before the match index to find the line number
+    const subString = htmlString.substring(0, matchIndex);
+    const lineNumber = subString.split(/\r?\n/).length;
+
+    // Grab the exact text of that line, trimmed for clean reporting
+    const lineText = lines[lineNumber - 1] ? lines[lineNumber - 1].trim() : "";
+
+    return {
+        line: lineNumber,
+        snippet: lineText
+    };
+}
