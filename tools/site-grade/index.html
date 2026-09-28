@@ -1,826 +1,842 @@
-﻿<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>SiteGrade ΓÇö Website Audit | xCONFLiCTiONx</title>
-    <meta name="description" id="meta-description-js" content="Audit public websites for security headers, privacy signals, performance, SEO, configuration, and accessibility.">
-    <meta name="portfolio-tool-id" content="site-grade">
-    <link rel="canonical" href="https://xconflictionx.cc/tools/site-grade.html" />
-    <meta name="theme-color" content="#0b0d10">
-    <link rel="stylesheet" href="../../css/main.css">
-    <link rel="icon" id="favicon-js" href="../../favicon.ico" type="image/x-icon">
+    <meta
+      name="description"
+      id="meta-description-js"
+      content="Audit public websites for security headers, privacy signals, performance, SEO, configuration, and accessibility."
+    />
+    <meta name="portfolio-tool-id" content="site-grade" />
+    <link
+      rel="canonical"
+      href="https://xconflictionx.cc/tools/site-grade.html"
+    />
+    <meta name="theme-color" content="#0b0d10" />
+    <link rel="stylesheet" href="../../css/main.css" />
+    <link
+      rel="icon"
+      id="favicon-js"
+      href="../../favicon.ico"
+      type="image/x-icon"
+    />
 
     <!-- Open Graph / Social Metadata -->
-    <meta property="og:type" content="website">
-    <meta property="og:title" content="SiteGrade ΓÇö Website Audit | xCONFLiCTiONx">
-    <meta property="og:description" content="Audit public websites for security headers, privacy signals, performance, SEO, configuration, and accessibility.">
-    <meta property="og:url" content="https://xconflictionx.cc/tools/site-grade.html">
-    <meta property="og:site_name" content="xCONFLiCTiONx">
-    <meta property="og:image" content="https://xconflictionx.cc/android-chrome-256x256.png">
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:title"
+      content="SiteGrade ΓÇö Website Audit | xCONFLiCTiONx"
+    />
+    <meta
+      property="og:description"
+      content="Audit public websites for security headers, privacy signals, performance, SEO, configuration, and accessibility."
+    />
+    <meta
+      property="og:url"
+      content="https://xconflictionx.cc/tools/site-grade.html"
+    />
+    <meta property="og:site_name" content="xCONFLiCTiONx" />
+    <meta
+      property="og:image"
+      content="https://xconflictionx.cc/android-chrome-256x256.png"
+    />
 
     <!-- X / Twitter -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="SiteGrade ΓÇö Website Audit | xCONFLiCTiONx">
-    <meta name="twitter:description" content="Audit public websites for security headers, privacy signals, performance, SEO, configuration, and accessibility.">
-    <meta name="twitter:image" content="https://xconflictionx.cc/android-chrome-256x256.png">
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="SiteGrade ΓÇö Website Audit | xCONFLiCTiONx"
+    />
+    <meta
+      name="twitter:description"
+      content="Audit public websites for security headers, privacy signals, performance, SEO, configuration, and accessibility."
+    />
+    <meta
+      name="twitter:image"
+      content="https://xconflictionx.cc/android-chrome-256x256.png"
+    />
 
     <style>
-        :root {
-            color-scheme: light dark;
+      :root {
+        color-scheme: light dark;
 
-            --bg: light-dark(#f4f6fa, #0b1018);
-            --panel: light-dark(#ffffff, #121a25);
-            --panel2: light-dark(#f8fafc, #172130);
-            --text: light-dark(#172033, #edf2fa);
-            --muted: light-dark(#64748b, #9ba9bc);
-            --line: light-dark(#e3e8f0, #263244);
+        --bg: light-dark(#f4f6fa, #0b1018);
+        --panel: light-dark(#ffffff, #121a25);
+        --panel2: light-dark(#f8fafc, #172130);
+        --text: light-dark(#172033, #edf2fa);
+        --muted: light-dark(#64748b, #9ba9bc);
+        --line: light-dark(#e3e8f0, #263244);
 
-            --accent: light-dark(#635bdb, #a59dff);
-            --green: light-dark(#16845b, #53d6a1);
-            --amber: light-dark(#b7791f, #f4c46b);
-            --red: light-dark(#c53030, #ff7777);
-        }
+        --accent: light-dark(#635bdb, #a59dff);
+        --green: light-dark(#16845b, #53d6a1);
+        --amber: light-dark(#b7791f, #f4c46b);
+        --red: light-dark(#c53030, #ff7777);
+      }
 
-        * {
-            box-sizing: border-box;
-        }
+      * {
+        box-sizing: border-box;
+      }
 
-        body {
-            margin: 0;
-            background: var(--bg);
-            color: var(--text);
-            font: 15px/1.5 Inter, ui-sans-serif, system-ui, -apple-system,
-                BlinkMacSystemFont, "Segoe UI", sans-serif;
-        }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font: 15px/1.5 Inter, ui-sans-serif, system-ui, -apple-system,
+          BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
 
-        #app {
-            min-height: 100vh;
-            width: 100%;
-            background: var(--bg);
-        }
+      #app {
+        min-height: 100vh;
+        width: 100%;
+        background: var(--bg);
+      }
 
-        .top {
-            height: 68px;
-            border-bottom: 1px solid var(--line);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 max(24px, calc((100% - 1160px) / 2));
-        }
+      .top {
+        height: 68px;
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 max(24px, calc((100% - 1160px) / 2));
+      }
 
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: 800;
-            letter-spacing: -.5px;
-            font-size: 19px;
-        }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+        font-size: 19px;
+      }
 
-        .mark {
-            width: 30px;
-            height: 30px;
-            border-radius: 9px;
-            background: var(--accent);
-            display: grid;
-            place-items: center;
-            color: white;
-            font-weight: 900;
-        }
+      .mark {
+        width: 30px;
+        height: 30px;
+        border-radius: 9px;
+        background: var(--accent);
+        display: grid;
+        place-items: center;
+        color: white;
+        font-weight: 900;
+      }
 
-        .tag {
-            color: var(--muted);
-            font-size: 12px;
-        }
+      .tag {
+        color: var(--muted);
+        font-size: 12px;
+      }
 
-        .back {
-            color: var(--muted);
-            text-decoration: none;
-            font-size: 12px;
-            font-weight: 700;
-            padding: 7px 10px;
-            border: 1px solid var(--line);
-            border-radius: 8px;
-        }
+      .back {
+        color: var(--muted);
+        text-decoration: none;
+        font-size: 12px;
+        font-weight: 700;
+        padding: 7px 10px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+      }
 
-        .back:hover {
-            color: var(--text);
-            border-color: var(--accent);
-        }
+      .back:hover {
+        color: var(--text);
+        border-color: var(--accent);
+      }
 
+      main {
+        max-width: 1160px;
+        margin: 0 auto;
+        padding: 42px 24px 70px;
+      }
+
+      .eyebrow {
+        color: var(--accent);
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 1.6px;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        font-size: clamp(30px, 5vw, 43px);
+        letter-spacing: -1.6px;
+        line-height: 1.1;
+        margin: 10px 0;
+      }
+
+      .sub {
+        color: var(--muted);
+        margin: 0 0 27px;
+        max-width: 760px;
+      }
+
+      .search {
+        display: flex;
+        gap: 10px;
+        padding: 9px;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        box-shadow: 0 10px 30px #0000000b;
+        max-width: 850px;
+      }
+
+      .search input {
+        min-width: 0;
+        flex: 1;
+        border: 0;
+        outline: 0;
+        background: transparent;
+        color: var(--text);
+        padding: 0 12px;
+        font: inherit;
+      }
+
+      button {
+        border: 0;
+        border-radius: 10px;
+        background: var(--accent);
+        color: white;
+        font-weight: 750;
+        padding: 13px 20px;
+        cursor: pointer;
+        font: inherit;
+      }
+
+      button:disabled {
+        opacity: 0.65;
+        cursor: wait;
+      }
+
+      .note {
+        color: var(--muted);
+        font-size: 12px;
+        margin: 10px 2px 0;
+      }
+
+      .status {
+        display: none;
+        margin-top: 18px;
+        max-width: 850px;
+        padding: 14px 16px;
+        border: 1px solid var(--line);
+        border-radius: 11px;
+        background: var(--panel);
+        color: var(--muted);
+      }
+
+      .status.show {
+        display: block;
+      }
+
+      .status strong {
+        color: var(--text);
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: 1.15fr 0.85fr;
+        gap: 18px;
+        margin-top: 34px;
+      }
+
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 15px;
+        padding: 22px;
+      }
+
+      .card h2 {
+        font-size: 15px;
+        margin: 0 0 18px;
+        letter-spacing: -0.2px;
+      }
+
+      .score-wrap {
+        display: flex;
+        align-items: center;
+        gap: 22px;
+      }
+
+      .grade {
+        width: 112px;
+        height: 112px;
+        border: 8px solid var(--line);
+        border-top-color: var(--green);
+        border-right-color: var(--green);
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        flex-shrink: 0;
+      }
+
+      .grade span {
+        font-size: 38px;
+        font-weight: 850;
+        letter-spacing: -2px;
+      }
+
+      .score-title {
+        font-size: 19px;
+        font-weight: 750;
+      }
+
+      .score-desc {
+        color: var(--muted);
+        font-size: 13px;
+        margin-top: 4px;
+      }
+
+      .metrics {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+
+      .metric {
+        background: var(--panel2);
+        border: 1px solid var(--line);
+        border-radius: 11px;
+        padding: 14px;
+      }
+
+      .metric-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .metric small {
+        color: var(--muted);
+        display: block;
+        margin-top: 7px;
+        font-size: 11px;
+      }
+
+      .pill {
+        font-size: 11px;
+        padding: 3px 7px;
+        border-radius: 6px;
+        background: color-mix(in srgb, var(--amber) 15%, transparent);
+        color: var(--amber);
+      }
+
+      .pill.good {
+        background: color-mix(in srgb, var(--green) 14%, transparent);
+        color: var(--green);
+      }
+
+      .findings {
+        margin-top: 18px;
+      }
+
+      .finding {
+        display: flex;
+        gap: 12px;
+        padding: 13px 0;
+        border-top: 1px solid var(--line);
+      }
+
+      .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--amber);
+        margin-top: 6px;
+        flex-shrink: 0;
+      }
+
+      .finding b {
+        font-size: 13px;
+        display: block;
+      }
+
+      .finding p {
+        color: var(--muted);
+        font-size: 12px;
+        margin: 3px 0 0;
+      }
+
+      .finding.evidence {
+        display: block;
+      }
+
+      .finding-evidence {
+        margin-top: 8px;
+        padding: 9px 10px;
+        border-radius: 8px;
+        background: var(--panel2);
+        color: var(--muted);
+        font: 11px/1.45 ui-monospace, SFMono-Regular, Consolas, monospace;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+      }
+
+      .sidecopy {
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .list {
+        margin: 16px 0 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .list li {
+        border-top: 1px solid var(--line);
+        padding: 11px 0;
+        font-size: 12px;
+        display: flex;
+        gap: 9px;
+      }
+
+      .check {
+        color: var(--green);
+        font-weight: 900;
+      }
+
+      .detail-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        margin-top: 16px;
+      }
+
+      .detail {
+        background: var(--panel2);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 11px;
+      }
+
+      .detail-label {
+        color: var(--muted);
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+      }
+
+      .detail-value {
+        margin-top: 3px;
+        font-size: 13px;
+        font-weight: 700;
+        overflow-wrap: anywhere;
+      }
+
+      .subsection {
+        margin-top: 20px;
+      }
+
+      .subsection h3 {
+        font-size: 12px;
+        margin: 0 0 9px;
+      }
+
+      .code-list {
+        background: var(--panel2);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 10px;
+        font: 11px/1.55 ui-monospace, SFMono-Regular, Consolas, monospace;
+        color: var(--muted);
+        overflow-wrap: anywhere;
+      }
+
+      .footer {
+        color: var(--muted);
+        font-size: 11px;
+        margin-top: 18px;
+      }
+
+      .error {
+        color: var(--red);
+      }
+
+      @media (max-width: 760px) {
         main {
-            max-width: 1160px;
-            margin: 0 auto;
-            padding: 42px 24px 70px;
-        }
-
-        .eyebrow {
-            color: var(--accent);
-            font-size: 11px;
-            font-weight: 800;
-            letter-spacing: 1.6px;
-            text-transform: uppercase;
-        }
-
-        h1 {
-            font-size: clamp(30px, 5vw, 43px);
-            letter-spacing: -1.6px;
-            line-height: 1.1;
-            margin: 10px 0;
-        }
-
-        .sub {
-            color: var(--muted);
-            margin: 0 0 27px;
-            max-width: 760px;
-        }
-
-        .search {
-            display: flex;
-            gap: 10px;
-            padding: 9px;
-            background: var(--panel);
-            border: 1px solid var(--line);
-            border-radius: 14px;
-            box-shadow: 0 10px 30px #0000000b;
-            max-width: 850px;
-        }
-
-        .search input {
-            min-width: 0;
-            flex: 1;
-            border: 0;
-            outline: 0;
-            background: transparent;
-            color: var(--text);
-            padding: 0 12px;
-            font: inherit;
-        }
-
-        button {
-            border: 0;
-            border-radius: 10px;
-            background: var(--accent);
-            color: white;
-            font-weight: 750;
-            padding: 13px 20px;
-            cursor: pointer;
-            font: inherit;
-        }
-
-        button:disabled {
-            opacity: .65;
-            cursor: wait;
-        }
-
-        .note {
-            color: var(--muted);
-            font-size: 12px;
-            margin: 10px 2px 0;
-        }
-
-        .status {
-            display: none;
-            margin-top: 18px;
-            max-width: 850px;
-            padding: 14px 16px;
-            border: 1px solid var(--line);
-            border-radius: 11px;
-            background: var(--panel);
-            color: var(--muted);
-        }
-
-        .status.show {
-            display: block;
-        }
-
-        .status strong {
-            color: var(--text);
+          padding-top: 30px;
         }
 
         .grid {
-            display: grid;
-            grid-template-columns: 1.15fr .85fr;
-            gap: 18px;
-            margin-top: 34px;
+          grid-template-columns: 1fr;
         }
 
-        .card {
-            background: var(--panel);
-            border: 1px solid var(--line);
-            border-radius: 15px;
-            padding: 22px;
+        .search {
+          flex-wrap: wrap;
         }
 
-        .card h2 {
-            font-size: 15px;
-            margin: 0 0 18px;
-            letter-spacing: -.2px;
+        .search input {
+          height: 42px;
+          flex-basis: 100%;
+        }
+
+        .search button {
+          width: 100%;
         }
 
         .score-wrap {
-            display: flex;
-            align-items: center;
-            gap: 22px;
+          gap: 15px;
         }
 
         .grade {
-            width: 112px;
-            height: 112px;
-            border: 8px solid var(--line);
-            border-top-color: var(--green);
-            border-right-color: var(--green);
-            border-radius: 50%;
-            display: grid;
-            place-items: center;
-            flex-shrink: 0;
+          width: 92px;
+          height: 92px;
         }
 
         .grade span {
-            font-size: 38px;
-            font-weight: 850;
-            letter-spacing: -2px;
-        }
-
-        .score-title {
-            font-size: 19px;
-            font-weight: 750;
-        }
-
-        .score-desc {
-            color: var(--muted);
-            font-size: 13px;
-            margin-top: 4px;
+          font-size: 32px;
         }
 
         .metrics {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
+          grid-template-columns: 1fr;
         }
-
-        .metric {
-            background: var(--panel2);
-            border: 1px solid var(--line);
-            border-radius: 11px;
-            padding: 14px;
-        }
-
-        .metric-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 13px;
-            font-weight: 700;
-        }
-
-        .metric small {
-            color: var(--muted);
-            display: block;
-            margin-top: 7px;
-            font-size: 11px;
-        }
-
-        .pill {
-            font-size: 11px;
-            padding: 3px 7px;
-            border-radius: 6px;
-            background: color-mix(in srgb, var(--amber) 15%, transparent);
-            color: var(--amber);
-        }
-
-        .pill.good {
-            background: color-mix(in srgb, var(--green) 14%, transparent);
-            color: var(--green);
-        }
-
-        .findings {
-            margin-top: 18px;
-        }
-
-        .finding {
-            display: flex;
-            gap: 12px;
-            padding: 13px 0;
-            border-top: 1px solid var(--line);
-        }
-
-        .dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--amber);
-            margin-top: 6px;
-            flex-shrink: 0;
-        }
-
-        .finding b {
-            font-size: 13px;
-            display: block;
-        }
-
-        .finding p {
-            color: var(--muted);
-            font-size: 12px;
-            margin: 3px 0 0;
-        }
-
-        .finding.evidence {
-            display: block;
-        }
-
-        .finding-evidence {
-            margin-top: 8px;
-            padding: 9px 10px;
-            border-radius: 8px;
-            background: var(--panel2);
-            color: var(--muted);
-            font: 11px/1.45 ui-monospace, SFMono-Regular, Consolas, monospace;
-            white-space: pre-wrap;
-            overflow-wrap: anywhere;
-        }
-
-        .sidecopy {
-            color: var(--muted);
-            font-size: 13px;
-        }
-
-        .list {
-            margin: 16px 0 0;
-            padding: 0;
-            list-style: none;
-        }
-
-        .list li {
-            border-top: 1px solid var(--line);
-            padding: 11px 0;
-            font-size: 12px;
-            display: flex;
-            gap: 9px;
-        }
-
-        .check {
-            color: var(--green);
-            font-weight: 900;
-        }
-
-        .detail-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            margin-top: 16px;
-        }
-
-        .detail {
-            background: var(--panel2);
-            border: 1px solid var(--line);
-            border-radius: 10px;
-            padding: 11px;
-        }
-
-        .detail-label {
-            color: var(--muted);
-            font-size: 10px;
-            text-transform: uppercase;
-            letter-spacing: .8px;
-        }
-
-        .detail-value {
-            margin-top: 3px;
-            font-size: 13px;
-            font-weight: 700;
-            overflow-wrap: anywhere;
-        }
-
-        .subsection {
-            margin-top: 20px;
-        }
-
-        .subsection h3 {
-            font-size: 12px;
-            margin: 0 0 9px;
-        }
-
-        .code-list {
-            background: var(--panel2);
-            border: 1px solid var(--line);
-            border-radius: 10px;
-            padding: 10px;
-            font: 11px/1.55 ui-monospace, SFMono-Regular, Consolas, monospace;
-            color: var(--muted);
-            overflow-wrap: anywhere;
-        }
-
-        .footer {
-            color: var(--muted);
-            font-size: 11px;
-            margin-top: 18px;
-        }
-
-        .error {
-            color: var(--red);
-        }
-
-        @media(max-width:760px) {
-            main {
-                padding-top: 30px;
-            }
-
-            .grid {
-                grid-template-columns: 1fr;
-            }
-
-            .search {
-                flex-wrap: wrap;
-            }
-
-            .search input {
-                height: 42px;
-                flex-basis: 100%;
-            }
-
-            .search button {
-                width: 100%;
-            }
-
-            .score-wrap {
-                gap: 15px;
-            }
-
-            .grade {
-                width: 92px;
-                height: 92px;
-            }
-
-            .grade span {
-                font-size: 32px;
-            }
-
-            .metrics {
-                grid-template-columns: 1fr;
-            }
-        }
+      }
     </style>
-</head>
+  </head>
 
-<body>
+  <body>
     <div id="app">
+      <main>
+        <div class="eyebrow">Website scanner</div>
 
-        <main>
+        <h1>
+          Know what your website<br />
+          is really made of.
+        </h1>
 
-            <div class="eyebrow">Website scanner</div>
+        <p class="sub">
+          Run a real public-facing audit for security, privacy, performance,
+          SEO, configuration, and accessibility. Get a score, verified evidence,
+          and clear areas to improve.
+        </p>
 
-            <h1>
-                Know what your website<br>
-  is really made of.
-            </h1>
+        <form class="search" id="scanForm">
+          <input
+            id="url"
+            type="url"
+            placeholder="https://example.com"
+            aria-label="Website URL"
+            required
+          />
 
-            <p class="sub">
-                Run a real public-facing audit for security, privacy, performance,
-                SEO, configuration, and accessibility. Get a score, verified evidence,
-                and clear areas to improve.
+          <button id="scanBtn" type="submit">
+            Scan website
+            <span aria-hidden="true">ΓåÆ</span>
+          </button>
+        </form>
+
+        <p class="note">
+          Scan only websites you own or have permission to assess. SiteGrade
+          performs a public-facing audit through its Cloudflare Worker.
+        </p>
+
+        <div class="status" id="status" role="status"></div>
+
+        <section class="grid" aria-label="SiteGrade audit results">
+          <div class="card">
+            <h2>
+              Overall assessment
+              <span class="pill" id="statePill" style="float: right">
+                Ready
+              </span>
+            </h2>
+
+            <div class="score-wrap">
+              <div class="grade" id="gradeRing">
+                <span id="grade">ΓÇö</span>
+              </div>
+
+              <div>
+                <div class="score-title" id="scoreTitle">Awaiting scan</div>
+
+                <div class="score-desc" id="scoreDesc">
+                  Enter a public website URL and run a real audit.
+                </div>
+              </div>
+            </div>
+
+            <div class="footer" id="scanMeta">
+              No site has been scanned yet.
+            </div>
+          </div>
+
+          <div class="card">
+            <h2>Audit categories</h2>
+
+            <div class="metrics">
+              <div class="metric">
+                <div class="metric-top">
+                  Security
+                  <span class="pill" id="securityScore">ΓÇö</span>
+                </div>
+                <small>TLS, headers, mixed content, exposed risks</small>
+              </div>
+
+              <div class="metric">
+                <div class="metric-top">
+                  Privacy
+                  <span class="pill" id="privacyScore">ΓÇö</span>
+                </div>
+                <small>Cookies and third-party resources</small>
+              </div>
+
+              <div class="metric">
+                <div class="metric-top">
+                  Performance
+                  <span class="pill" id="performanceScore">ΓÇö</span>
+                </div>
+                <small>Response timing, compression, scripts, caching</small>
+              </div>
+
+              <div class="metric">
+                <div class="metric-top">
+                  SEO
+                  <span class="pill" id="seoScore">ΓÇö</span>
+                </div>
+                <small>Metadata, headings, canonicals, crawl signals</small>
+              </div>
+
+              <div class="metric">
+                <div class="metric-top">
+                  Configuration
+                  <span class="pill" id="configurationScore">ΓÇö</span>
+                </div>
+                <small>Public files, redirects, robots, sitemap</small>
+              </div>
+
+              <div class="metric">
+                <div class="metric-top">
+                  Accessibility
+                  <span class="pill" id="accessibilityScore">ΓÇö</span>
+                </div>
+                <small>Language, images, forms, headings, landmarks</small>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2>Findings</h2>
+
+            <p class="sidecopy" id="findingIntro">
+              Run a scan to see verified observations from the connected
+              scanner.
             </p>
 
-            <form class="search" id="scanForm">
-                <input
-    id="url"
-    type="url"
-    placeholder="https://example.com"
-    aria-label="Website URL"
-    required
-  >
+            <div class="findings" id="findings">
+              <div class="finding">
+                <span class="dot"></span>
 
-                <button id="scanBtn" type="submit">
-    Scan website
-    <span aria-hidden="true">ΓåÆ</span>
-  </button>
-            </form>
+                <div>
+                  <b>Waiting for results</b>
+                  <p>The scanner will report verified observations here.</p>
+                </div>
+              </div>
+            </div>
+          </div>
 
-            <p class="note">
-                Scan only websites you own or have permission to assess.
-                SiteGrade performs a public-facing audit through its Cloudflare Worker.
+          <div class="card">
+            <h2>Scan details</h2>
+
+            <div class="detail-grid">
+              <div class="detail">
+                <div class="detail-label">Final URL</div>
+                <div class="detail-value" id="detailUrl">ΓÇö</div>
+              </div>
+
+              <div class="detail">
+                <div class="detail-label">HTTP status</div>
+                <div class="detail-value" id="detailStatus">ΓÇö</div>
+              </div>
+
+              <div class="detail">
+                <div class="detail-label">Response time</div>
+                <div class="detail-value" id="detailTtfb">ΓÇö</div>
+              </div>
+
+              <div class="detail">
+                <div class="detail-label">Scan duration</div>
+                <div class="detail-value" id="detailDuration">ΓÇö</div>
+              </div>
+
+              <div class="detail">
+                <div class="detail-label">HTML size</div>
+                <div class="detail-value" id="detailHtml">ΓÇö</div>
+              </div>
+
+              <div class="detail">
+                <div class="detail-label">Links</div>
+                <div class="detail-value" id="detailLinks">ΓÇö</div>
+              </div>
+
+              <div class="detail">
+                <div class="detail-label">Images</div>
+                <div class="detail-value" id="detailImages">ΓÇö</div>
+              </div>
+
+              <div class="detail">
+                <div class="detail-label">Third-party origins</div>
+                <div class="detail-value" id="detailThirdParty">ΓÇö</div>
+              </div>
+
+              <div class="detail">
+                <div class="detail-label">Redirects</div>
+                <div class="detail-value" id="detailRedirects">ΓÇö</div>
+              </div>
+
+              <div class="detail">
+                <div class="detail-label">Missing image alt</div>
+                <div class="detail-value" id="detailAlt">ΓÇö</div>
+              </div>
+
+              <div class="detail">
+                <div class="detail-label">Cookies</div>
+                <div class="detail-value" id="detailCookies">ΓÇö</div>
+              </div>
+
+              <div class="detail">
+                <div class="detail-label">Scanner</div>
+                <div class="detail-value" id="detailScanner">ΓÇö</div>
+              </div>
+            </div>
+
+            <div class="subsection">
+              <h3>Third-party origins</h3>
+              <div class="code-list" id="thirdPartyList">None detected.</div>
+            </div>
+
+            <div class="subsection">
+              <h3>DNS observations</h3>
+              <div class="code-list" id="dnsList">No DNS results yet.</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2>Audit coverage</h2>
+
+            <p class="sidecopy">
+              SiteGrade evaluates what can be verified from the public website
+              without installing software or requiring access to the target
+              server.
             </p>
 
-            <div class="status" id="status" role="status"></div>
+            <ul class="list">
+              <li>
+                <span class="check">Γ£ô</span>
+                HTTPS, redirects, and security response headers
+              </li>
 
-            <section class="grid" aria-label="SiteGrade audit results">
+              <li>
+                <span class="check">Γ£ô</span>
+                CSP, clickjacking protection, mixed content, and HSTS
+              </li>
 
-                <div class="card">
-                    <h2>
-                        Overall assessment
-                        <span class="pill" id="statePill" style="float:right">
-        Ready
-      </span>
-                    </h2>
+              <li>
+                <span class="check">Γ£ô</span>
+                Cookies and third-party resources
+              </li>
 
-                    <div class="score-wrap">
-                        <div class="grade" id="gradeRing">
-                            <span id="grade">ΓÇö</span>
-                        </div>
+              <li>
+                <span class="check">Γ£ô</span>
+                Titles, descriptions, canonicals, headings, and crawl signals
+              </li>
 
-                        <div>
-                            <div class="score-title" id="scoreTitle">
-                                Awaiting scan
-                            </div>
+              <li>
+                <span class="check">Γ£ô</span>
+                Response timing, compression, caching, and scripts
+              </li>
 
-                            <div class="score-desc" id="scoreDesc">
-                                Enter a public website URL and run a real audit.
-                            </div>
-                        </div>
-                    </div>
+              <li>
+                <span class="check">Γ£ô</span>
+                Accessibility structure, forms, IDs, and image alt text
+              </li>
 
-                    <div class="footer" id="scanMeta">
-                        No site has been scanned yet.
-                    </div>
-                </div>
+              <li>
+                <span class="check">Γ£ô</span>
+                Public configuration and accidental exposure checks
+              </li>
 
-
-                <div class="card">
-                    <h2>Audit categories</h2>
-
-                    <div class="metrics">
-
-                        <div class="metric">
-                            <div class="metric-top">
-                                Security
-                                <span class="pill" id="securityScore">ΓÇö</span>
-                            </div>
-                            <small>TLS, headers, mixed content, exposed risks</small>
-                        </div>
-
-                        <div class="metric">
-                            <div class="metric-top">
-                                Privacy
-                                <span class="pill" id="privacyScore">ΓÇö</span>
-                            </div>
-                            <small>Cookies and third-party resources</small>
-                        </div>
-
-                        <div class="metric">
-                            <div class="metric-top">
-                                Performance
-                                <span class="pill" id="performanceScore">ΓÇö</span>
-                            </div>
-                            <small>Response timing, compression, scripts, caching</small>
-                        </div>
-
-                        <div class="metric">
-                            <div class="metric-top">
-                                SEO
-                                <span class="pill" id="seoScore">ΓÇö</span>
-                            </div>
-                            <small>Metadata, headings, canonicals, crawl signals</small>
-                        </div>
-
-                        <div class="metric">
-                            <div class="metric-top">
-                                Configuration
-                                <span class="pill" id="configurationScore">ΓÇö</span>
-                            </div>
-                            <small>Public files, redirects, robots, sitemap</small>
-                        </div>
-
-                        <div class="metric">
-                            <div class="metric-top">
-                                Accessibility
-                                <span class="pill" id="accessibilityScore">ΓÇö</span>
-                            </div>
-                            <small>Language, images, forms, headings, landmarks</small>
-                        </div>
-
-                    </div>
-                </div>
-
-
-                <div class="card">
-                    <h2>Findings</h2>
-
-                    <p class="sidecopy" id="findingIntro">
-                        Run a scan to see verified observations from the connected scanner.
-                    </p>
-
-                    <div class="findings" id="findings">
-                        <div class="finding">
-                            <span class="dot"></span>
-
-                            <div>
-                                <b>Waiting for results</b>
-                                <p>
-                                    The scanner will report verified observations here.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-
-                <div class="card">
-                    <h2>Scan details</h2>
-
-                    <div class="detail-grid">
-
-                        <div class="detail">
-                            <div class="detail-label">Final URL</div>
-                            <div class="detail-value" id="detailUrl">ΓÇö</div>
-                        </div>
-
-                        <div class="detail">
-                            <div class="detail-label">HTTP status</div>
-                            <div class="detail-value" id="detailStatus">ΓÇö</div>
-                        </div>
-
-                        <div class="detail">
-                            <div class="detail-label">Response time</div>
-                            <div class="detail-value" id="detailTtfb">ΓÇö</div>
-                        </div>
-
-                        <div class="detail">
-                            <div class="detail-label">Scan duration</div>
-                            <div class="detail-value" id="detailDuration">ΓÇö</div>
-                        </div>
-
-                        <div class="detail">
-                            <div class="detail-label">HTML size</div>
-                            <div class="detail-value" id="detailHtml">ΓÇö</div>
-                        </div>
-
-                        <div class="detail">
-                            <div class="detail-label">Links</div>
-                            <div class="detail-value" id="detailLinks">ΓÇö</div>
-                        </div>
-
-                        <div class="detail">
-                            <div class="detail-label">Images</div>
-                            <div class="detail-value" id="detailImages">ΓÇö</div>
-                        </div>
-
-                        <div class="detail">
-                            <div class="detail-label">Third-party origins</div>
-                            <div class="detail-value" id="detailThirdParty">ΓÇö</div>
-                        </div>
-
-                        <div class="detail">
-                            <div class="detail-label">Redirects</div>
-                            <div class="detail-value" id="detailRedirects">ΓÇö</div>
-                        </div>
-
-                        <div class="detail">
-                            <div class="detail-label">Missing image alt</div>
-                            <div class="detail-value" id="detailAlt">ΓÇö</div>
-                        </div>
-
-                        <div class="detail">
-                            <div class="detail-label">Cookies</div>
-                            <div class="detail-value" id="detailCookies">ΓÇö</div>
-                        </div>
-
-                        <div class="detail">
-                            <div class="detail-label">Scanner</div>
-                            <div class="detail-value" id="detailScanner">ΓÇö</div>
-                        </div>
-
-                    </div>
-
-                    <div class="subsection">
-                        <h3>Third-party origins</h3>
-                        <div class="code-list" id="thirdPartyList">
-                            None detected.
-                        </div>
-                    </div>
-
-                    <div class="subsection">
-                        <h3>DNS observations</h3>
-                        <div class="code-list" id="dnsList">
-                            No DNS results yet.
-                        </div>
-                    </div>
-                </div>
-
-
-                <div class="card">
-                    <h2>Audit coverage</h2>
-
-                    <p class="sidecopy">
-                        SiteGrade evaluates what can be verified from the public website
-                        without installing software or requiring access to the target server.
-                    </p>
-
-                    <ul class="list">
-                        <li>
-                            <span class="check">Γ£ô</span>
-                            HTTPS, redirects, and security response headers
-                        </li>
-
-                        <li>
-                            <span class="check">Γ£ô</span>
-                            CSP, clickjacking protection, mixed content, and HSTS
-                        </li>
-
-                        <li>
-                            <span class="check">Γ£ô</span>
-                            Cookies and third-party resources
-                        </li>
-
-                        <li>
-                            <span class="check">Γ£ô</span>
-                            Titles, descriptions, canonicals, headings, and crawl signals
-                        </li>
-
-                        <li>
-                            <span class="check">Γ£ô</span>
-                            Response timing, compression, caching, and scripts
-                        </li>
-
-                        <li>
-                            <span class="check">Γ£ô</span>
-                            Accessibility structure, forms, IDs, and image alt text
-                        </li>
-
-                        <li>
-                            <span class="check">Γ£ô</span>
-                            Public configuration and accidental exposure checks
-                        </li>
-
-                        <li>
-                            <span class="check">Γ£ô</span>
-                            Public DNS observations
-                        </li>
-                    </ul>
-                </div>
-
-            </section>
-
-        </main>
+              <li>
+                <span class="check">Γ£ô</span>
+                Public DNS observations
+              </li>
+            </ul>
+          </div>
+        </section>
+      </main>
     </div>
 
     <script src="../../js/framework.js"></script>
     <script>
-        let API_URL = "https://scanner.xconflictionx.cc/scan";
-        if (window.PortfolioFramework) {
-            window.PortfolioFramework.getConfig().then(cfg => {
-                const tool = cfg.tools ? cfg.tools.find(t => t.id === 'site-grade') : null;
-                if (tool && tool.workerUrl) API_URL = tool.workerUrl;
-            });
+      let API_URL = "https://scanner.xconflictionx.cc/scan";
+      if (window.PortfolioFramework) {
+        window.PortfolioFramework.getConfig().then((cfg) => {
+          const tool = cfg.tools
+            ? cfg.tools.find((t) => t.id === "site-grade")
+            : null;
+          if (tool && tool.workerUrl) API_URL = tool.workerUrl;
+        });
+      }
+
+      const form = document.getElementById("scanForm");
+      const input = document.getElementById("url");
+      const statusBox = document.getElementById("status");
+      const btn = document.getElementById("scanBtn");
+
+      function esc(value) {
+        return String(value ?? "").replace(
+          /[&<>"']/g,
+          (c) =>
+            ({
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              '"': "&quot;",
+              "'": "&#39;",
+            }[c])
+        );
+      }
+
+      function setScore(id, value) {
+        const el = document.getElementById(id);
+
+        const number = Number(value);
+
+        if (!Number.isFinite(number)) {
+          el.textContent = "ΓÇö";
+          el.classList.remove("good");
+          return;
         }
 
-const form = document.getElementById("scanForm");
-const input = document.getElementById("url");
-const statusBox = document.getElementById("status");
-const btn = document.getElementById("scanBtn");
+        el.textContent = number + "/100";
+        el.classList.toggle("good", number >= 80);
+      }
 
-function esc(value) {
-  return String(value ?? "").replace(
-    /[&<>"']/g,
-    c => ({
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#39;"
-    }[c])
-  );
-}
+      function formatBytes(bytes) {
+        const value = Number(bytes);
 
-function setScore(id, value) {
-  const el = document.getElementById(id);
+        if (!Number.isFinite(value)) {
+          return "ΓÇö";
+        }
 
-  const number = Number(value);
+        if (value < 1024) {
+          return value + " B";
+        }
 
-  if (!Number.isFinite(number)) {
-    el.textContent = "ΓÇö";
-    el.classList.remove("good");
-    return;
-  }
+        if (value < 1024 * 1024) {
+          return Math.round(value / 1024) + " KiB";
+        }
 
-  el.textContent = number + "/100";
-  el.classList.toggle("good", number >= 80);
-}
+        return (value / 1024 / 1024).toFixed(1) + " MiB";
+      }
 
-function formatBytes(bytes) {
-  const value = Number(bytes);
+      function renderFindings(items) {
+        const box = document.getElementById("findings");
 
-  if (!Number.isFinite(value)) {
-    return "ΓÇö";
-  }
-
-  if (value < 1024) {
-    return value + " B";
-  }
-
-  if (value < 1024 * 1024) {
-    return Math.round(value / 1024) + " KiB";
-  }
-
-  return (value / 1024 / 1024).toFixed(1) + " MiB";
-}
-
-function renderFindings(items) {
-  const box = document.getElementById("findings");
-
-  if (!items?.length) {
-    box.innerHTML = `
+        if (!items?.length) {
+          box.innerHTML = `
       <div class="finding">
         <span
           class="dot"
@@ -836,31 +852,29 @@ function renderFindings(items) {
       </div>
     `;
 
-    return;
-  }
+          return;
+        }
 
-  box.innerHTML = items.map(f => {
-    const severity =
-      String(f.severity || "info").toLowerCase();
+        box.innerHTML = items
+          .map((f) => {
+            const severity = String(f.severity || "info").toLowerCase();
 
-    const dot =
-      severity === "high"
-        ? "var(--red)"
-        : severity === "info"
-          ? "var(--green)"
-          : "var(--amber)";
+            const dot =
+              severity === "high"
+                ? "var(--red)"
+                : severity === "info"
+                ? "var(--green)"
+                : "var(--amber)";
 
-    let evidence = "";
+            let evidence = "";
 
-    if (Array.isArray(f.evidence) && f.evidence.length) {
-      evidence = `
-        <div class="finding-evidence">${esc(
-          f.evidence.join("\n")
-        )}</div>
+            if (Array.isArray(f.evidence) && f.evidence.length) {
+              evidence = `
+        <div class="finding-evidence">${esc(f.evidence.join("\n"))}</div>
       `;
-    }
+            }
 
-    return `
+            return `
       <div class="finding">
         <span
           class="dot"
@@ -882,259 +896,217 @@ function renderFindings(items) {
         </div>
       </div>
     `;
-  }).join("");
-}
+          })
+          .join("");
+      }
 
-function renderDetails(data) {
-  const page = data.page || {};
-  const perf = data.performance || {};
-  const privacy = data.privacy || {};
-  const accessibility = data.accessibility || {};
-  const config = data.configuration || {};
+      function renderDetails(data) {
+        const page = data.page || {};
+        const perf = data.performance || {};
+        const privacy = data.privacy || {};
+        const accessibility = data.accessibility || {};
+        const config = data.configuration || {};
 
-  const findings = data.findings || [];
+        const findings = data.findings || [];
 
-  const actionable = findings.filter(
-    f =>
-      String(f.severity || "info").toLowerCase() !==
-      "info"
-  ).length;
+        const actionable = findings.filter(
+          (f) => String(f.severity || "info").toLowerCase() !== "info"
+        ).length;
 
-  document.getElementById("findingIntro").textContent =
-    `${findings.length} verified observation(s) ┬╖ ` +
-    `${actionable} actionable finding(s) returned by ` +
-    `scanner ${data.scannerVersion || "unknown"}.`;
+        document.getElementById("findingIntro").textContent =
+          `${findings.length} verified observation(s) ┬╖ ` +
+          `${actionable} actionable finding(s) returned by ` +
+          `scanner ${data.scannerVersion || "unknown"}.`;
 
-  document.getElementById("detailUrl").textContent =
-    data.finalUrl || "ΓÇö";
+        document.getElementById("detailUrl").textContent =
+          data.finalUrl || "ΓÇö";
 
-  document.getElementById("detailStatus").textContent =
-    page.status != null ? page.status : "ΓÇö";
+        document.getElementById("detailStatus").textContent =
+          page.status != null ? page.status : "ΓÇö";
 
-  document.getElementById("detailTtfb").textContent =
-    perf.ttfbMs != null
-      ? perf.ttfbMs + " ms"
-      : "ΓÇö";
+        document.getElementById("detailTtfb").textContent =
+          perf.ttfbMs != null ? perf.ttfbMs + " ms" : "ΓÇö";
 
-  document.getElementById("detailDuration").textContent =
-    perf.scanDurationMs != null
-      ? perf.scanDurationMs + " ms"
-      : "ΓÇö";
+        document.getElementById("detailDuration").textContent =
+          perf.scanDurationMs != null ? perf.scanDurationMs + " ms" : "ΓÇö";
 
-  document.getElementById("detailHtml").textContent =
-    formatBytes(page.htmlBytes);
+        document.getElementById("detailHtml").textContent = formatBytes(
+          page.htmlBytes
+        );
 
-  document.getElementById("detailLinks").textContent =
-    page.links != null
-      ? page.links
-      : "ΓÇö";
+        document.getElementById("detailLinks").textContent =
+          page.links != null ? page.links : "ΓÇö";
 
-  document.getElementById("detailImages").textContent =
-    accessibility.imageCount != null
-      ? accessibility.imageCount
-      : "ΓÇö";
+        document.getElementById("detailImages").textContent =
+          accessibility.imageCount != null ? accessibility.imageCount : "ΓÇö";
 
-  document.getElementById("detailThirdParty").textContent =
-    privacy.thirdPartyOrigins?.length ?? 0;
+        document.getElementById("detailThirdParty").textContent =
+          privacy.thirdPartyOrigins?.length ?? 0;
 
-  document.getElementById("detailRedirects").textContent =
-    config.redirects ?? 0;
+        document.getElementById("detailRedirects").textContent =
+          config.redirects ?? 0;
 
-  document.getElementById("detailAlt").textContent =
-    accessibility.missingAlt ?? 0;
+        document.getElementById("detailAlt").textContent =
+          accessibility.missingAlt ?? 0;
 
-  document.getElementById("detailCookies").textContent =
-    privacy.cookies?.length ?? 0;
+        document.getElementById("detailCookies").textContent =
+          privacy.cookies?.length ?? 0;
 
-  document.getElementById("detailScanner").textContent =
-    data.scannerVersion || "ΓÇö";
+        document.getElementById("detailScanner").textContent =
+          data.scannerVersion || "ΓÇö";
 
-  const origins =
-    privacy.thirdPartyOrigins || [];
+        const origins = privacy.thirdPartyOrigins || [];
 
-  document.getElementById("thirdPartyList").textContent =
-    origins.length
-      ? origins.join("\n")
-      : "None detected.";
+        document.getElementById("thirdPartyList").textContent = origins.length
+          ? origins.join("\n")
+          : "None detected.";
 
-  const dns = data.dns || {};
+        const dns = data.dns || {};
 
-  const dnsLines = [];
+        const dnsLines = [];
 
-  for (const type of ["A", "AAAA", "CNAME", "MX", "NS"]) {
-    const records = Array.isArray(dns[type])
-      ? dns[type]
-      : [];
+        for (const type of ["A", "AAAA", "CNAME", "MX", "NS"]) {
+          const records = Array.isArray(dns[type]) ? dns[type] : [];
 
-    if (!records.length) {
-      continue;
-    }
+          if (!records.length) {
+            continue;
+          }
 
-    for (const record of records) {
-      dnsLines.push(
-        `${type}: ${record.data} (TTL ${record.ttl ?? "?"})`
-      );
-    }
-  }
+          for (const record of records) {
+            dnsLines.push(`${type}: ${record.data} (TTL ${record.ttl ?? "?"})`);
+          }
+        }
 
-  document.getElementById("dnsList").textContent =
-    dnsLines.length
-      ? dnsLines.join("\n")
-      : "No DNS records returned.";
-}
+        document.getElementById("dnsList").textContent = dnsLines.length
+          ? dnsLines.join("\n")
+          : "No DNS records returned.";
+      }
 
-form.addEventListener("submit", async event => {
-  event.preventDefault();
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
 
-  let parsed;
+        let parsed;
 
-  try {
-    parsed = new URL(input.value.trim());
-  } catch {
-    statusBox.className = "status show";
-    statusBox.textContent =
-      "Enter a valid website URL, including https:// or http://.";
-    return;
-  }
+        try {
+          parsed = new URL(input.value.trim());
+        } catch {
+          statusBox.className = "status show";
+          statusBox.textContent =
+            "Enter a valid website URL, including https:// or http://.";
+          return;
+        }
 
-  if (!["http:", "https:"].includes(parsed.protocol)) {
-    statusBox.className = "status show";
-    statusBox.textContent =
-      "Only HTTP and HTTPS website URLs are supported.";
-    return;
-  }
+        if (!["http:", "https:"].includes(parsed.protocol)) {
+          statusBox.className = "status show";
+          statusBox.textContent =
+            "Only HTTP and HTTPS website URLs are supported.";
+          return;
+        }
 
-  btn.disabled = true;
-  btn.textContent = "ScanningΓÇª";
+        btn.disabled = true;
+        btn.textContent = "ScanningΓÇª";
 
-  statusBox.className = "status show";
+        statusBox.className = "status show";
 
-  statusBox.innerHTML =
-    "<strong>Scanning:</strong> " +
-    esc(parsed.href) +
-    "<br>" +
-    "Fetching the public page and running security, privacy, SEO, " +
-    "performance, accessibility, configuration, and DNS checksΓÇª";
+        statusBox.innerHTML =
+          "<strong>Scanning:</strong> " +
+          esc(parsed.href) +
+          "<br>" +
+          "Fetching the public page and running security, privacy, SEO, " +
+          "performance, accessibility, configuration, and DNS checksΓÇª";
 
-  document.getElementById("statePill").textContent =
-    "Scanning";
+        document.getElementById("statePill").textContent = "Scanning";
 
-  document.getElementById("statePill").classList.remove("good");
+        document.getElementById("statePill").classList.remove("good");
 
-  try {
-    const response = await fetch(API_URL, {
-      method: "POST",
+        try {
+          const response = await fetch(API_URL, {
+            method: "POST",
 
-      headers: {
-        "Content-Type": "application/json"
-      },
+            headers: {
+              "Content-Type": "application/json",
+            },
 
-      body: JSON.stringify({
-        url: parsed.href
-      })
-    });
+            body: JSON.stringify({
+              url: parsed.href,
+            }),
+          });
 
-    const data = await response
-      .json()
-      .catch(() => ({
-        error: "Scanner returned invalid JSON."
-      }));
+          const data = await response.json().catch(() => ({
+            error: "Scanner returned invalid JSON.",
+          }));
 
-    if (!response.ok) {
-      throw new Error(
-        data.error ||
-        "Scanner returned HTTP " +
-        response.status
-      );
-    }
+          if (!response.ok) {
+            throw new Error(
+              data.error || "Scanner returned HTTP " + response.status
+            );
+          }
 
-    const scores = data.scores || {};
+          const scores = data.scores || {};
 
-    const overall = Number(
-      data.overall?.score ??
-      data.score ??
-      0
-    );
+          const overall = Number(data.overall?.score ?? data.score ?? 0);
 
-    const grade =
-      data.overall?.grade ||
-      data.grade ||
-      "ΓÇö";
+          const grade = data.overall?.grade || data.grade || "ΓÇö";
 
-    document.getElementById("grade").textContent =
-      grade;
+          document.getElementById("grade").textContent = grade;
 
-    document.getElementById("scoreTitle").textContent =
-      overall + "/100 overall score";
+          document.getElementById("scoreTitle").textContent =
+            overall + "/100 overall score";
 
-    document.getElementById("scoreDesc").textContent =
-      data.finalUrl
-        ? "Audited " + data.finalUrl
-        : "Audit completed.";
+          document.getElementById("scoreDesc").textContent = data.finalUrl
+            ? "Audited " + data.finalUrl
+            : "Audit completed.";
 
-    document.getElementById("statePill").textContent =
-      "Complete";
+          document.getElementById("statePill").textContent = "Complete";
 
-    document
-      .getElementById("statePill")
-      .classList.add("good");
+          document.getElementById("statePill").classList.add("good");
 
-    document.getElementById("scanMeta").textContent =
-      "Scanned " +
-      new Date().toLocaleString() +
-      " ┬╖ scanner " +
-      (data.scannerVersion || "unknown");
+          document.getElementById("scanMeta").textContent =
+            "Scanned " +
+            new Date().toLocaleString() +
+            " ┬╖ scanner " +
+            (data.scannerVersion || "unknown");
 
-    [
-      "security",
-      "privacy",
-      "performance",
-      "seo",
-      "configuration",
-      "accessibility"
-    ].forEach(category => {
-      setScore(
-        category + "Score",
-        Number(scores[category] ?? 0)
-      );
-    });
+          [
+            "security",
+            "privacy",
+            "performance",
+            "seo",
+            "configuration",
+            "accessibility",
+          ].forEach((category) => {
+            setScore(category + "Score", Number(scores[category] ?? 0));
+          });
 
-    renderFindings(data.findings || []);
-    renderDetails(data);
+          renderFindings(data.findings || []);
+          renderDetails(data);
 
-    statusBox.innerHTML =
-      "<strong>Scan complete:</strong> " +
-      esc(data.finalUrl || parsed.href) +
-      "<br>" +
-      esc(
-        data.summary ||
-        "Results are based on checks the Worker could verify from the public site."
-      );
+          statusBox.innerHTML =
+            "<strong>Scan complete:</strong> " +
+            esc(data.finalUrl || parsed.href) +
+            "<br>" +
+            esc(
+              data.summary ||
+                "Results are based on checks the Worker could verify from the public site."
+            );
+        } catch (error) {
+          document.getElementById("statePill").textContent = "Failed";
 
-  } catch (error) {
-    document.getElementById("statePill").textContent =
-      "Failed";
+          document.getElementById("statePill").classList.remove("good");
 
-    document
-      .getElementById("statePill")
-      .classList.remove("good");
+          statusBox.innerHTML =
+            '<strong class="error">Scan failed:</strong> ' +
+            esc(error.message) +
+            "<br><br>" +
+            "Check that the Worker URL is deployed and that its CORS policy allows this SiteGrade page.";
+        } finally {
+          btn.disabled = false;
 
-    statusBox.innerHTML =
-      '<strong class="error">Scan failed:</strong> ' +
-      esc(error.message) +
-      "<br><br>" +
-      "Check that the Worker URL is deployed and that its CORS policy allows this SiteGrade page.";
-
-  } finally {
-    btn.disabled = false;
-
-    btn.innerHTML =
-      'Scan website <span aria-hidden="true">ΓåÆ</span>';
-  }
-});
+          btn.innerHTML = 'Scan website <span aria-hidden="true">ΓåÆ</span>';
+        }
+      });
     </script>
     <script src="../../js/jquery-3.2.1.min.js"></script>
     <script src="../../js/github-fetch.js?v=25"></script>
-</body>
-
+  </body>
 </html>
