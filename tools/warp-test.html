@@ -1,31 +1,22 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>xCONFLiCTiONx Network Diagnostic</title>
-
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SiteGrade — Website audit</title>
     <style>
         :root {
-            color-scheme: dark;
-
-            --bg: #080b10;
-            --panel: #0f141b;
-            --panel2: #131a23;
-            --border: #26313d;
-
-            --text: #e7edf4;
-            --muted: #8b98a7;
-
-            --green: #35d07f;
-            --red: #ff5d6c;
-            --yellow: #f2c94c;
-            --blue: #4da3ff;
-            --cyan: #39d8ff;
-
-            --radius: 12px;
+            color-scheme: light dark;
+            --bg: light-dark(#f4f6fa, #0b1018);
+            --panel: light-dark(#ffffff, #121a25);
+            --panel2: light-dark(#f8fafc, #172130);
+            --text: light-dark(#172033, #edf2fa);
+            --muted: light-dark(#64748b, #9ba9bc);
+            --line: light-dark(#e3e8f0, #263244);
+            --accent: light-dark(#635bdb, #a59dff);
+            --green: light-dark(#16845b, #53d6a1);
+            --amber: light-dark(#b7791f, #f4c46b);
         }
 
         * {
@@ -34,1621 +25,460 @@
 
         body {
             margin: 0;
-            padding: 30px;
             background: var(--bg);
             color: var(--text);
-            font-family:
-                Inter,
-                Segoe UI,
-                Arial,
-                sans-serif;
+            font: 15px/1.5 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         }
 
-        .container {
-            max-width: 1100px;
+        #app {
+            min-height: 100vh;
+            width: 100%;
+            background-color: var(--bg);
+            border-radius: 0;
+        }
+
+        .top {
+            height: 68px;
+            border-bottom: 1px solid var(--line);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 max(24px, calc((100% - 1160px)/2));
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 800;
+            letter-spacing: -.5px;
+            font-size: 19px;
+        }
+
+        .mark {
+            width: 30px;
+            height: 30px;
+            border-radius: 9px;
+            background: var(--accent);
+            display: grid;
+            place-items: center;
+            color: white;
+            font-weight: 900;
+        }
+
+        .tag {
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .back {
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 7px 10px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+        }
+
+        .back:hover {
+            color: var(--text);
+            border-color: var(--accent);
+        }
+
+        main {
+            max-width: 1160px;
             margin: 0 auto;
+            padding: 42px 24px 70px;
+        }
+
+        .eyebrow {
+            color: var(--accent);
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 1.6px;
+            text-transform: uppercase;
         }
 
         h1 {
-            margin: 0 0 8px;
-            font-size: 30px;
-            font-weight: 700;
+            font-size: clamp(30px, 5vw, 43px);
+            letter-spacing: -1.6px;
+            line-height: 1.1;
+            margin: 10px 0 10px;
         }
 
-        .subtitle {
+        .sub {
             color: var(--muted);
-            margin-bottom: 28px;
+            margin: 0 0 27px;
+            max-width: 700px;
+        }
+
+        .search {
+            display: flex;
+            gap: 10px;
+            padding: 9px;
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            box-shadow: 0 10px 30px #0000000b;
+            max-width: 850px;
+        }
+
+        .search input {
+            min-width: 0;
+            flex: 1;
+            border: 0;
+            outline: 0;
+            background: transparent;
+            color: var(--text);
+            padding: 0 12px;
+            font: inherit;
+        }
+
+        button {
+            border: 0;
+            border-radius: 10px;
+            background: var(--accent);
+            color: white;
+            font-weight: 750;
+            padding: 13px 20px;
+            cursor: pointer;
+            font: inherit;
+        }
+
+        button:disabled {
+            opacity: .65;
+            cursor: wait;
+        }
+
+        .note {
+            color: var(--muted);
+            font-size: 12px;
+            margin: 10px 2px 0;
+        }
+
+        .status {
+            display: none;
+            margin-top: 18px;
+            max-width: 850px;
+            padding: 14px 16px;
+            border: 1px solid var(--line);
+            border-radius: 11px;
+            background: var(--panel);
+            color: var(--muted);
+        }
+
+        .status.show {
+            display: block;
+        }
+
+        .status strong {
+            color: var(--text);
         }
 
         .grid {
             display: grid;
-            grid-template-columns:
-                repeat(auto-fit, minmax(240px, 1fr));
-            gap: 15px;
+            grid-template-columns: 1.15fr .85fr;
+            gap: 18px;
+            margin-top: 34px;
         }
 
         .card {
             background: var(--panel);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 20px;
+            border: 1px solid var(--line);
+            border-radius: 15px;
+            padding: 22px;
         }
 
         .card h2 {
-            margin: 0 0 16px;
-            font-size: 16px;
-            font-weight: 600;
+            font-size: 15px;
+            margin: 0 0 18px;
+            letter-spacing: -.2px;
         }
 
-        .value {
-            font-size: 24px;
+        .score-wrap {
+            display: flex;
+            align-items: center;
+            gap: 22px;
+        }
+
+        .grade {
+            width: 112px;
+            height: 112px;
+            border: 8px solid var(--line);
+            border-top-color: var(--green);
+            border-right-color: var(--green);
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            flex-shrink: 0;
+        }
+
+        .grade span {
+            font-size: 38px;
+            font-weight: 850;
+            letter-spacing: -2px;
+        }
+
+        .score-title {
+            font-size: 19px;
+            font-weight: 750;
+        }
+
+        .score-desc {
+            color: var(--muted);
+            font-size: 13px;
+            margin-top: 4px;
+        }
+
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .metric {
+            background: var(--panel2);
+            border: 1px solid var(--line);
+            border-radius: 11px;
+            padding: 14px;
+        }
+
+        .metric-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
             font-weight: 700;
-            word-break: break-word;
         }
 
-        .value.good {
+        .metric small {
+            color: var(--muted);
+            display: block;
+            margin-top: 7px;
+            font-size: 11px;
+        }
+
+        .pill {
+            font-size: 11px;
+            padding: 3px 7px;
+            border-radius: 6px;
+            background: color-mix(in srgb, var(--amber) 15%, transparent);
+            color: var(--amber);
+        }
+
+        .pill.good {
+            background: color-mix(in srgb, var(--green) 14%, transparent);
             color: var(--green);
         }
 
-        .value.bad {
-            color: var(--red);
+        .findings {
+            margin-top: 18px;
         }
 
-        .value.warn {
-            color: var(--yellow);
-        }
-
-        .value.info {
-            color: var(--blue);
-        }
-
-        .detail {
-            margin-top: 7px;
-            color: var(--muted);
-            font-size: 13px;
-            line-height: 1.5;
-        }
-
-        .wide {
-            grid-column: 1 / -1;
-        }
-
-        .status {
+        .finding {
             display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 16px;
+            gap: 12px;
+            padding: 13px 0;
+            border-top: 1px solid var(--line);
         }
 
         .dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: var(--muted);
-            box-shadow: 0 0 10px currentColor;
-        }
-
-        .dot.green {
-            background: var(--green);
-            color: var(--green);
-        }
-
-        .dot.red {
-            background: var(--red);
-            color: var(--red);
-        }
-
-        .dot.yellow {
-            background: var(--yellow);
-            color: var(--yellow);
-        }
-
-        .table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .table td {
-            padding: 9px 0;
-            border-bottom: 1px solid var(--border);
-            vertical-align: top;
-        }
-
-        .table tr:last-child td {
-            border-bottom: 0;
-        }
-
-        .table td:first-child {
-            width: 180px;
-            color: var(--muted);
-        }
-
-        code {
-            font-family:
-                Consolas,
-                "Courier New",
-                monospace;
-
-            color: var(--cyan);
-            word-break: break-all;
-        }
-
-        button {
-            border: 1px solid var(--border);
-            background: var(--panel2);
-            color: var(--text);
-
-            padding: 11px 18px;
-            border-radius: 8px;
-
-            cursor: pointer;
-
-            font-size: 14px;
-            font-weight: 600;
-
-            transition:
-                background 0.15s,
-                border-color 0.15s,
-                transform 0.1s;
-        }
-
-        button:hover {
-            background: #1a232e;
-            border-color: #3b4b5d;
-        }
-
-        button:active {
-            transform: translateY(1px);
-        }
-
-        button:disabled {
-            opacity: 0.55;
-            cursor: wait;
-        }
-
-        .button-row {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .speed-grid {
-            display: grid;
-            grid-template-columns:
-                repeat(3, 1fr);
-            gap: 15px;
-            margin-top: 18px;
-        }
-
-        .speed-card {
-            background: var(--panel2);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 18px;
-        }
-
-        .speed-title {
-            color: var(--muted);
-            font-size: 13px;
-            margin-bottom: 8px;
-        }
-
-        .speed-value {
-            font-size: 26px;
-            font-weight: 700;
-        }
-
-        .progress {
+            width: 8px;
             height: 8px;
-            background: #1b222b;
-            border-radius: 999px;
-            overflow: hidden;
-            margin-top: 18px;
-            display: none;
+            border-radius: 50%;
+            background: var(--amber);
+            margin-top: 6px;
+            flex-shrink: 0;
         }
 
-        .progress-bar {
-            height: 100%;
-            width: 0%;
-            background: var(--blue);
-            transition: width 0.15s linear;
+        .finding b {
+            font-size: 13px;
+            display: block;
         }
 
-        .speed-status {
-            margin-top: 12px;
+        .finding p {
+            color: var(--muted);
+            font-size: 12px;
+            margin: 3px 0 0;
+        }
+
+        .sidecopy {
             color: var(--muted);
             font-size: 13px;
         }
 
-        .log {
-            background: #05070a;
-            border: 1px solid var(--border);
-            border-radius: 8px;
+        .list {
+            margin: 16px 0 0;
+            padding: 0;
+            list-style: none;
+        }
 
-            padding: 14px;
-
-            max-height: 280px;
-            overflow-y: auto;
-
-            font-family:
-                Consolas,
-                "Courier New",
-                monospace;
-
+        .list li {
+            border-top: 1px solid var(--line);
+            padding: 11px 0;
             font-size: 12px;
-            line-height: 1.6;
+            display: flex;
+            gap: 9px;
         }
 
-        .log-line {
-            white-space: pre-wrap;
-            word-break: break-word;
-        }
-
-        .log-info {
-            color: var(--blue);
-        }
-
-        .log-ok {
+        .check {
             color: var(--green);
-        }
-
-        .log-error {
-            color: var(--red);
-        }
-
-        .log-warn {
-            color: var(--yellow);
-        }
-
-        .routing-box {
-            margin-top: 15px;
-            padding: 15px;
-
-            border: 1px solid var(--border);
-            border-radius: 10px;
-
-            background: var(--panel2);
-        }
-
-        .routing-title {
-            color: var(--muted);
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            margin-bottom: 7px;
-        }
-
-        .routing-result {
-            font-size: 22px;
-            font-weight: 700;
+            font-weight: 900;
         }
 
         .footer {
-            margin-top: 25px;
-            text-align: center;
             color: var(--muted);
-            font-size: 12px;
+            font-size: 11px;
+            margin-top: 18px;
         }
 
-        @media (max-width: 700px) {
-            body {
-                padding: 18px;
+        @media(max-width:760px) {
+            main {
+                padding-top: 30px
             }
 
-            .speed-grid {
-                grid-template-columns: 1fr;
+            .grid {
+                grid-template-columns: 1fr
             }
 
-            .table td:first-child {
-                width: 130px;
+            .search {
+                flex-wrap: wrap
+            }
+
+            .search input {
+                height: 42px;
+                flex-basis: 100%
+            }
+
+            .search button {
+                width: 100%
+            }
+
+            .score-wrap {
+                gap: 15px
+            }
+
+            .grade {
+                width: 92px;
+                height: 92px
+            }
+
+            .grade span {
+                font-size: 32px
             }
         }
     </style>
 </head>
 
 <body>
-
-    <div class="container">
-
-        <!-- Tool Switcher Sub-nav -->
-        <div class="stat-badge"><a href="index.html"
-                style="display: flex; align-items: center; padding: 0.8rem 1.6rem; border-radius: 6px; color: #C2C8CD; background-color: #0F141B; width: 110px; font-size: 14px; font-weight: 500; text-decoration: none; border: 1px solid transparent;">
-                <i class="im im-tools"></i> All Tools
-            </a></div>
-        <h1>
-
-        <h1>xCONFLiCTiONx Network Diagnostic</h1>
-
-        <div class="subtitle">
-            Cloudflare WARP / Gateway routing, connection information,
-            and same-origin speed test.
-        </div>
-
-
-        <!-- ROUTING STATUS -->
-
-        <div class="grid">
-
-            <div class="card wide">
-
-                <div class="status">
-                    <div id="routingDot" class="dot"></div>
-
-                    <div>
-                        <div id="routingResult" class="routing-result">
-                            Checking...
-                        </div>
-
-                        <div id="routingDetail" class="detail">
-                            Reading Cloudflare connection information...
+    <div id="app">
+        <header class="top">
+            <div class="brand"><span class="mark">S</span> SiteGrade</div><a class="back"
+                href="https://xconflictionx.cc/tools/">← Back to Tools</a>
+        </header>
+        <main>
+            <div class="eyebrow">Website scanner</div>
+            <h1>Know what your website<br>is really made of.</h1>
+            <p class="sub">Run a real public-facing audit for security, privacy, performance, SEO, configuration, and
+                accessibility. Get a score, evidence-backed findings, and clear areas to improve.</p>
+            <form class="search" id="scanForm">
+                <input id="url" type="url" placeholder="https://example.com" aria-label="Website URL" required><button id="scanBtn" type="submit">Scan website <span aria-hidden="true">→</span></button>
+            </form>
+            <p class="note">Scan only websites you own or have permission to assess. SiteGrade uses a Cloudflare Worker
+                to perform the public-facing audit.</p>
+            <div class="status" id="status" role="status"></div>
+            <section class="grid" aria-label="Example audit dashboard">
+                <div class="card">
+                    <h2>Overall assessment <span class="pill" id="statePill" style="float:right">Ready</span></h2>
+                    <div class="score-wrap">
+                        <div class="grade" id="gradeRing"><span id="grade">—</span></div>
+                        <div>
+                            <div class="score-title" id="scoreTitle">Awaiting scan</div>
+                            <div class="score-desc" id="scoreDesc">Enter a public website URL and run a real audit.
+                            </div>
                         </div>
                     </div>
+                    <div class="footer" id="scanMeta">No site has been scanned yet.</div>
                 </div>
-
-            </div>
-
-
-            <!-- WARP -->
-
-            <div class="card">
-
-                <h2>Cloudflare WARP</h2>
-
-                <div id="warpValue" class="value">
-                    Checking...
-                </div>
-
-                <div class="detail">
-                    Cloudflare trace WARP status
-                </div>
-
-            </div>
-
-
-            <!-- GATEWAY -->
-
-            <div class="card">
-
-                <h2>Cloudflare Gateway</h2>
-
-                <div id="gatewayValue" class="value">
-                    Checking...
-                </div>
-
-                <div class="detail">
-                    Cloudflare trace Gateway status
-                </div>
-
-            </div>
-
-
-            <!-- IP -->
-
-            <div class="card">
-
-                <h2>Observed IP</h2>
-
-                <div id="traceIp" class="value">
-                    Checking...
-                </div>
-
-                <div class="detail">
-                    IP reported by Cloudflare
-                </div>
-
-            </div>
-
-
-            <!-- COLO -->
-
-            <div class="card">
-
-                <h2>Cloudflare POP</h2>
-
-                <div id="coloValue" class="value">
-                    Checking...
-                </div>
-
-                <div class="detail">
-                    Cloudflare edge location
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <!-- CONNECTION INFORMATION -->
-
-        <div class="card wide" style="margin-top:15px;">
-
-            <h2>Connection Information</h2>
-
-            <table class="table">
-
-                <tr>
-                    <td>Hostname</td>
-                    <td>
-                        <code id="hostname">Checking...</code>
-                    </td>
-                </tr>
-
-                <tr>
-                    <td>Current URL</td>
-                    <td>
-                        <code id="currentUrl">Checking...</code>
-                    </td>
-                </tr>
-
-                <tr>
-                    <td>Browser IPv4</td>
-                    <td>
-                        <code id="ipv4">Checking...</code>
-                    </td>
-                </tr>
-
-                <tr>
-                    <td>Browser IPv6</td>
-                    <td>
-                        <code id="ipv6">Checking...</code>
-                    </td>
-                </tr>
-
-                <tr>
-                    <td>HTTP Version</td>
-                    <td>
-                        <code id="httpVersion">Checking...</code>
-                    </td>
-                </tr>
-
-                <tr>
-                    <td>TLS</td>
-                    <td>
-                        <code id="tls">Checking...</code>
-                    </td>
-                </tr>
-
-            </table>
-
-        </div>
-
-
-        <!-- SPEED TEST -->
-
-        <div class="card wide" style="margin-top:15px;">
-
-            <h2>Same-Origin Speed Test</h2>
-
-            <div class="detail">
-                This test downloads data directly from this website.
-                That makes it useful for comparing the route with
-                WARP enabled versus a split-tunnel exclusion.
-            </div>
-
-            <div class="button-row" style="margin-top:16px;">
-
-                <button
-                id="speedTestButton"
-                onclick="runSpeedTest()"
-            >
-                ⚡ Run Speed Test
-            </button>
-
-            </div>
-
-
-            <div id="speedProgress" class="progress">
-                <div id="speedProgressBar" class="progress-bar"></div>
-            </div>
-
-
-            <div id="speedStatus" class="speed-status">
-                Ready.
-            </div>
-
-
-            <div class="speed-grid">
-
-                <div class="speed-card">
-
-                    <div class="speed-title">
-                        LATENCY
+                <div class="card">
+                    <h2>Audit categories</h2>
+                    <div class="metrics">
+                        <div class="metric">
+                            <div class="metric-top">Security <span class="pill" id="securityScore">—</span></div>
+                            <small>TLS, headers, exposed risks</small>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-top">Privacy <span class="pill" id="privacyScore">—</span></div>
+                            <small>Cookies, trackers, third parties</small>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-top">Performance <span class="pill" id="performanceScore">—</span></div>
+                            <small>Response, assets, load metrics</small>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-top">SEO <span class="pill" id="seoScore">—</span></div>
+                            <small>Metadata, crawlability, structure</small>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-top">Configuration <span class="pill" id="configurationScore">—</span>
+                            </div><small>DNS, redirects, server setup</small>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-top">Accessibility <span class="pill" id="accessibilityScore">—</span>
+                            </div><small>Semantic and usability checks</small>
+                        </div>
                     </div>
-
-                    <div id="speedLatency" class="speed-value">
-                        —
-                    </div>
-
-                    <div id="speedLatencyDetail" class="detail">
-                        Round-trip request time
-                    </div>
-
                 </div>
-
-
-                <div class="speed-card">
-
-                    <div class="speed-title">
-                        DOWNLOAD
+                <div class="card">
+                    <h2>Findings</h2>
+                    <p class="sidecopy" id="findingIntro">Run a scan to see evidence-backed findings from the connected
+                        scanner.</p>
+                    <div class="findings" id="findings">
+                        <div class="finding"><span class="dot"></span>
+                            <div><b>Waiting for results</b>
+                                <p>The scanner will report verified observations here.</p>
+                            </div>
+                        </div>
                     </div>
-
-                    <div id="speedDownload" class="speed-value">
-                        —
-                    </div>
-
-                    <div id="speedDownloadDetail" class="detail">
-                        Same-origin download
-                    </div>
-
                 </div>
-
-
-                <div class="speed-card">
-
-                    <div class="speed-title">
-                        UPLOAD
-                    </div>
-
-                    <div id="speedUpload" class="speed-value">
-                        N/A
-                    </div>
-
-                    <div id="speedUploadDetail" class="detail">
-                        Requires a server-side POST endpoint
-                    </div>
-
+                <div class="card">
+                    <h2>Audit coverage</h2>
+                    <p class="sidecopy">SiteGrade evaluates what can be verified from the public website without
+                        installing software or requiring access to the target server.</p>
+                    <ul class="list">
+                        <li><span class="check">✓</span> HTTPS, redirects, and security response headers</li>
+                        <li><span class="check">✓</span> Cookies and third-party resources</li>
+                        <li><span class="check">✓</span> Titles, descriptions, canonicals, headings, and crawl signals
+                        </li>
+                        <li><span class="check">✓</span> HTML response time, size, compression, and caching</li>
+                        <li><span class="check">✓</span> Accessibility structure and common image/text issues</li>
+                        <li><span class="check">✓</span> Public-facing configuration observations</li>
+                    </ul>
                 </div>
-
-            </div>
-
-        </div>
-
-
-        <!-- CLOUDFLARE TRACE -->
-
-        <div class="card wide" style="margin-top:15px;">
-
-            <h2>Cloudflare Trace</h2>
-
-            <table class="table">
-
-                <tbody id="traceTable">
-
-                    <tr>
-                        <td>Status</td>
-                        <td>Loading...</td>
-                    </tr>
-
-                </tbody>
-
-            </table>
-
-        </div>
-
-
-        <!-- LOG -->
-
-        <div class="card wide" style="margin-top:15px;">
-
-            <h2>Diagnostic Log</h2>
-
-            <div id="log" class="log"></div>
-
-        </div>
-
-
-        <div class="footer">
-            xCONFLiCTiONx Network Diagnostic
-        </div>
-
+            </section>
+        </main>
     </div>
-
-
     <script>
-        "use strict";
-
-
-function $(id) {
-    return document.getElementById(id);
-}
-
-
-/* =========================================================
-   LOGGING
-   ========================================================= */
-
-function log(message, type = "info") {
-
-    const container = $("log");
-
-    const line =
-        document.createElement("div");
-
-    line.className =
-        "log-line log-" + type;
-
-    const time =
-        new Date().toLocaleTimeString();
-
-    line.textContent =
-        "[" + time + "] " + message;
-
-    container.appendChild(line);
-
-    container.scrollTop =
-        container.scrollHeight;
-}
-
-
-/* =========================================================
-   BASIC PAGE INFORMATION
-   ========================================================= */
-
-function populateBasicInfo() {
-
-    $("hostname").textContent =
-        window.location.hostname;
-
-    $("currentUrl").textContent =
-        window.location.href;
-
-    log(
-        "Hostname: " +
-        window.location.hostname,
-        "info"
-    );
-
-    log(
-        "URL: " +
-        window.location.href,
-        "info"
-    );
-}
-
-
-/* =========================================================
-   PUBLIC IP TESTS
-   ========================================================= */
-
-async function getIPv4() {
-
-    try {
-
-        const response =
-            await fetch(
-                "https://api.ipify.org?format=json&cache=" +
-                Date.now(),
-                {
-                    cache: "no-store"
-                }
-            );
-
-        if (!response.ok) {
-            throw new Error(
-                "HTTP " + response.status
-            );
-        }
-
-        const data =
-            await response.json();
-
-        $("ipv4").textContent =
-            data.ip || "Unavailable";
-
-        log(
-            "IPv4: " +
-            (data.ip || "Unavailable"),
-            "ok"
-        );
-
-    } catch (error) {
-
-        $("ipv4").textContent =
-            "Unavailable";
-
-        log(
-            "IPv4 lookup failed: " +
-            error.message,
-            "error"
-        );
-    }
-}
-
-
-async function getIPv6() {
-
-    try {
-
-        const response =
-            await fetch(
-                "https://api6.ipify.org?format=json&cache=" +
-                Date.now(),
-                {
-                    cache: "no-store"
-                }
-            );
-
-        if (!response.ok) {
-            throw new Error(
-                "HTTP " + response.status
-            );
-        }
-
-        const data =
-            await response.json();
-
-        $("ipv6").textContent =
-            data.ip || "Unavailable";
-
-        log(
-            "IPv6: " +
-            (data.ip || "Unavailable"),
-            "ok"
-        );
-
-    } catch (error) {
-
-        $("ipv6").textContent =
-            "Unavailable";
-
-        log(
-            "IPv6 lookup failed: " +
-            error.message,
-            "warn"
-        );
-    }
-}
-
-
-/* =========================================================
-   CLOUDFLARE TRACE
-   ========================================================= */
-
-async function getCloudflareTrace() {
-
-    log(
-        "Requesting Cloudflare trace...",
-        "info"
-    );
-
-    try {
-
-        const response =
-            await fetch(
-                "/cdn-cgi/trace?cache=" +
-                Date.now(),
-                {
-                    cache: "no-store"
-                }
-            );
-
-        if (!response.ok) {
-
-            throw new Error(
-                "HTTP " + response.status
-            );
-        }
-
-        const text =
-            await response.text();
-
-        const data = {};
-
-        text
-            .trim()
-            .split(/\r?\n/)
-            .forEach(line => {
-
-                const index =
-                    line.indexOf("=");
-
-                if (index === -1) {
-                    return;
-                }
-
-                const key =
-                    line.substring(
-                        0,
-                        index
-                    );
-
-                const value =
-                    line.substring(
-                        index + 1
-                    );
-
-                data[key] = value;
-            });
-
-
-        /* -----------------------------------------
-           WARP
-        ----------------------------------------- */
-
-        const warp =
-            (data.warp || "")
-                .toLowerCase();
-
-        const gateway =
-            (data.gateway || "")
-                .toLowerCase();
-
-
-        $("warpValue").textContent =
-            data.warp || "Not provided";
-
-        $("gatewayValue").textContent =
-            data.gateway || "Not provided";
-
-
-        /* -----------------------------------------
-           WARP COLOR
-        ----------------------------------------- */
-
-        if (warp === "on") {
-
-            $("warpValue").className =
-                "value good";
-
-        } else if (warp === "off") {
-
-            $("warpValue").className =
-                "value bad";
-
-        } else {
-
-            $("warpValue").className =
-                "value warn";
-        }
-
-
-        /* -----------------------------------------
-           GATEWAY COLOR
-        ----------------------------------------- */
-
-        if (gateway === "on") {
-
-            $("gatewayValue").className =
-                "value good";
-
-        } else if (gateway === "off") {
-
-            $("gatewayValue").className =
-                "value bad";
-
-        } else {
-
-            $("gatewayValue").className =
-                "value warn";
-        }
-
-
-        /* -----------------------------------------
-           TRACE IP
-        ----------------------------------------- */
-
-        $("traceIp").textContent =
-            data.ip || "Not provided";
-
-
-        $("coloValue").textContent =
-            data.colo || "Not provided";
-
-
-        $("httpVersion").textContent =
-            data.http || "Not provided";
-
-
-        $("tls").textContent =
-            data.tls || "Not provided";
-
-
-        /* -----------------------------------------
-           ROUTING RESULT
-        ----------------------------------------- */
-
-        const dot =
-            $("routingDot");
-
-        const result =
-            $("routingResult");
-
-        const detail =
-            $("routingDetail");
-
-
-        if (
-            warp === "off" &&
-            gateway === "off"
-        ) {
-
-            result.textContent =
-                "BYPASSED / SPLIT TUNNEL";
-
-            result.style.color =
-                "var(--green)";
-
-            detail.textContent =
-                "Cloudflare reports WARP and Gateway are both OFF for this request.";
-
-            dot.className =
-                "dot green";
-
-            log(
-                "Routing result: WARP OFF / Gateway OFF — traffic is bypassing Cloudflare WARP.",
-                "ok"
-            );
-
-        } else if (
-            warp === "on"
-        ) {
-
-            result.textContent =
-                "TUNNELED THROUGH WARP";
-
-            result.style.color =
-                "var(--blue)";
-
-            detail.textContent =
-                "Cloudflare reports WARP ON for this request.";
-
-            dot.className =
-                "dot green";
-
-            log(
-                "Routing result: WARP ON — request reached Cloudflare through WARP.",
-                "ok"
-            );
-
-        } else if (
-            gateway === "on"
-        ) {
-
-            result.textContent =
-                "CLOUDFLARE GATEWAY";
-
-            result.style.color =
-                "var(--blue)";
-
-            detail.textContent =
-                "Cloudflare Gateway is ON for this request.";
-
-            dot.className =
-                "dot green";
-
-            log(
-                "Routing result: Gateway ON.",
-                "ok"
-            );
-
-        } else {
-
-            result.textContent =
-                "UNKNOWN";
-
-            result.style.color =
-                "var(--yellow)";
-
-            detail.textContent =
-                "Cloudflare did not provide enough routing information.";
-
-            dot.className =
-                "dot yellow";
-
-            log(
-                "Could not determine WARP/Gateway state.",
-                "warn"
-            );
-        }
-
-
-        /* -----------------------------------------
-           TRACE TABLE
-        ----------------------------------------- */
-
-        const table =
-            $("traceTable");
-
-        table.innerHTML = "";
-
-        const fields = [
-            ["ip", "Observed IP"],
-            ["colo", "Cloudflare POP"],
-            ["http", "HTTP"],
-            ["tls", "TLS"],
-            ["warp", "WARP"],
-            ["gateway", "Gateway"],
-            ["s", "Scheme"],
-            ["visit_scheme", "Visit Scheme"],
-            ["uag", "User Agent"],
-            ["loc", "Location"]
-        ];
-
-        fields.forEach(
-            ([key, label]) => {
-
-                if (
-                    data[key] === undefined
-                ) {
-                    return;
-                }
-
-                const row =
-                    document.createElement("tr");
-
-                const name =
-                    document.createElement("td");
-
-                const value =
-                    document.createElement("td");
-
-                name.textContent =
-                    label;
-
-                const code =
-                    document.createElement("code");
-
-                code.textContent =
-                    data[key];
-
-                value.appendChild(code);
-
-                row.appendChild(name);
-                row.appendChild(value);
-
-                table.appendChild(row);
-            }
-        );
-
-
-        log(
-            "Cloudflare trace loaded successfully.",
-            "ok"
-        );
-
-    } catch (error) {
-
-        $("routingResult").textContent =
-            "TRACE UNAVAILABLE";
-
-        $("routingResult").style.color =
-            "var(--yellow)";
-
-        $("routingDetail").textContent =
-            error.message;
-
-        $("routingDot").className =
-            "dot yellow";
-
-        $("warpValue").textContent =
-            "Unavailable";
-
-        $("gatewayValue").textContent =
-            "Unavailable";
-
-        $("traceIp").textContent =
-            "Unavailable";
-
-        $("coloValue").textContent =
-            "Unavailable";
-
-        log(
-            "Cloudflare trace failed: " +
-            error.message,
-            "error"
-        );
-    }
-}
-
-
-/* =========================================================
-   LATENCY
-   ========================================================= */
-
-async function measureLatency() {
-
-    const samples = 5;
-
-    const results = [];
-
-
-    for (
-        let i = 0;
-        i < samples;
-        i++
-    ) {
-
-        const start =
-            performance.now();
-
-        try {
-
-            const response =
-                await fetch(
-                    "/tools/test.html?latency=" +
-                    Date.now() +
-                    "-" +
-                    i,
-                    {
-                        method: "HEAD",
-                        cache: "no-store"
-                    }
-                );
-
-            if (!response.ok) {
-
-                throw new Error(
-                    "HTTP " +
-                    response.status
-                );
-            }
-
-            const elapsed =
-                performance.now() -
-                start;
-
-            results.push(elapsed);
-
-            log(
-                "Latency sample " +
-                (i + 1) +
-                ": " +
-                elapsed.toFixed(1) +
-                " ms",
-                "info"
-            );
-
-        } catch (error) {
-
-            log(
-                "Latency sample failed: " +
-                error.message,
-                "error"
-            );
-        }
-    }
-
-
-    if (!results.length) {
-        return null;
-    }
-
-
-    results.sort(
-        (a, b) => a - b
-    );
-
-
-    /*
-        Remove the highest and lowest
-        sample when we have enough samples.
-    */
-
-    const trimmed =
-        results.length >= 3
-            ? results.slice(1, -1)
-            : results;
-
-
-    return (
-        trimmed.reduce(
-            (a, b) => a + b,
-            0
-        ) /
-        trimmed.length
-    );
-}
-
-
-/* =========================================================
-   DOWNLOAD SPEED
-   ========================================================= */
-
-async function measureDownload() {
-
-    /*
-        IMPORTANT:
-
-        Put speedtest.bin in:
-
-            tools/speedtest.bin
-
-        Change this number if you use
-        a different file size.
-    */
-
-    const TEST_SIZE =
-        25 * 1024 * 1024;
-
-
-    const url =
-        "/tools/speedtest.bin?cache=" +
-        Date.now();
-
-
-    const start =
-        performance.now();
-
-
-    let bytes = 0;
-
-
-    const response =
-        await fetch(
-            url,
-            {
-                cache: "no-store"
-            }
-        );
-
-
-    if (!response.ok) {
-
-        throw new Error(
-            "Download returned HTTP " +
-            response.status
-        );
-    }
-
-
-    if (!response.body) {
-
-        throw new Error(
-            "Streaming response unavailable."
-        );
-    }
-
-
-    const reader =
-        response.body.getReader();
-
-
-    while (true) {
-
-        const {
-            value,
-            done
-        } = await reader.read();
-
-
-        if (done) {
-            break;
-        }
-
-
-        if (value) {
-
-            bytes +=
-                value.byteLength;
-
-
-            updateSpeedProgress(
-                Math.min(
-                    100,
-                    (bytes / TEST_SIZE) *
-                    100
-                )
-            );
-        }
-    }
-
-
-    const seconds =
-        (
-            performance.now() -
-            start
-        ) / 1000;
-
-
-    if (seconds <= 0) {
-
-        throw new Error(
-            "Invalid download timing."
-        );
-    }
-
-
-    return {
-
-        bytes,
-
-        seconds,
-
-        mbps:
-            (
-                bytes *
-                8 /
-                seconds
-            ) /
-            1000000
-    };
-}
-
-
-/* =========================================================
-   SPEED PROGRESS
-   ========================================================= */
-
-function updateSpeedProgress(
-    percent
-) {
-
-    $("speedProgress").style.display =
-        "block";
-
-    $("speedProgressBar").style.width =
-        percent.toFixed(1) +
-        "%";
-}
-
-
-/* =========================================================
-   SPEED TEST
-   ========================================================= */
-
-async function runSpeedTest() {
-
-    const button =
-        $("speedTestButton");
-
-
-    button.disabled =
-        true;
-
-
-    button.textContent =
-        "Testing...";
-
-
-    $("speedProgress").style.display =
-        "block";
-
-
-    $("speedProgressBar").style.width =
-        "0%";
-
-
-    $("speedStatus").textContent =
-        "Measuring latency...";
-
-
-    $("speedLatency").textContent =
-        "Testing...";
-
-
-    $("speedDownload").textContent =
-        "Waiting...";
-
-
-    $("speedUpload").textContent =
-        "N/A";
-
-
-    $("speedUploadDetail").textContent =
-        "Requires a server-side POST endpoint";
-
-
-    log(
-        "Starting speed test...",
-        "info"
-    );
-
-
-    try {
-
-        /* -----------------------------------------
-           LATENCY
-        ----------------------------------------- */
-
-        const latency =
-            await measureLatency();
-
-
-        if (latency !== null) {
-
-            $("speedLatency").textContent =
-                latency.toFixed(1) +
-                " ms";
-
-            $("speedLatency").className =
-                "speed-value good";
-
-            $("speedLatencyDetail").textContent =
-                "Average of test samples";
-
-            log(
-                "Average latency: " +
-                latency.toFixed(1) +
-                " ms",
-                "ok"
-            );
-
-        } else {
-
-            $("speedLatency").textContent =
-                "Failed";
-
-            $("speedLatency").className =
-                "speed-value bad";
-        }
-
-
-        /* -----------------------------------------
-           DOWNLOAD
-        ----------------------------------------- */
-
-        $("speedStatus").textContent =
-            "Measuring download speed...";
-
-
-        $("speedProgressBar").style.width =
-            "0%";
-
-
-        log(
-            "Starting 25 MB download test...",
-            "info"
-        );
-
-
-        const download =
-            await measureDownload();
-
-
-        $("speedDownload").textContent =
-            download.mbps.toFixed(2) +
-            " Mbps";
-
-
-        $("speedDownload").className =
-            "speed-value good";
-
-
-        $("speedDownloadDetail").textContent =
-            formatBytes(
-                download.bytes
-            ) +
-            " downloaded in " +
-            download.seconds.toFixed(2) +
-            " seconds";
-
-
-        log(
-            "Download: " +
-            download.mbps.toFixed(2) +
-            " Mbps",
-            "ok"
-        );
-
-
-        $("speedProgressBar").style.width =
-            "100%";
-
-
-        $("speedStatus").textContent =
-            "Speed test complete.";
-
-
-        log(
-            "Speed test completed.",
-            "ok"
-        );
-
-
-    } catch (error) {
-
-        $("speedStatus").textContent =
-            "Speed test failed: " +
-            error.message;
-
-
-        log(
-            "Speed test failed: " +
-            error.message,
-            "error"
-        );
-
-
-    } finally {
-
-        button.disabled =
-            false;
-
-        button.textContent =
-            "⚡ Run Speed Test";
-    }
-}
-
-
-/* =========================================================
-   FORMAT BYTES
-   ========================================================= */
-
-function formatBytes(bytes) {
-
-    if (bytes < 1024) {
-
-        return (
-            bytes +
-            " B"
-        );
-    }
-
-
-    if (
-        bytes <
-        1024 * 1024
-    ) {
-
-        return (
-            bytes / 1024
-        ).toFixed(1) +
-        " KB";
-    }
-
-
-    if (
-        bytes <
-        1024 *
-        1024 *
-        1024
-    ) {
-
-        return (
-            bytes /
-            (1024 * 1024)
-        ).toFixed(2) +
-        " MB";
-    }
-
-
-    return (
-        bytes /
-        (1024 *
-        1024 *
-        1024)
-    ).toFixed(2) +
-    " GB";
-}
-
-
-/* =========================================================
-   STARTUP
-   ========================================================= */
-
-async function initialize() {
-
-    populateBasicInfo();
-
-    log(
-        "Initializing network diagnostic...",
-        "info"
-    );
-
-
-    /*
-        Run these independently so one failure
-        does not prevent the others.
-    */
-
-    getIPv4();
-
-    getIPv6();
-
-    getCloudflareTrace();
-
-
-    log(
-        "Diagnostic initialization complete.",
-        "ok"
-    );
-}
-
-
-initialize();
-
+        const API_URL='https://scanner.xconflictionx.cc/scan';
+const form=document.getElementById('scanForm');
+const input=document.getElementById('url');
+const statusBox=document.getElementById('status');
+const btn=document.getElementById('scanBtn');
+function setScore(id,value){const el=document.getElementById(id);el.textContent=value+'/100';el.classList.toggle('good',value>=80);}
+function esc(value){return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function renderFindings(items){const box=document.getElementById('findings');if(!items?.length){box.innerHTML='<div class="finding"><span class="dot" style="background:var(--green)"></span><div><b>No findings returned</b><p>The connected checks did not report an issue.</p></div></div>';return;}box.innerHTML=items.map(f=>{const sev=String(f.severity||'info').toLowerCase();const dot=sev==='info'?'var(--green)':'var(--amber)';return '<div class="finding"><span class="dot" style="background:'+dot+'"></span><div><b>'+esc(sev.toUpperCase())+' · '+esc(f.title)+'</b><p>'+esc(f.detail||f.description||'')+'</p></div></div>';}).join('');}
+form.addEventListener('submit',async event=>{
+ event.preventDefault();
+ let parsed;
+ try { parsed=new URL(input.value.trim()); } catch { statusBox.className='status show';statusBox.textContent='Enter a valid website URL, including https:// or http://.';return; }
+ if(!['http:','https:'].includes(parsed.protocol)){statusBox.className='status show';statusBox.textContent='Only HTTP and HTTPS website URLs are supported.';return;}
+ btn.disabled=true;btn.textContent='Scanning…';statusBox.className='status show';statusBox.innerHTML='<strong>Scanning:</strong> '+esc(parsed.href)+'<br>Fetching the public page and running security, privacy, SEO, performance, and configuration checks…';
+ try { const response=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:parsed.href})}); const data=await response.json().catch(()=>({error:'Scanner returned invalid JSON.'})); if(!response.ok) throw new Error(data.error||'Scanner returned HTTP '+response.status); const scores=data.scores||{}; const overall=Number(data.overall?.score??data.score??0); document.getElementById('grade').textContent=data.overall?.grade||data.grade||'—'; document.getElementById('scoreTitle').textContent=overall+'/100 overall score';document.getElementById('scoreDesc').textContent=data.finalUrl?'Audited '+data.finalUrl:'Audit completed';document.getElementById('statePill').textContent='Complete';document.getElementById('statePill').classList.add('good');document.getElementById('scanMeta').textContent='Scanned '+new Date().toLocaleString()+' · '+(data.durationMs||0)+' ms';['security','privacy','performance','seo','configuration','accessibility'].forEach(k=>setScore(k+'Score',Number(scores[k]??0)));renderFindings(data.findings||[]);statusBox.innerHTML='<strong>Scan complete:</strong> '+esc(data.finalUrl||parsed.href)+'<br>'+esc(data.summary||'Results are based on checks the Worker could verify from the public site.');
+ } catch(error) { statusBox.innerHTML='<strong>Scan failed:</strong> '+esc(error.message)+'<br><br>Check that the Worker URL is deployed and that its CORS policy allows this SiteGrade page.'; }
+ finally {btn.disabled=false;btn.innerHTML='Scan website <span aria-hidden="true">→</span>';}
+});
     </script>
-
 </body>
 
 </html>
