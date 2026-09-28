@@ -686,8 +686,8 @@
         "use strict";
 
 
-function $(id) {
-    return document.getElementById(id);
+function byId(id) {
+return document.getElementById(id);
 }
 
 
@@ -697,7 +697,7 @@ function $(id) {
 
 function log(message, type = "info") {
 
-    const container = $("log");
+    const container = byId("log");
 
     const line =
         document.createElement("div");
@@ -724,10 +724,10 @@ function log(message, type = "info") {
 
 function populateBasicInfo() {
 
-    $("hostname").textContent =
+    byId("hostname").textContent =
         window.location.hostname;
 
-    $("currentUrl").textContent =
+    byId("currentUrl").textContent =
         window.location.href;
 
     log(
@@ -770,7 +770,7 @@ async function getIPv4() {
         const data =
             await response.json();
 
-        $("ipv4").textContent =
+        byId("ipv4").textContent =
             data.ip || "Unavailable";
 
         log(
@@ -781,7 +781,7 @@ async function getIPv4() {
 
     } catch (error) {
 
-        $("ipv4").textContent =
+        byId("ipv4").textContent =
             "Unavailable";
 
         log(
@@ -815,7 +815,7 @@ async function getIPv6() {
         const data =
             await response.json();
 
-        $("ipv6").textContent =
+        byId("ipv6").textContent =
             data.ip || "Unavailable";
 
         log(
@@ -826,7 +826,7 @@ async function getIPv6() {
 
     } catch (error) {
 
-        $("ipv6").textContent =
+        byId("ipv6").textContent =
             "Unavailable";
 
         log(
@@ -912,10 +912,10 @@ async function getCloudflareTrace() {
                 .toLowerCase();
 
 
-        $("warpValue").textContent =
+        byId("warpValue").textContent =
             data.warp || "Not provided";
 
-        $("gatewayValue").textContent =
+        byId("gatewayValue").textContent =
             data.gateway || "Not provided";
 
 
@@ -925,17 +925,17 @@ async function getCloudflareTrace() {
 
         if (warp === "on") {
 
-            $("warpValue").className =
+            byId("warpValue").className =
                 "value good";
 
         } else if (warp === "off") {
 
-            $("warpValue").className =
+            byId("warpValue").className =
                 "value bad";
 
         } else {
 
-            $("warpValue").className =
+            byId("warpValue").className =
                 "value warn";
         }
 
@@ -946,17 +946,17 @@ async function getCloudflareTrace() {
 
         if (gateway === "on") {
 
-            $("gatewayValue").className =
+            byId("gatewayValue").className =
                 "value good";
 
         } else if (gateway === "off") {
 
-            $("gatewayValue").className =
+            byId("gatewayValue").className =
                 "value bad";
 
         } else {
 
-            $("gatewayValue").className =
+            byId("gatewayValue").className =
                 "value warn";
         }
 
@@ -965,19 +965,19 @@ async function getCloudflareTrace() {
            TRACE IP
         ----------------------------------------- */
 
-        $("traceIp").textContent =
+        byId("traceIp").textContent =
             data.ip || "Not provided";
 
 
-        $("coloValue").textContent =
+        byId("coloValue").textContent =
             data.colo || "Not provided";
 
 
-        $("httpVersion").textContent =
+        byId("httpVersion").textContent =
             data.http || "Not provided";
 
 
-        $("tls").textContent =
+        byId("tls").textContent =
             data.tls || "Not provided";
 
 
@@ -986,13 +986,13 @@ async function getCloudflareTrace() {
         ----------------------------------------- */
 
         const dot =
-            $("routingDot");
+            byId("routingDot");
 
         const result =
-            $("routingResult");
+            byId("routingResult");
 
         const detail =
-            $("routingDetail");
+            byId("routingDetail");
 
 
         if (
@@ -1085,7 +1085,7 @@ async function getCloudflareTrace() {
         ----------------------------------------- */
 
         const table =
-            $("traceTable");
+            byId("traceTable");
 
         table.innerHTML = "";
 
@@ -1146,28 +1146,28 @@ async function getCloudflareTrace() {
 
     } catch (error) {
 
-        $("routingResult").textContent =
+        byId("routingResult").textContent =
             "TRACE UNAVAILABLE";
 
-        $("routingResult").style.color =
+        byId("routingResult").style.color =
             "var(--yellow)";
 
-        $("routingDetail").textContent =
+        byId("routingDetail").textContent =
             error.message;
 
-        $("routingDot").className =
+        byId("routingDot").className =
             "dot yellow";
 
-        $("warpValue").textContent =
+        byId("warpValue").textContent =
             "Unavailable";
 
-        $("gatewayValue").textContent =
+        byId("gatewayValue").textContent =
             "Unavailable";
 
-        $("traceIp").textContent =
+        byId("traceIp").textContent =
             "Unavailable";
 
-        $("coloValue").textContent =
+        byId("coloValue").textContent =
             "Unavailable";
 
         log(
@@ -1411,10 +1411,10 @@ function updateSpeedProgress(
     percent
 ) {
 
-    $("speedProgress").style.display =
+    byId("speedProgress").style.display =
         "block";
 
-    $("speedProgressBar").style.width =
+    byId("speedProgressBar").style.width =
         percent.toFixed(1) +
         "%";
 }
@@ -1427,7 +1427,7 @@ function updateSpeedProgress(
 async function runSpeedTest() {
 
     const button =
-        $("speedTestButton");
+        byId("speedTestButton");
 
 
     button.disabled =
@@ -1438,31 +1438,31 @@ async function runSpeedTest() {
         "Testing...";
 
 
-    $("speedProgress").style.display =
+    byId("speedProgress").style.display =
         "block";
 
 
-    $("speedProgressBar").style.width =
+    byId("speedProgressBar").style.width =
         "0%";
 
 
-    $("speedStatus").textContent =
+    byId("speedStatus").textContent =
         "Measuring latency...";
 
 
-    $("speedLatency").textContent =
+    byId("speedLatency").textContent =
         "Testing...";
 
 
-    $("speedDownload").textContent =
+    byId("speedDownload").textContent =
         "Waiting...";
 
 
-    $("speedUpload").textContent =
+    byId("speedUpload").textContent =
         "N/A";
 
 
-    $("speedUploadDetail").textContent =
+    byId("speedUploadDetail").textContent =
         "Requires a server-side POST endpoint";
 
 
@@ -1484,14 +1484,14 @@ async function runSpeedTest() {
 
         if (latency !== null) {
 
-            $("speedLatency").textContent =
+            byId("speedLatency").textContent =
                 latency.toFixed(1) +
                 " ms";
 
-            $("speedLatency").className =
+            byId("speedLatency").className =
                 "speed-value good";
 
-            $("speedLatencyDetail").textContent =
+            byId("speedLatencyDetail").textContent =
                 "Average of test samples";
 
             log(
@@ -1503,10 +1503,10 @@ async function runSpeedTest() {
 
         } else {
 
-            $("speedLatency").textContent =
+            byId("speedLatency").textContent =
                 "Failed";
 
-            $("speedLatency").className =
+            byId("speedLatency").className =
                 "speed-value bad";
         }
 
@@ -1515,11 +1515,11 @@ async function runSpeedTest() {
            DOWNLOAD
         ----------------------------------------- */
 
-        $("speedStatus").textContent =
+        byId("speedStatus").textContent =
             "Measuring download speed...";
 
 
-        $("speedProgressBar").style.width =
+        byId("speedProgressBar").style.width =
             "0%";
 
 
@@ -1533,16 +1533,16 @@ async function runSpeedTest() {
             await measureDownload();
 
 
-        $("speedDownload").textContent =
+        byId("speedDownload").textContent =
             download.mbps.toFixed(2) +
             " Mbps";
 
 
-        $("speedDownload").className =
+        byId("speedDownload").className =
             "speed-value good";
 
 
-        $("speedDownloadDetail").textContent =
+        byId("speedDownloadDetail").textContent =
             formatBytes(
                 download.bytes
             ) +
@@ -1559,11 +1559,11 @@ async function runSpeedTest() {
         );
 
 
-        $("speedProgressBar").style.width =
+        byId("speedProgressBar").style.width =
             "100%";
 
 
-        $("speedStatus").textContent =
+        byId("speedStatus").textContent =
             "Speed test complete.";
 
 
@@ -1575,7 +1575,7 @@ async function runSpeedTest() {
 
     } catch (error) {
 
-        $("speedStatus").textContent =
+        byId("speedStatus").textContent =
             "Speed test failed: " +
             error.message;
 
