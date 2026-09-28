@@ -766,7 +766,7 @@
           </div>
           <p>Drag & drop PDF or Image files here, or click to browse</p>
           <span>Supports PDF, PNG, JPG, WebP</span>
-          <input type="file" id="file-input" accept="application/pdf, image/png, image/jpeg, image/webp" multiple>
+          <input type="file" id="file-input" aria-label="Upload PDF or Image files" accept="application/pdf, image/png, image/jpeg, image/webp" multiple>
         </div>
 
       <div id="workspace-section" style="display: none; flex-direction: column; gap: 24px;">
@@ -808,7 +808,7 @@
           <input type="text" id="export-filename" class="input-field" value="merged-document.pdf" placeholder="merged-document.pdf">
 
           <label class="checkbox-label" title="Enable object stream compression to reduce file size">
-              <input type="checkbox" id="compress-pdf" checked>
+              <input type="checkbox" id="compress-pdf" aria-label="Compress PDF" checked>
               Compress
             </label>
         </div>
