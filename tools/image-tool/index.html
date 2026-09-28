@@ -6,239 +6,6 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Image Manipulator</title>
     <style>
-        :root {
-            color-scheme: light dark;
-            --bg: light-dark(#f5f7fb, #0c1017);
-            --panel: light-dark(#fff, #141a23);
-            --panel2: light-dark(#eef2f7, #1b2330);
-            --text: light-dark(#172033, #eef3fb);
-            --muted: light-dark(#657084, #9aa8bc);
-            --line: light-dark(#d9e0ea, #2a3545);
-            --accent: light-dark(#5b42e8, #8b7cff)
-        }
-
-        * {
-            box-sizing: border-box
-        }
-
-        body {
-            margin: 0;
-            background: var(--bg);
-            color: var(--text);
-            font: 14px/1.45 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif
-        }
-
-        .app {
-            min-height: 100vh;
-            background: var(--bg)
-        }
-
-        header {
-            padding: 28px 24px 18px;
-            border-bottom: 1px solid var(--line)
-        }
-
-        h1 {
-            margin: 0;
-            font-size: 27px
-        }
-
-        header p {
-            margin: 6px 0 0;
-            color: var(--muted)
-        }
-
-        .wrap {
-            max-width: 1200px;
-            margin: auto;
-            padding: 22px 24px 40px
-        }
-
-        .tabs {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            margin-bottom: 18px
-        }
-
-        .tab {
-            border: 1px solid var(--line);
-            background: var(--panel);
-            color: var(--text);
-            padding: 9px 13px;
-            border-radius: 9px;
-            cursor: pointer
-        }
-
-        .tab.active {
-            background: var(--accent);
-            border-color: var(--accent);
-            color: #fff
-        }
-
-        .tool {
-            display: none
-        }
-
-        .tool.active {
-            display: block
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: 330px 1fr;
-            gap: 18px
-        }
-
-        .card {
-            background: var(--panel);
-            border: 1px solid var(--line);
-            border-radius: 14px;
-            padding: 17px
-        }
-
-        .card h2 {
-            font-size: 16px;
-            margin: 0 0 14px
-        }
-
-        label {
-            display: block;
-            font-weight: 600;
-            margin: 13px 0 6px
-        }
-
-        input,
-        select,
-        textarea,
-        button {
-            font: inherit
-        }
-
-        input[type=text],
-        input[type=number],
-        select,
-        textarea {
-            width: 100%;
-            padding: 9px 10px;
-            border: 1px solid var(--line);
-            border-radius: 8px;
-            background: var(--panel2);
-            color: var(--text)
-        }
-
-        input[type=file] {
-            width: 100%;
-            padding: 8px;
-            border: 1px dashed var(--line);
-            border-radius: 8px
-        }
-
-        .row {
-            display: flex;
-            gap: 8px
-        }
-
-        .actions {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            margin-top: 14px
-        }
-
-        button {
-            border: 1px solid var(--line);
-            background: var(--panel2);
-            color: var(--text);
-            padding: 9px 12px;
-            border-radius: 8px;
-            cursor: pointer
-        }
-
-        button.primary {
-            background: var(--accent);
-            border-color: var(--accent);
-            color: #fff
-        }
-
-        .preview {
-            min-height: 480px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: repeating-conic-gradient(#e1e5ec 0 25%, #fff 0 50%) 50%/20px 20px;
-            border-radius: 10px;
-            overflow: hidden;
-            padding: 15px
-        }
-
-        .preview canvas,
-        .preview img {
-            max-width: 100%;
-            max-height: 620px;
-            object-fit: contain
-        }
-
-        .drop {
-            border: 2px dashed var(--line);
-            padding: 36px;
-            text-align: center;
-            color: var(--muted)
-        }
-
-        .stat {
-            font-size: 12px;
-            color: var(--muted);
-            margin-top: 10px
-        }
-
-        .check {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: 500
-        }
-
-        .check input {
-            width: auto
-        }
-
-        .notice {
-            padding: 10px 12px;
-            background: var(--panel2);
-            border-radius: 8px;
-            color: var(--muted);
-            font-size: 12px;
-            margin-top: 12px
-        }
-
-        .code {
-            font-family: ui-monospace, SFMono-Regular, Consolas, monospace
-        }
-
-        .icon-preview {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-            flex-wrap: wrap
-        }
-
-        .icon-preview img {
-            width: 128px;
-            height: 128px;
-            border: 1px solid var(--line);
-            border-radius: 10px
-        }
-
-        @media(max-width:850px) {
-            .grid {
-                grid-template-columns: 1fr
-            }
-
-            .preview {
-                min-height: 330px
-            }
-        }
     </style>
 </head>
 
@@ -277,8 +44,13 @@
                     <div class="card">
                         <h2>PNG → ICO</h2>
                         <label>PNG image</label><input id="icoFile" type="file" accept="image/png,image/*"><label>Icon sizes</label><input id="icoSizes" value="16,32,48,64,128,256">
-                        <div class="actions"><button class="primary" id="icoRun">Generate ICO</button></div>
-                        <div class="notice">Creates a standards-compatible ICO containing PNG image entries.</div>
+                        <div class="actions">
+                            <button class="primary" id="icoRun">Generate All Icons</button><button id="icoZip" disabled>Download ZIP</button>
+                        </div>
+                        <div id="icoInfo" class="stat">No package generated.</div>
+                        <div class="notice">Creates one PNG for every requested size, plus one combined ICO containing
+                            every requested size as separate embedded icon images. The ZIP contains all PNGs and the
+                            combined ICO.</div>
                     </div>
                     <div class="card">
                         <h2>Preview</h2>
@@ -345,8 +117,10 @@ function blob(c,type,q){return new Promise(r=>c.toBlob(r,type,q))} function dl(b
 function crop(im,w,h){const target=w/h,source=im.width/im.height;let sw=im.width,sh=im.height,sx=0,sy=0;if(source>target){sw=im.height*target;sx=(im.width-sw)/2}else if(source<target){sh=im.width/target;sy=(im.height-sh)/2}const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(im,sx,sy,sw,sh,0,0,w,h);return c}
 $('#quality').oninput=()=>$('#qv').textContent=$('#quality').value+'%';$('#cropFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;state.crop=await loadImage(f);$('#cropInfo').textContent=`Original: ${state.crop.width} × ${state.crop.height}px`;const p=$('#cropPreview');p.innerHTML='';const i=new Image();i.src=URL.createObjectURL(f);p.append(i)};
 $('#cropRun').onclick=async()=>{if(!state.crop)return alert('Choose an image first.');const w=+$('#cw').value,h=+$('#ch').value,type=$('#cropFormat').value;const c=crop(state.crop,w,h);state.cropBlob=await blob(c,type,+$('#quality').value/100);const im=new Image();im.src=URL.createObjectURL(state.cropBlob);im.onload=()=>{$('#cropPreview').innerHTML='';$('#cropPreview').append(im)};$('#cropInfo').textContent=`Output: ${w} × ${h}px • ${type.split('/')[1].toUpperCase()} • centered crop`;$('#cropDownload').disabled=false};$('#cropDownload').onclick=()=>dl(state.cropBlob,'cropped-image.'+($('#cropFormat').value==='image/jpeg'?'jpg':$('#cropFormat').value.split('/')[1]));
-async function ico(im,sizes){const es=[];for(const s of sizes){const c=document.createElement('canvas');c.width=c.height=s;c.getContext('2d').drawImage(im,0,0,s,s);es.push(new Uint8Array(await(await blob(c,'image/png')).arrayBuffer()))}const t=new Uint8Array(6+16*es.length+es.reduce((n,x)=>n+x.length,0));t.set([0,0,1,0,sizes.length&255,(sizes.length>>8)&255]);let off=6+16*es.length,p=6;es.forEach((x,i)=>{const s=sizes[i]>=256?0:sizes[i],d=new DataView(t.buffer,p,16);t[p]=s;t[p+1]=s;d.setUint16(4,1,true);d.setUint16(6,32,true);d.setUint32(8,x.length,true);d.setUint32(12,off,true);t.set(x,off);off+=x.length;p+=16});return new Blob([t],{type:'image/x-icon'})}
-$('#icoFile').onchange=async e=>{const f=e.target.files[0];if(f){state.ico=await loadImage(f);$('#icoPreview').hidden=false;$('#icoPreview').src=URL.createObjectURL(f)}};$('#icoRun').onclick=async()=>{if(!state.ico)return alert('Choose a PNG first.');const s=$('#icoSizes').value.split(',').map(x=>+x.trim()).filter(x=>x>0&&x<=256);if(!s.length)return alert('Enter valid sizes.');dl(await ico(state.ico,s),'icon.ico')};
+async function ico(im,sizes){const es=[];for(const s of sizes){const c=document.createElement('canvas');c.width=c.height=s;c.getContext('2d').drawImage(im,0,0,s,s);es.push({size:s,png:new Uint8Array(await(await blob(c,'image/png')).arrayBuffer())})}const t=new Uint8Array(6+16*es.length+es.reduce((n,x)=>n+x.png.length,0));t.set([0,0,1,0,es.length&255,(es.length>>8)&255]);let off=6+16*es.length,p=6;es.forEach(e=>{const s=e.size>=256?0:e.size,d=new DataView(t.buffer,p,16);t[p]=s;t[p+1]=s;d.setUint16(4,1,true);d.setUint16(6,32,true);d.setUint32(8,e.png.length,true);d.setUint32(12,off,true);t.set(e.png,off);off+=e.png.length;p+=16});return new Blob([t],{type:'image/x-icon'})}
+function zipStore(files){const enc=new TextEncoder(),parts=[],central=[];let offset=0;const crcTable=[];for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=(c&1)?0xedb88320^(c>>>1):c>>>1;crcTable[n]=c>>>0}const crc32=b=>{let c=0xffffffff;for(const v of b)c=crcTable[(c^v)&255]^(c>>>8);return(c^0xffffffff)>>>0};const u16=(a,p,v)=>new DataView(a.buffer,a.byteOffset+p,2).setUint16(0,v,true),u32=(a,p,v)=>new DataView(a.buffer,a.byteOffset+p,4).setUint32(0,v,true);for(const f of files){const n=enc.encode(f.name),d=f.data,crc=crc32(d),h=new Uint8Array(30+n.length);u32(h,0,0x04034b50);u16(h,4,20);u16(h,26,n.length);h.set(n,30);u32(h,14,crc);u32(h,18,d.length);u32(h,22,d.length);parts.push(h,d);const c=new Uint8Array(46+n.length);u32(c,0,0x02014b50);u16(c,4,20);u16(c,6,20);u16(c,28,n.length);u32(c,16,crc);u32(c,20,d.length);u32(c,24,d.length);u32(c,42,offset);c.set(n,46);central.push(c);offset+=h.length+d.length}const centralOffset=offset,centralSize=central.reduce((n,x)=>n+x.length,0),end=new Uint8Array(22);u32(end,0,0x06054b50);u16(end,8,files.length);u16(end,10,files.length);u32(end,12,centralSize);u32(end,16,centralOffset);return new Blob([...parts,...central,end],{type:'application/zip'})}
+$('#icoFile').onchange=async e=>{const f=e.target.files[0];if(f){state.ico=await loadImage(f);$('#icoPreview').hidden=false;$('#icoPreview').src=URL.createObjectURL(f)}};$('#icoRun').onclick=async()=>{if(!state.ico)return alert('Choose a PNG first.');const s=[...new Set($('#icoSizes').value.split(',').map(x=>Number(x.trim())).filter(x=>Number.isInteger(x)&&x>=16&&x<=256))];if(!s.length)return alert('Enter valid sizes between 16 and 256.');const files=[];for(const size of s){const c=document.createElement('canvas');c.width=c.height=size;const ctx=c.getContext('2d');ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';ctx.drawImage(state.ico,0,0,size,size);files.push({name:`icon-${size}x${size}.png`,data:new Uint8Array(await(await blob(c,'image/png')).arrayBuffer())})}const ib=await ico(state.ico,s),id=new Uint8Array(await ib.arrayBuffer());files.push({name:'icon.ico',data:id});state.icoZip=zipStore(files);$('#icoInfo').textContent=`Generated ${s.join(', ')} PNGs + one combined ICO containing all ${s.length} sizes. ZIP contains ${files.length} files.`;$('#icoZip').disabled=false;dl(state.icoZip,'icon-package.zip')};$('#icoZip').onclick=()=>dl(state.icoZip,'icon-package.zip');
+$('#svgFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;state.svg=await f.text();const im=new Image();im.onload=()=>{$('#svgPreview').innerHTML='';$('#svgPreview').append(im)};im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(state.svg)};$('#svgRun').onclick=async()=>{if(!state.svg)return alert('Choose an SVG first.');const c=document.createElement('canvas');c.width=+$('#sw').value;c.height=+$('#sh').value;const x=c.getContext('2d');x.fillStyle=$('#sbg').value;x.fillRect(0,0,c.width,c.height);const im=new Image();im.onload=async()=>{x.drawImage(im,0,0,c.width,c.height);state.svgBlob=await blob(c,'image/png');$('#svgPreview').innerHTML='';$('#svgPreview').append(c);$('#svgDownload').disabled=false};im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(state.svg)};$('#svgDownload').onclick=()=>dl(state.svgBlob,'converted.png');
 $('#svgFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;state.svg=await f.text();const im=new Image();im.onload=()=>{$('#svgPreview').innerHTML='';$('#svgPreview').append(im)};im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(state.svg)};$('#svgRun').onclick=async()=>{if(!state.svg)return alert('Choose an SVG first.');const c=document.createElement('canvas');c.width=+$('#sw').value;c.height=+$('#sh').value;const x=c.getContext('2d');x.fillStyle=$('#sbg').value;x.fillRect(0,0,c.width,c.height);const im=new Image();im.onload=async()=>{x.drawImage(im,0,0,c.width,c.height);state.svgBlob=await blob(c,'image/png');$('#svgPreview').innerHTML='';$('#svgPreview').append(c);$('#svgDownload').disabled=false};im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(state.svg)};$('#svgDownload').onclick=()=>dl(state.svgBlob,'converted.png');
 $('#extPad').oninput=()=>$('#padVal').textContent=$('#extPad').value+'%';$('#extFile').onchange=async e=>{const f=e.target.files[0];if(f)state.ext=await loadImage(f)};$('#extRun').onclick=async()=>{if(!state.ext)return alert('Choose an image first.');const sizes=[16,32,48,128],pad=+$('#extPad').value/100,shape=$('#extShape').value;$('#extPreview').innerHTML='';state.extBlobs=[];for(const s of sizes){const c=document.createElement('canvas');c.width=c.height=s;const x=c.getContext('2d'),p=s*pad;if(shape==='circle'){x.beginPath();x.arc(s/2,s/2,s/2,0,Math.PI*2);x.clip()}else if(shape==='rounded'){x.beginPath();x.roundRect(0,0,s,s,s*.18);x.clip()}x.fillStyle='#fff';x.fillRect(0,0,s,s);x.drawImage(state.ext,p,p,s-2*p,s-2*p);const b=await blob(c,'image/png');state.extBlobs.push([s,b]);const im=new Image();im.src=URL.createObjectURL(b);$('#extPreview').append(im)}$('#extDownload').disabled=false};$('#extDownload').onclick=()=>state.extBlobs.forEach(([s,b])=>dl(b,`${s}.png`));
 function validSvg(s){const d=new DOMParser().parseFromString(s,'image/svg+xml');if(d.querySelector('parsererror'))throw Error('Invalid SVG');return new XMLSerializer().serializeToString(d.documentElement)}function edit(){try{const s=validSvg($('#svgCode').value),im=new Image();im.onload=()=>{$('#editPreview').innerHTML='';$('#editPreview').append(im)};im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(s)}catch(e){alert(e.message)}}$('#svgUpdate').onclick=edit;$('#svgSave').onclick=()=>{try{dl(new Blob([validSvg($('#svgCode').value)],{type:'image/svg+xml'}),'graphic.svg')}catch(e){alert(e.message)}};edit();
