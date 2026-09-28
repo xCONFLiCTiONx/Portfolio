@@ -1,11 +1,10 @@
 /**
  * Dynamic GitHub Data Fetcher
- * Version: 23
+ * Version: 25 (Portable Framework Integration)
  */
 
 console.log('[DEBUG] GITHUB-FETCH: Script File Loaded');
 
-const MANIFEST_URL = window.location.pathname.includes('/tools/') ? '../site.webmanifest' : 'site.webmanifest';
 const REPO_CONTAINER_ID = 'github-repos';
 const AVATAR_CONTAINER_ID = 'profile-avatar';
 const HEADER_AVATAR_ID = 'header-avatar';
@@ -20,37 +19,6 @@ const LANG_COLORS = {
 };
 
 const DEFAULT_USERNAME = 'xCONFLiCTiONx';
-
-// Shared Configuration
-window.PortfolioConfig = null;
-let configPromise = null;
-
-async function getPortfolioConfig() {
-    if (window.PortfolioConfig) return window.PortfolioConfig;
-    if (configPromise) return configPromise;
-
-    configPromise = (async () => {
-        try {
-            const response = await fetch(MANIFEST_URL, { cache: 'no-cache' });
-            if (response.ok) {
-                window.PortfolioConfig = await response.json();
-                return window.PortfolioConfig;
-            }
-        } catch (error) {
-            console.warn('Config: Failed to load manifest from server.');
-        }
-        window.PortfolioConfig = {
-            github_username: DEFAULT_USERNAME,
-            github_token: null
-        };
-        return window.PortfolioConfig;
-    })();
-
-    return configPromise;
-}
-
-// Explicitly export to window for other scripts
-window.getPortfolioConfig = getPortfolioConfig;
 
 /**
  * Returns official GitHub headers
@@ -67,9 +35,9 @@ function getGithubHeaders(token) {
 window.getGithubHeaders = getGithubHeaders;
 
 async function initPortfolio() {
-    const config = await getPortfolioConfig();
-    const username = config.github_username || DEFAULT_USERNAME;
-    const token = config.github_token;
+    const config = window.PortfolioFramework ? await window.PortfolioFramework.getConfig() : (window.getPortfolioConfig ? await window.getPortfolioConfig() : {});
+    const username = (config.github && config.github.username) || config.github_username || DEFAULT_USERNAME;
+    const token = config.github ? config.github.token : config.github_token;
 
     const fetchOptions = {
         headers: getGithubHeaders(token),

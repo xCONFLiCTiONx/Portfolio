@@ -92,8 +92,9 @@
         </div>
     </footer>
 
+    <script src="js/framework.js"></script>
     <script src="js/jquery-3.2.1.min.js"></script>
-    <script src="js/github-fetch.js?v=23"></script>
+    <script src="js/github-fetch.js?v=25"></script>
     <script>
         // Register Service Worker for PWA (Only on HTTP/HTTPS)
         if ('serviceWorker' in navigator && (window.location.protocol === 'http:' || window.location.protocol === 'https:')) {
@@ -101,24 +102,6 @@
                 navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW registration failed:', err));
             });
         }
-
-        // Mobile Menu Toggle
-        $('#menuToggle').click(function() {
-            $('#navLinks').toggleClass('active');
-            $(this).find('i').toggleClass('im-menu im-x-mark');
-        });
-
-        // Simple active state toggle for nav
-        $('.nav-links a').click(function() {
-            $('.nav-links a').removeClass('active');
-            $(this).addClass('active');
-
-            // Close mobile menu on click
-            if ($(window).width() <= 900) {
-                $('#navLinks').removeClass('active');
-                $('#menuToggle').find('i').removeClass('im-x-mark').addClass('im-menu');
-            }
-        });
     </script>
 
 </body>

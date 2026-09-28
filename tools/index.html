@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title class="user-name-title-js">Web Tools Directory | xCONFLiCTiONx</title>
+    <title class="user-name-title-js">Web Tools Directory | Portfolio</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" id="meta-description-js" content="Developer web utilities for privacy, security, and document management. 100% local and browser-based.">
     <link rel="canonical" href="https://xconflictionx.cc/tools/index.html" />
@@ -12,56 +12,18 @@
 
     <!-- Open Graph / Social Metadata -->
     <meta property="og:type" content="website">
-    <meta property="og:title" content="Web Tools Directory | xCONFLiCTiONx">
+    <meta property="og:title" content="Web Tools Directory | Portfolio">
     <meta property="og:description" content="Developer web utilities for privacy, security, and document management. 100% local and browser-based.">
     <meta property="og:url" content="https://xconflictionx.cc/tools/index.html">
-    <meta property="og:site_name" content="xCONFLiCTiONx">
+    <meta property="og:site_name" content="Portfolio">
     <meta property="og:image" content="https://xconflictionx.cc/android-chrome-256x256.png">
 
     <!-- X / Twitter -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Web Tools Directory | xCONFLiCTiONx">
+    <meta name="twitter:title" content="Web Tools Directory | Portfolio">
     <meta name="twitter:description" content="Developer web utilities for privacy, security, and document management. 100% local and browser-based.">
     <meta name="twitter:image" content="https://xconflictionx.cc/android-chrome-256x256.png">
     <style>
-        .tools-subnav {
-            display: flex;
-            gap: 1rem;
-            background: #161b22;
-            border: 1px solid #30363d;
-            border-radius: 8px;
-            padding: 0.6rem;
-            margin-bottom: 3rem;
-            max-width: 1200px;
-        }
-
-        .tool-subnav-btn {
-            display: flex;
-            align-items: center;
-            gap: 0.8rem;
-            padding: 0.8rem 1.6rem;
-            border-radius: 6px;
-            color: #8b949e;
-            font-size: 1.4rem;
-            font-weight: 500;
-            text-decoration: none;
-            transition: all 0.2s ease;
-            border: 1px solid transparent;
-        }
-
-        .tool-subnav-btn:hover {
-            color: #f0f6fc;
-            background: #21262d;
-            text-decoration: none;
-        }
-
-        .tool-subnav-btn.active {
-            color: #f0f6fc;
-            background: #21262d;
-            border-color: #58a6ff;
-            font-weight: 600;
-        }
-
         .tools-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
@@ -145,30 +107,8 @@
 </head>
 <body id="top">
 
-    <header class="site-header">
-        <nav class="nav-content">
-            <div class="nav-brand">
-                <a href="../index.html">
-                    <span id="header-avatar" class="nav-logo"></span>
-                    <span class="user-name-js">Loading...</span>
-                </a>
-            </div>
-            <button class="menu-toggle" id="menuToggle">
-                <i class="im im-menu"></i>
-            </button>
-            <ul class="nav-links" id="navLinks">
-                <li><a href="../index.html"><i class="im im-home"></i> Overview</a></li>
-                <li><a href="../about.html"><i class="im im-user-male"></i> About</a></li>
-                <li><a href="index.html" class="active"><i class="im im-tools"></i> Tools</a></li>
-                <li><a href="../privacy.html"><i class="im im-shield"></i> Privacy</a></li>
-                <li><a href="../contact.html"><i class="im im-paperplane"></i> Contact</a></li>
-            </ul>
-        </nav>
-    </header>
-
     <main class="container">
 
-        <!-- Sidebar Info -->
         <aside class="sidebar profile-sidebar">
             <div id="profile-avatar" class="profile-avatar"></div>
             <h1 id="profile-name" class="profile-name user-name-js">Loading...</h1>
@@ -179,7 +119,6 @@
             <ul id="profile-metadata" class="profile-metadata"></ul>
         </aside>
 
-        <!-- Main Content Section -->
         <section class="main-content">
             <h2 class="section-title">Developer Tools Directory</h2>
 
@@ -188,129 +127,69 @@
             </p>
 
             <div class="tools-grid">
-                <!-- Tool: PDF Studio -->
-                <div class="tool-card">
-                    <div>
-                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.2rem;">
-                            <img src="icons/icon48.png" width="48" height="48" alt="PDF Tools Logo" style="border-radius: 8px;">
-                            <a href="https://github.com/xCONFLiCTiONx/PDF-Tools" target="_blank" style="color: #8b949e; font-size: 1.3rem; text-decoration: none; display: flex; align-items: center; gap: 0.4rem;">
-                                <i class="im im-github"></i> GitHub Repo
-                            </a>
-                        </div>
-                        <h3>Local PDF Studio</h3>
-                        <p>
-                            Merge, split, reorder by dragging, rotate pages, and export PDF documents or images. Client-side processing ensures complete privacy.
-                        </p>
-                    </div>
-                    <div class="tool-card-footer">
-                        <span class="tool-tag">Document Utility</span>
-                        <a href="pdf-tools/index.html" class="launch-btn">Launch Tool &rarr;</a>
-                    </div>
+                <div class="repo-loader">
+                    <i class="im im-spinner im-spin"></i> Loading tools directory...
                 </div>
-                
-                <!-- Tool: Allow Copy-Paste -->
-                <div class="tool-card">
-                    <div>
-                        <i class="im im-shield tool-card-icon" style="color: #f78166;"></i>
-                        <h3>Allow Copy-Paste Tester</h3>
-                        <p>
-                            Interactive test suite with 16 browser restriction methods to verify if browser extensions (e.g. Allow Right
-                            Click) can bypass restrictions.
-                        </p>
-                    </div>
-                    <div class="tool-card-footer">
-                        <span class="tool-tag">Security & Extension Test</span>
-                        <a href="allow-copy-paste.html" class="launch-btn" style="background: #21262d; border-color: #30363d;">Launch
-                            Tool &rarr;</a>
-                    </div>
-                </div>
-                
-                <!-- Tool: Dev Swiss Army Knife -->
-                <div class="tool-card">
-                    <div>
-                        <i class="im im-shield tool-card-icon" style="color: #f78166;"></i>
-                        <h3>Dev Swiss Army Knife</h3>
-                        <p>
-                            All-in-one developer utility featuring a JWT Inspector, Regex Tester, Hash Generator, and Text Diff tool. Runs
-                            100% client-side.
-                        </p>
-                    </div>
-                    <div class="tool-card-footer">
-                        <span class="tool-tag">Developer Utility</span>
-                        <a href="dev-box.html" class="launch-btn" style="background: #21262d; border-color: #30363d;">Launch
-                            Tool &rarr;</a>
-                    </div>
-                </div>
-
-                <!-- Tool: WARP Split Tunnel Test -->
-                <div class="tool-card">
-                    <div>
-                        <i class="im im-shield tool-card-icon" style="color: #f78166;"></i>
-                        <h3>WARP Split Tunnel Test</h3>
-                        <p>
-                            Inspect your browser's network connectivity and public IP addresses. This page can identify the public IP addresses used by its external IP-check services and display Cloudflare trace
-                            information.
-                        </p>
-                    </div>
-                    <div class="tool-card-footer">
-                        <span class="tool-tag">Developer Utility</span>
-                        <a href="warp-test.html" class="launch-btn" style="background: #21262d; border-color: #30363d;">Launch
-                            Tool &rarr;</a>
-                    </div>
-                </div>
-                
-                <!-- Tool: Website Grading Tool -->
-                <div class="tool-card">
-                    <div>
-                        <i class="im im-shield tool-card-icon" style="color: #f78166;"></i>
-                        <h3>Website Grading Tool</h3>
-                        <p>
-                            Audit a public website from the outside. SiteGrade checks its HTTP response, security headers, privacy signals,
-                            performance, SEO, configuration, DNS, and accessibility, then reports verified findings and evidence.
-                        </p>
-                    </div>
-                    <div class="tool-card-footer">
-                        <span class="tool-tag">Developer Utility</span>
-                        <a href="site-grade.html" class="launch-btn" style="background: #21262d; border-color: #30363d;">Launch
-                            Tool &rarr;</a>
-                    </div>
-                </div>
-
-                <!-- Tool: SEO Generator -->
-                <div class="tool-card">
-                    <div>
-                        <i class="im im-shield tool-card-icon" style="color: #f78166;"></i>
-                        <h3>SEO Generator</h3>
-                        <p>
-                            Instantly generate a clean robots.txt and sitemap.xml for your static site root.
-                        </p>
-                    </div>
-                    <div class="tool-card-footer">
-                        <span class="tool-tag">Developer Utility</span>
-                        <a href="seo-generator/" class="launch-btn" style="background: #21262d; border-color: #30363d;">Launch
-                            Tool &rarr;</a>
-                    </div>
-                </div>
-                
             </div>
         </section>
 
     </main>
 
-    <footer class="site-footer">
-        <div class="container" style="display: block;">
-            <p>&copy; 2026 <span class="user-name-js"></span>. Built with code and conviction.</p>
-        </div>
-    </footer>
-
+    <script src="../js/framework.js"></script>
     <script src="../js/jquery-3.2.1.min.js"></script>
-    <script src="../js/github-fetch.js?v=24"></script>
+    <script src="../js/github-fetch.js?v=25"></script>
     <script>
-        // Mobile Menu Toggle
-        $('#menuToggle').click(function() {
-            $('#navLinks').toggleClass('active');
-            $(this).find('i').toggleClass('im-menu im-x-mark');
-        });
+        async function renderToolsDirectory() {
+            const config = await window.PortfolioFramework.getConfig();
+            const toolsGrid = document.querySelector('.tools-grid');
+            if (!toolsGrid || !config || !config.tools) return;
+
+            const enabledTools = config.tools.filter(t => t.enabled !== false);
+            if (enabledTools.length === 0) {
+                toolsGrid.innerHTML = '<p style="color: #8b949e; font-size: 1.5rem;">No tools are currently enabled in portfolio.config.json.</p>';
+                return;
+            }
+
+            toolsGrid.innerHTML = enabledTools.map(tool => {
+                const toolUrl = window.PortfolioFramework.toRelativeUrl(tool.path);
+                const iconHtml = tool.iconImage
+                    ? `<img src="${window.PortfolioFramework.toRelativeUrl(tool.iconImage)}" width="48" height="48" alt="${tool.name} Logo" style="border-radius: 8px;">`
+                    : `<i class="${tool.icon || 'im im-wrench'} tool-card-icon" style="color: #f78166;"></i>`;
+
+                const githubRepoHtml = tool.githubUrl
+                    ? `<a href="${tool.githubUrl}" target="_blank" style="color: #8b949e; font-size: 1.3rem; text-decoration: none; display: flex; align-items: center; gap: 0.4rem;">
+                        <i class="im im-github"></i> GitHub Repo
+                       </a>`
+                    : '';
+
+                const topHeader = (tool.iconImage || tool.githubUrl)
+                    ? `<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.2rem;">
+                        ${iconHtml}
+                        ${githubRepoHtml}
+                       </div>`
+                    : iconHtml;
+
+                return `
+                    <div class="tool-card">
+                        <div>
+                            ${topHeader}
+                            <h3>${tool.name}</h3>
+                            <p>${tool.description}</p>
+                        </div>
+                        <div class="tool-card-footer">
+                            <span class="tool-tag">${tool.category || 'Utility'}</span>
+                            <a href="${toolUrl}" class="launch-btn">Launch Tool &rarr;</a>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', renderToolsDirectory);
+        } else {
+            renderToolsDirectory();
+        }
     </script>
 </body>
 </html>

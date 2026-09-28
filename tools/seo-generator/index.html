@@ -3,8 +3,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Static Website SEO Generator | xCONFLiCTiONx</title>
 <meta name="description" content="Crawl a static website, audit its pages, and generate SEO files.">
+<meta name="portfolio-tool-id" content="seo-generator">
 <link rel="canonical" href="https://xconflictionx.cc/tools/seo-generator/" />
 <meta name="theme-color" content="#0b0d10">
+<link rel="stylesheet" href="../../css/main.css">
 <link rel="icon" id="favicon-js" href="../../favicon.ico" type="image/x-icon">
 
 <!-- Open Graph / Social Metadata -->
@@ -28,7 +30,6 @@
 </style>
 </head>
 <body>
-<header><div class="wrap"><div><h1>Static Website SEO Generator</h1><p>Crawl internal pages, audit SEO, and generate files for your static site.</p></div><div style="display:flex;gap:8px;flex-wrap:wrap"><a class="back" href="../index.html">All Tools</a><a class="back" href="../pdf-tools/index.html">PDF Studio</a><a class="back" href="../allow-copy-paste.html">Copy-Paste Test</a><a class="back" href="../dev-box.html">Dev Box</a><a class="back" href="../warp-test.html">WARP Test</a><a class="back" href="../site-grade.html">SiteGrade</a></div></div></header>
 <main class="wrap">
 <div class="grid"><section>
 <div class="card">
@@ -69,11 +70,34 @@
 </div>
 </section></div></main>
 
+<script src="../../js/framework.js"></script>
 <script src="./js/core.js"></script>
 <script src="./js/crawler.js"></script>
 <script src="./js/pages.js"></script>
 <script src="./js/generator.js"></script>
 <script src="./js/ui.js"></script>
 <script src="./js/app.js"></script>
+<script>
+if (window.PortfolioFramework) {
+    window.PortfolioFramework.getConfig().then(cfg => {
+        if (cfg.site) {
+            if (cfg.site.canonicalBase && document.getElementById('siteUrl')) {
+                document.getElementById('siteUrl').value = cfg.site.canonicalBase;
+            }
+            if (cfg.site.name && document.getElementById('siteName')) {
+                document.getElementById('siteName').value = cfg.site.name;
+            }
+            if (cfg.site.name && document.getElementById('publisher')) {
+                document.getElementById('publisher').value = cfg.site.name;
+            }
+            if (cfg.site.author && document.getElementById('author')) {
+                document.getElementById('author').value = cfg.site.author;
+            }
+        }
+    });
+}
+</script>
+<script src="../../js/jquery-3.2.1.min.js"></script>
+<script src="../../js/github-fetch.js?v=25"></script>
 </body>
 </html>

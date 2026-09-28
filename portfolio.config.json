@@ -1,0 +1,153 @@
+{
+  "site": {
+    "name": "xCONFLiCTiONx",
+    "title": "xCONFLiCTiONx — Privacy, Security & Technology",
+    "description": "Software Developer Portfolio - Building tools for freedom & productivity.",
+    "author": "xCONFLiCTiONx",
+    "themeColor": "#0b0d10",
+    "favicon": "favicon.ico",
+    "canonicalBase": "https://xconflictionx.cc",
+    "ogImage": "android-chrome-256x256.png"
+  },
+  "github": {
+    "username": "xCONFLiCTiONx",
+    "profileUrl": "https://github.com/xCONFLiCTiONx"
+  },
+  "navigation": [
+    {
+      "label": "Overview",
+      "path": "index.html",
+      "icon": "im im-home"
+    },
+    {
+      "label": "About",
+      "path": "about.html",
+      "icon": "im im-user-male"
+    },
+    {
+      "label": "Tools",
+      "path": "tools/index.html",
+      "icon": "im im-tools"
+    },
+    {
+      "label": "Privacy",
+      "path": "privacy.html",
+      "icon": "im im-shield"
+    },
+    {
+      "label": "Contact",
+      "path": "contact.html",
+      "icon": "im im-paperplane"
+    }
+  ],
+  "socials": [
+    {
+      "name": "GitHub",
+      "url": "https://github.com/xCONFLiCTiONx",
+      "icon": "im im-github"
+    }
+  ],
+  "tools": [
+    {
+      "id": "pdf-tools",
+      "name": "Local PDF Studio",
+      "description": "Merge, split, reorder by dragging, rotate pages, and export PDF documents or images. Client-side processing ensures complete privacy.",
+      "path": "tools/pdf-tools/index.html",
+      "icon": "im im-file-pdf",
+      "iconImage": "tools/icons/icon48.png",
+      "category": "Document Utility",
+      "enabled": true,
+      "githubUrl": "https://github.com/xCONFLiCTiONx/PDF-Tools",
+      "layout": {
+        "header": true,
+        "sidebar": true,
+        "footer": true
+      }
+    },
+    {
+      "id": "allow-copy-paste",
+      "name": "Allow Copy-Paste Tester",
+      "description": "Interactive test suite with 16 browser restriction methods to verify if browser extensions (e.g. Allow Right Click) can bypass restrictions.",
+      "path": "tools/allow-copy-paste.html",
+      "icon": "im im-shield",
+      "category": "Security & Extension Test",
+      "enabled": true,
+      "layout": {
+        "header": true,
+        "sidebar": true,
+        "footer": true
+      }
+    },
+    {
+      "id": "dev-box",
+      "name": "Dev Swiss Army Knife",
+      "description": "All-in-one developer utility featuring a JWT Inspector, Regex Tester, Hash Generator, and Text Diff tool. Runs 100% client-side.",
+      "path": "tools/dev-box.html",
+      "icon": "im im-shield",
+      "category": "Developer Utility",
+      "enabled": true,
+      "layout": {
+        "header": true,
+        "sidebar": true,
+        "footer": true
+      }
+    },
+    {
+      "id": "warp-test",
+      "name": "WARP Split Tunnel Test",
+      "description": "Inspect your browser's network connectivity and public IP addresses. This page can identify public IP addresses and Cloudflare trace details.",
+      "path": "tools/warp-test.html",
+      "icon": "im im-shield",
+      "category": "Developer Utility",
+      "enabled": true,
+      "layout": {
+        "header": true,
+        "sidebar": true,
+        "footer": true
+      }
+    },
+    {
+      "id": "site-grade",
+      "name": "Website Grading Tool",
+      "description": "Audit a public website from the outside. SiteGrade checks HTTP response, security headers, privacy signals, performance, SEO, configuration, DNS, and accessibility.",
+      "path": "tools/site-grade.html",
+      "icon": "im im-shield",
+      "category": "Developer Utility",
+      "enabled": true,
+      "workerUrl": "https://scanner.xconflictionx.cc/scan",
+      "layout": {
+        "header": true,
+        "sidebar": true,
+        "footer": true
+      }
+    },
+    {
+      "id": "seo-generator",
+      "name": "SEO Generator",
+      "description": "Instantly generate a clean robots.txt and sitemap.xml for your static site root.",
+      "path": "tools/seo-generator/index.html",
+      "icon": "im im-shield",
+      "category": "Developer Utility",
+      "enabled": true,
+      "layout": {
+        "header": true,
+        "sidebar": true,
+        "footer": true
+      }
+    },
+    {
+      "id": "example-tool",
+      "name": "Example Tool",
+      "description": "Example tool demonstrating the portfolio tool framework.",
+      "path": "tools/example-tool/index.html",
+      "icon": "im im-wrench",
+      "category": "Example",
+      "enabled": true,
+      "layout": {
+        "header": true,
+        "sidebar": true,
+        "footer": true
+      }
+    }
+  ]
+}

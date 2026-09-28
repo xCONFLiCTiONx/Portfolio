@@ -60,6 +60,38 @@ h1, h2, h3, h4 {
     gap: 4rem;
 }
 
+/* Independent Layout Combination Support */
+body.no-header header.site-header {
+    display: none !important;
+}
+
+body.no-header {
+    padding-top: 2rem;
+}
+
+body.no-sidebar .container,
+.container.no-sidebar {
+    display: block;
+    grid-template-columns: 1fr;
+}
+
+body.no-sidebar aside.sidebar,
+.container.no-sidebar aside.sidebar {
+    display: none !important;
+}
+
+body.no-sidebar .main-content,
+.container.no-sidebar .main-content {
+    width: 100%;
+}
+
+body.no-footer footer.site-footer {
+    display: none !important;
+    margin-top: 0;
+    padding: 0;
+    border-top: none;
+}
+
 header.site-header {
     background: rgba(22, 27, 34, 0.8);
     backdrop-filter: blur(12px);

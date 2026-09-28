@@ -139,9 +139,10 @@
         </div>
     </footer>
 
+    <script src="js/framework.js"></script>
     <script src="js/jquery-3.2.1.min.js"></script>
-    <script src="js/github-fetch.js?v=24"></script>
-    <script src="js/privacy-fetch.js?v=24"></script>
+    <script src="js/github-fetch.js?v=25"></script>
+    <script src="js/privacy-fetch.js?v=25"></script>
     <script>
         // Register Service Worker for PWA (Only on HTTP/HTTPS)
         if ('serviceWorker' in navigator && (window.location.protocol === 'http:' || window.location.protocol === 'https:')) {
@@ -149,12 +150,6 @@
                 navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW registration failed:', err));
             });
         }
-
-        // Mobile Menu Toggle
-        $('#menuToggle').click(function() {
-            $('#navLinks').toggleClass('active');
-            $(this).find('i').toggleClass('im-menu im-x-mark');
-        });
     </script>
 
 </body>

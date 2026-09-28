@@ -17,9 +17,9 @@ async function initPrivacy() {
     if (!selector.length) return;
 
     try {
-        const config = await getPortfolioConfig();
-        const username = config.github_username || 'xCONFLiCTiONx';
-        const token = config.github_token;
+        const config = window.PortfolioFramework ? await window.PortfolioFramework.getConfig() : (window.getPortfolioConfig ? await window.getPortfolioConfig() : {});
+        const username = (config.github && config.github.username) || config.github_username || 'xCONFLiCTiONx';
+        const token = config.github ? config.github.token : config.github_token;
 
         const urlParams = new URLSearchParams(window.location.search);
         const targetPolicy = (urlParams.get('p') || urlParams.get('policy') || '').toLowerCase();

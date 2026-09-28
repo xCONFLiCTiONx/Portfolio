@@ -6,8 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>SiteGrade — Website Audit | xCONFLiCTiONx</title>
     <meta name="description" id="meta-description-js" content="Audit public websites for security headers, privacy signals, performance, SEO, configuration, and accessibility.">
+    <meta name="portfolio-tool-id" content="site-grade">
     <link rel="canonical" href="https://xconflictionx.cc/tools/site-grade.html" />
     <meta name="theme-color" content="#0b0d10">
+    <link rel="stylesheet" href="../css/main.css">
     <link rel="icon" id="favicon-js" href="../favicon.ico" type="image/x-icon">
 
     <!-- Open Graph / Social Metadata -->
@@ -466,22 +468,6 @@
 <body>
     <div id="app">
 
-        <header class="top">
-            <div class="brand">
-                <span class="mark">S</span>
-                SiteGrade
-            </div>
-
-            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                <a class="back" href="index.html">All Tools</a>
-                <a class="back" href="pdf-tools/index.html">PDF Studio</a>
-                <a class="back" href="allow-copy-paste.html">Copy-Paste Test</a>
-                <a class="back" href="dev-box.html">Dev Box</a>
-                <a class="back" href="warp-test.html">WARP Test</a>
-                <a class="back" href="seo-generator/index.html">SEO Generator</a>
-            </div>
-        </header>
-
         <main>
 
             <div class="eyebrow">Website scanner</div>
@@ -769,8 +755,15 @@
         </main>
     </div>
 
+    <script src="../js/framework.js"></script>
     <script>
-        const API_URL = "https://scanner.xconflictionx.cc/scan";
+        let API_URL = "https://scanner.xconflictionx.cc/scan";
+        if (window.PortfolioFramework) {
+            window.PortfolioFramework.getConfig().then(cfg => {
+                const tool = cfg.tools ? cfg.tools.find(t => t.id === 'site-grade') : null;
+                if (tool && tool.workerUrl) API_URL = tool.workerUrl;
+            });
+        }
 
 const form = document.getElementById("scanForm");
 const input = document.getElementById("url");
@@ -1140,7 +1133,8 @@ form.addEventListener("submit", async event => {
   }
 });
     </script>
-
+    <script src="../js/jquery-3.2.1.min.js"></script>
+    <script src="../js/github-fetch.js?v=25"></script>
 </body>
 
 </html>
