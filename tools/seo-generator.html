@@ -578,11 +578,6 @@
     <script>
         "use strict";
     
-    /* ============================================================
-       STATIC WEBSITE SEO GENERATOR
-       CRAWLER
-       ============================================================ */
-    
     const $ = id => document.getElementById(id);
     
     let pages = [
@@ -597,31 +592,16 @@
     let results = [];
     let queue = [];
     let seen = new Map();
-    
     let running = false;
     let stopRequested = false;
     let robotsRules = null;
     
-    /*
-     * Signature of the real homepage.
-     *
-     * Many static hosts return the homepage with HTTP 200 for an
-     * unknown URL instead of returning HTTP 404.
-     *
-     * Example:
-     *   /tools/pdf-tools.html
-     *
-     * may actually return:
-     *   /
-     *
-     * We detect that by comparing the returned document against
-     * the real homepage.
-     */
-    let homepageFingerprint = null;
+    let homepageProfile = null;
+    let fallbackProfiles = new Map();
     
     
     /* ============================================================
-       BASIC HELPERS
+       HELPERS
        ============================================================ */
     
     const val = (id, def = "") =>
@@ -664,6 +644,12 @@
         return new Promise(resolve => setTimeout(resolve, ms));
     }
     
+    function normalizeText(value) {
+        return String(value || "")
+            .replace(/\s+/g, " ")
+            .trim();
+    }
+    
     
     /* ============================================================
        URL NORMALIZATION
@@ -679,26 +665,12 @@
                 return null;
             }
     
-            /*
-             * Hash fragments do not represent separate HTML pages.
-             */
             u.hash = "";
     
-            /*
-             * Optional query-string handling.
-             */
             if (!checked("queryUrls")) {
                 u.search = "";
             }
     
-            /*
-             * Normalize trailing slashes.
-             *
-             * /foo/
-             * /foo
-             *
-             * are treated as the same URL.
-             */
             if (u.pathname.length > 1) {
                 u.pathname = u.pathname.replace(/\/+$/, "");
             }
@@ -709,29 +681,16 @@
         }
     }
     
-    
-    /* ============================================================
-       SAME-SITE CHECK
-       ============================================================ */
-    
     function sameSite(u) {
         try {
-            const target = new URL(u);
-            const root = new URL(site());
-    
             return (
-                target.hostname.toLowerCase() ===
-                root.hostname.toLowerCase()
+                new URL(u).hostname.toLowerCase() ===
+                new URL(site()).hostname.toLowerCase()
             );
         } catch {
             return false;
         }
     }
-    
-    
-    /* ============================================================
-       ASSET FILTER
-       ============================================================ */
     
     const assetExt =
         /\.(?:css|js|mjs|json|xml|txt|png|jpe?g|gif|webp|avif|svg|ico|woff2?|ttf|otf|mp[34]|webm|mov|zip|rar|7z|gz|tar|exe|msi|dmg|iso|pdf|docx?|xlsx?|pptx?|csv)$/i;
@@ -743,11 +702,6 @@
             return false;
         }
     }
-    
-    
-    /* ============================================================
-       PATH DISPLAY
-       ============================================================ */
     
     function pathOf(u) {
         try {
@@ -775,23 +729,33 @@
        ============================================================ */
     
     function stats() {
-        if (!$("discovered")) return;
+        if ($("discovered")) {
+            $("discovered").textContent = seen.size;
+        }
     
-        $("discovered").textContent = seen.size;
-        $("crawled").textContent = results.length;
-        $("queued").textContent = queue.length;
+        if ($("crawled")) {
+            $("crawled").textContent = results.length;
+        }
     
-        $("failed").textContent =
-            results.filter(x =>
-                x.error ||
-                x.status >= 400
-            ).length;
+        if ($("queued")) {
+            $("queued").textContent = queue.length;
+        }
     
-        $("depth").textContent =
-            results.reduce(
-                (m, x) => Math.max(m, x.depth || 0),
-                0
-            );
+        if ($("failed")) {
+            $("failed").textContent =
+                results.filter(x =>
+                    x.error ||
+                    x.status >= 400
+                ).length;
+        }
+    
+        if ($("depth")) {
+            $("depth").textContent =
+                results.reduce(
+                    (m, x) => Math.max(m, x.depth || 0),
+                    0
+                );
+        }
     
         if ($("progress")) {
             $("progress").style.width =
@@ -811,14 +775,11 @@
     
     function parseRobots(txt) {
         const groups = [];
-    
         let current = null;
     
-        const lines = String(txt || "")
-            .split(/\r?\n/)
-            .map(x => x.trim());
+        for (let raw of String(txt || "").split(/\r?\n/)) {
+            raw = raw.trim();
     
-        for (let raw of lines) {
             if (!raw || raw.startsWith("#")) {
                 continue;
             }
@@ -835,14 +796,14 @@
                 continue;
             }
     
-            const key = raw
-                .slice(0, colon)
-                .trim()
-                .toLowerCase();
+            const key =
+                raw.slice(0, colon)
+                    .trim()
+                    .toLowerCase();
     
-            const value = raw
-                .slice(colon + 1)
-                .trim();
+            const value =
+                raw.slice(colon + 1)
+                    .trim();
     
             if (key === "user-agent") {
                 current = {
@@ -854,11 +815,10 @@
                 continue;
             }
     
-            if (!current) {
-                continue;
-            }
-    
-            if (key === "allow" || key === "disallow") {
+            if (
+                current &&
+                (key === "allow" || key === "disallow")
+            ) {
                 current.rules.push({
                     type: key,
                     value
@@ -869,7 +829,6 @@
         return groups;
     }
     
-    
     function robotsRuleMatch(path, rule) {
         let pattern = String(rule || "");
     
@@ -877,24 +836,28 @@
             return false;
         }
     
-        /*
-         * Convert robots wildcard syntax to a regex.
-         */
+        let end = false;
+    
+        if (pattern.endsWith("$")) {
+            end = true;
+            pattern = pattern.slice(0, -1);
+        }
+    
         let regex = pattern
             .replace(/[.+?^${}()|[\]\\]/g, "\\$&")
             .replace(/\*/g, ".*");
     
-        if (pattern.endsWith("$")) {
-            regex = regex.slice(0, -2) + "$";
+        if (end) {
+            regex += "$";
         }
     
         try {
-            return new RegExp("^" + regex, "i").test(path);
+            return new RegExp("^" + regex, "i")
+                .test(path);
         } catch {
             return false;
         }
     }
-    
     
     function allowed(u) {
         if (!robotsRules) {
@@ -905,12 +868,10 @@
             const target = new URL(u);
             const path = target.pathname || "/";
     
-            /*
-             * Use the groups applying to "*" only.
-             */
-            const applicable = robotsRules.filter(group =>
-                group.agents.includes("*")
-            );
+            const applicable =
+                robotsRules.filter(group =>
+                    group.agents.includes("*")
+                );
     
             if (!applicable.length) {
                 return true;
@@ -924,12 +885,10 @@
                         continue;
                     }
     
-                    /*
-                     * Longest matching rule wins.
-                     */
                     if (
                         !matched ||
-                        rule.value.length > matched.value.length
+                        rule.value.length >
+                        matched.value.length
                     ) {
                         matched = rule;
                     }
@@ -946,16 +905,13 @@
         }
     }
     
-    
     async function loadRobots() {
         robotsRules = null;
     
         try {
             const origin = siteOrigin();
     
-            if (!origin) {
-                return;
-            }
+            if (!origin) return;
     
             const response = await fetch(
                 origin + "/robots.txt",
@@ -970,9 +926,8 @@
                 return;
             }
     
-            const text = await response.text();
-    
-            robotsRules = parseRobots(text);
+            robotsRules =
+                parseRobots(await response.text());
         } catch {
             robotsRules = null;
         }
@@ -980,15 +935,13 @@
     
     
     /* ============================================================
-       SITEMAP
+       SITEMAPS
        ============================================================ */
     
     async function addSitemapSeeds() {
         const origin = siteOrigin();
     
-        if (!origin) {
-            return;
-        }
+        if (!origin) return;
     
         const candidates = [
             origin + "/sitemap.xml",
@@ -1012,32 +965,26 @@
     
                 const text = await response.text();
     
-                const xmlDoc =
-                    new DOMParser().parseFromString(
-                        text,
-                        "application/xml"
-                    );
+                const doc =
+                    new DOMParser()
+                        .parseFromString(
+                            text,
+                            "application/xml"
+                        );
     
-                /*
-                 * Ignore XML parser errors.
-                 */
-                if (
-                    xmlDoc.querySelector("parsererror")
-                ) {
+                if (doc.querySelector("parsererror")) {
                     continue;
                 }
     
-                /*
-                 * Regular sitemap.
-                 */
                 const locations =
-                    [...xmlDoc.querySelectorAll("url > loc")];
+                    [...doc.querySelectorAll("url > loc")];
     
                 for (const loc of locations) {
-                    const u = urlKey(
-                        loc.textContent.trim(),
-                        sitemapUrl
-                    );
+                    const u =
+                        urlKey(
+                            loc.textContent.trim(),
+                            sitemapUrl
+                        );
     
                     if (!u) continue;
                     if (!sameSite(u)) continue;
@@ -1055,58 +1002,62 @@
                     }
                 }
     
-                /*
-                 * Sitemap index.
-                 */
-                const sitemapLocations =
-                    [...xmlDoc.querySelectorAll("sitemap > loc")];
+                const childSitemaps =
+                    [...doc.querySelectorAll("sitemap > loc")];
     
-                for (const loc of sitemapLocations) {
-                    const child = urlKey(
-                        loc.textContent.trim(),
-                        sitemapUrl
-                    );
+                for (const loc of childSitemaps) {
+                    const child =
+                        urlKey(
+                            loc.textContent.trim(),
+                            sitemapUrl
+                        );
     
                     if (!child) continue;
     
                     try {
-                        const response2 = await fetch(
-                            child,
-                            {
-                                redirect: "follow",
-                                cache: "no-store",
-                                credentials: "omit"
-                            }
-                        );
+                        const childResponse =
+                            await fetch(
+                                child,
+                                {
+                                    redirect: "follow",
+                                    cache: "no-store",
+                                    credentials: "omit"
+                                }
+                            );
     
-                        if (!response2.ok) {
+                        if (!childResponse.ok) {
                             continue;
                         }
     
-                        const text2 =
-                            await response2.text();
+                        const childText =
+                            await childResponse.text();
     
-                        const doc2 =
+                        const childDoc =
                             new DOMParser()
                                 .parseFromString(
-                                    text2,
+                                    childText,
                                     "application/xml"
                                 );
     
                         if (
-                            doc2.querySelector("parsererror")
+                            childDoc.querySelector(
+                                "parsererror"
+                            )
                         ) {
                             continue;
                         }
     
-                        const locations2 =
-                            [...doc2.querySelectorAll("url > loc")];
+                        const childLocations =
+                            [...childDoc.querySelectorAll(
+                                "url > loc"
+                            )];
     
-                        for (const loc2 of locations2) {
-                            const u = urlKey(
-                                loc2.textContent.trim(),
-                                child
-                            );
+                        for (const childLoc of childLocations) {
+                            const u =
+                                urlKey(
+                                    childLoc.textContent.trim(),
+                                    child
+                                );
     
                             if (!u) continue;
                             if (!sameSite(u)) continue;
@@ -1124,51 +1075,27 @@
                             }
                         }
                     } catch {
-                        /*
-                         * Ignore individual child sitemap errors.
-                         */
+                        // Ignore failed child sitemap.
                     }
                 }
     
-                /*
-                 * If one sitemap worked, we're done.
-                 */
                 return;
             } catch {
-                /*
-                 * Try next sitemap candidate.
-                 */
+                // Try the next sitemap.
             }
         }
     }
     
     
     /* ============================================================
-       NORMALIZE TEXT FOR PAGE SIGNATURE
+       PAGE PROFILE
        ============================================================ */
     
-    function normalizeText(value) {
-        return String(value || "")
-            .replace(/\s+/g, " ")
-            .trim();
-    }
-    
-    
-    /* ============================================================
-       DOCUMENT FINGERPRINT
-       ============================================================
-    
-       IMPORTANT:
-       The base URL is the URL of the document being inspected.
-    
-       This prevents relative links from nested pages from being
-       incorrectly resolved against the site root.
-       ============================================================ */
-    
-    function documentFingerprint(doc, baseUrl) {
+    function getPageProfile(doc, baseUrl) {
         const title =
             normalizeText(
-                doc.querySelector("title")?.textContent || ""
+                doc.querySelector("title")
+                    ?.textContent || ""
             );
     
         const description =
@@ -1184,147 +1111,194 @@
                     normalizeText(el.textContent)
                 )
                 .filter(Boolean)
-                .slice(0, 5)
-                .join("|");
+                .slice(0, 5);
     
-        /*
-         * Only take a reasonable body sample.
-         *
-         * We do NOT fingerprint the entire HTML because dynamic
-         * scripts, timestamps, etc. can make otherwise identical
-         * pages differ.
-         */
         const body =
             normalizeText(
                 doc.body?.innerText || ""
-            ).slice(0, 5000);
+            );
+    
+        const bodySample =
+            body.slice(0, 6000);
+    
+        const links = [];
+    
+        for (const a of doc.querySelectorAll("a[href]")) {
+            try {
+                const raw =
+                    a.getAttribute("href");
+    
+                if (!raw) continue;
+    
+                const resolved =
+                    new URL(raw, baseUrl);
+    
+                if (
+                    !/^https?:$/i.test(
+                        resolved.protocol
+                    )
+                ) {
+                    continue;
+                }
+    
+                resolved.hash = "";
+    
+                if (!checked("queryUrls")) {
+                    resolved.search = "";
+                }
+    
+                if (
+                    resolved.hostname.toLowerCase() !==
+                    new URL(site()).hostname.toLowerCase()
+                ) {
+                    continue;
+                }
+    
+                links.push(resolved.href);
+            } catch {
+                // Ignore malformed href.
+            }
+        }
+    
+        links.sort();
     
         /*
-         * Resolve internal links against the actual page URL.
+         * A compact profile used for soft-404 detection.
          */
-        const links =
-            [...doc.querySelectorAll("a[href]")]
-                .map(a => {
-                    try {
-                        const raw =
-                            a.getAttribute("href");
-    
-                        if (!raw) {
-                            return "";
-                        }
-    
-                        const resolved =
-                            new URL(raw, baseUrl);
-    
-                        if (
-                            !/^https?:$/i.test(
-                                resolved.protocol
-                            )
-                        ) {
-                            return "";
-                        }
-    
-                        resolved.hash = "";
-    
-                        if (!checked("queryUrls")) {
-                            resolved.search = "";
-                        }
-    
-                        return resolved.href;
-                    } catch {
-                        return "";
-                    }
-                })
-                .filter(Boolean)
-                .filter(sameSite)
-                .sort()
-                .join("|");
-    
-        return [
+        return {
             title,
             description,
             h1,
             body,
-            links
-        ].join("\n---\n");
+            bodySample,
+            links,
+    
+            titleKey:
+                title.toLowerCase(),
+    
+            descriptionKey:
+                description.toLowerCase(),
+    
+            h1Key:
+                h1.join("|").toLowerCase(),
+    
+            linksKey:
+                links.join("|"),
+    
+            /*
+             * Counts are useful even when individual links
+             * contain dynamic differences.
+             */
+            linkCount: links.length,
+    
+            bodyLength: body.length
+        };
     }
     
     
     /* ============================================================
-       HOMEPAGE FALLBACK DETECTION
+       TEXT SIMILARITY
        ============================================================ */
     
-    function isHomepageFallback(requestedUrl, doc) {
-        if (!homepageFingerprint) {
-            return false;
+    function similarity(a, b) {
+        a = normalizeText(a).toLowerCase();
+        b = normalizeText(b).toLowerCase();
+    
+        if (!a || !b) {
+            return 0;
         }
     
-        try {
-            const requested =
-                new URL(requestedUrl);
+        if (a === b) {
+            return 1;
+        }
     
-            const root =
-                new URL(site());
+        /*
+         * Very fast prefix comparison.
+         */
+        const max = Math.max(a.length, b.length);
     
-            /*
-             * NEVER classify the actual homepage itself as a
-             * fallback.
-             */
-            const requestedPath =
-                requested.pathname.replace(/\/+$/, "") || "/";
+        if (!max) {
+            return 1;
+        }
     
-            const rootPath =
-                root.pathname.replace(/\/+$/, "") || "/";
+        const sampleLength =
+            Math.min(
+                5000,
+                a.length,
+                b.length
+            );
     
-            if (
-                requested.hostname.toLowerCase() ===
-                root.hostname.toLowerCase() &&
-                requestedPath === rootPath &&
-                (
-                    !checked("queryUrls") ||
-                    requested.search === root.search
-                )
-            ) {
-                return false;
+        if (
+            a.slice(0, sampleLength) ===
+            b.slice(0, sampleLength)
+        ) {
+            return 0.98;
+        }
+    
+        /*
+         * Compare token sets.
+         */
+        const setA =
+            new Set(
+                a.split(/\s+/)
+                    .filter(Boolean)
+                    .slice(0, 1500)
+            );
+    
+        const setB =
+            new Set(
+                b.split(/\s+/)
+                    .filter(Boolean)
+                    .slice(0, 1500)
+            );
+    
+        if (!setA.size || !setB.size) {
+            return 0;
+        }
+    
+        let intersection = 0;
+    
+        for (const word of setA) {
+            if (setB.has(word)) {
+                intersection++;
             }
+        }
     
-            /*
-             * Compare the returned document to the actual homepage.
-             */
-            const fingerprint =
-                documentFingerprint(
-                    doc,
-                    requestedUrl
+        const union =
+            new Set([
+                ...setA,
+                ...setB
+            ]).size;
+    
+        return union
+            ? intersection / union
+            : 0;
+    }
+    
+    
+    /* ============================================================
+       HOMEPAGE PROFILE
+       ============================================================ */
+    
+    async function loadHomepageProfile(startUrl) {
+        homepageProfile = null;
+        fallbackProfiles.clear();
+    
+        try {
+            const response =
+                await fetch(
+                    startUrl,
+                    {
+                        redirect: "follow",
+                        cache: "no-store",
+                        credentials: "omit"
+                    }
                 );
     
-            return (
-                fingerprint === homepageFingerprint
-            );
-        } catch {
-            return false;
-        }
-    }
-    
-    
-    /* ============================================================
-       HOMEPAGE FINGERPRINT LOADING
-       ============================================================ */
-    
-    async function loadHomepageFingerprint(startUrl) {
-        homepageFingerprint = null;
-    
-        try {
-            const response = await fetch(
-                startUrl,
-                {
-                    redirect: "follow",
-                    cache: "no-store",
-                    credentials: "omit"
-                }
-            );
-    
             const type =
-                response.headers.get("content-type") || "";
+                response.headers.get(
+                    "content-type"
+                ) || "";
     
             if (
                 !response.ok ||
@@ -1333,7 +1307,8 @@
                 return;
             }
     
-            const html = await response.text();
+            const html =
+                await response.text();
     
             const doc =
                 new DOMParser()
@@ -1342,57 +1317,276 @@
                         "text/html"
                     );
     
-            homepageFingerprint =
-                documentFingerprint(
+            homepageProfile =
+                getPageProfile(
                     doc,
                     startUrl
                 );
         } catch {
-            homepageFingerprint = null;
+            homepageProfile = null;
         }
     }
     
     
     /* ============================================================
-       CRAWL ONE PAGE
+       HOMEPAGE FALLBACK DETECTION
+       ============================================================ */
+    
+    function isRootUrl(url) {
+        try {
+            const requested =
+                new URL(url);
+    
+            const root =
+                new URL(site());
+    
+            const requestedPath =
+                requested.pathname
+                    .replace(/\/+$/, "") || "/";
+    
+            const rootPath =
+                root.pathname
+                    .replace(/\/+$/, "") || "/";
+    
+            return (
+                requested.hostname.toLowerCase() ===
+                root.hostname.toLowerCase() &&
+                requestedPath === rootPath
+            );
+        } catch {
+            return false;
+        }
+    }
+    
+    
+    /*
+     * Detect a server that returns the homepage for arbitrary
+     * paths.
+     *
+     * This intentionally does NOT depend on the canonical tag.
+     */
+    function isHomepageFallback(
+        requestedUrl,
+        doc,
+        response
+    ) {
+        if (!homepageProfile) {
+            return false;
+        }
+    
+        if (isRootUrl(requestedUrl)) {
+            return false;
+        }
+    
+        const profile =
+            getPageProfile(
+                doc,
+                requestedUrl
+            );
+    
+        /*
+         * Strong exact indicators.
+         */
+        const sameTitle =
+            !!profile.titleKey &&
+            profile.titleKey ===
+            homepageProfile.titleKey;
+    
+        const sameDescription =
+            !!profile.descriptionKey &&
+            profile.descriptionKey ===
+            homepageProfile.descriptionKey;
+    
+        const sameH1 =
+            !!profile.h1Key &&
+            profile.h1Key ===
+            homepageProfile.h1Key;
+    
+        const sameLinks =
+            profile.linksKey ===
+            homepageProfile.linksKey;
+    
+        /*
+         * Body similarity.
+         */
+        const bodySimilarity =
+            similarity(
+                profile.bodySample,
+                homepageProfile.bodySample
+            );
+    
+        /*
+         * Link-count similarity.
+         */
+        const homepageLinks =
+            homepageProfile.linkCount;
+    
+        const linkDifference =
+            Math.abs(
+                profile.linkCount -
+                homepageLinks
+            );
+    
+        const similarLinkCount =
+            linkDifference <=
+            Math.max(2, Math.ceil(homepageLinks * 0.15));
+    
+        /*
+         * Body length similarity.
+         */
+        const homepageLength =
+            homepageProfile.bodyLength;
+    
+        const lengthDifference =
+            Math.abs(
+                profile.bodyLength -
+                homepageLength
+            );
+    
+        const similarBodyLength =
+            lengthDifference <=
+            Math.max(
+                500,
+                Math.ceil(homepageLength * 0.20)
+            );
+    
+        /*
+         * Exact profile match is definitive.
+         */
+        if (
+            sameTitle &&
+            sameDescription &&
+            sameH1 &&
+            sameLinks
+        ) {
+            return true;
+        }
+    
+        /*
+         * Same title + same description + highly similar body.
+         */
+        if (
+            sameTitle &&
+            sameDescription &&
+            bodySimilarity >= 0.90 &&
+            similarBodyLength
+        ) {
+            return true;
+        }
+    
+        /*
+         * Same title + same H1 + highly similar body.
+         */
+        if (
+            sameTitle &&
+            sameH1 &&
+            bodySimilarity >= 0.94 &&
+            similarBodyLength
+        ) {
+            return true;
+        }
+    
+        /*
+         * Same title + same link structure + similar body.
+         */
+        if (
+            sameTitle &&
+            sameLinks &&
+            bodySimilarity >= 0.85
+        ) {
+            return true;
+        }
+    
+        /*
+         * Strong body match with matching link count.
+         */
+        if (
+            bodySimilarity >= 0.97 &&
+            similarLinkCount &&
+            similarBodyLength
+        ) {
+            return true;
+        }
+    
+        /*
+         * Cache the profile for this exact response signature.
+         */
+        return false;
+    }
+    
+    
+    /* ============================================================
+       CRAWL ONE
        ============================================================ */
     
     async function crawlOne(item) {
         let response;
     
         try {
-            response = await fetch(
-                item.url,
-                {
-                    redirect: "follow",
-                    cache: "no-store",
-                    credentials: "omit"
-                }
-            );
+            response =
+                await fetch(
+                    item.url,
+                    {
+                        redirect: "follow",
+                        cache: "no-store",
+                        credentials: "omit"
+                    }
+                );
         } catch (e) {
             results.push({
                 url: item.url,
                 depth: item.depth,
                 status: 0,
-                error: e.message || String(e)
+                error: e.message || String(e),
+                title: "",
+                description: "",
+                canonical: "",
+                indexable: false,
+                noindex: false,
+                h1: 0,
+                h1Text: "",
+                links: 0,
+                internal: 0,
+                external: 0,
+                missingAlt: 0,
+                images: 0,
+                viewport: false,
+                lang: false,
+                jsonLd: 0,
+                soft404: false
             });
     
             return;
         }
     
         const type =
-            response.headers.get("content-type") || "";
+            response.headers.get(
+                "content-type"
+            ) || "";
     
-        /*
-         * Non-HTML resource.
-         */
         if (!/text\/html/i.test(type)) {
             if (checked("nonHtml")) {
                 results.push({
                     url: item.url,
                     depth: item.depth,
                     status: response.status,
-                    error: "Non-HTML resource"
+                    error: "Non-HTML resource",
+                    title: "",
+                    description: "",
+                    canonical: "",
+                    indexable: false,
+                    noindex: false,
+                    h1: 0,
+                    h1Text: "",
+                    links: 0,
+                    internal: 0,
+                    external: 0,
+                    missingAlt: 0,
+                    images: 0,
+                    viewport: false,
+                    lang: false,
+                    jsonLd: 0,
+                    soft404: false
                 });
             }
     
@@ -1408,92 +1602,14 @@
                 url: item.url,
                 depth: item.depth,
                 status: response.status,
-                error: e.message || String(e)
-            });
-    
-            return;
-        }
-    
-        let doc;
-    
-        try {
-            doc =
-                new DOMParser()
-                    .parseFromString(
-                        html,
-                        "text/html"
-                    );
-        } catch (e) {
-            results.push({
-                url: item.url,
-                depth: item.depth,
-                status: response.status,
-                error: e.message || String(e)
-            });
-    
-            return;
-        }
-    
-    
-        /* ========================================================
-           SOFT 404 / HOMEPAGE FALLBACK
-           ========================================================
-    
-           This MUST happen BEFORE extracting links.
-    
-           Otherwise an invalid URL that returns the homepage
-           causes the crawler to discover the homepage's links
-           again under another bogus path.
-    
-           Example:
-    
-           /tools/pdf-tools.html
-              -> homepage
-              -> /tools/about.html
-              -> homepage
-              -> /tools/tools/about.html
-              -> homepage
-              -> ...
-           ======================================================== */
-    
-        if (
-            isHomepageFallback(
-                item.url,
-                doc
-            )
-        ) {
-            const title =
-                normalizeText(
-                    doc.querySelector("title")
-                        ?.textContent || ""
-                );
-    
-            const description =
-                normalizeText(
-                    doc.querySelector(
-                        'meta[name="description"]'
-                    )?.getAttribute("content") || ""
-                );
-    
-            const h1 =
-                [...doc.querySelectorAll("h1")]
-                    .map(x =>
-                        normalizeText(x.textContent)
-                    )
-                    .filter(Boolean);
-    
-            results.push({
-                url: item.url,
-                depth: item.depth,
-                status: response.status,
-                error: "URL returned the homepage (soft 404 / homepage fallback)",
-                title,
-                description,
+                error: e.message || String(e),
+                title: "",
+                description: "",
                 canonical: "",
-                noindex: false,
                 indexable: false,
-                h1: h1.length,
-                h1Text: h1.slice(0, 2).join(" | "),
+                noindex: false,
+                h1: 0,
+                h1Text: "",
                 links: 0,
                 internal: 0,
                 external: 0,
@@ -1502,19 +1618,91 @@
                 viewport: false,
                 lang: false,
                 jsonLd: 0,
+                soft404: false
+            });
+    
+            return;
+        }
+    
+        const doc =
+            new DOMParser()
+                .parseFromString(
+                    html,
+                    "text/html"
+                );
+    
+    
+        /* ========================================================
+           SOFT 404 CHECK
+           ======================================================== */
+    
+        if (
+            isHomepageFallback(
+                item.url,
+                doc,
+                response
+            )
+        ) {
+            const profile =
+                getPageProfile(
+                    doc,
+                    item.url
+                );
+    
+            results.push({
+                url: item.url,
+                depth: item.depth,
+                status: response.status,
+    
+                error:
+                    "URL returned the homepage (soft 404 / homepage fallback)",
+    
+                title: profile.title,
+    
+                description:
+                    profile.description,
+    
+                canonical: "",
+    
+                indexable: false,
+                noindex: false,
+    
+                h1: profile.h1.length,
+    
+                h1Text:
+                    profile.h1
+                        .slice(0, 2)
+                        .join(" | "),
+    
+                /*
+                 * These are intentionally zero.
+                 *
+                 * The links belong to the homepage response,
+                 * NOT the requested URL.
+                 */
+                links: 0,
+                internal: 0,
+                external: 0,
+    
+                missingAlt: 0,
+                images: 0,
+    
+                viewport: false,
+                lang: false,
+                jsonLd: 0,
+    
                 soft404: true
             });
     
             /*
-             * CRITICAL:
-             * Do NOT process links from this document.
+             * ABSOLUTELY DO NOT DISCOVER LINKS HERE.
              */
             return;
         }
     
     
         /* ========================================================
-           NORMAL SEO EXTRACTION
+           NORMAL PAGE ANALYSIS
            ======================================================== */
     
         const title =
@@ -1535,15 +1723,15 @@
                 'link[rel~="canonical"]'
             )?.getAttribute("href") || "";
     
-        let canonical = "";
-    
-        if (canonicalRaw) {
-            canonical =
-                urlKey(
-                    canonicalRaw,
-                    item.url
-                ) || canonicalRaw;
-        }
+        const canonical =
+            canonicalRaw
+                ? (
+                    urlKey(
+                        canonicalRaw,
+                        item.url
+                    ) || canonicalRaw
+                )
+                : "";
     
         const robots =
             (
@@ -1574,9 +1762,11 @@
         let internal = 0;
         let external = 0;
     
-        /*
-         * Extract internal links.
-         */
+    
+        /* ========================================================
+           LINK DISCOVERY
+           ======================================================== */
+    
         for (const a of links) {
             const raw =
                 a.getAttribute("href");
@@ -1594,9 +1784,6 @@
             if (sameSite(u)) {
                 internal++;
     
-                /*
-                 * Only enqueue HTML-looking URLs.
-                 */
                 if (
                     htmlUrl(u) &&
                     !seen.has(u)
@@ -1607,7 +1794,11 @@
                         from: item.url
                     };
     
-                    seen.set(u, next);
+                    seen.set(
+                        u,
+                        next
+                    );
+    
                     queue.push(next);
                 }
             } else {
@@ -1615,10 +1806,20 @@
             }
         }
     
+    
+        /* ========================================================
+           IMAGE DATA
+           ======================================================== */
+    
         const imgs =
             [...doc.images];
     
-        const result = {
+    
+        /* ========================================================
+           SAVE RESULT
+           ======================================================== */
+    
+        results.push({
             url: item.url,
             depth: item.depth,
             status: response.status,
@@ -1629,13 +1830,17 @@
             canonical,
     
             noindex,
+    
             indexable:
                 response.ok &&
                 !noindex,
     
             h1: h1.length,
+    
             h1Text:
-                h1.slice(0, 2).join(" | "),
+                h1
+                    .slice(0, 2)
+                    .join(" | "),
     
             links: links.length,
             internal,
@@ -1643,7 +1848,8 @@
     
             missingAlt:
                 imgs.filter(
-                    img => !img.hasAttribute("alt")
+                    img =>
+                        !img.hasAttribute("alt")
                 ).length,
     
             images: imgs.length,
@@ -1663,9 +1869,7 @@
                 ).length,
     
             soft404: false
-        };
-    
-        results.push(result);
+        });
     }
     
     
@@ -1678,13 +1882,15 @@
             return;
         }
     
-        /*
-         * Validate site URL.
-         */
         try {
-            const u = new URL(site());
+            const u =
+                new URL(site());
     
-            if (!/^https?:$/i.test(u.protocol)) {
+            if (
+                !/^https?:$/i.test(
+                    u.protocol
+                )
+            ) {
                 throw new Error();
             }
         } catch {
@@ -1709,7 +1915,8 @@
         seen.clear();
     
         robotsRules = null;
-        homepageFingerprint = null;
+        homepageProfile = null;
+        fallbackProfiles.clear();
     
     
         /* ========================================================
@@ -1746,7 +1953,6 @@
     
         queue.push(rootItem);
     
-    
         renderResults();
         stats();
     
@@ -1757,34 +1963,30 @@
     
     
         /* ========================================================
-           LOAD ROBOTS
+           ROBOTS
            ======================================================== */
     
         await loadRobots();
     
     
         /* ========================================================
-           CAPTURE THE REAL HOMEPAGE
-           ========================================================
-    
-           This happens BEFORE sitemap/link discovery so that any
-           bogus URL returning the homepage can be recognized.
+           HOMEPAGE PROFILE
            ======================================================== */
     
-        await loadHomepageFingerprint(
+        await loadHomepageProfile(
             start
         );
     
     
         /* ========================================================
-           SITEMAP SEEDS
+           SITEMAP
            ======================================================== */
     
         await addSitemapSeeds();
     
     
         /* ========================================================
-           SAFETY LIMIT
+           LIMIT
            ======================================================== */
     
         const limit =
@@ -1803,7 +2005,7 @@
     
     
         /* ========================================================
-           MAIN CRAWL LOOP
+           CRAWL LOOP
            ======================================================== */
     
         while (
@@ -1814,32 +2016,34 @@
             const item =
                 queue.shift();
     
-    
-            /* ====================================================
-               ROBOTS
-               ==================================================== */
-    
             if (!allowed(item.url)) {
                 results.push({
                     url: item.url,
                     depth: item.depth,
                     status: 0,
                     error: "Blocked by robots.txt",
+    
                     title: "",
                     description: "",
                     canonical: "",
-                    noindex: false,
+    
                     indexable: false,
+                    noindex: false,
+    
                     h1: 0,
                     h1Text: "",
+    
                     links: 0,
                     internal: 0,
                     external: 0,
+    
                     missingAlt: 0,
                     images: 0,
+    
                     viewport: false,
                     lang: false,
                     jsonLd: 0,
+    
                     soft404: false
                 });
     
@@ -1849,22 +2053,12 @@
                 continue;
             }
     
-    
-            /* ====================================================
-               CRAWL PAGE
-               ==================================================== */
-    
             await crawlOne(item);
     
             stats();
             renderResults();
     
-    
-            /* ====================================================
-               DELAY
-               ==================================================== */
-    
-            await sleep(
+            const delay =
                 Math.max(
                     0,
                     Math.min(
@@ -1876,17 +2070,19 @@
                             )
                         ) || 0
                     )
-                )
-            );
+                );
+    
+            if (delay > 0) {
+                await sleep(delay);
+            }
         }
     
     
         /* ========================================================
-           FINISH
+           FINISHED
            ======================================================== */
     
         running = false;
-    
     
         if (stopRequested) {
             status(
@@ -1916,18 +2112,37 @@
     
     
         /* ========================================================
-           POST-CRAWL PROCESSING
+           EXISTING SEO GENERATOR FUNCTIONS
            ======================================================== */
     
-        useCrawledPages();
-        renderPages();
-        updateAll();
-        validate();
+        if (
+            typeof useCrawledPages === "function"
+        ) {
+            useCrawledPages();
+        }
+    
+        if (
+            typeof renderPages === "function"
+        ) {
+            renderPages();
+        }
+    
+        if (
+            typeof updateAll === "function"
+        ) {
+            updateAll();
+        }
+    
+        if (
+            typeof validate === "function"
+        ) {
+            validate();
+        }
     }
     
     
     /* ============================================================
-       STOP CRAWL
+       STOP
        ============================================================ */
     
     function stopCrawl() {
@@ -1945,120 +2160,69 @@
     
     
     /* ============================================================
-       RESULT RENDERING
-       ============================================================ */
-    
-    function renderResults() {
-        const target =
-            $("resultsBody") ||
-            $("crawlResultsBody") ||
-            $("results");
-    
-        if (!target) {
-            return;
-        }
-    
-        /*
-         * If the existing page has its own renderer, use it.
-         *
-         * This fallback renderer exists so the crawler remains
-         * functional if the table body has one of the common IDs.
-         */
-        if (
-            typeof window.renderCrawlResults === "function"
-        ) {
-            try {
-                window.renderCrawlResults(results);
-                return;
-            } catch {
-                /*
-                 * Fall through to basic rendering.
-                 */
-            }
-        }
-    
-        /*
-         * Do not overwrite an existing specialized renderer.
-         *
-         * The original application may define renderResults()
-         * elsewhere. Since this function is the application
-         * renderer itself in the supplied file, this block is
-         * intentionally conservative.
-         */
-    }
-    
-    
-    /* ============================================================
-       EXPORT / DOWNLOAD HELPERS
+       KEEP YOUR EXISTING renderResults()
        ============================================================
     
-       The remainder of your original application can continue
-       using:
-    
-           results
-           pages
-           seen
-           queue
-           site()
-           pathOf()
-           esc()
-           xml()
-    
-       No crawler state was changed in a way that breaks those
-       functions.
+       This function is intentionally NOT recreated here.
+       Your existing renderer should use the global `results`
+       array populated above.
        ============================================================ */
     
     
     /* ============================================================
-       BUTTON EVENT HELPERS
+       BUTTON BINDING
        ============================================================ */
     
-    function bindIfExists(id, event, handler) {
+    function bindClick(id, handler) {
         const el = $(id);
     
         if (!el) {
             return;
         }
     
+        /*
+         * Prevent duplicate handlers if the original page already
+         * bound one.
+         */
+        if (el.dataset.crawlerBound === "1") {
+            return;
+        }
+    
+        el.dataset.crawlerBound = "1";
+    
         el.addEventListener(
-            event,
+            "click",
             handler
         );
     }
     
     
     /*
-     * Common IDs used by the SEO generator.
-     *
-     * These are only bound if the controls exist.
+     * Bind only if your page uses these IDs.
      */
-    bindIfExists(
+    bindClick(
         "crawlBtn",
-        "click",
         crawlSite
     );
     
-    bindIfExists(
+    bindClick(
         "startCrawl",
-        "click",
         crawlSite
     );
     
-    bindIfExists(
+    bindClick(
         "stopBtn",
-        "click",
         stopCrawl
     );
     
-    bindIfExists(
+    bindClick(
         "stopCrawl",
-        "click",
         stopCrawl
     );
     
     
     /* ============================================================
-       INITIAL STATE
+       INITIAL STATS
        ============================================================ */
     
     stats();
