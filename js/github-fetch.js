@@ -3,8 +3,6 @@
  * Version: 25 (Portable Framework Integration)
  */
 
-console.log('[DEBUG] GITHUB-FETCH: Script File Loaded');
-
 const REPO_CONTAINER_ID = 'github-repos';
 const AVATAR_CONTAINER_ID = 'profile-avatar';
 const HEADER_AVATAR_ID = 'header-avatar';

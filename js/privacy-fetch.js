@@ -3,8 +3,6 @@
  * Version: 26 (Git Tree Discovery - Zero 404 Errors)
  */
 
-console.log('[DEBUG] PRIVACY-FETCH: Script File Loaded');
-
 async function initPrivacy() {
     console.log('[DEBUG] Privacy: Initializing...');
 
