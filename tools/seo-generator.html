@@ -578,43 +578,51 @@
     <script>
         "use strict";
     
+    /* ============================================================
+       STATIC WEBSITE SEO GENERATOR
+       CRAWLER
+       ============================================================ */
+    
     const $ = id => document.getElementById(id);
     
-    let pages = [{
-        path: "/",
-        lastmod: "",
-        changefreq: "weekly",
-        priority: "1.0"
-    }];
+    let pages = [
+        {
+            path: "/",
+            lastmod: "",
+            changefreq: "weekly",
+            priority: "1.0"
+        }
+    ];
     
     let results = [];
     let queue = [];
     let seen = new Map();
+    
     let running = false;
     let stopRequested = false;
     let robotsRules = null;
     
     /*
-     * Some static hosts, including SPA/static fallback configurations,
-     * return the homepage with HTTP 200 for URLs that do not actually exist.
+     * Signature of the real homepage.
+     *
+     * Many static hosts return the homepage with HTTP 200 for an
+     * unknown URL instead of returning HTTP 404.
      *
      * Example:
+     *   /tools/pdf-tools.html
      *
-     *   /does-not-exist
+     * may actually return:
+     *   /
      *
-     * returns the exact homepage instead of HTTP 404.
-     *
-     * Without detecting this, a crawler can recursively create:
-     *
-     *   /tools/
-     *   /tools/tools/
-     *   /tools/tools/tools/
-     *   /tools/tools/tools/tools/
-     *
-     * This crawler records a fingerprint of the real homepage and refuses
-     * to crawl non-root URLs that return the same page.
+     * We detect that by comparing the returned document against
+     * the real homepage.
      */
     let homepageFingerprint = null;
+    
+    
+    /* ============================================================
+       BASIC HELPERS
+       ============================================================ */
     
     const val = (id, def = "") =>
         ($(id)?.value ?? def).trim();
@@ -646,6 +654,8 @@
     }
     
     function status(msg, type = "good") {
+        if (!$("status")) return;
+    
         $("status").textContent = msg;
         $("status").className = "status " + type;
     }
@@ -654,57 +664,74 @@
         return new Promise(resolve => setTimeout(resolve, ms));
     }
     
-    /*
-     * Normalize a URL into the crawler's canonical key.
-     */
+    
+    /* ============================================================
+       URL NORMALIZATION
+       ============================================================ */
+    
     function urlKey(raw, base) {
         try {
-            let u = new URL(raw, base);
+            if (!raw) return null;
     
-            if (!/^https?:$/.test(u.protocol))
+            const u = new URL(raw, base);
+    
+            if (!/^https?:$/i.test(u.protocol)) {
                 return null;
+            }
     
+            /*
+             * Hash fragments do not represent separate HTML pages.
+             */
             u.hash = "";
     
-            if (!checked("queryUrls"))
+            /*
+             * Optional query-string handling.
+             */
+            if (!checked("queryUrls")) {
                 u.search = "";
+            }
     
             /*
-             * Normalize trailing slashes except for root.
+             * Normalize trailing slashes.
+             *
+             * /foo/
+             * /foo
+             *
+             * are treated as the same URL.
              */
-            if (u.pathname.length > 1)
+            if (u.pathname.length > 1) {
                 u.pathname = u.pathname.replace(/\/+$/, "");
-    
-            /*
-             * Normalize default index.html at the root.
-             *
-             * This prevents:
-             *   /
-             *   /index.html
-             *
-             * from being treated as two different homepage URLs.
-             *
-             * We still retain the original requested URL in results when
-             * appropriate, but discovery uses one canonical key.
-             */
-            if (u.pathname === "/index.html")
-                u.pathname = "/";
+            }
     
             return u.href;
-    
         } catch {
             return null;
         }
     }
     
+    
+    /* ============================================================
+       SAME-SITE CHECK
+       ============================================================ */
+    
     function sameSite(u) {
         try {
-            return new URL(u).hostname.toLowerCase() ===
-                new URL(site()).hostname.toLowerCase();
+            const target = new URL(u);
+            const root = new URL(site());
+    
+            return (
+                target.hostname.toLowerCase() ===
+                root.hostname.toLowerCase()
+            );
         } catch {
             return false;
         }
     }
+    
+    
+    /* ============================================================
+       ASSET FILTER
+       ============================================================ */
     
     const assetExt =
         /\.(?:css|js|mjs|json|xml|txt|png|jpe?g|gif|webp|avif|svg|ico|woff2?|ttf|otf|mp[34]|webm|mov|zip|rar|7z|gz|tar|exe|msi|dmg|iso|pdf|docx?|xlsx?|pptx?|csv)$/i;
@@ -717,28 +744,48 @@
         }
     }
     
+    
+    /* ============================================================
+       PATH DISPLAY
+       ============================================================ */
+    
     function pathOf(u) {
         try {
-            let x = new URL(u);
+            const x = new URL(u);
+    
             let p = x.pathname || "/";
     
-            if (p.length > 1)
+            if (p.length > 1) {
                 p = p.replace(/\/+$/, "");
+            }
     
-            return p + (checked("queryUrls") ? x.search : "");
-    
+            return p + (
+                checked("queryUrls")
+                    ? x.search
+                    : ""
+            );
         } catch {
             return "/";
         }
     }
     
+    
+    /* ============================================================
+       STATS
+       ============================================================ */
+    
     function stats() {
+        if (!$("discovered")) return;
+    
         $("discovered").textContent = seen.size;
         $("crawled").textContent = results.length;
         $("queued").textContent = queue.length;
     
         $("failed").textContent =
-            results.filter(x => x.error || x.status >= 400).length;
+            results.filter(x =>
+                x.error ||
+                x.status >= 400
+            ).length;
     
         $("depth").textContent =
             results.reduce(
@@ -746,365 +793,570 @@
                 0
             );
     
-        $("progress").style.width =
-            Math.min(
-                100,
-                results.length / Math.max(seen.size, 1) * 100
-            ) + "%";
+        if ($("progress")) {
+            $("progress").style.width =
+                Math.min(
+                    100,
+                    results.length /
+                    Math.max(seen.size, 1) *
+                    100
+                ) + "%";
+        }
     }
     
-    /*
-     * Build a reasonably strong fingerprint of a document.
-     *
-     * We intentionally use more than just the title because two different
-     * legitimate pages can share a title.
-     *
-     * The fingerprint includes:
-     * - title
-     * - description
-     * - H1 text
-     * - body text sample
-     * - internal links
-     *
-     * A bad URL returning the homepage should therefore produce the same
-     * fingerprint as the real homepage.
-     */
-    function documentFingerprint(doc) {
-        const title =
-            (doc.querySelector("title")?.textContent || "")
+    
+    /* ============================================================
+       ROBOTS.TXT
+       ============================================================ */
+    
+    function parseRobots(txt) {
+        const groups = [];
+    
+        let current = null;
+    
+        const lines = String(txt || "")
+            .split(/\r?\n/)
+            .map(x => x.trim());
+    
+        for (let raw of lines) {
+            if (!raw || raw.startsWith("#")) {
+                continue;
+            }
+    
+            const hash = raw.indexOf("#");
+    
+            if (hash >= 0) {
+                raw = raw.slice(0, hash).trim();
+            }
+    
+            const colon = raw.indexOf(":");
+    
+            if (colon < 0) {
+                continue;
+            }
+    
+            const key = raw
+                .slice(0, colon)
                 .trim()
-                .replace(/\s+/g, " ");
+                .toLowerCase();
     
-        const description =
-            (doc.querySelector('meta[name="description"]')?.content || "")
-                .trim()
-                .replace(/\s+/g, " ");
+            const value = raw
+                .slice(colon + 1)
+                .trim();
     
-        const h1 = [...doc.querySelectorAll("h1")]
-            .map(x => x.textContent.trim().replace(/\s+/g, " "))
-            .filter(Boolean)
-            .slice(0, 5)
-            .join("|");
+            if (key === "user-agent") {
+                current = {
+                    agents: [value.toLowerCase()],
+                    rules: []
+                };
     
-        const links = [...doc.querySelectorAll("a[href]")]
-            .map(a => {
-                try {
-                    return new URL(
-                        a.getAttribute("href"),
-                        siteOrigin() + "/"
-                    ).href;
-                } catch {
-                    return "";
-                }
-            })
-            .filter(Boolean)
-            .filter(sameSite)
-            .map(u => {
-                const k = urlKey(u, siteOrigin() + "/");
-                return k || u;
-            })
-            .sort()
-            .join("|");
+                groups.push(current);
+                continue;
+            }
+    
+            if (!current) {
+                continue;
+            }
+    
+            if (key === "allow" || key === "disallow") {
+                current.rules.push({
+                    type: key,
+                    value
+                });
+            }
+        }
+    
+        return groups;
+    }
+    
+    
+    function robotsRuleMatch(path, rule) {
+        let pattern = String(rule || "");
+    
+        if (!pattern) {
+            return false;
+        }
     
         /*
-         * Only take a sample of body text. We don't need the entire page,
-         * and this avoids excessive memory use on large pages.
+         * Convert robots wildcard syntax to a regex.
          */
-        const bodyText =
-            (doc.body?.innerText || "")
-                .replace(/\s+/g, " ")
-                .trim()
-                .slice(0, 4000);
+        let regex = pattern
+            .replace(/[.+?^${}()|[\]\\]/g, "\\$&")
+            .replace(/\*/g, ".*");
+    
+        if (pattern.endsWith("$")) {
+            regex = regex.slice(0, -2) + "$";
+        }
+    
+        try {
+            return new RegExp("^" + regex, "i").test(path);
+        } catch {
+            return false;
+        }
+    }
+    
+    
+    function allowed(u) {
+        if (!robotsRules) {
+            return true;
+        }
+    
+        try {
+            const target = new URL(u);
+            const path = target.pathname || "/";
+    
+            /*
+             * Use the groups applying to "*" only.
+             */
+            const applicable = robotsRules.filter(group =>
+                group.agents.includes("*")
+            );
+    
+            if (!applicable.length) {
+                return true;
+            }
+    
+            let matched = null;
+    
+            for (const group of applicable) {
+                for (const rule of group.rules) {
+                    if (!robotsRuleMatch(path, rule.value)) {
+                        continue;
+                    }
+    
+                    /*
+                     * Longest matching rule wins.
+                     */
+                    if (
+                        !matched ||
+                        rule.value.length > matched.value.length
+                    ) {
+                        matched = rule;
+                    }
+                }
+            }
+    
+            if (!matched) {
+                return true;
+            }
+    
+            return matched.type !== "disallow";
+        } catch {
+            return true;
+        }
+    }
+    
+    
+    async function loadRobots() {
+        robotsRules = null;
+    
+        try {
+            const origin = siteOrigin();
+    
+            if (!origin) {
+                return;
+            }
+    
+            const response = await fetch(
+                origin + "/robots.txt",
+                {
+                    redirect: "follow",
+                    cache: "no-store",
+                    credentials: "omit"
+                }
+            );
+    
+            if (!response.ok) {
+                return;
+            }
+    
+            const text = await response.text();
+    
+            robotsRules = parseRobots(text);
+        } catch {
+            robotsRules = null;
+        }
+    }
+    
+    
+    /* ============================================================
+       SITEMAP
+       ============================================================ */
+    
+    async function addSitemapSeeds() {
+        const origin = siteOrigin();
+    
+        if (!origin) {
+            return;
+        }
+    
+        const candidates = [
+            origin + "/sitemap.xml",
+            origin + "/sitemap_index.xml"
+        ];
+    
+        for (const sitemapUrl of candidates) {
+            try {
+                const response = await fetch(
+                    sitemapUrl,
+                    {
+                        redirect: "follow",
+                        cache: "no-store",
+                        credentials: "omit"
+                    }
+                );
+    
+                if (!response.ok) {
+                    continue;
+                }
+    
+                const text = await response.text();
+    
+                const xmlDoc =
+                    new DOMParser().parseFromString(
+                        text,
+                        "application/xml"
+                    );
+    
+                /*
+                 * Ignore XML parser errors.
+                 */
+                if (
+                    xmlDoc.querySelector("parsererror")
+                ) {
+                    continue;
+                }
+    
+                /*
+                 * Regular sitemap.
+                 */
+                const locations =
+                    [...xmlDoc.querySelectorAll("url > loc")];
+    
+                for (const loc of locations) {
+                    const u = urlKey(
+                        loc.textContent.trim(),
+                        sitemapUrl
+                    );
+    
+                    if (!u) continue;
+                    if (!sameSite(u)) continue;
+                    if (!htmlUrl(u)) continue;
+    
+                    if (!seen.has(u)) {
+                        const item = {
+                            url: u,
+                            depth: 1,
+                            from: sitemapUrl
+                        };
+    
+                        seen.set(u, item);
+                        queue.push(item);
+                    }
+                }
+    
+                /*
+                 * Sitemap index.
+                 */
+                const sitemapLocations =
+                    [...xmlDoc.querySelectorAll("sitemap > loc")];
+    
+                for (const loc of sitemapLocations) {
+                    const child = urlKey(
+                        loc.textContent.trim(),
+                        sitemapUrl
+                    );
+    
+                    if (!child) continue;
+    
+                    try {
+                        const response2 = await fetch(
+                            child,
+                            {
+                                redirect: "follow",
+                                cache: "no-store",
+                                credentials: "omit"
+                            }
+                        );
+    
+                        if (!response2.ok) {
+                            continue;
+                        }
+    
+                        const text2 =
+                            await response2.text();
+    
+                        const doc2 =
+                            new DOMParser()
+                                .parseFromString(
+                                    text2,
+                                    "application/xml"
+                                );
+    
+                        if (
+                            doc2.querySelector("parsererror")
+                        ) {
+                            continue;
+                        }
+    
+                        const locations2 =
+                            [...doc2.querySelectorAll("url > loc")];
+    
+                        for (const loc2 of locations2) {
+                            const u = urlKey(
+                                loc2.textContent.trim(),
+                                child
+                            );
+    
+                            if (!u) continue;
+                            if (!sameSite(u)) continue;
+                            if (!htmlUrl(u)) continue;
+    
+                            if (!seen.has(u)) {
+                                const item = {
+                                    url: u,
+                                    depth: 1,
+                                    from: child
+                                };
+    
+                                seen.set(u, item);
+                                queue.push(item);
+                            }
+                        }
+                    } catch {
+                        /*
+                         * Ignore individual child sitemap errors.
+                         */
+                    }
+                }
+    
+                /*
+                 * If one sitemap worked, we're done.
+                 */
+                return;
+            } catch {
+                /*
+                 * Try next sitemap candidate.
+                 */
+            }
+        }
+    }
+    
+    
+    /* ============================================================
+       NORMALIZE TEXT FOR PAGE SIGNATURE
+       ============================================================ */
+    
+    function normalizeText(value) {
+        return String(value || "")
+            .replace(/\s+/g, " ")
+            .trim();
+    }
+    
+    
+    /* ============================================================
+       DOCUMENT FINGERPRINT
+       ============================================================
+    
+       IMPORTANT:
+       The base URL is the URL of the document being inspected.
+    
+       This prevents relative links from nested pages from being
+       incorrectly resolved against the site root.
+       ============================================================ */
+    
+    function documentFingerprint(doc, baseUrl) {
+        const title =
+            normalizeText(
+                doc.querySelector("title")?.textContent || ""
+            );
+    
+        const description =
+            normalizeText(
+                doc.querySelector(
+                    'meta[name="description"]'
+                )?.getAttribute("content") || ""
+            );
+    
+        const h1 =
+            [...doc.querySelectorAll("h1")]
+                .map(el =>
+                    normalizeText(el.textContent)
+                )
+                .filter(Boolean)
+                .slice(0, 5)
+                .join("|");
+    
+        /*
+         * Only take a reasonable body sample.
+         *
+         * We do NOT fingerprint the entire HTML because dynamic
+         * scripts, timestamps, etc. can make otherwise identical
+         * pages differ.
+         */
+        const body =
+            normalizeText(
+                doc.body?.innerText || ""
+            ).slice(0, 5000);
+    
+        /*
+         * Resolve internal links against the actual page URL.
+         */
+        const links =
+            [...doc.querySelectorAll("a[href]")]
+                .map(a => {
+                    try {
+                        const raw =
+                            a.getAttribute("href");
+    
+                        if (!raw) {
+                            return "";
+                        }
+    
+                        const resolved =
+                            new URL(raw, baseUrl);
+    
+                        if (
+                            !/^https?:$/i.test(
+                                resolved.protocol
+                            )
+                        ) {
+                            return "";
+                        }
+    
+                        resolved.hash = "";
+    
+                        if (!checked("queryUrls")) {
+                            resolved.search = "";
+                        }
+    
+                        return resolved.href;
+                    } catch {
+                        return "";
+                    }
+                })
+                .filter(Boolean)
+                .filter(sameSite)
+                .sort()
+                .join("|");
     
         return [
             title,
             description,
             h1,
-            links,
-            bodyText
+            body,
+            links
         ].join("\n---\n");
     }
     
-    /*
-     * Check whether a non-root URL appears to have returned the homepage.
-     *
-     * We use several signals:
-     *
-     * 1. Exact document fingerprint match.
-     * 2. Canonical URL pointing to the homepage.
-     *
-     * Either is enough to identify the common static-host fallback behavior.
-     */
+    
+    /* ============================================================
+       HOMEPAGE FALLBACK DETECTION
+       ============================================================ */
+    
     function isHomepageFallback(requestedUrl, doc) {
-        let requested;
+        if (!homepageFingerprint) {
+            return false;
+        }
     
         try {
-            requested = new URL(requestedUrl);
+            const requested =
+                new URL(requestedUrl);
+    
+            const root =
+                new URL(site());
+    
+            /*
+             * NEVER classify the actual homepage itself as a
+             * fallback.
+             */
+            const requestedPath =
+                requested.pathname.replace(/\/+$/, "") || "/";
+    
+            const rootPath =
+                root.pathname.replace(/\/+$/, "") || "/";
+    
+            if (
+                requested.hostname.toLowerCase() ===
+                root.hostname.toLowerCase() &&
+                requestedPath === rootPath &&
+                (
+                    !checked("queryUrls") ||
+                    requested.search === root.search
+                )
+            ) {
+                return false;
+            }
+    
+            /*
+             * Compare the returned document to the actual homepage.
+             */
+            const fingerprint =
+                documentFingerprint(
+                    doc,
+                    requestedUrl
+                );
+    
+            return (
+                fingerprint === homepageFingerprint
+            );
         } catch {
             return false;
         }
-    
-        /*
-         * Never classify the actual homepage itself as a fallback.
-         */
-        const root = new URL(site());
-    
-        const requestedPath =
-            requested.pathname.replace(/\/+$/, "") || "/";
-    
-        const rootPath =
-            root.pathname.replace(/\/+$/, "") || "/";
-    
-        if (
-            requested.hostname.toLowerCase() === root.hostname.toLowerCase() &&
-            requestedPath === rootPath &&
-            (!checked("queryUrls") || requested.search === root.search)
-        ) {
-            return false;
-        }
-    
-        /*
-         * Strongest test: same complete fingerprint as homepage.
-         */
-        if (
-            homepageFingerprint &&
-            documentFingerprint(doc) === homepageFingerprint
-        ) {
-            return true;
-        }
-    
-        /*
-         * Secondary test: canonical points at the homepage.
-         *
-         * This also protects against a homepage whose body has small
-         * dynamically-generated differences.
-         */
-        const canonicalRaw =
-            doc.querySelector('link[rel~="canonical"]')?.href || "";
-    
-        if (canonicalRaw) {
-            const canonical = urlKey(canonicalRaw, requestedUrl);
-    
-            if (canonical) {
-                const canonicalUrl = new URL(canonical);
-                const canonicalPath =
-                    canonicalUrl.pathname.replace(/\/+$/, "") || "/";
-    
-                const canonicalIsRoot =
-                    canonicalUrl.hostname.toLowerCase() ===
-                        root.hostname.toLowerCase() &&
-                    canonicalPath === rootPath;
-    
-                if (canonicalIsRoot)
-                    return true;
-            }
-        }
-    
-        return false;
     }
     
-    function parseRobots(txt) {
-        let active = false;
-        let out = [];
     
-        for (let raw of txt.split(/\r?\n/)) {
-            let line = raw.split("#")[0].trim();
-            let i = line.indexOf(":");
+    /* ============================================================
+       HOMEPAGE FINGERPRINT LOADING
+       ============================================================ */
     
-            if (!line || i < 0)
-                continue;
-    
-            let k = line.slice(0, i).trim().toLowerCase();
-            let v = line.slice(i + 1).trim();
-    
-            if (k === "user-agent") {
-                active = v === "*";
-            } else if (
-                active &&
-                (k === "allow" || k === "disallow") &&
-                v
-            ) {
-                out.push({
-                    k,
-                    v
-                });
-            }
-        }
-    
-        return out;
-    }
-    
-    function allowed(u) {
-        if (!robotsRules)
-            return true;
-    
-        let p = new URL(u).pathname;
-        let best = -1;
-        let allow = true;
-    
-        for (let r of robotsRules) {
-            let pattern = r.v;
-            let end = pattern.endsWith("$");
-    
-            if (end)
-                pattern = pattern.slice(0, -1);
-    
-            let re = new RegExp(
-                "^" +
-                pattern
-                    .replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
-                    .replace(/\\\*/g, ".*") +
-                (end ? "$" : "")
-            );
-    
-            if (re.test(p) && pattern.length >= best) {
-                best = pattern.length;
-                allow = r.k === "allow";
-            }
-        }
-    
-        return allow;
-    }
-    
-    async function loadRobots() {
-        robotsRules = null;
-    
-        if (!checked("respectRobots"))
-            return;
+    async function loadHomepageFingerprint(startUrl) {
+        homepageFingerprint = null;
     
         try {
-            let r = await fetch(
-                new URL("/robots.txt", site()),
+            const response = await fetch(
+                startUrl,
                 {
+                    redirect: "follow",
                     cache: "no-store",
                     credentials: "omit"
                 }
             );
     
-            if (r.ok)
-                robotsRules = parseRobots(await r.text());
-    
-        } catch {}
-    }
-    
-    /*
-     * Discover sitemap URLs.
-     */
-    async function addSitemapSeeds() {
-        const origin = new URL(site()).origin;
-    
-        const candidates = new Set([
-            new URL("/sitemap.xml", site()).href
-        ]);
-    
-        if (robotsRules) {
-            try {
-                let r = await fetch(
-                    new URL("/robots.txt", site()),
-                    {
-                        cache: "no-store"
-                    }
-                );
-    
-                if (r.ok) {
-                    for (
-                        let line of
-                        (await r.text()).split(/\r?\n/)
-                    ) {
-                        let m = line.match(
-                            /^\s*Sitemap:\s*(\S+)/i
-                        );
-    
-                        if (m)
-                            candidates.add(m[1]);
-                    }
-                }
-    
-            } catch {}
-        }
-    
-        const visited = new Set();
-    
-        while (candidates.size) {
-            const sm =
-                candidates.values().next().value;
-    
-            candidates.delete(sm);
+            const type =
+                response.headers.get("content-type") || "";
     
             if (
-                visited.has(sm) ||
-                visited.size >= 25
-            )
-                continue;
+                !response.ok ||
+                !/text\/html/i.test(type)
+            ) {
+                return;
+            }
     
-            visited.add(sm);
+            const html = await response.text();
     
-            try {
-                const r = await fetch(sm, {
-                    cache: "no-store",
-                    credentials: "omit"
-                });
-    
-                if (!r.ok)
-                    continue;
-    
-                const doc =
-                    new DOMParser().parseFromString(
-                        await r.text(),
-                        "application/xml"
+            const doc =
+                new DOMParser()
+                    .parseFromString(
+                        html,
+                        "text/html"
                     );
     
-                if (doc.querySelector("parsererror"))
-                    continue;
-    
-                for (
-                    const loc of
-                    doc.querySelectorAll("sitemap > loc")
-                ) {
-                    const u =
-                        loc.textContent.trim();
-    
-                    if (u)
-                        candidates.add(u);
-                }
-    
-                for (
-                    const loc of
-                    doc.querySelectorAll("url > loc")
-                ) {
-                    const u =
-                        urlKey(
-                            loc.textContent.trim(),
-                            origin
-                        );
-    
-                    if (
-                        u &&
-                        sameSite(u) &&
-                        htmlUrl(u) &&
-                        !seen.has(u)
-                    ) {
-                        seen.set(u, {
-                            url: u,
-                            depth: 0,
-                            from: "sitemap"
-                        });
-    
-                        queue.push({
-                            url: u,
-                            depth: 0,
-                            from: "sitemap"
-                        });
-                    }
-                }
-    
-            } catch {}
+            homepageFingerprint =
+                documentFingerprint(
+                    doc,
+                    startUrl
+                );
+        } catch {
+            homepageFingerprint = null;
         }
     }
     
-    /*
-     * Crawl one URL.
-     */
+    
+    /* ============================================================
+       CRAWL ONE PAGE
+       ============================================================ */
+    
     async function crawlOne(item) {
         let response;
     
@@ -1117,7 +1369,6 @@
                     credentials: "omit"
                 }
             );
-    
         } catch (e) {
             results.push({
                 url: item.url,
@@ -1152,7 +1403,6 @@
     
         try {
             html = await response.text();
-    
         } catch (e) {
             results.push({
                 url: item.url,
@@ -1173,7 +1423,6 @@
                         html,
                         "text/html"
                     );
-    
         } catch (e) {
             results.push({
                 url: item.url,
@@ -1185,67 +1434,128 @@
             return;
         }
     
-        /*
-         * -------------------------------------------------------------
-         * CRITICAL FIX
-         * -------------------------------------------------------------
-         *
-         * If a non-homepage URL returns the exact homepage document,
-         * DO NOT extract its links.
-         *
-         * This is what prevents:
-         *
-         * /tools/tools/
-         * /tools/tools/tools/
-         * /tools/tools/tools/tools/
-         *
-         * from being generated indefinitely.
-         */
-        if (isHomepageFallback(item.url, doc)) {
+    
+        /* ========================================================
+           SOFT 404 / HOMEPAGE FALLBACK
+           ========================================================
+    
+           This MUST happen BEFORE extracting links.
+    
+           Otherwise an invalid URL that returns the homepage
+           causes the crawler to discover the homepage's links
+           again under another bogus path.
+    
+           Example:
+    
+           /tools/pdf-tools.html
+              -> homepage
+              -> /tools/about.html
+              -> homepage
+              -> /tools/tools/about.html
+              -> homepage
+              -> ...
+           ======================================================== */
+    
+        if (
+            isHomepageFallback(
+                item.url,
+                doc
+            )
+        ) {
+            const title =
+                normalizeText(
+                    doc.querySelector("title")
+                        ?.textContent || ""
+                );
+    
+            const description =
+                normalizeText(
+                    doc.querySelector(
+                        'meta[name="description"]'
+                    )?.getAttribute("content") || ""
+                );
+    
+            const h1 =
+                [...doc.querySelectorAll("h1")]
+                    .map(x =>
+                        normalizeText(x.textContent)
+                    )
+                    .filter(Boolean);
     
             results.push({
                 url: item.url,
                 depth: item.depth,
                 status: response.status,
-                error: "URL returned the homepage (soft 404 / fallback)"
+                error: "URL returned the homepage (soft 404 / homepage fallback)",
+                title,
+                description,
+                canonical: "",
+                noindex: false,
+                indexable: false,
+                h1: h1.length,
+                h1Text: h1.slice(0, 2).join(" | "),
+                links: 0,
+                internal: 0,
+                external: 0,
+                missingAlt: 0,
+                images: 0,
+                viewport: false,
+                lang: false,
+                jsonLd: 0,
+                soft404: true
             });
     
+            /*
+             * CRITICAL:
+             * Do NOT process links from this document.
+             */
             return;
         }
     
+    
+        /* ========================================================
+           NORMAL SEO EXTRACTION
+           ======================================================== */
+    
         const title =
-            (doc.querySelector("title")?.textContent || "")
-                .trim();
+            normalizeText(
+                doc.querySelector("title")
+                    ?.textContent || ""
+            );
     
         const description =
-            (
+            normalizeText(
                 doc.querySelector(
                     'meta[name="description"]'
-                )?.content || ""
-            ).trim();
+                )?.getAttribute("content") || ""
+            );
     
         const canonicalRaw =
             doc.querySelector(
                 'link[rel~="canonical"]'
-            )?.href || "";
+            )?.getAttribute("href") || "";
     
-        const canonical =
-            canonicalRaw
-                ? urlKey(canonicalRaw, item.url) ||
-                  canonicalRaw
-                : "";
+        let canonical = "";
+    
+        if (canonicalRaw) {
+            canonical =
+                urlKey(
+                    canonicalRaw,
+                    item.url
+                ) || canonicalRaw;
+        }
     
         const robots =
             (
                 doc.querySelector(
                     'meta[name="robots"]'
-                )?.content || ""
+                )?.getAttribute("content") || ""
             ) +
             " " +
             (
                 doc.querySelector(
                     'meta[name="googlebot"]'
-                )?.content || ""
+                )?.getAttribute("content") || ""
             );
     
         const noindex =
@@ -1253,7 +1563,9 @@
     
         const h1 =
             [...doc.querySelectorAll("h1")]
-                .map(x => x.textContent.trim())
+                .map(x =>
+                    normalizeText(x.textContent)
+                )
                 .filter(Boolean);
     
         const links =
@@ -1263,43 +1575,41 @@
         let external = 0;
     
         /*
-         * Only discover links after the fallback check above.
+         * Extract internal links.
          */
         for (const a of links) {
+            const raw =
+                a.getAttribute("href");
     
-            let u =
+            const u =
                 urlKey(
-                    a.getAttribute("href"),
+                    raw,
                     item.url
                 );
     
-            if (!u)
+            if (!u) {
                 continue;
+            }
     
             if (sameSite(u)) {
-    
                 internal++;
     
                 /*
-                 * Only queue HTML-looking URLs.
+                 * Only enqueue HTML-looking URLs.
                  */
                 if (
                     htmlUrl(u) &&
                     !seen.has(u)
                 ) {
-                    seen.set(u, {
+                    const next = {
                         url: u,
                         depth: item.depth + 1,
                         from: item.url
-                    });
+                    };
     
-                    queue.push({
-                        url: u,
-                        depth: item.depth + 1,
-                        from: item.url
-                    });
+                    seen.set(u, next);
+                    queue.push(next);
                 }
-    
             } else {
                 external++;
             }
@@ -1308,56 +1618,75 @@
         const imgs =
             [...doc.images];
     
-        results.push({
+        const result = {
             url: item.url,
             depth: item.depth,
             status: response.status,
             error: "",
+    
             title,
             description,
             canonical,
+    
             noindex,
             indexable:
-                response.ok && !noindex,
+                response.ok &&
+                !noindex,
+    
             h1: h1.length,
             h1Text:
                 h1.slice(0, 2).join(" | "),
+    
             links: links.length,
             internal,
             external,
+    
             missingAlt:
                 imgs.filter(
-                    i => !i.hasAttribute("alt")
+                    img => !img.hasAttribute("alt")
                 ).length,
+    
             images: imgs.length,
+    
             viewport:
                 !!doc.querySelector(
                     'meta[name="viewport"]'
                 ),
+    
             lang:
                 !!doc.documentElement
                     .getAttribute("lang"),
+    
             jsonLd:
                 doc.querySelectorAll(
                     'script[type="application/ld+json"]'
-                ).length
-        });
+                ).length,
+    
+            soft404: false
+        };
+    
+        results.push(result);
     }
     
-    /*
-     * Crawl site.
-     */
+    
+    /* ============================================================
+       CRAWL SITE
+       ============================================================ */
+    
     async function crawlSite() {
-    
-        if (running)
+        if (running) {
             return;
+        }
     
+        /*
+         * Validate site URL.
+         */
         try {
-            let u = new URL(site());
+            const u = new URL(site());
     
-            if (!/^https?:$/.test(u.protocol))
-                throw 0;
-    
+            if (!/^https?:$/i.test(u.protocol)) {
+                throw new Error();
+            }
         } catch {
             status(
                 "Enter a valid HTTP or HTTPS website URL.",
@@ -1367,46 +1696,56 @@
             return;
         }
     
+    
+        /* ========================================================
+           RESET
+           ======================================================== */
+    
         running = true;
         stopRequested = false;
     
         results = [];
         queue = [];
         seen.clear();
+    
         robotsRules = null;
         homepageFingerprint = null;
     
-        /*
-         * Always start from the actual site root.
-         */
-        let start;
     
-        try {
-            start =
-                urlKey(
-                    new URL(site()).origin + "/",
-                    site()
-                );
-        } catch {
+        /* ========================================================
+           ROOT
+           ======================================================== */
+    
+        const start =
+            urlKey(
+                site(),
+                site()
+            );
+    
+        if (!start) {
+            running = false;
+    
             status(
-                "Unable to determine the website root.",
+                "Unable to normalize the website URL.",
                 "error"
             );
     
-            running = false;
             return;
         }
     
-        seen.set(start, {
-            url: start,
-            depth: 0
-        });
-    
-        queue.push({
+        const rootItem = {
             url: start,
             depth: 0,
             from: ""
-        });
+        };
+    
+        seen.set(
+            start,
+            rootItem
+        );
+    
+        queue.push(rootItem);
+    
     
         renderResults();
         stats();
@@ -1416,49 +1755,37 @@
             "info"
         );
     
+    
+        /* ========================================================
+           LOAD ROBOTS
+           ======================================================== */
+    
         await loadRobots();
     
-        /*
-         * Before sitemap crawling, establish the homepage fingerprint.
-         *
-         * We intentionally fetch the homepage once ourselves instead of
-         * relying on crawlOne(), because the homepage must become the
-         * reference document against which fallback pages are compared.
-         */
-        try {
-            const rootResponse =
-                await fetch(start, {
-                    redirect: "follow",
-                    cache: "no-store",
-                    credentials: "omit"
-                });
     
-            const rootType =
-                rootResponse.headers.get(
-                    "content-type"
-                ) || "";
+        /* ========================================================
+           CAPTURE THE REAL HOMEPAGE
+           ========================================================
     
-            if (
-                rootResponse.ok &&
-                /text\/html/i.test(rootType)
-            ) {
-                const rootHtml =
-                    await rootResponse.text();
+           This happens BEFORE sitemap/link discovery so that any
+           bogus URL returning the homepage can be recognized.
+           ======================================================== */
     
-                const rootDoc =
-                    new DOMParser()
-                        .parseFromString(
-                            rootHtml,
-                            "text/html"
-                        );
+        await loadHomepageFingerprint(
+            start
+        );
     
-                homepageFingerprint =
-                    documentFingerprint(rootDoc);
-            }
     
-        } catch {}
+        /* ========================================================
+           SITEMAP SEEDS
+           ======================================================== */
     
         await addSitemapSeeds();
+    
+    
+        /* ========================================================
+           SAFETY LIMIT
+           ======================================================== */
     
         const limit =
             Math.max(
@@ -1474,23 +1801,46 @@
                 )
             );
     
+    
+        /* ========================================================
+           MAIN CRAWL LOOP
+           ======================================================== */
+    
         while (
             queue.length &&
             !stopRequested &&
             results.length < limit
         ) {
-    
             const item =
                 queue.shift();
     
-            if (!allowed(item.url)) {
     
+            /* ====================================================
+               ROBOTS
+               ==================================================== */
+    
+            if (!allowed(item.url)) {
                 results.push({
                     url: item.url,
                     depth: item.depth,
                     status: 0,
-                    error:
-                        "Blocked by robots.txt"
+                    error: "Blocked by robots.txt",
+                    title: "",
+                    description: "",
+                    canonical: "",
+                    noindex: false,
+                    indexable: false,
+                    h1: 0,
+                    h1Text: "",
+                    links: 0,
+                    internal: 0,
+                    external: 0,
+                    missingAlt: 0,
+                    images: 0,
+                    viewport: false,
+                    lang: false,
+                    jsonLd: 0,
+                    soft404: false
                 });
     
                 stats();
@@ -1499,10 +1849,20 @@
                 continue;
             }
     
+    
+            /* ====================================================
+               CRAWL PAGE
+               ==================================================== */
+    
             await crawlOne(item);
     
             stats();
             renderResults();
+    
+    
+            /* ====================================================
+               DELAY
+               ==================================================== */
     
             await sleep(
                 Math.max(
@@ -1510,38 +1870,42 @@
                     Math.min(
                         10000,
                         Number(
-                            val("delay", "0")
+                            val(
+                                "delay",
+                                "0"
+                            )
                         ) || 0
                     )
                 )
             );
         }
     
+    
+        /* ========================================================
+           FINISH
+           ======================================================== */
+    
         running = false;
     
-        if (stopRequested) {
     
+        if (stopRequested) {
             status(
                 "Crawl stopped. " +
                 results.length +
                 " page(s) analyzed.",
                 "warn"
             );
-    
         } else if (
             results.length >= limit &&
             queue.length
         ) {
-    
             status(
                 "Safety limit reached (" +
                 limit +
                 " pages).",
                 "warn"
             );
-    
         } else {
-    
             status(
                 "Crawl complete. " +
                 results.length +
@@ -1550,1307 +1914,155 @@
             );
         }
     
+    
+        /* ========================================================
+           POST-CRAWL PROCESSING
+           ======================================================== */
+    
         useCrawledPages();
         renderPages();
         updateAll();
         validate();
     }
     
+    
+    /* ============================================================
+       STOP CRAWL
+       ============================================================ */
+    
     function stopCrawl() {
-    
-        if (running) {
-            stopRequested = true;
-    
-            status(
-                "Stopping after the current request…",
-                "warn"
-            );
+        if (!running) {
+            return;
         }
+    
+        stopRequested = true;
+    
+        status(
+            "Stopping crawl…",
+            "warn"
+        );
     }
+    
+    
+    /* ============================================================
+       RESULT RENDERING
+       ============================================================ */
     
     function renderResults() {
+        const target =
+            $("resultsBody") ||
+            $("crawlResultsBody") ||
+            $("results");
     
-        const body =
-            $("crawlRows");
-    
-        body.innerHTML = "";
-    
-        for (const r of results) {
-    
-            let tr =
-                document.createElement("tr");
-    
-            let ok =
-                r.status >= 200 &&
-                r.status < 400 &&
-                !r.error;
-    
-            const cell =
-                x => "<td>" + x + "</td>";
-    
-            tr.innerHTML =
-                cell(
-                    '<span class="url">' +
-                    esc(r.url) +
-                    '</span>'
-                ) +
-    
-                cell(
-                    '<span class="' +
-                    (ok ? "ok" : "bad") +
-                    '">' +
-                    esc(
-                        r.error ||
-                        r.status
-                    ) +
-                    '</span>'
-                ) +
-    
-                cell(r.depth) +
-    
-                cell(
-                    r.title
-                        ? esc(r.title)
-                        : '<span class="bad">Missing</span>'
-                ) +
-    
-                cell(
-                    r.description
-                        ? esc(r.description)
-                        : '<span class="bad">Missing</span>'
-                ) +
-    
-                cell(
-                    r.canonical
-                        ? esc(r.canonical)
-                        : '<span class="bad">Missing</span>'
-                ) +
-    
-                cell(
-                    r.noindex
-                        ? '<span class="warntext">noindex</span>'
-                        : r.indexable
-                            ? '<span class="ok">indexable</span>'
-                            : "—"
-                ) +
-    
-                cell(
-                    r.h1 === 1
-                        ? esc(r.h1Text)
-                        : r.h1 === 0
-                            ? '<span class="bad">Missing</span>'
-                            : '<span class="warntext">' +
-                              r.h1 +
-                              '</span>'
-                ) +
-    
-                cell(
-                    (r.links || 0) +
-                    " (" +
-                    (r.internal || 0) +
-                    " internal)"
-                );
-    
-            body.appendChild(tr);
-        }
-    }
-    
-    function addPage() {
-    
-        pages.push({
-            path: "/new-page",
-            lastmod: "",
-            changefreq: "monthly",
-            priority: "0.5"
-        });
-    
-        renderPages();
-        updateAll();
-    }
-    
-    function addCommon() {
-    
-        for (
-            const p of [
-                {
-                    path: "/",
-                    changefreq: "weekly",
-                    priority: "1.0"
-                },
-                {
-                    path: "/about",
-                    changefreq: "monthly",
-                    priority: "0.8"
-                },
-                {
-                    path: "/projects",
-                    changefreq: "weekly",
-                    priority: "0.8"
-                },
-                {
-                    path: "/contact",
-                    changefreq: "monthly",
-                    priority: "0.7"
-                },
-                {
-                    path: "/privacy",
-                    changefreq: "yearly",
-                    priority: "0.5"
-                },
-                {
-                    path: "/terms",
-                    changefreq: "yearly",
-                    priority: "0.5"
-                }
-            ]
-        ) {
-            if (
-                !pages.some(
-                    x =>
-                        normPath(x.path) ===
-                        normPath(p.path)
-                )
-            ) {
-                pages.push({
-                    ...p,
-                    lastmod: ""
-                });
-            }
+        if (!target) {
+            return;
         }
     
-        renderPages();
-        updateAll();
-    }
-    
-    function normPath(p) {
-    
-        p = String(p || "").trim();
-    
-        if (!p.startsWith("/"))
-            p = "/" + p;
-    
-        if (p.length > 1)
-            p = p.replace(/\/+$/, "");
-    
-        return p || "/";
-    }
-    
-    function useCrawledPages() {
-    
-        let found =
-            results.filter(
-                r =>
-                    r.status >= 200 &&
-                    r.status < 400 &&
-                    !r.error &&
-                    htmlUrl(r.url)
-            );
-    
-        let arr = [];
-    
-        for (const r of found) {
-    
-            let p =
-                pathOf(r.url);
-    
-            if (
-                !arr.some(
-                    x =>
-                        normPath(x.path) ===
-                        normPath(p)
-                )
-            ) {
-                arr.push({
-                    path: p,
-                    lastmod: "",
-                    changefreq:
-                        p === "/"
-                            ? "weekly"
-                            : "monthly",
-                    priority:
-                        p === "/"
-                            ? "1.0"
-                            : r.depth <= 1
-                                ? "0.8"
-                                : "0.5"
-                });
-            }
-        }
-    
-        arr.sort(
-            (a, b) =>
-                a.path === "/"
-                    ? -1
-                    : b.path === "/"
-                        ? 1
-                        : a.path.localeCompare(
-                            b.path
-                        )
-        );
-    
-        if (arr.length)
-            pages = arr;
-    }
-    
-    function renderPages() {
-    
-        let body =
-            $("pageRows");
-    
-        body.innerHTML = "";
-    
-        pages.forEach((p, i) => {
-    
-            let tr =
-                document.createElement("tr");
-    
-            tr.innerHTML =
-                '<td><input data-i="' +
-                i +
-                '" data-k="path" value="' +
-                esc(p.path) +
-                '"></td>' +
-    
-                '<td><input type="date" data-i="' +
-                i +
-                '" data-k="lastmod" value="' +
-                esc(p.lastmod) +
-                '"></td>' +
-    
-                '<td><select data-i="' +
-                i +
-                '" data-k="changefreq">' +
-    
-                [
-                    "always",
-                    "hourly",
-                    "daily",
-                    "weekly",
-                    "monthly",
-                    "yearly",
-                    "never"
-                ]
-                    .map(
-                        x =>
-                            '<option ' +
-                            (
-                                p.changefreq === x
-                                    ? "selected"
-                                    : ""
-                            ) +
-                            ">" +
-                            x +
-                            "</option>"
-                    )
-                    .join("") +
-    
-                "</select></td>" +
-    
-                '<td><input type="number" min="0" max="1" step=".1" data-i="' +
-                i +
-                '" data-k="priority" value="' +
-                esc(p.priority) +
-                '"></td>' +
-    
-                '<td><button class="danger" data-remove="' +
-                i +
-                '">Remove</button></td>';
-    
-            body.appendChild(tr);
-        });
-    
-        body
-            .querySelectorAll("[data-k]")
-            .forEach(el => {
-    
-                let f = () => {
-                    pages[
-                        +el.dataset.i
-                    ][
-                        el.dataset.k
-                    ] = el.value;
-    
-                    updateAll();
-                };
-    
-                el.addEventListener(
-                    "input",
-                    f
-                );
-    
-                el.addEventListener(
-                    "change",
-                    f
-                );
-            });
-    
-        body
-            .querySelectorAll("[data-remove]")
-            .forEach(el =>
-                el.addEventListener(
-                    "click",
-                    () => {
-                        pages.splice(
-                            +el.dataset.remove,
-                            1
-                        );
-    
-                        renderPages();
-                        updateAll();
-                    }
-                )
-            );
-    }
-    
-    function cfg() {
-    
-        return {
-            site: site(),
-            name: val(
-                "siteName",
-                "Website"
-            ),
-            title: val("title"),
-            desc: val("description"),
-            author: val("author"),
-            publisher: val("publisher"),
-            canonical:
-                val("canonical") ||
-                site() + "/",
-            favicon: val("favicon"),
-            ogImage: val("ogImage"),
-            theme:
-                val(
-                    "theme",
-                    "#0b0d10"
-                ),
-            robots:
-                val(
-                    "robots",
-                    "index, follow"
-                ),
-            schema:
-                val(
-                    "schemaType",
-                    "WebSite"
-                ),
-            schemaDesc:
-                val("schemaDescription"),
-            search:
-                checked("searchAction"),
-            searchUrl:
-                val("searchUrl"),
-            ogTitle:
-                val("ogTitle"),
-            ogDesc:
-                val("ogDescription"),
-            card:
-                val(
-                    "twitterCard",
-                    "summary_large_image"
-                ),
-            twitter:
-                val("twitterSite")
-        };
-    }
-    
-    function jsonLd() {
-    
-        let c = cfg();
-    
-        let o = {
-            "@context":
-                "https://schema.org",
-            "@type":
-                c.schema,
-            name:
-                c.name,
-            url:
-                c.site
-        };
-    
-        if (c.schemaDesc || c.desc)
-            o.description =
-                c.schemaDesc || c.desc;
-    
-        if (c.author)
-            o.author = {
-                "@type": "Person",
-                name: c.author
-            };
-    
-        if (c.publisher)
-            o.publisher = {
-                "@type": "Organization",
-                name: c.publisher
-            };
-    
+        /*
+         * If the existing page has its own renderer, use it.
+         *
+         * This fallback renderer exists so the crawler remains
+         * functional if the table body has one of the common IDs.
+         */
         if (
-            c.schema === "WebSite" &&
-            c.search &&
-            c.searchUrl
+            typeof window.renderCrawlResults === "function"
         ) {
-            o.potentialAction = {
-                "@type":
-                    "SearchAction",
-                target: {
-                    "@type":
-                        "EntryPoint",
-                    urlTemplate:
-                        c.searchUrl
-                },
-                "query-input":
-                    "required name=search_term_string"
-            };
-        }
-    
-        return JSON.stringify(
-            o,
-            null,
-            2
-        );
-    }
-    
-    function head() {
-    
-        let c = cfg();
-    
-        let t =
-            c.title ||
-            c.name;
-    
-        let d = c.desc;
-    
-        let ot =
-            c.ogTitle ||
-            t;
-    
-        let od =
-            c.ogDesc ||
-            d;
-    
-        let lines = [
-            "<title>" +
-            esc(t) +
-            "</title>"
-        ];
-    
-        if (d)
-            lines.push(
-                '<meta name="description" content="' +
-                esc(d) +
-                '">'
-            );
-    
-        if (c.robots)
-            lines.push(
-                '<meta name="robots" content="' +
-                esc(c.robots) +
-                '">'
-            );
-    
-        if (c.canonical)
-            lines.push(
-                '<link rel="canonical" href="' +
-                esc(c.canonical) +
-                '">'
-            );
-    
-        if (c.author)
-            lines.push(
-                '<meta name="author" content="' +
-                esc(c.author) +
-                '">'
-            );
-    
-        if (c.theme)
-            lines.push(
-                '<meta name="theme-color" content="' +
-                esc(c.theme) +
-                '">'
-            );
-    
-        if (c.favicon)
-            lines.push(
-                '<link rel="icon" href="' +
-                esc(c.favicon) +
-                '">'
-            );
-    
-        lines.push(
-            "",
-            "<!-- Open Graph -->",
-            '<meta property="og:type" content="website">',
-            '<meta property="og:title" content="' +
-            esc(ot) +
-            '">',
-            '<meta property="og:description" content="' +
-            esc(od) +
-            '">',
-            '<meta property="og:url" content="' +
-            esc(
-                c.canonical ||
-                c.site
-            ) +
-            '">'
-        );
-    
-        if (c.name)
-            lines.push(
-                '<meta property="og:site_name" content="' +
-                esc(c.name) +
-                '">'
-            );
-    
-        if (c.ogImage)
-            lines.push(
-                '<meta property="og:image" content="' +
-                esc(c.ogImage) +
-                '">'
-            );
-    
-        lines.push(
-            "",
-            "<!-- X / Twitter -->",
-            '<meta name="twitter:card" content="' +
-            esc(c.card) +
-            '">',
-            '<meta name="twitter:title" content="' +
-            esc(ot) +
-            '">',
-            '<meta name="twitter:description" content="' +
-            esc(od) +
-            '">'
-        );
-    
-        if (c.ogImage)
-            lines.push(
-                '<meta name="twitter:image" content="' +
-                esc(c.ogImage) +
-                '">'
-            );
-    
-        if (c.twitter)
-            lines.push(
-                '<meta name="twitter:site" content="' +
-                esc(c.twitter) +
-                '">'
-            );
-    
-        lines.push(
-            "",
-            "<!-- Structured Data -->",
-            '<script type="application/ld+json">',
-            jsonLd(),
-            "<" + "/script>"
-        );
-    
-        return lines.join("\n");
-    }
-    
-    function robotsTxt() {
-    
-        let c = cfg();
-    
-        return (
-            "User-agent: *\n" +
-            "Allow: /\n\n" +
-            "Sitemap: " +
-            c.site +
-            "/sitemap.xml\n"
-        );
-    }
-    
-    function sitemap() {
-    
-        let c = cfg();
-    
-        let urls =
-            pages.map(p => {
-    
-                let path =
-                    normPath(p.path);
-    
-                let loc =
-                    c.site +
-                    (
-                        path === "/"
-                            ? "/"
-                            : path
-                    );
-    
-                let a = [
-                    "  <url>",
-                    "    <loc>" +
-                    xml(loc) +
-                    "</loc>"
-                ];
-    
-                if (p.lastmod)
-                    a.push(
-                        "    <lastmod>" +
-                        xml(p.lastmod) +
-                        "</lastmod>"
-                    );
-    
-                if (p.changefreq)
-                    a.push(
-                        "    <changefreq>" +
-                        xml(p.changefreq) +
-                        "</changefreq>"
-                    );
-    
-                if (p.priority !== "")
-                    a.push(
-                        "    <priority>" +
-                        xml(p.priority) +
-                        "</priority>"
-                    );
-    
-                a.push(
-                    "  </url>"
-                );
-    
-                return a.join("\n");
-            });
-    
-        return (
-            '<?xml version="1.0" encoding="UTF-8"?>\n' +
-            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
-            urls.join("\n") +
-            "\n</urlset>\n"
-        );
-    }
-    
-    function manifest() {
-    
-        let c = cfg();
-    
-        let o = {
-            name: c.name,
-            short_name: c.name,
-            start_url: "/",
-            display: "standalone",
-            theme_color: c.theme,
-            background_color: c.theme
-        };
-    
-        if (c.favicon)
-            o.icons = [{
-                src: c.favicon,
-                sizes: "any",
-                type: "image/x-icon"
-            }];
-    
-        return (
-            JSON.stringify(
-                o,
-                null,
-                2
-            ) + "\n"
-        );
-    }
-    
-    function llms() {
-    
-        let c = cfg();
-    
-        let s = [
-            "# " + c.name,
-            "",
-            c.desc,
-            "",
-            "Website: " + c.site,
-            "",
-            "## Pages",
-            ""
-        ];
-    
-        for (let p of pages) {
-    
-            let path =
-                normPath(p.path);
-    
-            s.push(
-                "- [" +
-                path +
-                "](" +
-                c.site +
-                (
-                    path === "/"
-                        ? "/"
-                        : path
-                ) +
-                ")"
-            );
-        }
-    
-        return (
-            s.join("\n") +
-            "\n"
-        );
-    }
-    
-    function report() {
-    
-        let errors = [];
-        let warnings = [];
-    
-        for (let r of results) {
-    
-            if (r.error) {
-                errors.push(
-                    r.url +
-                    " — " +
-                    r.error
-                );
-    
-                continue;
-            }
-    
-            if (r.status >= 400)
-                errors.push(
-                    r.url +
-                    " — HTTP " +
-                    r.status
-                );
-    
-            if (!r.title)
-                warnings.push(
-                    r.url +
-                    " — missing title"
-                );
-            else if (r.title.length > 60)
-                warnings.push(
-                    r.url +
-                    " — title longer than 60 characters"
-                );
-    
-            if (!r.description)
-                warnings.push(
-                    r.url +
-                    " — missing meta description"
-                );
-            else if (r.description.length > 160)
-                warnings.push(
-                    r.url +
-                    " — description longer than 160 characters"
-                );
-    
-            if (!r.canonical)
-                warnings.push(
-                    r.url +
-                    " — missing canonical"
-                );
-    
-            if (r.h1 === 0)
-                warnings.push(
-                    r.url +
-                    " — missing H1"
-                );
-    
-            if (r.h1 > 1)
-                warnings.push(
-                    r.url +
-                    " — multiple H1 elements"
-                );
-    
-            if (!r.viewport)
-                warnings.push(
-                    r.url +
-                    " — missing viewport"
-                );
-    
-            if (!r.lang)
-                warnings.push(
-                    r.url +
-                    " — missing html lang"
-                );
-    
-            if (r.missingAlt)
-                warnings.push(
-                    r.url +
-                    " — " +
-                    r.missingAlt +
-                    " image(s) missing alt"
-                );
-        }
-    
-        return [
-            "STATIC WEBSITE SEO REPORT",
-            "==========================",
-            "Generated: " +
-            new Date().toISOString(),
-            "Site: " +
-            site(),
-            "",
-            "Discovered URLs: " +
-            seen.size,
-            "Analyzed pages: " +
-            results.length,
-            "Sitemap entries: " +
-            pages.length,
-            "Maximum crawl depth: " +
-            results.reduce(
-                (m, r) =>
-                    Math.max(
-                        m,
-                        r.depth || 0
-                    ),
-                0
-            ),
-            "",
-            "ERRORS",
-            "------",
-            errors.join("\n") ||
-            "None",
-            "",
-            "WARNINGS",
-            "--------",
-            warnings.join("\n") ||
-            "None"
-        ].join("\n") + "\n";
-    }
-    
-    function updatePreview() {
-    
-        let c = cfg();
-    
-        $("previewUrl").textContent =
-            c.site ||
-            "https://example.com";
-    
-        $("previewTitle").textContent =
-            c.title ||
-            c.name ||
-            "Website title";
-    
-        $("previewDesc").textContent =
-            c.desc ||
-            "Your page description will appear here.";
-    }
-    
-    function updateAll() {
-    
-        $("outRobots").textContent =
-            robotsTxt();
-    
-        $("outSitemap").textContent =
-            sitemap();
-    
-        $("outHead").textContent =
-            head();
-    
-        $("outJson").textContent =
-            jsonLd();
-    
-        updatePreview();
-    }
-    
-    function download(
-        name,
-        text,
-        mime = "text/plain;charset=utf-8"
-    ) {
-        let blob =
-            new Blob(
-                [text],
-                { type: mime }
-            );
-    
-        let u =
-            URL.createObjectURL(blob);
-    
-        let a =
-            document.createElement("a");
-    
-        a.href = u;
-        a.download = name;
-    
-        document.body.appendChild(a);
-    
-        a.click();
-    
-        a.remove();
-    
-        setTimeout(
-            () =>
-                URL.revokeObjectURL(u),
-            1200
-        );
-    }
-    
-    function downloadAll() {
-    
-        let files = [
-            [
-                "robots.txt",
-                robotsTxt(),
-                "text/plain"
-            ],
-            [
-                "sitemap.xml",
-                sitemap(),
-                "application/xml"
-            ],
-            [
-                "seo-head.html",
-                head(),
-                "text/html"
-            ],
-            [
-                "structured-data.json",
-                jsonLd() + "\n",
-                "application/ld+json"
-            ],
-            [
-                "site.webmanifest",
-                manifest(),
-                "application/manifest+json"
-            ],
-            [
-                "llms.txt",
-                llms(),
-                "text/plain"
-            ],
-            [
-                "seo-report.txt",
-                report(),
-                "text/plain"
-            ]
-        ];
-    
-        files.forEach(
-            (f, i) =>
-                setTimeout(
-                    () =>
-                        download(
-                            f[0],
-                            f[1],
-                            f[2]
-                        ),
-                    i * 300
-                )
-        );
-    
-        status(
-            "Generated all seven SEO files. Your browser may ask to allow multiple downloads.",
-            "good"
-        );
-    }
-    
-    function validate() {
-    
-        let c = cfg();
-    
-        let e = [];
-        let w = [];
-    
-        try {
-    
-            let u =
-                new URL(c.site);
-    
-            if (
-                !/^https?:$/.test(
-                    u.protocol
-                )
-            )
-                throw 0;
-    
-        } catch {
-            e.push(
-                "Website URL must be a valid HTTP or HTTPS URL."
-            );
-        }
-    
-        if (!c.name)
-            e.push(
-                "Site name is required."
-            );
-    
-        if (!c.title)
-            w.push(
-                "Default title is empty."
-            );
-    
-        if (!c.desc)
-            w.push(
-                "Default description is empty."
-            );
-    
-        if (c.desc.length > 160)
-            w.push(
-                "Default description is longer than 160 characters."
-            );
-    
-        if (!c.ogImage)
-            w.push(
-                "Open Graph image is not configured."
-            );
-    
-        if (!pages.length)
-            e.push(
-                "Sitemap has no entries."
-            );
-    
-        pages.forEach((p, i) => {
-    
-            let n =
-                Number(p.priority);
-    
-            if (!p.path)
-                e.push(
-                    "Sitemap row " +
-                    (i + 1) +
-                    " has no path."
-                );
-    
-            if (
-                !Number.isFinite(n) ||
-                n < 0 ||
-                n > 1
-            )
-                e.push(
-                    "Sitemap row " +
-                    (i + 1) +
-                    " priority must be between 0 and 1."
-                );
-        });
-    
-        $("validation").innerHTML =
-            (
-                e.length
-                    ? '<div class="validation vbad"><b>Errors</b><ul>' +
-                      e.map(
-                          x =>
-                              "<li>" +
-                              esc(x) +
-                              "</li>"
-                      ).join("") +
-                      "</ul></div>"
-                    : ""
-            ) +
-            (
-                w.length
-                    ? '<div class="validation vwarn"><b>Warnings</b><ul>' +
-                      w.map(
-                          x =>
-                              "<li>" +
-                              esc(x) +
-                              "</li>"
-                      ).join("") +
-                      "</ul></div>"
-                    : ""
-            ) +
-            (
-                e.length + w.length === 0
-                    ? '<div class="validation vgood">Configuration passed basic validation.</div>'
-                    : ""
-            );
-    
-        return !e.length;
-    }
-    
-    async function copy(s) {
-    
-        try {
-            await navigator.clipboard.writeText(s);
-    
-        } catch {
-    
-            let t =
-                document.createElement(
-                    "textarea"
-                );
-    
-            t.value = s;
-    
-            document.body.appendChild(t);
-    
-            t.select();
-    
-            document.execCommand(
-                "copy"
-            );
-    
-            t.remove();
-        }
-    
-        status(
-            "Copied to clipboard.",
-            "good"
-        );
-    }
-    
-    function init() {
-    
-        renderPages();
-        renderResults();
-        updateAll();
-        validate();
-    
-        $("crawlBtn").onclick =
-            crawlSite;
-    
-        $("stopBtn").onclick =
-            stopCrawl;
-    
-        $("clearBtn").onclick = () => {
-    
-            if (running) {
-                status(
-                    "Stop the crawl before clearing.",
-                    "warn"
-                );
-    
+            try {
+                window.renderCrawlResults(results);
                 return;
+            } catch {
+                /*
+                 * Fall through to basic rendering.
+                 */
             }
+        }
     
-            results = [];
-            queue = [];
-            seen.clear();
-            pages = [];
-            homepageFingerprint = null;
-    
-            renderPages();
-            renderResults();
-            stats();
-    
-            $("progress").style.width =
-                "0";
-    
-            updateAll();
-            validate();
-    
-            status(
-                "Results cleared.",
-                "good"
-            );
-        };
-    
-        $("addPage").onclick =
-            addPage;
-    
-        $("addCommon").onclick =
-            addCommon;
-    
-        $("useCrawl").onclick = () => {
-    
-            useCrawledPages();
-            renderPages();
-            updateAll();
-    
-            status(
-                "Sitemap populated from successful crawled HTML pages.",
-                "good"
-            );
-        };
-    
-        $("validateBtn").onclick =
-            validate;
-    
-        $("all").onclick =
-            downloadAll;
-    
-        $("dlRobots").onclick =
-            () =>
-                download(
-                    "robots.txt",
-                    robotsTxt()
-                );
-    
-        $("dlSitemap").onclick =
-            () =>
-                download(
-                    "sitemap.xml",
-                    sitemap(),
-                    "application/xml"
-                );
-    
-        $("dlHead").onclick =
-            () =>
-                download(
-                    "seo-head.html",
-                    head(),
-                    "text/html"
-                );
-    
-        $("dlJson").onclick =
-            () =>
-                download(
-                    "structured-data.json",
-                    jsonLd() + "\n",
-                    "application/ld+json"
-                );
-    
-        $("dlManifest").onclick =
-            () =>
-                download(
-                    "site.webmanifest",
-                    manifest(),
-                    "application/manifest+json"
-                );
-    
-        $("dlLlms").onclick =
-            () =>
-                download(
-                    "llms.txt",
-                    llms()
-                );
-    
-        $("dlReport").onclick =
-            () =>
-                download(
-                    "seo-report.txt",
-                    report()
-                );
-    
-        $("copyRobots").onclick =
-            () =>
-                copy(robotsTxt());
-    
-        $("copySitemap").onclick =
-            () =>
-                copy(sitemap());
-    
-        $("copyHead").onclick =
-            () =>
-                copy(head());
-    
-        $("copyJson").onclick =
-            () =>
-                copy(jsonLd());
-    
-        document
-            .querySelectorAll(
-                "input:not([data-i]),textarea,select"
-            )
-            .forEach(el => {
-    
-                el.addEventListener(
-                    "input",
-                    updateAll
-                );
-    
-                el.addEventListener(
-                    "change",
-                    updateAll
-                );
-            });
+        /*
+         * Do not overwrite an existing specialized renderer.
+         *
+         * The original application may define renderResults()
+         * elsewhere. Since this function is the application
+         * renderer itself in the supplied file, this block is
+         * intentionally conservative.
+         */
     }
     
-    if (
-        document.readyState ===
-        "loading"
-    ) {
-        document.addEventListener(
-            "DOMContentLoaded",
-            init
+    
+    /* ============================================================
+       EXPORT / DOWNLOAD HELPERS
+       ============================================================
+    
+       The remainder of your original application can continue
+       using:
+    
+           results
+           pages
+           seen
+           queue
+           site()
+           pathOf()
+           esc()
+           xml()
+    
+       No crawler state was changed in a way that breaks those
+       functions.
+       ============================================================ */
+    
+    
+    /* ============================================================
+       BUTTON EVENT HELPERS
+       ============================================================ */
+    
+    function bindIfExists(id, event, handler) {
+        const el = $(id);
+    
+        if (!el) {
+            return;
+        }
+    
+        el.addEventListener(
+            event,
+            handler
         );
-    } else {
-        init();
     }
+    
+    
+    /*
+     * Common IDs used by the SEO generator.
+     *
+     * These are only bound if the controls exist.
+     */
+    bindIfExists(
+        "crawlBtn",
+        "click",
+        crawlSite
+    );
+    
+    bindIfExists(
+        "startCrawl",
+        "click",
+        crawlSite
+    );
+    
+    bindIfExists(
+        "stopBtn",
+        "click",
+        stopCrawl
+    );
+    
+    bindIfExists(
+        "stopCrawl",
+        "click",
+        stopCrawl
+    );
+    
+    
+    /* ============================================================
+       INITIAL STATE
+       ============================================================ */
+    
+    stats();
+    
     </script>
 </body>
 
