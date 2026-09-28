@@ -145,7 +145,7 @@
       "enabled": true,
       "layout": {
         "header": true,
-        "sidebar": true,
+        "sidebar": false,
         "footer": true
       }
     }
