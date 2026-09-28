@@ -1,7 +1,7 @@
 "use strict";
 "use strict";
 const $=id=>document.getElementById(id);
-let pages=[{path:"/",lastmod:"",changefreq:"weekly",priority:"1.0"}],results=[],queue=[],seen=new Map(),running=false,stopRequested=false,robotsRules=null,homepageProfile=null;
+let pages = [{ path: "/", lastmod: "", changefreq: "weekly", priority: "1.0" }], results = [], queue = [], seen = new Map(), running = false, stopRequested = false, robotsRules = null;
 const val=(id,def="")=>($(id)?.value??def).trim();
 const checked=id=>!!$(id)?.checked;
 const esc=s=>String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
