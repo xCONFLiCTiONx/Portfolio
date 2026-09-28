@@ -68,7 +68,7 @@
       "id": "allow-copy-paste",
       "name": "Allow Copy-Paste Tester",
       "description": "Interactive test suite with 16 browser restriction methods to verify if browser extensions (e.g. Allow Right Click) can bypass restrictions.",
-      "path": "tools/allow-copy-paste.html",
+      "path": "tools/allow-copy-paste/index.html",
       "icon": "im im-shield",
       "category": "Security & Extension Test",
       "enabled": true,

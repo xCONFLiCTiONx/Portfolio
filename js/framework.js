@@ -178,9 +178,18 @@
         const navLinksHtml = config.navigation.map(item => {
             const relUrl = toRelativeUrl(item.path);
             const currentPath = window.location.pathname.toLowerCase();
-            const targetUrl = new URL(relUrl, window.location.origin).pathname.toLowerCase();
-            const isActive = currentPath === targetUrl ||
-                (currentPath.endsWith('/') && targetUrl.endsWith('index.html') && currentPath === targetUrl.substring(0, targetUrl.length - 10));
+            const targetPath = item.path.toLowerCase().replace(/^\//, '');
+
+            const cleanCurrent = currentPath.replace(/\/index\.html$/, '/').replace(/\/$/, '');
+            const isRootTarget = targetPath === 'index.html' || targetPath === '';
+            const isRootCurrent = cleanCurrent === '' || cleanCurrent === '/';
+
+            let isActive = false;
+            if (isRootTarget && isRootCurrent) {
+                isActive = true;
+            } else if (!isRootTarget && currentPath.endsWith(targetPath)) {
+                isActive = true;
+            }
 
             return `<li><a href="${relUrl}" class="${isActive ? 'active' : ''}"><i class="${item.icon}"></i> ${item.label}</a></li>`;
         }).join('');
