@@ -1,4 +1,4 @@
-const SCANNER_VERSION = "4.0";
+﻿const SCANNER_VERSION = "4.0";
 
 const ALLOWED_ORIGINS = new Set([
     "https://xconflictionx.cc",
@@ -757,10 +757,7 @@ function detectFormIssues(html) {
             continue;
         }
 
-        const hasIdLabel = attrs.id && labels.has(attrs.id);
-        const hasAriaLabel = Boolean(attrs["aria-label"] || attrs["aria-labelledby"]);
-
-        if (!hasIdLabel && !hasAriaLabel) {
+        if (!attrs.id || !labels.has(attrs.id)) {
             issues.push({
                 element: match[1].toLowerCase(),
                 name: attrs.name || "",
@@ -1222,7 +1219,7 @@ async function scanTarget(targetUrl) {
             "low",
             "Duplicate HTML IDs detected",
             `${duplicateIds.length} duplicate ID value(s) were detected.`,
-            duplicateIds.map(d => `ID "${d.id}" appears ${d.count} times`).slice(0, 20)
+            duplicateIds.slice(0, 20)
         );
     }
 
@@ -1233,7 +1230,7 @@ async function scanTarget(targetUrl) {
             "low",
             "Form controls may lack labels",
             `${formIssues.length} form control(s) were not associated with a matching label.`,
-            formIssues.map(i => `${i.element} (name: "${i.name || 'unnamed'}", id: "${i.id || 'none'}")`).slice(0, 20)
+            formIssues.slice(0, 20)
         );
     }
 
@@ -1259,7 +1256,7 @@ async function scanTarget(targetUrl) {
             "low",
             "Heading levels skip",
             `${headingProblems.length} heading transition(s) skip one or more levels.`,
-            headingProblems.map(h => `H${h.from} to H${h.to}: "${h.text}"`).slice(0, 20)
+            headingProblems.slice(0, 20)
         );
     }
 
@@ -1274,7 +1271,7 @@ async function scanTarget(targetUrl) {
             "info",
             "Redirects detected",
             `${fetched.redirects.length} redirect(s) were followed before reaching the final page.`,
-            fetched.redirects.map(r => `${r.status}: ${r.from} -> ${r.to} (${r.responseMs}ms)`)
+            fetched.redirects
         );
     }
 
@@ -1627,24 +1624,3 @@ export default {
         );
     }
 };
-
-function getSourceLocation(htmlString, matchIndex) {
-    if (matchIndex === undefined || matchIndex < 0) {
-        return { line: null, snippet: null };
-    }
-
-    // Split the raw HTML into individual lines
-    const lines = htmlString.split(/\r?\n/);
-
-    // Count how many newlines appear before the match index to find the line number
-    const subString = htmlString.substring(0, matchIndex);
-    const lineNumber = subString.split(/\r?\n/).length;
-
-    // Grab the exact text of that line, trimmed for clean reporting
-    const lineText = lines[lineNumber - 1] ? lines[lineNumber - 1].trim() : "";
-
-    return {
-        line: lineNumber,
-        snippet: lineText
-    };
-}
