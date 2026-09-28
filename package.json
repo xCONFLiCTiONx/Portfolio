@@ -4,6 +4,8 @@
   "description": "A portable, reusable static GitHub-backed developer portfolio framework. This framework allows developers to fork the repository, make minimal configuration changes in a single file, deploy it to any static hosting service, and easily add custom browser utilities without touching core framework code.",
   "main": "sw.js",
   "scripts": {
+    "build:css": "tailwindcss -i ./css/main.css -o ./css/tailwind-output.css --minify",
+    "watch:css": "tailwindcss -i ./css/main.css -o ./css/tailwind-output.css --watch",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -19,7 +21,6 @@
   },
   "homepage": "https://github.com/xCONFLiCTiONx/Portfolio#readme",
   "devDependencies": {
-    "@tailwindcss/cli": "^4.3.3",
     "tailwindcss": "^3.4.19"
   }
 }
