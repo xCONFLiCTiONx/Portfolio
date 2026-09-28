@@ -1259,23 +1259,12 @@ async function measureLatency() {
 
 async function measureDownload() {
 
-    /*
-        IMPORTANT:
-
-        Put speedtest.bin in:
-
-            tools/speedtest.bin
-
-        Change this number if you use
-        a different file size.
-    */
-
     const TEST_SIZE =
         25 * 1024 * 1024;
 
 
     const url =
-        "/tools/speedtest.bin?cache=" +
+        "speedtest.bin?cache=" +
         Date.now();
 
 
