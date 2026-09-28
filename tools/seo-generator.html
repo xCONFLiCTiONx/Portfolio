@@ -575,7 +575,163 @@
             </section>
         </div>
     </main>
-    script>
+    <script>
+        "use strict";
+const $=id=>document.getElementById(id);
+let pages=[{path:"/",lastmod:"",changefreq:"weekly",priority:"1.0"}],results=[],queue=[],seen=new Map(),running=false,stopRequested=false,robotsRules=null,homepageProfile=null;
+const val=(id,def="")=>($(id)?.value??def).trim();
+const checked=id=>!!$(id)?.checked;
+const esc=s=>String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+const xml=s=>esc(s).replace(/&#39;/g,"&apos;");
+function site(){return val("siteUrl").replace(/\/+$/,"")}
+function status(msg,type="good"){$("status").textContent=msg;$("status").className="status "+type}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
+function urlKey(raw,base){try{let u=new URL(raw,base);if(!/^https?:$/.test(u.protocol))return null;u.hash="";if(!checked("queryUrls"))u.search="";if(u.pathname.length>1)u.pathname=u.pathname.replace(/\/+$/,"");return u.href}catch{return null}}
+function sameSite(u){try{return new URL(u).hostname.toLowerCase()===new URL(site()).hostname.toLowerCase()}catch{return false}}
+const assetExt=/\.(?:css|js|mjs|json|xml|txt|png|jpe?g|gif|webp|avif|svg|ico|woff2?|ttf|otf|mp[34]|webm|mov|zip|rar|7z|gz|tar|exe|msi|dmg|iso|pdf|docx?|xlsx?|pptx?|csv)$/i;
+function htmlUrl(u){try{return !assetExt.test(new URL(u).pathname)}catch{return false}}
+function pathOf(u){try{let x=new URL(u),p=x.pathname||"/";if(p.length>1)p=p.replace(/\/+$/,"");return p+(checked("queryUrls")?x.search:"")}catch{return "/"}}
+function stats(){$("discovered").textContent=seen.size;$("crawled").textContent=results.length;$("queued").textContent=queue.length;$("failed").textContent=results.filter(x=>x.status>=400||x.error&&!x.soft404).length;$("depth").textContent=results.reduce((m,x)=>Math.max(m,x.depth||0),0);$("progress").style.width=Math.min(100,results.length/Math.max(seen.size,1)*100)+"%"}
+function parseRobots(txt){let active=false,out=[];for(let raw of txt.split(/\r?\n/)){let line=raw.split("#")[0].trim(),i=line.indexOf(":");if(!line||i<0)continue;let k=line.slice(0,i).trim().toLowerCase(),v=line.slice(i+1).trim();if(k==="user-agent")active=v==="*";else if(active&&(k==="allow"||k==="disallow")&&v)out.push({k,v})}return out}
+function allowed(u){if(!robotsRules)return true;let p=new URL(u).pathname,best=-1,allow=true;for(let r of robotsRules){let pattern=r.v,end=pattern.endsWith("$");if(end)pattern=pattern.slice(0,-1);let re=new RegExp("^"+pattern.replace(/[.*+?^${}()|[\]\\]/g,"\\$&").replace(/\\\*/g,".*")+(end?"$":""));if(re.test(p)&&pattern.length>=best){best=pattern.length;allow=r.k==="allow"}}return allow}
+async function loadRobots(){robotsRules=null;if(!checked("respectRobots"))return;try{let r=await fetch(new URL("/robots.txt",site()),{cache:"no-store",credentials:"omit"});if(r.ok)robotsRules=parseRobots(await r.text())}catch{}}
+async function addSitemapSeeds(){
+  const origin=new URL(site()).origin;
+  const candidates=new Set([new URL("/sitemap.xml",site()).href]);
+  if(robotsRules){try{let r=await fetch(new URL("/robots.txt",site()),{cache:"no-store"});if(r.ok)for(let line of (await r.text()).split(/\r?\n/)){let m=line.match(/^\s*Sitemap:\s*(\S+)/i);if(m)candidates.add(m[1])}}catch{}}
+  const visited=new Set();
+  while(candidates.size){
+    const sm=candidates.values().next().value;candidates.delete(sm);if(visited.has(sm)||visited.size>=25)continue;visited.add(sm);
+    try{
+      const r=await fetch(sm,{cache:"no-store",credentials:"omit"});if(!r.ok)continue;
+      const doc=new DOMParser().parseFromString(await r.text(),"application/xml");
+      if(doc.querySelector("parsererror"))continue;
+      for(const loc of doc.querySelectorAll("sitemap > loc")){const u=loc.textContent.trim();if(u)candidates.add(u)}
+      for(const loc of doc.querySelectorAll("url > loc")){
+        const u=urlKey(loc.textContent.trim(),origin);
+        if(u&&sameSite(u)&&htmlUrl(u)&&!seen.has(u)){seen.set(u,{url:u,depth:0,from:"sitemap"});queue.push({url:u,depth:0,from:"sitemap"})}
+      }
+    }catch{}
+  }
+}
+function normalizeText(s){return String(s||"").replace(/\s+/g," ").trim().toLowerCase()}
+function pageProfile(doc){
+  const title=normalizeText(doc.querySelector("title")?.textContent);
+  const description=normalizeText(doc.querySelector('meta[name="description"]')?.content);
+  const h1=[...doc.querySelectorAll("h1")].map(x=>normalizeText(x.textContent)).filter(Boolean);
+  const links=[...doc.querySelectorAll("a[href]")].map(a=>a.getAttribute("href")||"").map(normalizeText).filter(Boolean).sort();
+  const canonicalRaw=doc.querySelector('link[rel~="canonical"]')?.href||"";
+  let canonical="";try{canonical=urlKey(canonicalRaw,site())||canonicalRaw}catch{}
+  return {title,description,h1,links,canonical};
+}
+function looksLikeHomepageFallback(itemUrl,response,profile){
+  if(!homepageProfile||response.status!==200||!profile)return false;
+  const root=urlKey(site(),site());
+  if(itemUrl===root)return false;
+  if(profile.canonical&&root&&profile.canonical===root)return true;
+  if(profile.title!==homepageProfile.title)return false;
+  if(profile.description!==homepageProfile.description)return false;
+  if(profile.h1.join("|")!==homepageProfile.h1.join("|"))return false;
+  if(profile.links.length!==homepageProfile.links.length)return false;
+  return profile.links.join("\n")===homepageProfile.links.join("\n");
+}
+async function loadHomepageProfile(){
+  homepageProfile=null;
+  try{
+    const root=urlKey(site(),site());
+    const r=await fetch(root,{redirect:"follow",cache:"no-store",credentials:"omit"});
+    if(!r.ok)return;
+    const type=r.headers.get("content-type")||"";
+    if(!/text\/html/i.test(type))return;
+    const doc=new DOMParser().parseFromString(await r.text(),"text/html");
+    homepageProfile=pageProfile(doc);
+  }catch{}
+}
+async function crawlOne(item){
+  let response;
+  try{response=await fetch(item.url,{redirect:"follow",cache:"no-store",credentials:"omit"})}
+  catch(e){results.push({url:item.url,depth:item.depth,status:0,error:e.message||String(e),soft404:false});return}
+  const type=response.headers.get("content-type")||"";
+  if(!/text\/html/i.test(type)){
+    if(checked("nonHtml"))results.push({url:item.url,depth:item.depth,status:response.status,error:"Non-HTML resource",soft404:false});
+    return;
+  }
+  let doc;
+  try{doc=new DOMParser().parseFromString(await response.text(),"text/html")}
+  catch(e){results.push({url:item.url,depth:item.depth,status:response.status,error:e.message||String(e),soft404:false});return}
+
+  const profile=pageProfile(doc);
+  const soft404=looksLikeHomepageFallback(item.url,response,profile);
+  const title=(doc.querySelector("title")?.textContent||"").trim();
+  const description=(doc.querySelector('meta[name="description"]')?.content||"").trim();
+  const canonical=profile.canonical;
+  const robots=(doc.querySelector('meta[name="robots"]')?.content||"")+" "+(doc.querySelector('meta[name="googlebot"]')?.content||"");
+  const noindex=/noindex/i.test(robots);
+  const h1=[...doc.querySelectorAll("h1")].map(x=>x.textContent.trim()).filter(Boolean);
+  const links=[...doc.querySelectorAll("a[href]")];
+  let internal=0,external=0;
+
+  if(!soft404){
+    for(const a of links){
+      let u=urlKey(a.getAttribute("href"),item.url);if(!u)continue;
+      if(sameSite(u)){
+        internal++;
+        if(htmlUrl(u)&&!seen.has(u)){
+          seen.set(u,{url:u,depth:item.depth+1,from:item.url});
+          queue.push({url:u,depth:item.depth+1,from:item.url});
+        }
+      }else external++;
+    }
+  }else{
+    for(const a of links){let u=urlKey(a.getAttribute("href"),item.url);if(u&&(sameSite(u)))internal++;else if(u)external++;}
+  }
+
+  const imgs=[...doc.images];
+  results.push({url:item.url,depth:item.depth,status:response.status,error:soft404?"Soft 404: server returned the homepage":"",soft404,title,description,canonical,noindex,indexable:response.ok&&!noindex&&!soft404,h1:h1.length,h1Text:h1.slice(0,2).join(" | "),links:links.length,internal,external,missingAlt:imgs.filter(i=>!i.hasAttribute("alt")).length,images:imgs.length,viewport:!!doc.querySelector('meta[name="viewport"]'),lang:!!doc.documentElement.getAttribute("lang"),jsonLd:doc.querySelectorAll('script[type="application/ld+json"]').length});
+}
+async function crawlSite(){
+ if(running)return;try{let u=new URL(site());if(!/^https?:$/.test(u.protocol))throw 0}catch{status("Enter a valid HTTP or HTTPS website URL.","error");return}
+ running=true;stopRequested=false;results=[];queue=[];seen.clear();robotsRules=null;
+ let start=urlKey(site(),site());seen.set(start,{url:start,depth:0});queue.push({url:start,depth:0});renderResults();stats();status("Preparing crawl…","info");
+ await loadHomepageProfile();await loadRobots();await addSitemapSeeds();
+ const limit=Math.max(1,Math.min(100000,Number(val("maxPages","10000"))||10000));
+ while(queue.length&&!stopRequested&&results.length<limit){
+   const item=queue.shift();
+   if(!allowed(item.url)){results.push({url:item.url,depth:item.depth,status:0,error:"Blocked by robots.txt"});stats();renderResults();continue}
+   await crawlOne(item);stats();renderResults();
+   await sleep(Math.max(0,Math.min(10000,Number(val("delay","0"))||0)));
+ }
+ running=false;
+ status(stopRequested?"Crawl stopped. "+results.length+" page(s) analyzed.":results.length>=limit&&queue.length?"Safety limit reached ("+limit+" pages).":"Crawl complete. "+results.length+" page(s) analyzed.",stopRequested||queue.length?"warn":"good");
+ useCrawledPages();renderPages();updateAll();validate();
+}
+function stopCrawl(){if(running){stopRequested=true;status("Stopping after the current request…","warn")}}
+function renderResults(){
+ const body=$("crawlRows");body.innerHTML="";
+ for(const r of results){let tr=document.createElement("tr"),ok=r.status>=200&&r.status<400&&!r.error&&!r.soft404;
+ const cell=x=>"<td>"+x+"</td>";
+ tr.innerHTML=cell('<span class="url">'+esc(r.url)+'</span>')+cell('<span class="'+(r.soft404?"warntext":ok?"ok":"bad")+'">'+esc(r.soft404?"Soft 404":r.error||r.status)+'</span>')+cell(r.depth)+cell(r.title?esc(r.title):'<span class="bad">Missing</span>')+cell(r.description?esc(r.description):'<span class="bad">Missing</span>')+cell(r.canonical?esc(r.canonical):'<span class="bad">Missing</span>')+cell(r.noindex?'<span class="warntext">noindex</span>':r.indexable?'<span class="ok">indexable</span>':'—')+cell(r.h1===1?esc(r.h1Text):r.h1===0?'<span class="bad">Missing</span>':'<span class="warntext">'+r.h1+'</span>')+cell((r.links||0)+" ("+(r.internal||0)+" internal)");
+ body.appendChild(tr)}
+}
+function addPage(){pages.push({path:"/new-page",lastmod:"",changefreq:"monthly",priority:"0.5"});renderPages();updateAll()}
+function addCommon(){for(const p of [{path:"/",changefreq:"weekly",priority:"1.0"},{path:"/about",changefreq:"monthly",priority:"0.8"},{path:"/projects",changefreq:"weekly",priority:"0.8"},{path:"/contact",changefreq:"monthly",priority:"0.7"},{path:"/privacy",changefreq:"yearly",priority:"0.5"},{path:"/terms",changefreq:"yearly",priority:"0.5"}])if(!pages.some(x=>normPath(x.path)===normPath(p.path)))pages.push({...p,lastmod:""});renderPages();updateAll()}
+function normPath(p){p=String(p||"").trim();if(!p.startsWith("/"))p="/"+p;if(p.length>1)p=p.replace(/\/+$/,"");return p||"/"}
+function useCrawledPages(){
+  const arr=[],seenPaths=new Set();
+  for(const r of results){
+    if(!(r.status>=200&&r.status<400))continue;
+    if(r.soft404)continue;
+    if(!r.url||!htmlUrl(r.url))continue;
+    const p=normPath(pathOf(r.url));
+    if(seenPaths.has(p))continue;
+    seenPaths.add(p);
+    arr.push({path:p,lastmod:"",changefreq:p==="/"?"weekly":"monthly",priority:p==="/"?"1.0":r.depth<=1?"0.8":"0.5"});
+  }
+  arr.sort((a,b)=>a.path==="/"?-1:b.path==="/"?1:a.path.localeCompare(b.path));
+  pages=arr;
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
+    </script>
 </body>
 
 </html>
