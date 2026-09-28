@@ -1,26 +1,1072 @@
-const ALLOWED_ORIGINS=new Set(['https://xconflictionx.cc','https://www.xconflictionx.cc']);
-const cors=o=>({'Access-Control-Allow-Origin':ALLOWED_ORIGINS.has(o)?o:'https://xconflictionx.cc','Access-Control-Allow-Methods':'POST, OPTIONS','Access-Control-Allow-Headers':'Content-Type','Vary':'Origin'});
-const out=(x,s=200,o='')=>new Response(JSON.stringify(x),{status:s,headers:{...cors(o),'Content-Type':'application/json','Cache-Control':'no-store'}});
-const clamp=n=>Math.max(0,Math.min(100,Math.round(n)));
-const grade=n=>n>=95?'A+':n>=90?'A':n>=85?'A-':n>=80?'B+':n>=75?'B':n>=70?'B-':n>=65?'C+':n>=60?'C':n>=55?'C-':n>=50?'D':'F';
-const first=(s,r)=>{const m=s.match(r);return m?(m[1]||'').trim():''};
-const all=(s,r)=>{const a=[];let m;while((m=r.exec(s)))a.push(m[1]||'');return a};
-const attr=(t,n)=>first(t,new RegExp("\\b"+n+"\\s*=\\s*[\"']([^\"']*)[\"']","i"));
-const abs=(v,b)=>{try{return new URL(v,b).href}catch{return null}};
-const host=u=>{try{return new URL(u).hostname.toLowerCase()}catch{return ''}};
-const text=s=>s.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,' ').replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi,' ').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
-async function target(u){const x=new URL(u);if(!/^https?:$/.test(x.protocol)||x.username||x.password)throw Error('Only public HTTP/HTTPS URLs are allowed.');const h=x.hostname.toLowerCase();if(/^(localhost|127\.|10\.|192\.168\.|169\.254\.)/.test(h)||h.endsWith('.local'))throw Error('Private/local targets are not allowed.');return x.href}
-async function get(start,accept='*/*'){let u=start,chain=[];for(let i=0;i<8;i++){const r=await fetch(u,{redirect:'manual',headers:{'User-Agent':'SiteGrade/2.0 (+https://xconflictionx.cc/tools/)','Accept':accept}});const l=r.headers.get('location');if(r.status>=300&&r.status<400&&l){u=new URL(l,u).href;chain.push({status:r.status,to:u});continue}return{r,u,chain}}throw Error('Too many redirects.')}
-function add(a,severity,category,title,detail,evidence=''){a.push({severity,category,title,detail,evidence})}
-async function scan(input){const started=Date.now(),u=await target(input),p=await get(u,'text/html,application/xhtml+xml,*/*'),r=p.r;if(!r.ok)throw Error(`Target returned HTTP ${r.status}.`);const html=await r.text(),h=Object.fromEntries(r.headers),f=[];
-const title=first(html,/<title\b[^>]*>([\s\S]*?)<\/title>/i).replace(/\s+/g,' '),desc=first(html,/<meta\b[^>]*name=["']description["'][^>]*content=["']([^"']*)["']/i),canon=first(html,/<link\b[^>]*rel=["'][^"']*canonical[^"']*["'][^>]*href=["']([^"']*)["']/i),h1=all(html,/<h1\b[^>]*>([\s\S]*?)<\/h1>/gi).map(text),links=all(html,/<a\b[^>]*href=["']([^"']+)["']/gi).map(x=>abs(x,p.u)).filter(Boolean);
-let security=100;if(!h['strict-transport-security']){security-=12;add(f,'medium','security','Missing HSTS','Strict-Transport-Security was not detected.')}if(!h['content-security-policy']){security-=12;add(f,'medium','security','Missing Content-Security-Policy','No Content-Security-Policy response header was detected.')}else if(/unsafe-inline|unsafe-eval/i.test(h['content-security-policy'])){security-=5;add(f,'low','security','Permissive Content-Security-Policy','The CSP permits unsafe inline/eval behavior.',h['content-security-policy'])}for(const [k,n,t,d] of [['x-content-type-options',7,'Missing X-Content-Type-Options','Add nosniff.'],['x-frame-options',5,'Missing X-Frame-Options','Protect against unwanted framing.'],['referrer-policy',5,'Missing Referrer-Policy','Declare a deliberate referrer policy.'],['permissions-policy',5,'Missing Permissions-Policy','Restrict unused browser features.']])if(!h[k]){security-=n;add(f,'medium','security',t,d)}if(h.server)add(f,'info','security','Server header disclosed','A Server response header is exposed.',h.server);
-let seo=100;if(!title){seo-=15;add(f,'medium','seo','Missing page title','No title element was detected.')}else if(title.length<15||title.length>60){seo-=6;add(f,'low','seo','Title length could improve',`The title is ${title.length} characters.`,title)}if(!desc){seo-=8;add(f,'medium','seo','Missing meta description','No meta description was detected.')}if(!canon){seo-=5;add(f,'low','seo','Canonical URL not detected','No canonical link was detected.')}if(!h1.length){seo-=8;add(f,'medium','seo','Missing H1','No H1 heading was detected.')}else if(h1.length>1){seo-=3;add(f,'low','seo','Multiple H1 headings',`${h1.length} H1 headings were detected.`)}if(!/<meta\b[^>]*property=["']og:title/i.test(html))add(f,'info','seo','No Open Graph title','og:title was not detected.');if(!/application\/ld\+json/i.test(html))add(f,'info','seo','No JSON-LD structured data','Structured data was not detected.');
-let privacy=100;const cookies=(r.headers.get('set-cookie')||'').split(/,(?=\s*[^;,=]+\s*=)/).filter(Boolean);for(const c of cookies){const n=c.split('=')[0];if(!/;\s*secure/i.test(c)){privacy-=10;add(f,'medium','privacy',`Cookie "${n}" lacks Secure`,'The cookie is not marked Secure.')}if(!/;\s*httponly/i.test(c)){privacy-=5;add(f,'low','privacy',`Cookie "${n}" lacks HttpOnly`,'The cookie is readable by client-side JavaScript.')}if(!/samesite=/i.test(c)){privacy-=4;add(f,'low','privacy',`Cookie "${n}" has no SameSite`,'SameSite is not explicitly declared.')}}
-const resource=all(html,/<(?:script|img|iframe|link|source)\b[^>]*(?:src|href)=["']([^"']+)["']/gi).map(x=>abs(x,p.u)).filter(Boolean),third=[...new Set(resource.map(host).filter(x=>x&&x!==host(p.u)))];if(third.length>5)add(f,'low','privacy','Many third-party origins',`${third.length} external origins were referenced.`);
-let perf=100;const bytes=new TextEncoder().encode(html).length,elapsed=Date.now()-started;if(elapsed>1500){perf-=15;add(f,'medium','performance','Slow initial response',`${elapsed} ms observed before the scan completed.`)}else if(elapsed>800){perf-=7;add(f,'low','performance','Response could be faster',`${elapsed} ms observed before the scan completed.`)}if(bytes>500000){perf-=10;add(f,'medium','performance','Large HTML response',`${(bytes/1024/1024).toFixed(2)} MiB of HTML.`)}if(!h['content-encoding']&&bytes>20000){perf-=6;add(f,'low','performance','No response compression detected','No gzip/Brotli content encoding was advertised.')}const rb=(html.match(/<script\b(?![^>]*\b(?:async|defer)\b)[^>]*\bsrc=/gi)||[]).length;if(rb>3){perf-=5;add(f,'low','performance','Render-blocking scripts',`${rb} external scripts lack async/defer.`)}
-let acc=100;const imgs=html.match(/<img\b[^>]*>/gi)||[],missing=imgs.filter(t=>!attr(t,'alt')).length;if(!/<html\b[^>]*\blang=/i.test(html)){acc-=10;add(f,'medium','accessibility','Missing HTML language','The html element has no lang attribute.')}if(missing){acc-=Math.min(15,missing*3);add(f,'medium','accessibility','Images missing alt text',`${missing} image(s) lack alt text.`)}if(!/<main\b/i.test(html)){acc-=5;add(f,'low','accessibility','No main landmark','No main element was detected.')}
-let config=100;const base=new URL(p.u).origin;for(const [path,label] of [['/robots.txt','Robots.txt'],['/sitemap.xml','Sitemap']]){try{const q=await get(base+path);if(!q.r.ok){config-=4;add(f,'low','configuration',`${label} not found`,`${path} returned HTTP ${q.r.status}.`)}}catch{add(f,'info','configuration',`${label} could not be checked`,`Unable to retrieve ${path}.`)}}for(const path of ['/.env','/.git/config']){try{const q=await get(base+path);if(q.r.ok){config-=20;add(f,'high','configuration',`Potentially exposed ${path}`,'The public URL returned a successful response.')}}catch{}}
-let dns={A:[],AAAA:[],CNAME:[],MX:[],NS:[]};for(const type of Object.keys(dns))try{const q=await fetch(`https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(host(p.u))}&type=${type}`,{headers:{Accept:'application/dns-json'}});dns[type]=((await q.json()).Answer||[]).map(x=>x.data)}catch{}
-const scores={security:clamp(security),privacy:clamp(privacy),performance:clamp(perf),seo:clamp(seo),configuration:clamp(config),accessibility:clamp(acc)},overall=clamp(scores.security*.25+scores.privacy*.12+scores.performance*.18+scores.seo*.18+scores.configuration*.15+scores.accessibility*.12);const rank={high:0,medium:1,low:2,info:3};f.sort((a,b)=>(rank[a.severity]??3)-(rank[b.severity]??3));return{ok:true,scannerVersion:'2.0',targetUrl:u,finalUrl:p.u,status:r.status,durationMs:Date.now()-started,overall:{score:overall,grade:grade(overall)},scores,findings:f,summary:`${f.filter(x=>x.severity!=='info').length} actionable finding(s) across six audit categories.`,page:{contentType:h['content-type']||'',htmlBytes:bytes,title,description:desc,canonical:canon||null,h1Count:h1.length,links:links.length,internalLinks:links.filter(x=>new URL(x).origin===new URL(p.u).origin).length,externalLinks:links.filter(x=>new URL(x).origin!==new URL(p.u).origin).length},privacy:{cookieCount:cookies.length,thirdPartyOrigins:third},performance:{ttfbMs:elapsed,htmlBytes:bytes,compression:h['content-encoding']||'none',renderBlockingScripts:rb,scriptCount:(html.match(/<script\b/gi)||[]).length,imageCount:imgs.length},accessibility:{imageCount:imgs.length,missingAlt:missing},configuration:{redirects:p.chain.length,robotsChecked:true,sitemapChecked:true},dns}}
-export default{async fetch(req){const o=req.headers.get('Origin')||'';if(req.method==='OPTIONS')return new Response(null,{status:204,headers:cors(o)});const u=new URL(req.url);if(u.pathname==='/health')return out({ok:true,scannerVersion:'2.0'},200,o);if(u.pathname!=='/scan'||req.method!=='POST')return out({error:'Not found'},404,o);if(o&&!ALLOWED_ORIGINS.has(o))return out({error:'Origin not allowed'},403,o);try{const b=await req.json();if(!b?.url)return out({error:'Missing url'},400,o);return out(await scan(b.url.trim()),200,o)}catch(e){return out({error:e?.message||'Scan failed'},400,o)}}};
+const ALLOWED_ORIGINS = new Set([
+    "https://xconflictionx.cc",
+    "https://www.xconflictionx.cc"
+]);
+
+const SCANNER_VERSION = "3.0";
+
+const SECURITY_HEADERS = {
+    hsts: "strict-transport-security",
+    csp: "content-security-policy",
+    xcto: "x-content-type-options",
+    xfo: "x-frame-options",
+    referrer: "referrer-policy",
+    permissions: "permissions-policy"
+};
+
+const PRIVATE_HOST_PATTERNS = [
+    /^localhost$/i,
+    /^localhost\./i,
+    /^127\./,
+    /^0\./,
+    /^10\./,
+    /^192\.168\./,
+    /^169\.254\./,
+    /^172\.(1[6-9]|2\d|3[0-1])\./,
+    /^\[?::1\]?$/,
+    /^\[?fc/i,
+    /^\[?fd/i,
+    /^\[?fe80:/i
+];
+
+const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+function corsHeaders(origin) {
+    const headers = {
+        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type",
+        "Vary": "Origin"
+    };
+
+    if (origin && ALLOWED_ORIGINS.has(origin)) {
+        headers["Access-Control-Allow-Origin"] = origin;
+    }
+
+    return headers;
+}
+
+function json(data, status = 200, origin = "") {
+    return new Response(JSON.stringify(data, null, 2), {
+        status,
+        headers: {
+            "Content-Type": "application/json; charset=utf-8",
+            ...corsHeaders(origin)
+        }
+    });
+}
+
+function normalizeUrl(value) {
+    const url = new URL(value);
+
+    if (!["http:", "https:"].includes(url.protocol)) {
+        throw new Error("Only HTTP and HTTPS URLs are supported.");
+    }
+
+    if (url.username || url.password) {
+        throw new Error("URLs containing credentials are not allowed.");
+    }
+
+    if (isPrivateHostname(url.hostname)) {
+        throw new Error("Private or local targets are not allowed.");
+    }
+
+    return url;
+}
+
+function isPrivateHostname(hostname) {
+    const host = hostname.toLowerCase().replace(/\.$/, "");
+
+    if (PRIVATE_HOST_PATTERNS.some(rx => rx.test(host))) {
+        return true;
+    }
+
+    if (/^\d+\.\d+\.\d+\.\d+$/.test(host)) {
+        const parts = host.split(".").map(Number);
+
+        if (
+            parts[0] === 10 ||
+            parts[0] === 127 ||
+            parts[0] === 0 ||
+            (parts[0] === 192 && parts[1] === 168) ||
+            (parts[0] === 169 && parts[1] === 254) ||
+            (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31)
+        ) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+async function fetchPage(url, options = {}) {
+    const maxRedirects = options.maxRedirects ?? 8;
+
+    let current = new URL(url);
+
+    for (let i = 0; i <= maxRedirects; i++) {
+        const response = await fetch(current.toString(), {
+            method: "GET",
+            redirect: "manual",
+            headers: {
+                "User-Agent":
+                    "SiteGrade/3.0 (+https://xconflictionx.cc/tools/)"
+            }
+        });
+
+        const location = response.headers.get("location");
+
+        if (
+            location &&
+            response.status >= 300 &&
+            response.status < 400
+        ) {
+            if (i === maxRedirects) {
+                throw new Error("Too many redirects.");
+            }
+
+            const next = new URL(location, current);
+
+            if (!["http:", "https:"].includes(next.protocol)) {
+                throw new Error("Redirected to unsupported protocol.");
+            }
+
+            if (isPrivateHostname(next.hostname)) {
+                throw new Error("Redirected to a private or local target.");
+            }
+
+            current = next;
+            continue;
+        }
+
+        return {
+            response,
+            finalUrl: current,
+            redirects: i
+        };
+    }
+
+    throw new Error("Unable to retrieve target.");
+}
+
+async function fetchProbe(url, path) {
+    const target = new URL(path, url);
+
+    const response = await fetch(target.toString(), {
+        method: "GET",
+        redirect: "manual",
+        headers: {
+            "User-Agent":
+                "SiteGrade/3.0 (+https://xconflictionx.cc/tools/)"
+        }
+    });
+
+    const contentType =
+        response.headers.get("content-type") || "";
+
+    const lengthHeader =
+        response.headers.get("content-length");
+
+    const maxRead = 512 * 1024;
+
+    let body = "";
+
+    if (lengthHeader && Number(lengthHeader) > maxRead) {
+        body = "";
+    } else {
+        const buffer = await response.arrayBuffer();
+
+        if (buffer.byteLength <= maxRead) {
+            body = new TextDecoder().decode(buffer);
+        }
+    }
+
+    return {
+        response,
+        body,
+        contentType,
+        url: target
+    };
+}
+
+/*
+ * IMPORTANT:
+ *
+ * Cloudflare Pages, SPA hosts, frameworks and custom 404 handlers
+ * frequently return HTTP 200 with the site's normal HTML for files
+ * that do NOT exist.
+ *
+ * Therefore:
+ *
+ * status === 200
+ *
+ * is NEVER sufficient evidence that /.env or /.git/config exists.
+ */
+
+function looksLikeHtml(body, contentType = "") {
+    if (/text\/html/i.test(contentType)) {
+        return true;
+    }
+
+    return /^\s*(<!doctype\s+html|<html[\s>])/i.test(body);
+}
+
+function looksLikeRealEnv(body, contentType) {
+    if (!body || body.length > 200000) {
+        return false;
+    }
+
+    if (looksLikeHtml(body, contentType)) {
+        return false;
+    }
+
+    const text = body.trim();
+
+    if (!text) {
+        return false;
+    }
+
+    const lines = text
+        .split(/\r?\n/)
+        .map(line => line.trim())
+        .filter(Boolean)
+        .filter(line => !line.startsWith("#"));
+
+    if (lines.length < 2) {
+        return false;
+    }
+
+    const assignments = lines.filter(line =>
+        /^[A-Za-z_][A-Za-z0-9_]*\s*=\s*.*$/.test(line)
+    );
+
+    /*
+     * Require multiple actual environment assignments.
+     * This prevents arbitrary text containing a single "=" from
+     * becoming an exposed .env finding.
+     */
+    return assignments.length >= 2 &&
+        assignments.length / lines.length >= 0.5;
+}
+
+function looksLikeGitConfig(body, contentType) {
+    if (!body || body.length > 200000) {
+        return false;
+    }
+
+    if (looksLikeHtml(body, contentType)) {
+        return false;
+    }
+
+    const text = body.trim();
+
+    if (!text) {
+        return false;
+    }
+
+    /*
+     * Real .git/config files contain Git INI sections.
+     */
+    const hasGitSection =
+        /\[(?:core|remote\s+"[^"]+"|branch\s+"[^"]+"|user|credential|http|submodule)\]/i
+            .test(text);
+
+    const hasRepositoryMarker =
+        /repositoryformatversion\s*=\s*\d+/i.test(text);
+
+    const hasRemoteMarker =
+        /\[remote\s+"[^"]+"\]/i.test(text);
+
+    const hasCoreMarker =
+        /\[core\]/i.test(text);
+
+    return (
+        hasGitSection &&
+        (
+            hasRepositoryMarker ||
+            hasRemoteMarker ||
+            hasCoreMarker
+        )
+    );
+}
+
+function isNormalFallbackPage(body, contentType, originalPath) {
+    if (!body) {
+        return false;
+    }
+
+    if (looksLikeHtml(body, contentType)) {
+        return true;
+    }
+
+    /*
+     * Some hosts omit content-type but still return their normal
+     * application shell.
+     */
+    if (
+        /<head[\s>]/i.test(body) &&
+        /<body[\s>]/i.test(body)
+    ) {
+        return true;
+    }
+
+    return false;
+}
+
+function first(text, regex) {
+    const match = text.match(regex);
+    return match ? match[1] : "";
+}
+
+function attr(text, name) {
+    return first(
+        text,
+        new RegExp(
+            "\\b" +
+            name +
+            "\\s*=\\s*[\"']([^\"']*)[\"']",
+            "i"
+        )
+    );
+}
+
+function countMatches(text, regex) {
+    return (text.match(regex) || []).length;
+}
+
+function escapeRegExp(value) {
+    return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function gradeForScore(score) {
+    if (score >= 97) return "A+";
+    if (score >= 93) return "A";
+    if (score >= 90) return "A-";
+    if (score >= 87) return "B+";
+    if (score >= 83) return "B";
+    if (score >= 80) return "B-";
+    if (score >= 77) return "C+";
+    if (score >= 73) return "C";
+    if (score >= 70) return "C-";
+    if (score >= 67) return "D+";
+    if (score >= 63) return "D";
+    if (score >= 60) return "D-";
+    return "F";
+}
+
+function addFinding(findings, severity, title, detail, category) {
+    findings.push({
+        severity,
+        title,
+        detail,
+        category
+    });
+}
+
+async function scanTarget(target) {
+    const started = Date.now();
+
+    const fetched = await fetchPage(target.toString());
+
+    const response = fetched.response;
+    const finalUrl = fetched.finalUrl;
+    const redirects = fetched.redirects;
+
+    const html = await response.text();
+
+    const headers = response.headers;
+
+    const findings = [];
+
+    /*
+     * ------------------------------------------------------------
+     * SECURITY
+     * ------------------------------------------------------------
+     */
+
+    if (!headers.get(SECURITY_HEADERS.hsts)) {
+        addFinding(
+            findings,
+            "medium",
+            "Missing HSTS",
+            "Strict-Transport-Security was not detected.",
+            "security"
+        );
+    }
+
+    const csp = headers.get(SECURITY_HEADERS.csp);
+
+    if (!csp) {
+        addFinding(
+            findings,
+            "medium",
+            "Missing Content-Security-Policy",
+            "No Content-Security-Policy response header was detected.",
+            "security"
+        );
+    } else {
+        if (/unsafe-inline/i.test(csp)) {
+            addFinding(
+                findings,
+                "low",
+                "CSP permits unsafe-inline",
+                "The Content-Security-Policy contains unsafe-inline.",
+                "security"
+            );
+        }
+
+        if (/unsafe-eval/i.test(csp)) {
+            addFinding(
+                findings,
+                "low",
+                "CSP permits unsafe-eval",
+                "The Content-Security-Policy contains unsafe-eval.",
+                "security"
+            );
+        }
+    }
+
+    if (!headers.get(SECURITY_HEADERS.xcto)) {
+        addFinding(
+            findings,
+            "low",
+            "Missing X-Content-Type-Options",
+            "X-Content-Type-Options was not detected.",
+            "security"
+        );
+    }
+
+    if (!headers.get(SECURITY_HEADERS.xfo)) {
+        addFinding(
+            findings,
+            "medium",
+            "Missing X-Frame-Options",
+            "Protect against unwanted framing.",
+            "security"
+        );
+    }
+
+    if (!headers.get(SECURITY_HEADERS.referrer)) {
+        addFinding(
+            findings,
+            "low",
+            "Missing Referrer-Policy",
+            "A Referrer-Policy response header was not detected.",
+            "security"
+        );
+    }
+
+    if (!headers.get(SECURITY_HEADERS.permissions)) {
+        addFinding(
+            findings,
+            "medium",
+            "Missing Permissions-Policy",
+            "Restrict unused browser features.",
+            "security"
+        );
+    }
+
+    if (headers.get("server")) {
+        addFinding(
+            findings,
+            "info",
+            "Server header disclosed",
+            "A Server response header is exposed.",
+            "security"
+        );
+    }
+
+    /*
+     * ------------------------------------------------------------
+     * REAL EXPOSED FILE CHECKS
+     * ------------------------------------------------------------
+     */
+
+    const envProbe = await fetchProbe(finalUrl, "/.env");
+
+    if (
+        envProbe.response.ok &&
+        !isNormalFallbackPage(
+            envProbe.body,
+            envProbe.contentType,
+            "/.env"
+        ) &&
+        looksLikeRealEnv(
+            envProbe.body,
+            envProbe.contentType
+        )
+    ) {
+        addFinding(
+            findings,
+            "high",
+            "Potentially exposed /.env",
+            "A publicly accessible response contained environment-variable assignments.",
+            "security"
+        );
+    }
+
+    const gitProbe = await fetchProbe(
+        finalUrl,
+        "/.git/config"
+    );
+
+    if (
+        gitProbe.response.ok &&
+        !isNormalFallbackPage(
+            gitProbe.body,
+            gitProbe.contentType,
+            "/.git/config"
+        ) &&
+        looksLikeGitConfig(
+            gitProbe.body,
+            gitProbe.contentType
+        )
+    ) {
+        addFinding(
+            findings,
+            "high",
+            "Potentially exposed /.git/config",
+            "A publicly accessible response contained Git repository configuration data.",
+            "security"
+        );
+    }
+
+    /*
+     * ------------------------------------------------------------
+     * SEO
+     * ------------------------------------------------------------
+     */
+
+    const title = first(
+        html,
+        /<title[^>]*>([\s\S]*?)<\/title>/i
+    ).trim();
+
+    const description = first(
+        html,
+        /<meta[^>]+name=["']description["'][^>]+content=["']([^"']*)["']/i
+    );
+
+    const canonical = first(
+        html,
+        /<link[^>]+rel=["'][^"']*canonical[^"']*["'][^>]+href=["']([^"']*)["']/i
+    );
+
+    const h1Count = countMatches(
+        html,
+        /<h1\b[^>]*>/gi
+    );
+
+    const ogTitle = first(
+        html,
+        /<meta[^>]+property=["']og:title["'][^>]+content=["']([^"']*)["']/i
+    );
+
+    const jsonLd = /<script[^>]+type=["']application\/ld\+json["']/i
+        .test(html);
+
+    if (!title) {
+        addFinding(
+            findings,
+            "medium",
+            "Missing page title",
+            "No HTML title element was detected.",
+            "seo"
+        );
+    } else if (title.length < 30 || title.length > 60) {
+        addFinding(
+            findings,
+            "low",
+            "Title length could improve",
+            `The title is ${title.length} characters.`,
+            "seo"
+        );
+    }
+
+    if (!description) {
+        addFinding(
+            findings,
+            "low",
+            "Missing meta description",
+            "No meta description was detected.",
+            "seo"
+        );
+    }
+
+    if (!canonical) {
+        addFinding(
+            findings,
+            "low",
+            "Canonical URL not detected",
+            "No canonical link was detected.",
+            "seo"
+        );
+    }
+
+    if (h1Count === 0) {
+        addFinding(
+            findings,
+            "low",
+            "No H1 heading detected",
+            "The page does not contain an H1 element.",
+            "seo"
+        );
+    }
+
+    if (!ogTitle) {
+        addFinding(
+            findings,
+            "info",
+            "No Open Graph title",
+            "og:title was not detected.",
+            "seo"
+        );
+    }
+
+    if (!jsonLd) {
+        addFinding(
+            findings,
+            "info",
+            "No JSON-LD structured data",
+            "Structured data was not detected.",
+            "seo"
+        );
+    }
+
+    /*
+     * ------------------------------------------------------------
+     * ACCESSIBILITY
+     * ------------------------------------------------------------
+     */
+
+    const lang = attr(
+        html.match(/<html\b[^>]*>/i)?.[0] || "",
+        "lang"
+    );
+
+    const images = [
+        ...html.matchAll(/<img\b[^>]*>/gi)
+    ];
+
+    let missingAlt = 0;
+
+    for (const match of images) {
+        const tag = match[0];
+
+        if (!/\balt\s*=/i.test(tag)) {
+            missingAlt++;
+        }
+    }
+
+    if (!lang) {
+        addFinding(
+            findings,
+            "low",
+            "HTML language not declared",
+            "The root html element does not declare a lang attribute.",
+            "accessibility"
+        );
+    }
+
+    if (missingAlt > 0) {
+        addFinding(
+            findings,
+            "medium",
+            "Images missing alt text",
+            `${missingAlt} image(s) do not have an alt attribute.`,
+            "accessibility"
+        );
+    }
+
+    if (!/<main\b/i.test(html)) {
+        addFinding(
+            findings,
+            "low",
+            "Main landmark not detected",
+            "No main landmark was detected.",
+            "accessibility"
+        );
+    }
+
+    /*
+     * ------------------------------------------------------------
+     * PERFORMANCE
+     * ------------------------------------------------------------
+     */
+
+    const htmlBytes = new TextEncoder().encode(html).byteLength;
+
+    const renderBlockingScripts = [
+        ...html.matchAll(/<script\b[^>]*>/gi)
+    ].filter(match => {
+        const tag = match[0];
+
+        if (/\basync\b/i.test(tag)) return false;
+        if (/\bdefer\b/i.test(tag)) return false;
+        if (/type\s*=\s*["']module["']/i.test(tag)) return false;
+
+        return true;
+    }).length;
+
+    if (renderBlockingScripts > 0) {
+        addFinding(
+            findings,
+            "low",
+            "Render-blocking scripts detected",
+            `${renderBlockingScripts} script(s) lack async, defer, or module loading.`,
+            "performance"
+        );
+    }
+
+    /*
+     * ------------------------------------------------------------
+     * CONFIGURATION
+     * ------------------------------------------------------------
+     */
+
+    const robotsProbe = await fetchProbe(
+        finalUrl,
+        "/robots.txt"
+    );
+
+    const robotsExists =
+        robotsProbe.response.ok &&
+        !isNormalFallbackPage(
+            robotsProbe.body,
+            robotsProbe.contentType,
+            "/robots.txt"
+        ) &&
+        /(^|\n)\s*(user-agent|disallow|allow|sitemap)\s*:/i
+            .test(robotsProbe.body);
+
+    if (!robotsExists) {
+        addFinding(
+            findings,
+            "low",
+            "robots.txt not detected",
+            "A valid robots.txt response was not detected.",
+            "configuration"
+        );
+    }
+
+    const sitemapProbe = await fetchProbe(
+        finalUrl,
+        "/sitemap.xml"
+    );
+
+    const sitemapExists =
+        sitemapProbe.response.ok &&
+        !isNormalFallbackPage(
+            sitemapProbe.body,
+            sitemapProbe.contentType,
+            "/sitemap.xml"
+        ) &&
+        /<urlset[\s>]|<sitemapindex[\s>]/i
+            .test(sitemapProbe.body);
+
+    if (!sitemapExists) {
+        addFinding(
+            findings,
+            "low",
+            "sitemap.xml not detected",
+            "A valid XML sitemap response was not detected.",
+            "configuration"
+        );
+    }
+
+    /*
+     * ------------------------------------------------------------
+     * PRIVACY
+     * ------------------------------------------------------------
+     */
+
+    const setCookie = headers.get("set-cookie") || "";
+
+    if (setCookie) {
+        if (!/;\s*secure\b/i.test(setCookie)) {
+            addFinding(
+                findings,
+                "medium",
+                "Cookie missing Secure",
+                "A Set-Cookie response was detected without the Secure attribute.",
+                "privacy"
+            );
+        }
+
+        if (!/;\s*httponly\b/i.test(setCookie)) {
+            addFinding(
+                findings,
+                "low",
+                "Cookie missing HttpOnly",
+                "A Set-Cookie response was detected without HttpOnly.",
+                "privacy"
+            );
+        }
+
+        if (!/;\s*samesite=/i.test(setCookie)) {
+            addFinding(
+                findings,
+                "low",
+                "Cookie missing SameSite",
+                "A Set-Cookie response was detected without SameSite.",
+                "privacy"
+            );
+        }
+    }
+
+    const pageOrigin = finalUrl.origin;
+
+    const thirdPartyOrigins = [
+        ...new Set(
+            [
+                ...html.matchAll(
+                    /\b(?:src|href|action)=["']([^"']+)["']/gi
+                )
+            ]
+                .map(m => m[1])
+                .filter(value => /^https?:\/\//i.test(value))
+                .map(value => {
+                    try {
+                        return new URL(value, finalUrl).origin;
+                    } catch {
+                        return null;
+                    }
+                })
+                .filter(Boolean)
+                .filter(origin => origin !== pageOrigin)
+        )
+    ];
+
+    /*
+     * ------------------------------------------------------------
+     * DNS
+     * ------------------------------------------------------------
+     */
+
+    const dns = {};
+
+    async function doh(name, type) {
+        const url =
+            "https://cloudflare-dns.com/dns-query?name=" +
+            encodeURIComponent(name) +
+            "&type=" +
+            encodeURIComponent(type);
+
+        const res = await fetch(url, {
+            headers: {
+                Accept: "application/dns-json"
+            }
+        });
+
+        if (!res.ok) {
+            return null;
+        }
+
+        return res.json();
+    }
+
+    try {
+        dns.A = await doh(finalUrl.hostname, "A");
+        dns.AAAA = await doh(finalUrl.hostname, "AAAA");
+        dns.CNAME = await doh(finalUrl.hostname, "CNAME");
+        dns.MX = await doh(finalUrl.hostname, "MX");
+        dns.NS = await doh(finalUrl.hostname, "NS");
+    } catch {
+        dns.error = "DNS lookup failed.";
+    }
+
+    /*
+     * ------------------------------------------------------------
+     * SCORING
+     * ------------------------------------------------------------
+     */
+
+    const categories = [
+        "security",
+        "privacy",
+        "performance",
+        "seo",
+        "configuration",
+        "accessibility"
+    ];
+
+    const weights = {
+        high: 20,
+        medium: 10,
+        low: 4,
+        info: 0
+    };
+
+    const scores = {};
+
+    for (const category of categories) {
+        let penalty = 0;
+
+        for (const finding of findings) {
+            if (finding.category !== category) {
+                continue;
+            }
+
+            penalty += weights[finding.severity] || 0;
+        }
+
+        scores[category] =
+            Math.max(0, Math.min(100, 100 - penalty));
+    }
+
+    const overall = Math.round(
+        categories.reduce(
+            (sum, category) => sum + scores[category],
+            0
+        ) / categories.length
+    );
+
+    const durationMs = Date.now() - started;
+
+    return {
+        ok: true,
+        scannerVersion: SCANNER_VERSION,
+
+        target: target.toString(),
+        finalUrl: finalUrl.toString(),
+
+        overall: {
+            score: overall,
+            grade: gradeForScore(overall)
+        },
+
+        scores,
+
+        findings: findings.sort((a, b) => {
+            const order = {
+                high: 0,
+                medium: 1,
+                low: 2,
+                info: 3
+            };
+
+            return (
+                (order[a.severity] ?? 9) -
+                (order[b.severity] ?? 9)
+            );
+        }),
+
+        page: {
+            title: title || "Untitled",
+            htmlBytes,
+            links: countMatches(
+                html,
+                /<a\b[^>]*href\s*=/gi
+            ),
+            images: images.length
+        },
+
+        privacy: {
+            hasCookies: Boolean(setCookie),
+            thirdPartyOrigins
+        },
+
+        performance: {
+            htmlBytes,
+            ttfbMs: durationMs,
+            imageCount: images.length,
+            renderBlockingScripts,
+            contentEncoding:
+                headers.get("content-encoding") || null,
+            cacheControl:
+                headers.get("cache-control") || null
+        },
+
+        accessibility: {
+            missingAlt,
+            imageCount: images.length,
+            hasLang: Boolean(lang),
+            hasMain: /<main\b/i.test(html)
+        },
+
+        configuration: {
+            redirects,
+            robotsTxt: robotsExists,
+            sitemapXml: sitemapExists
+        },
+
+        dns,
+
+        durationMs
+    };
+}
+
+export default {
+    async fetch(request) {
+        const origin =
+            request.headers.get("Origin") || "";
+
+        if (request.method === "OPTIONS") {
+            return new Response(null, {
+                status: 204,
+                headers: corsHeaders(origin)
+            });
+        }
+
+        const url = new URL(request.url);
+
+        if (url.pathname === "/health") {
+            return json({
+                ok: true,
+                service: "SiteGrade",
+                scannerVersion: SCANNER_VERSION,
+                time: new Date().toISOString()
+            }, 200, origin);
+        }
+
+        if (url.pathname !== "/scan") {
+            return json({
+                error: "Not found"
+            }, 404, origin);
+        }
+
+        if (request.method !== "POST") {
+            return json({
+                error: "POST required"
+            }, 405, origin);
+        }
+
+        if (
+            origin &&
+            !ALLOWED_ORIGINS.has(origin)
+        ) {
+            return json({
+                error: "Origin not allowed."
+            }, 403, origin);
+        }
+
+        try {
+            const body = await request.json();
+
+            if (
+                !body ||
+                typeof body.url !== "string" ||
+                !body.url.trim()
+            ) {
+                return json({
+                    error: "A website URL is required."
+                }, 400, origin);
+            }
+
+            const target = normalizeUrl(body.url.trim());
+
+            const result = await scanTarget(target);
+
+            return json(result, 200, origin);
+
+        } catch (error) {
+            return json({
+                ok: false,
+                scannerVersion: SCANNER_VERSION,
+                error:
+                    error instanceof Error
+                        ? error.message
+                        : "Scanner failed."
+            }, 400, origin);
+        }
+    }
+};
