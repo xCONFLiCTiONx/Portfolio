@@ -592,12 +592,12 @@
     let results = [];
     let queue = [];
     let seen = new Map();
+    
     let running = false;
     let stopRequested = false;
     let robotsRules = null;
     
     let homepageProfile = null;
-    let fallbackProfiles = new Map();
     
     
     /* ============================================================
@@ -620,6 +620,12 @@
     
     const xml = s =>
         esc(s).replace(/&#39;/g, "&apos;");
+    
+    function normalizeText(value) {
+        return String(value || "")
+            .replace(/\s+/g, " ")
+            .trim();
+    }
     
     function site() {
         return val("siteUrl").replace(/\/+$/, "");
@@ -644,15 +650,9 @@
         return new Promise(resolve => setTimeout(resolve, ms));
     }
     
-    function normalizeText(value) {
-        return String(value || "")
-            .replace(/\s+/g, " ")
-            .trim();
-    }
-    
     
     /* ============================================================
-       URL NORMALIZATION
+       URL HANDLING
        ============================================================ */
     
     function urlKey(raw, base) {
@@ -697,7 +697,9 @@
     
     function htmlUrl(u) {
         try {
-            return !assetExt.test(new URL(u).pathname);
+            return !assetExt.test(
+                new URL(u).pathname
+            );
         } catch {
             return false;
         }
@@ -752,7 +754,8 @@
         if ($("depth")) {
             $("depth").textContent =
                 results.reduce(
-                    (m, x) => Math.max(m, x.depth || 0),
+                    (max, x) =>
+                        Math.max(max, x.depth || 0),
                     0
                 );
         }
@@ -843,17 +846,20 @@
             pattern = pattern.slice(0, -1);
         }
     
-        let regex = pattern
-            .replace(/[.+?^${}()|[\]\\]/g, "\\$&")
-            .replace(/\*/g, ".*");
+        let regex =
+            pattern
+                .replace(/[.+?^${}()|[\]\\]/g, "\\$&")
+                .replace(/\*/g, ".*");
     
         if (end) {
             regex += "$";
         }
     
         try {
-            return new RegExp("^" + regex, "i")
-                .test(path);
+            return new RegExp(
+                "^" + regex,
+                "i"
+            ).test(path);
         } catch {
             return false;
         }
@@ -881,7 +887,10 @@
     
             for (const group of applicable) {
                 for (const rule of group.rules) {
-                    if (!robotsRuleMatch(path, rule.value)) {
+                    if (!robotsRuleMatch(
+                        path,
+                        rule.value
+                    )) {
                         continue;
                     }
     
@@ -911,23 +920,28 @@
         try {
             const origin = siteOrigin();
     
-            if (!origin) return;
+            if (!origin) {
+                return;
+            }
     
-            const response = await fetch(
-                origin + "/robots.txt",
-                {
-                    redirect: "follow",
-                    cache: "no-store",
-                    credentials: "omit"
-                }
-            );
+            const response =
+                await fetch(
+                    origin + "/robots.txt",
+                    {
+                        redirect: "follow",
+                        cache: "no-store",
+                        credentials: "omit"
+                    }
+                );
     
             if (!response.ok) {
                 return;
             }
     
             robotsRules =
-                parseRobots(await response.text());
+                parseRobots(
+                    await response.text()
+                );
         } catch {
             robotsRules = null;
         }
@@ -935,13 +949,15 @@
     
     
     /* ============================================================
-       SITEMAPS
+       SITEMAP
        ============================================================ */
     
     async function addSitemapSeeds() {
         const origin = siteOrigin();
     
-        if (!origin) return;
+        if (!origin) {
+            return;
+        }
     
         const candidates = [
             origin + "/sitemap.xml",
@@ -950,20 +966,22 @@
     
         for (const sitemapUrl of candidates) {
             try {
-                const response = await fetch(
-                    sitemapUrl,
-                    {
-                        redirect: "follow",
-                        cache: "no-store",
-                        credentials: "omit"
-                    }
-                );
+                const response =
+                    await fetch(
+                        sitemapUrl,
+                        {
+                            redirect: "follow",
+                            cache: "no-store",
+                            credentials: "omit"
+                        }
+                    );
     
                 if (!response.ok) {
                     continue;
                 }
     
-                const text = await response.text();
+                const text =
+                    await response.text();
     
                 const doc =
                     new DOMParser()
@@ -972,12 +990,20 @@
                             "application/xml"
                         );
     
-                if (doc.querySelector("parsererror")) {
+                if (
+                    doc.querySelector(
+                        "parsererror"
+                    )
+                ) {
                     continue;
                 }
     
                 const locations =
-                    [...doc.querySelectorAll("url > loc")];
+                    [
+                        ...doc.querySelectorAll(
+                            "url > loc"
+                        )
+                    ];
     
                 for (const loc of locations) {
                     const u =
@@ -1003,7 +1029,11 @@
                 }
     
                 const childSitemaps =
-                    [...doc.querySelectorAll("sitemap > loc")];
+                    [
+                        ...doc.querySelectorAll(
+                            "sitemap > loc"
+                        )
+                    ];
     
                 for (const loc of childSitemaps) {
                     const child =
@@ -1048,14 +1078,21 @@
                         }
     
                         const childLocations =
-                            [...childDoc.querySelectorAll(
-                                "url > loc"
-                            )];
+                            [
+                                ...childDoc.querySelectorAll(
+                                    "url > loc"
+                                )
+                            ];
     
-                        for (const childLoc of childLocations) {
+                        for (
+                            const childLoc
+                            of childLocations
+                        ) {
                             const u =
                                 urlKey(
-                                    childLoc.textContent.trim(),
+                                    childLoc
+                                        .textContent
+                                        .trim(),
                                     child
                                 );
     
@@ -1075,13 +1112,13 @@
                             }
                         }
                     } catch {
-                        // Ignore failed child sitemap.
+                        // Ignore child sitemap errors.
                     }
                 }
     
                 return;
             } catch {
-                // Try the next sitemap.
+                // Try next sitemap.
             }
         }
     }
@@ -1106,9 +1143,13 @@
             );
     
         const h1 =
-            [...doc.querySelectorAll("h1")]
+            [
+                ...doc.querySelectorAll("h1")
+            ]
                 .map(el =>
-                    normalizeText(el.textContent)
+                    normalizeText(
+                        el.textContent
+                    )
                 )
                 .filter(Boolean)
                 .slice(0, 5);
@@ -1118,20 +1159,25 @@
                 doc.body?.innerText || ""
             );
     
-        const bodySample =
-            body.slice(0, 6000);
-    
         const links = [];
     
-        for (const a of doc.querySelectorAll("a[href]")) {
+        for (
+            const a
+            of doc.querySelectorAll("a[href]")
+        ) {
             try {
                 const raw =
                     a.getAttribute("href");
     
-                if (!raw) continue;
+                if (!raw) {
+                    continue;
+                }
     
                 const resolved =
-                    new URL(raw, baseUrl);
+                    new URL(
+                        raw,
+                        baseUrl
+                    );
     
                 if (
                     !/^https?:$/i.test(
@@ -1147,30 +1193,24 @@
                     resolved.search = "";
                 }
     
-                if (
-                    resolved.hostname.toLowerCase() !==
-                    new URL(site()).hostname.toLowerCase()
-                ) {
+                if (!sameSite(resolved.href)) {
                     continue;
                 }
     
                 links.push(resolved.href);
             } catch {
-                // Ignore malformed href.
+                // Ignore malformed links.
             }
         }
     
         links.sort();
     
-        /*
-         * A compact profile used for soft-404 detection.
-         */
         return {
             title,
             description,
             h1,
             body,
-            bodySample,
+            bodySample: body.slice(0, 6000),
             links,
     
             titleKey:
@@ -1185,13 +1225,11 @@
             linksKey:
                 links.join("|"),
     
-            /*
-             * Counts are useful even when individual links
-             * contain dynamic differences.
-             */
-            linkCount: links.length,
+            linkCount:
+                links.length,
     
-            bodyLength: body.length
+            bodyLength:
+                body.length
         };
     }
     
@@ -1201,23 +1239,19 @@
        ============================================================ */
     
     function similarity(a, b) {
-        a = normalizeText(a).toLowerCase();
-        b = normalizeText(b).toLowerCase();
+        a =
+            normalizeText(a)
+                .toLowerCase();
+    
+        b =
+            normalizeText(b)
+                .toLowerCase();
     
         if (!a || !b) {
             return 0;
         }
     
         if (a === b) {
-            return 1;
-        }
-    
-        /*
-         * Very fast prefix comparison.
-         */
-        const max = Math.max(a.length, b.length);
-    
-        if (!max) {
             return 1;
         }
     
@@ -1229,15 +1263,13 @@
             );
     
         if (
+            sampleLength > 0 &&
             a.slice(0, sampleLength) ===
             b.slice(0, sampleLength)
         ) {
             return 0.98;
         }
     
-        /*
-         * Compare token sets.
-         */
         const setA =
             new Set(
                 a.split(/\s+/)
@@ -1277,12 +1309,11 @@
     
     
     /* ============================================================
-       HOMEPAGE PROFILE
+       LOAD REAL HOMEPAGE
        ============================================================ */
     
     async function loadHomepageProfile(startUrl) {
         homepageProfile = null;
-        fallbackProfiles.clear();
     
         try {
             const response =
@@ -1329,7 +1360,7 @@
     
     
     /* ============================================================
-       HOMEPAGE FALLBACK DETECTION
+       HOMEPAGE DETECTION
        ============================================================ */
     
     function isRootUrl(url) {
@@ -1358,17 +1389,9 @@
         }
     }
     
-    
-    /*
-     * Detect a server that returns the homepage for arbitrary
-     * paths.
-     *
-     * This intentionally does NOT depend on the canonical tag.
-     */
     function isHomepageFallback(
         requestedUrl,
-        doc,
-        response
+        doc
     ) {
         if (!homepageProfile) {
             return false;
@@ -1384,9 +1407,6 @@
                 requestedUrl
             );
     
-        /*
-         * Strong exact indicators.
-         */
         const sameTitle =
             !!profile.titleKey &&
             profile.titleKey ===
@@ -1406,52 +1426,46 @@
             profile.linksKey ===
             homepageProfile.linksKey;
     
-        /*
-         * Body similarity.
-         */
         const bodySimilarity =
             similarity(
                 profile.bodySample,
                 homepageProfile.bodySample
             );
     
-        /*
-         * Link-count similarity.
-         */
-        const homepageLinks =
-            homepageProfile.linkCount;
-    
         const linkDifference =
             Math.abs(
                 profile.linkCount -
-                homepageLinks
+                homepageProfile.linkCount
             );
     
         const similarLinkCount =
             linkDifference <=
-            Math.max(2, Math.ceil(homepageLinks * 0.15));
-    
-        /*
-         * Body length similarity.
-         */
-        const homepageLength =
-            homepageProfile.bodyLength;
+            Math.max(
+                2,
+                Math.ceil(
+                    homepageProfile.linkCount *
+                    0.15
+                )
+            );
     
         const lengthDifference =
             Math.abs(
                 profile.bodyLength -
-                homepageLength
+                homepageProfile.bodyLength
             );
     
         const similarBodyLength =
             lengthDifference <=
             Math.max(
                 500,
-                Math.ceil(homepageLength * 0.20)
+                Math.ceil(
+                    homepageProfile.bodyLength *
+                    0.20
+                )
             );
     
         /*
-         * Exact profile match is definitive.
+         * Exact match.
          */
         if (
             sameTitle &&
@@ -1463,7 +1477,7 @@
         }
     
         /*
-         * Same title + same description + highly similar body.
+         * Very strong content match.
          */
         if (
             sameTitle &&
@@ -1475,7 +1489,7 @@
         }
     
         /*
-         * Same title + same H1 + highly similar body.
+         * Same title/H1 and essentially same page.
          */
         if (
             sameTitle &&
@@ -1487,7 +1501,7 @@
         }
     
         /*
-         * Same title + same link structure + similar body.
+         * Same title/link structure and same content.
          */
         if (
             sameTitle &&
@@ -1498,7 +1512,7 @@
         }
     
         /*
-         * Strong body match with matching link count.
+         * Extremely similar homepage response.
          */
         if (
             bodySimilarity >= 0.97 &&
@@ -1508,9 +1522,6 @@
             return true;
         }
     
-        /*
-         * Cache the profile for this exact response signature.
-         */
         return false;
     }
     
@@ -1537,22 +1548,31 @@
                 url: item.url,
                 depth: item.depth,
                 status: 0,
-                error: e.message || String(e),
+                error:
+                    e.message ||
+                    String(e),
+    
                 title: "",
                 description: "",
                 canonical: "",
+    
                 indexable: false,
                 noindex: false,
+    
                 h1: 0,
                 h1Text: "",
+    
                 links: 0,
                 internal: 0,
                 external: 0,
+    
                 missingAlt: 0,
                 images: 0,
+    
                 viewport: false,
                 lang: false,
                 jsonLd: 0,
+    
                 soft404: false
             });
     
@@ -1571,21 +1591,28 @@
                     depth: item.depth,
                     status: response.status,
                     error: "Non-HTML resource",
+    
                     title: "",
                     description: "",
                     canonical: "",
+    
                     indexable: false,
                     noindex: false,
+    
                     h1: 0,
                     h1Text: "",
+    
                     links: 0,
                     internal: 0,
                     external: 0,
+    
                     missingAlt: 0,
                     images: 0,
+    
                     viewport: false,
                     lang: false,
                     jsonLd: 0,
+    
                     soft404: false
                 });
             }
@@ -1596,28 +1623,38 @@
         let html;
     
         try {
-            html = await response.text();
+            html =
+                await response.text();
         } catch (e) {
             results.push({
                 url: item.url,
                 depth: item.depth,
                 status: response.status,
-                error: e.message || String(e),
+                error:
+                    e.message ||
+                    String(e),
+    
                 title: "",
                 description: "",
                 canonical: "",
+    
                 indexable: false,
                 noindex: false,
+    
                 h1: 0,
                 h1Text: "",
+    
                 links: 0,
                 internal: 0,
                 external: 0,
+    
                 missingAlt: 0,
                 images: 0,
+    
                 viewport: false,
                 lang: false,
                 jsonLd: 0,
+    
                 soft404: false
             });
     
@@ -1633,14 +1670,13 @@
     
     
         /* ========================================================
-           SOFT 404 CHECK
+           SOFT 404
            ======================================================== */
     
         if (
             isHomepageFallback(
                 item.url,
-                doc,
-                response
+                doc
             )
         ) {
             const profile =
@@ -1657,7 +1693,8 @@
                 error:
                     "URL returned the homepage (soft 404 / homepage fallback)",
     
-                title: profile.title,
+                title:
+                    profile.title,
     
                 description:
                     profile.description,
@@ -1667,19 +1704,14 @@
                 indexable: false,
                 noindex: false,
     
-                h1: profile.h1.length,
+                h1:
+                    profile.h1.length,
     
                 h1Text:
                     profile.h1
                         .slice(0, 2)
                         .join(" | "),
     
-                /*
-                 * These are intentionally zero.
-                 *
-                 * The links belong to the homepage response,
-                 * NOT the requested URL.
-                 */
                 links: 0,
                 internal: 0,
                 external: 0,
@@ -1695,14 +1727,16 @@
             });
     
             /*
-             * ABSOLUTELY DO NOT DISCOVER LINKS HERE.
+             * THIS IS THE CRITICAL PART.
+             *
+             * Do not process the homepage's links.
              */
             return;
         }
     
     
         /* ========================================================
-           NORMAL PAGE ANALYSIS
+           NORMAL PAGE
            ======================================================== */
     
         const title =
@@ -1747,17 +1781,27 @@
             );
     
         const noindex =
-            /\bnoindex\b/i.test(robots);
+            /\bnoindex\b/i.test(
+                robots
+            );
     
         const h1 =
-            [...doc.querySelectorAll("h1")]
+            [
+                ...doc.querySelectorAll("h1")
+            ]
                 .map(x =>
-                    normalizeText(x.textContent)
+                    normalizeText(
+                        x.textContent
+                    )
                 )
                 .filter(Boolean);
     
         const links =
-            [...doc.querySelectorAll("a[href]")];
+            [
+                ...doc.querySelectorAll(
+                    "a[href]"
+                )
+            ];
     
         let internal = 0;
         let external = 0;
@@ -1808,15 +1852,17 @@
     
     
         /* ========================================================
-           IMAGE DATA
+           IMAGES
            ======================================================== */
     
         const imgs =
-            [...doc.images];
+            [
+                ...doc.images
+            ];
     
     
         /* ========================================================
-           SAVE RESULT
+           RESULT
            ======================================================== */
     
         results.push({
@@ -1835,24 +1881,30 @@
                 response.ok &&
                 !noindex,
     
-            h1: h1.length,
+            h1:
+                h1.length,
     
             h1Text:
                 h1
                     .slice(0, 2)
                     .join(" | "),
     
-            links: links.length,
+            links:
+                links.length,
+    
             internal,
             external,
     
             missingAlt:
                 imgs.filter(
                     img =>
-                        !img.hasAttribute("alt")
+                        !img.hasAttribute(
+                            "alt"
+                        )
                 ).length,
     
-            images: imgs.length,
+            images:
+                imgs.length,
     
             viewport:
                 !!doc.querySelector(
@@ -1874,7 +1926,121 @@
     
     
     /* ============================================================
-       CRAWL SITE
+       RENDER RESULTS
+       ============================================================ */
+    
+    function renderResults() {
+        /*
+         * Your original page may have a renderer already.
+         * This function deliberately renders the crawler table
+         * itself so there is no ReferenceError.
+         */
+    
+        const tbody =
+            $("resultsBody") ||
+            $("crawlResultsBody") ||
+            $("resultsTableBody");
+    
+        if (!tbody) {
+            return;
+        }
+    
+        if (!results.length) {
+            tbody.innerHTML = "";
+            return;
+        }
+    
+        tbody.innerHTML =
+            results.map(result => {
+                const soft404 =
+                    result.soft404 === true;
+    
+                const errorText =
+                    result.error || "";
+    
+                const http =
+                    result.status
+                        ? String(result.status)
+                        : "—";
+    
+                const depth =
+                    result.depth ?? "—";
+    
+                const title =
+                    result.title || "—";
+    
+                const description =
+                    result.description || "Missing";
+    
+                const canonical =
+                    result.canonical
+                        ? result.canonical
+                        : "Missing";
+    
+                const index =
+                    soft404
+                        ? "soft 404"
+                        : result.indexable
+                            ? "indexable"
+                            : "noindex";
+    
+                const h1 =
+                    result.h1Text ||
+                    (
+                        result.h1
+                            ? String(result.h1)
+                            : "Missing"
+                    );
+    
+                const links =
+                    `${result.links || 0} (${result.internal || 0} internal)`;
+    
+                return `
+                    <tr class="${soft404 ? "soft-404" : ""}">
+                        <td>
+                            <a
+                                href="${esc(result.url)}"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >${esc(result.url)}</a>
+                            ${
+                                errorText
+                                    ? `<div class="crawl-error">${esc(errorText)}</div>`
+                                    : ""
+                            }
+                        </td>
+    
+                        <td>${esc(http)}</td>
+    
+                        <td>${esc(depth)}</td>
+    
+                        <td>${esc(title)}</td>
+    
+                        <td>${esc(description)}</td>
+    
+                        <td>
+                            ${
+                                canonical !== "Missing"
+                                    ? `<a href="${esc(canonical)}" target="_blank" rel="noopener noreferrer">${esc(canonical)}</a>`
+                                    : "Missing"
+                            }
+                        </td>
+    
+                        <td class="${soft404 ? "warning" : ""}">
+                            ${esc(index)}
+                        </td>
+    
+                        <td>${esc(h1)}</td>
+    
+                        <td>${esc(links)}</td>
+                    </tr>
+                `;
+            }).join("");
+    }
+    
+    
+    /* ============================================================
+       CRAWL
        ============================================================ */
     
     async function crawlSite() {
@@ -1916,11 +2082,10 @@
     
         robotsRules = null;
         homepageProfile = null;
-        fallbackProfiles.clear();
     
     
         /* ========================================================
-           ROOT
+           START URL
            ======================================================== */
     
         const start =
@@ -1951,7 +2116,9 @@
             rootItem
         );
     
-        queue.push(rootItem);
+        queue.push(
+            rootItem
+        );
     
         renderResults();
         stats();
@@ -1970,7 +2137,7 @@
     
     
         /* ========================================================
-           HOMEPAGE PROFILE
+           HOMEPAGE
            ======================================================== */
     
         await loadHomepageProfile(
@@ -2021,7 +2188,8 @@
                     url: item.url,
                     depth: item.depth,
                     status: 0,
-                    error: "Blocked by robots.txt",
+                    error:
+                        "Blocked by robots.txt",
     
                     title: "",
                     description: "",
@@ -2079,7 +2247,7 @@
     
     
         /* ========================================================
-           FINISHED
+           DONE
            ======================================================== */
     
         running = false;
@@ -2116,25 +2284,29 @@
            ======================================================== */
     
         if (
-            typeof useCrawledPages === "function"
+            typeof useCrawledPages ===
+            "function"
         ) {
             useCrawledPages();
         }
     
         if (
-            typeof renderPages === "function"
+            typeof renderPages ===
+            "function"
         ) {
             renderPages();
         }
     
         if (
-            typeof updateAll === "function"
+            typeof updateAll ===
+            "function"
         ) {
             updateAll();
         }
     
         if (
-            typeof validate === "function"
+            typeof validate ===
+            "function"
         ) {
             validate();
         }
@@ -2160,17 +2332,7 @@
     
     
     /* ============================================================
-       KEEP YOUR EXISTING renderResults()
-       ============================================================
-    
-       This function is intentionally NOT recreated here.
-       Your existing renderer should use the global `results`
-       array populated above.
-       ============================================================ */
-    
-    
-    /* ============================================================
-       BUTTON BINDING
+       BUTTON EVENTS
        ============================================================ */
     
     function bindClick(id, handler) {
@@ -2180,11 +2342,9 @@
             return;
         }
     
-        /*
-         * Prevent duplicate handlers if the original page already
-         * bound one.
-         */
-        if (el.dataset.crawlerBound === "1") {
+        if (
+            el.dataset.crawlerBound === "1"
+        ) {
             return;
         }
     
@@ -2196,10 +2356,6 @@
         );
     }
     
-    
-    /*
-     * Bind only if your page uses these IDs.
-     */
     bindClick(
         "crawlBtn",
         crawlSite
@@ -2222,7 +2378,7 @@
     
     
     /* ============================================================
-       INITIAL STATS
+       INITIALIZE
        ============================================================ */
     
     stats();
