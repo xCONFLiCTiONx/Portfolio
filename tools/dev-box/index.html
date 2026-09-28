@@ -1,33 +1,57 @@
 <!DOCTYPE html>
 <html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dev Swiss Army Knife | xCONFLiCTiONx</title>
+    <meta
+      name="description"
+      id="meta-description-js"
+      content="All-in-one developer utility featuring JWT Inspector, Regex Tester, Hash Generator, and Text Diff tool. 100% browser-based."
+    />
+    <meta name="portfolio-tool-id" content="dev-box" />
+    <link rel="canonical" href="https://xconflictionx.cc/tools/dev-box.html" />
+    <meta name="theme-color" content="#0b0d10" />
+    <link
+      rel="icon"
+      id="favicon-js"
+      href="../../favicon.ico"
+      type="image/x-icon"
+    />
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dev Swiss Army Knife | xCONFLiCTiONx</title>
-  <meta name="description" id="meta-description-js" content="All-in-one developer utility featuring JWT Inspector, Regex Tester, Hash Generator, and Text Diff tool. 100% browser-based.">
-  <meta name="portfolio-tool-id" content="dev-box">
-  <link rel="canonical" href="https://xconflictionx.cc/tools/dev-box.html" />
-  <meta name="theme-color" content="#0b0d10">
-<link rel="icon" id="favicon-js" href="../../favicon.ico" type="image/x-icon">
+    <!-- Open Graph / Social Metadata -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Dev Swiss Army Knife | xCONFLiCTiONx" />
+    <meta
+      property="og:description"
+      content="All-in-one developer utility featuring JWT Inspector, Regex Tester, Hash Generator, and Text Diff tool. 100% browser-based."
+    />
+    <meta
+      property="og:url"
+      content="https://xconflictionx.cc/tools/dev-box.html"
+    />
+    <meta property="og:site_name" content="xCONFLiCTiONx" />
+    <meta
+      property="og:image"
+      content="https://xconflictionx.cc/android-chrome-256x256.png"
+    />
 
-  <!-- Open Graph / Social Metadata -->
-  <meta property="og:type" content="website">
-  <meta property="og:title" content="Dev Swiss Army Knife | xCONFLiCTiONx">
-  <meta property="og:description" content="All-in-one developer utility featuring JWT Inspector, Regex Tester, Hash Generator, and Text Diff tool. 100% browser-based.">
-  <meta property="og:url" content="https://xconflictionx.cc/tools/dev-box.html">
-  <meta property="og:site_name" content="xCONFLiCTiONx">
-  <meta property="og:image" content="https://xconflictionx.cc/android-chrome-256x256.png">
+    <!-- X / Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Dev Swiss Army Knife | xCONFLiCTiONx" />
+    <meta
+      name="twitter:description"
+      content="All-in-one developer utility featuring JWT Inspector, Regex Tester, Hash Generator, and Text Diff tool. 100% browser-based."
+    />
+    <meta
+      name="twitter:image"
+      content="https://xconflictionx.cc/android-chrome-256x256.png"
+    />
 
-  <!-- X / Twitter -->
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Dev Swiss Army Knife | xCONFLiCTiONx">
-  <meta name="twitter:description" content="All-in-one developer utility featuring JWT Inspector, Regex Tester, Hash Generator, and Text Diff tool. 100% browser-based.">
-  <meta name="twitter:image" content="https://xconflictionx.cc/android-chrome-256x256.png">
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
         darkMode: "class",
         theme: {
           extend: {
@@ -51,123 +75,138 @@
           },
         },
       };
-  </script>
-  <link rel="stylesheet" href="../../css/main.css" />
-  <style>
-    body {
-      font-size: 1.4rem;
-    }
+    </script>
+    <link rel="stylesheet" href="../../css/main.css" />
+    <style>
+      body {
+        font-size: 1.4rem;
+      }
 
-    .code-font {
-      font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
-    }
+      .code-font {
+        font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas,
+          Liberation Mono, monospace;
+      }
 
-    /* Fix Tailwind text size classes scaling under 10px HTML root font-size */
-    main .text-\[10px\] {
-      font-size: 1.0rem !important;
-    }
+      main .text-\[10px\] {
+        font-size: 1rem !important;
+      }
 
-    main .text-xs {
-      font-size: 1.15rem !important;
-    }
+      main .text-xs {
+        font-size: 1.15rem !important;
+      }
 
-    main .text-sm {
-      font-size: 1.2rem !important;
-    }
+      main .text-sm {
+        font-size: 1.2rem !important;
+      }
 
-    main .text-base {
-      font-size: 1.3rem !important;
-    }
+      main .text-base {
+        font-size: 1.3rem !important;
+      }
 
-    main .text-lg {
-      font-size: 1.4rem !important;
-    }
+      main .text-lg {
+        font-size: 1.4rem !important;
+      }
 
-    main .text-xl {
-      font-size: 1.6rem !important;
-    }
+      main .text-xl {
+        font-size: 1.6rem !important;
+      }
 
-    main .text-2xl {
-      font-size: 1.8rem !important;
-    }
+      main .text-2xl {
+        font-size: 1.8rem !important;
+      }
 
-    main input,
-    main pre,
-    main div[id^="recon-"] {
-      word-break: break-all;
-    }
+      main input,
+      main pre,
+      main div[id^="recon-"] {
+        word-break: break-all;
+      }
 
-    ::-webkit-scrollbar {
-      width: 8px;
-      height: 8px;
-    }
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
 
-    ::-webkit-scrollbar-track {
-      background: #1e1e1e;
-    }
+      ::-webkit-scrollbar-track {
+        background: #1e1e1e;
+      }
 
-    ::-webkit-scrollbar-thumb {
-      background: #424242;
-      border-radius: 4px;
-    }
+      ::-webkit-scrollbar-thumb {
+        background: #424242;
+        border-radius: 4px;
+      }
 
-    ::-webkit-scrollbar-thumb:hover {
-      background: #4f4f4f;
-    }
-  </style>
-</head>
+      ::-webkit-scrollbar-thumb:hover {
+        background: #4f4f4f;
+      }
+    </style>
+  </head>
 
-<body
-  class="bg-[#0d1117] text-vscode-text min-h-screen flex flex-col antialiased selection:bg-vscode-accent selection:text-white">
-  <header class="site-header">
-    <nav class="nav-content">
-      <div class="nav-brand">
-        <a href="../../index.html">
-          <span id="header-avatar" class="nav-logo"></span>
-          <span class="user-name-js">Loading...</span>
-        </a>
-      </div>
-      <button class="menu-toggle" id="menuToggle">
+  <body
+    class="bg-[#0d1117] text-vscode-text min-h-screen flex flex-col antialiased selection:bg-vscode-accent selection:text-white"
+  >
+    <header class="site-header">
+      <nav class="nav-content">
+        <div class="nav-brand">
+          <a href="../../index.html">
+            <span id="header-avatar" class="nav-logo"></span>
+            <span class="user-name-js">Loading...</span>
+          </a>
+        </div>
+        <button
+          class="menu-toggle"
+          id="menuToggle"
+          aria-label="Toggle Navigation Menu"
+        >
           <i class="im im-menu"></i>
         </button>
-      <ul class="nav-links" id="navLinks">
-        <li>
-          <a href="../../index.html"><i class="im im-home"></i> Overview</a>
-        </li>
-        <li>
-          <a href="../../about.html"><i class="im im-user-male"></i> About</a>
-        </li>
-        <li>
-          <a href="index.html" class="active"><i class="im im-tools"></i> Tools</a>
-        </li>
-        <li>
-          <a href="../../privacy.html"><i class="im im-shield"></i> Privacy</a>
-        </li>
-        <li>
-          <a href="../../contact.html"><i class="im im-paperplane"></i> Contact</a>
-        </li>
-      </ul>
-    </nav>
-  </header>
+        <ul class="nav-links" id="navLinks">
+          <li>
+            <a href="../../index.html"><i class="im im-home"></i> Overview</a>
+          </li>
+          <li>
+            <a href="../../about.html"><i class="im im-user-male"></i> About</a>
+          </li>
+          <li>
+            <a href="index.html" class="active"
+              ><i class="im im-tools"></i> Tools</a
+            >
+          </li>
+          <li>
+            <a href="../../privacy.html"
+              ><i class="im im-shield"></i> Privacy</a
+            >
+          </li>
+          <li>
+            <a href="../../contact.html"
+              ><i class="im im-paperplane"></i> Contact</a
+            >
+          </li>
+        </ul>
+      </nav>
+    </header>
 
-  <main class="w-full px-6 md:px-12">
-
-    <!-- Intro & Tab Selector -->
-    <div
-      class="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6 pb-4 border-b border-vscode-border gap-4">
-      <div>
-        <h1 class="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-          <span class="text-vscode-accent">&gt;_</span> Developer Swiss Army
-          Knife
-        </h1>
-        <p class="text-sm text-vscode-muted mt-1">
-          Lightning-fast debugging, reconnaissance, and data conversion tools
-          running 100% locally in your browser.
-        </p>
-      </div>
-      <!-- Tab Buttons -->
-      <div class="flex flex-wrap items-center bg-vscode-sidebar p-1 rounded-lg border border-vscode-border gap-1">
-        <button
+    <main class="w-full px-6 md:px-12">
+      <!-- Intro & Tab Selector -->
+      <div
+        class="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6 pb-4 border-b border-vscode-border gap-4"
+      >
+        <div>
+          <h1
+            class="text-2xl font-bold tracking-tight text-white flex items-center gap-2"
+          >
+            <span class="text-vscode-accent">&gt;_</span> Developer Swiss Army
+            Knife
+          </h1>
+          <p class="text-sm text-vscode-muted mt-1">
+            Lightning-fast debugging, reconnaissance, and data conversion tools
+            running 100% locally in your browser.
+          </p>
+        </div>
+        <!-- Tab Buttons -->
+        <div
+          class="flex flex-wrap items-center bg-vscode-sidebar p-1 rounded-lg border border-vscode-border gap-1"
+        >
+          <button
             type="button"
             data-tab="jwt"
             class="tab-btn px-2.5 py-1.5 text-xs font-medium rounded transition-all flex items-center gap-1.5 bg-vscode-accent text-white shadow"
@@ -187,7 +226,7 @@
             </svg>
             <span>JWT</span>
           </button>
-        <button
+          <button
             type="button"
             data-tab="regex"
             class="tab-btn px-2.5 py-1.5 text-xs font-medium rounded transition-all flex items-center gap-1.5 text-vscode-muted hover:text-white hover:bg-vscode-hover"
@@ -207,7 +246,7 @@
             </svg>
             <span>Regex</span>
           </button>
-        <button
+          <button
             type="button"
             data-tab="hash"
             class="tab-btn px-2.5 py-1.5 text-xs font-medium rounded transition-all flex items-center gap-1.5 text-vscode-muted hover:text-white hover:bg-vscode-hover"
@@ -227,7 +266,7 @@
             </svg>
             <span>Hash</span>
           </button>
-        <button
+          <button
             type="button"
             data-tab="diff"
             class="tab-btn px-2.5 py-1.5 text-xs font-medium rounded transition-all flex items-center gap-1.5 text-vscode-muted hover:text-white hover:bg-vscode-hover"
@@ -247,7 +286,7 @@
             </svg>
             <span>Diff</span>
           </button>
-        <button
+          <button
             type="button"
             data-tab="recon"
             class="tab-btn px-2.5 py-1.5 text-xs font-medium rounded transition-all flex items-center gap-1.5 text-vscode-muted hover:text-white hover:bg-vscode-hover"
@@ -267,357 +306,441 @@
             </svg>
             <span>Security</span>
           </button>
+        </div>
       </div>
-    </div>
 
-    <!-- TOOL 1: JWT Decoder & Encoder -->
-    <div id="tool-jwt" class="tool-view flex-1 flex flex-col gap-6">
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1">
-        <div class="flex flex-col bg-vscode-sidebar border border-vscode-border rounded-lg overflow-hidden shadow-lg">
-          <div class="bg-vscode-hover px-4 py-3 border-b border-vscode-border flex justify-between items-center">
-            <span
-                class="text-xs font-semibold uppercase tracking-wider text-vscode-blue"
-                >Encoded JWT Token (Live Output / Input)</span>
-            <div class="flex items-center gap-3">
-              <button
+      <!-- TOOL 1: JWT Decoder & Encoder -->
+      <div id="tool-jwt" class="tool-view flex-1 flex flex-col gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1">
+          <div
+            class="flex flex-col bg-vscode-sidebar border border-vscode-border rounded-lg overflow-hidden shadow-lg"
+          >
+            <div
+              class="bg-vscode-hover px-4 py-3 border-b border-vscode-border flex justify-between items-center"
+            >
+              <label
+                for="jwt-input"
+                class="text-xs font-semibold uppercase tracking-wider text-vscode-blue cursor-pointer"
+              >
+                Encoded JWT Token (Live Output / Input)
+              </label>
+              <div class="flex items-center gap-3">
+                <button
                   type="button"
                   id="jwt-load-sample"
                   class="text-xs text-vscode-accent hover:underline"
                 >
                   Load Sample
                 </button>
-              <button
+                <button
                   type="button"
                   id="jwt-clear"
                   class="text-xs text-vscode-muted hover:text-white"
                 >
                   Clear
                 </button>
+              </div>
             </div>
-          </div>
-          <div class="p-4 flex-1 flex flex-col">
-            <textarea
+            <div class="p-4 flex-1 flex flex-col">
+              <textarea
                 id="jwt-input"
                 placeholder="Paste your JWT here or edit payload/header to generate..."
+                aria-label="Encoded JWT Token Input"
                 class="flex-1 w-full bg-vscode-input text-vscode-text code-font text-xs p-3 rounded border border-vscode-border focus:outline-none focus:border-vscode-accent resize-none min-h-[250px]"
               ></textarea>
-            <div id="jwt-status" class="mt-3 text-xs flex items-center gap-2 text-vscode-muted">
-              <span class="w-2 h-2 rounded-full bg-vscode-muted"></span>
-              <span>Waiting for token input...</span>
+              <div
+                id="jwt-status"
+                class="mt-3 text-xs flex items-center gap-2 text-vscode-muted"
+              >
+                <span class="w-2 h-2 rounded-full bg-vscode-muted"></span>
+                <span>Waiting for token input...</span>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div class="flex flex-col bg-vscode-sidebar border border-vscode-border rounded-lg overflow-hidden shadow-lg">
-          <div class="bg-vscode-hover px-4 py-3 border-b border-vscode-border flex justify-between items-center">
-            <span
+          <div
+            class="flex flex-col bg-vscode-sidebar border border-vscode-border rounded-lg overflow-hidden shadow-lg"
+          >
+            <div
+              class="bg-vscode-hover px-4 py-3 border-b border-vscode-border flex justify-between items-center"
+            >
+              <span
                 class="text-xs font-semibold uppercase tracking-wider text-vscode-green"
-                >Decoded Payload & Header (Fully Editable)</span>
-            <button
+              >
+                Decoded Payload & Header (Fully Editable)
+              </span>
+              <button
                 type="button"
                 id="jwt-copy"
                 class="text-xs text-vscode-accent hover:underline flex items-center gap-1"
               >
                 Copy Token
               </button>
-          </div>
-          <div class="p-4 flex-1 flex flex-col gap-4">
-            <div class="flex flex-col">
-              <label
+            </div>
+            <div class="p-4 flex-1 flex flex-col gap-4">
+              <div class="flex flex-col">
+                <label
+                  for="jwt-header"
                   class="text-[10px] uppercase font-bold text-vscode-muted tracking-wider block mb-1"
-                  >Header (JSON)</label>
-              <textarea
+                >
+                  Header (JSON)
+                </label>
+                <textarea
                   id="jwt-header"
                   spellcheck="false"
                   class="w-full bg-vscode-input p-2.5 rounded border border-vscode-border text-vscode-orange code-font text-xs resize-none h-24 focus:outline-none focus:border-vscode-accent"
                 >
-{ }</textarea>
-            </div>
-            <div class="flex-1 flex flex-col">
-              <label
+{ }</textarea
+                >
+              </div>
+              <div class="flex-1 flex flex-col">
+                <label
+                  for="jwt-output-json"
                   class="text-[10px] uppercase font-bold text-vscode-muted tracking-wider block mb-1"
-                  >Payload (JSON)</label>
-              <textarea
+                >
+                  Payload (JSON)
+                </label>
+                <textarea
                   id="jwt-output-json"
                   spellcheck="false"
                   class="flex-1 w-full bg-vscode-input p-2.5 rounded border border-vscode-border text-vscode-green code-font text-xs resize-none min-h-[160px] focus:outline-none focus:border-vscode-accent"
                 >
-{ }</textarea>
+{ }</textarea
+                >
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- TOOL 2: Regex Tester -->
-    <div id="tool-regex" class="tool-view hidden flex-1 flex flex-col gap-6">
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div class="bg-vscode-sidebar border border-vscode-border rounded-lg p-4 flex flex-col gap-4 shadow-lg">
-          <h2 class="text-xs font-semibold uppercase tracking-wider text-vscode-blue">
-            Regex Configuration
-          </h2>
-          <div>
-            <label class="text-xs text-vscode-muted block mb-1"
-                >Regular Expression</label>
-            <div
-              class="flex items-center bg-vscode-input border border-vscode-border rounded overflow-hidden focus-within:border-vscode-accent">
-              <span class="px-2 text-vscode-muted code-font">/</span>
-              <input
+      <!-- TOOL 2: Regex Tester -->
+      <div id="tool-regex" class="tool-view hidden flex-1 flex flex-col gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div
+            class="bg-vscode-sidebar border border-vscode-border rounded-lg p-4 flex flex-col gap-4 shadow-lg"
+          >
+            <h2
+              class="text-xs font-semibold uppercase tracking-wider text-vscode-blue"
+            >
+              Regex Configuration
+            </h2>
+            <div>
+              <label
+                for="regex-pattern"
+                class="text-xs text-vscode-muted block mb-1"
+                >Regular Expression Pattern</label
+              >
+              <div
+                class="flex items-center bg-vscode-input border border-vscode-border rounded overflow-hidden focus-within:border-vscode-accent"
+              >
+                <span class="px-2 text-vscode-muted code-font">/</span>
+                <input
                   type="text"
                   id="regex-pattern"
                   value="([a-zA-Z0-9_\.-]+)@([\w\.-]+)\.([a-z\.]{2,6})"
                   class="w-full bg-transparent text-vscode-text code-font text-xs py-2 px-1 focus:outline-none"
                 />
-              <span class="px-2 text-vscode-muted code-font">/</span>
-              <input
+                <span class="px-2 text-vscode-muted code-font">/</span>
+                <input
                   type="text"
                   id="regex-flags"
                   value="gm"
+                  aria-label="Regex Flags"
                   class="w-12 bg-transparent text-vscode-text code-font text-xs py-2 text-center focus:outline-none"
                 />
+              </div>
             </div>
-          </div>
-          <div>
-            <label class="text-xs text-vscode-muted block mb-1"
-                >Replacement String</label>
-            <input
+            <div>
+              <label
+                for="regex-replacement"
+                class="text-xs text-vscode-muted block mb-1"
+                >Replacement String</label
+              >
+              <input
                 type="text"
                 id="regex-replacement"
                 value="[REDACTED]"
                 class="w-full bg-vscode-input text-vscode-text code-font text-xs p-2 rounded border border-vscode-border focus:outline-none focus:border-vscode-accent"
               />
-          </div>
-          <div class="flex flex-col gap-2 pt-2 border-t border-vscode-border">
-            <span class="text-xs text-vscode-muted">Load Preset:</span>
-            <div class="flex flex-wrap gap-1.5">
-              <button
+            </div>
+            <div class="flex flex-col gap-2 pt-2 border-t border-vscode-border">
+              <span class="text-xs text-vscode-muted">Load Preset:</span>
+              <div class="flex flex-wrap gap-1.5">
+                <button
                   type="button"
                   class="regex-preset text-[11px] bg-vscode-input hover:bg-vscode-hover px-2.5 py-1 rounded border border-vscode-border text-vscode-text"
                   data-preset="email"
                 >
                   Email
                 </button>
-              <button
+                <button
                   type="button"
                   class="regex-preset text-[11px] bg-vscode-input hover:bg-vscode-hover px-2.5 py-1 rounded border border-vscode-border text-vscode-text"
                   data-preset="url"
                 >
                   URL
                 </button>
-              <button
+                <button
                   type="button"
                   class="regex-preset text-[11px] bg-vscode-input hover:bg-vscode-hover px-2.5 py-1 rounded border border-vscode-border text-vscode-text"
                   data-preset="ipv4"
                 >
                   IPv4
                 </button>
-              <button
+                <button
                   type="button"
                   class="regex-preset text-[11px] bg-vscode-input hover:bg-vscode-hover px-2.5 py-1 rounded border border-vscode-border text-vscode-text"
                   data-preset="uuid"
                 >
                   UUID
                 </button>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div class="bg-vscode-sidebar border border-vscode-border rounded-lg flex flex-col overflow-hidden shadow-lg">
-          <div class="bg-vscode-hover px-4 py-3 border-b border-vscode-border flex justify-between items-center">
-            <span
-                class="text-xs font-semibold uppercase tracking-wider text-vscode-orange"
-                >Test String</span>
-            <button
+          <div
+            class="bg-vscode-sidebar border border-vscode-border rounded-lg flex flex-col overflow-hidden shadow-lg"
+          >
+            <div
+              class="bg-vscode-hover px-4 py-3 border-b border-vscode-border flex justify-between items-center"
+            >
+              <label
+                for="regex-input"
+                class="text-xs font-semibold uppercase tracking-wider text-vscode-orange cursor-pointer"
+              >
+                Test String
+              </label>
+              <button
                 type="button"
                 id="regex-clear"
                 class="text-xs text-vscode-muted hover:text-white"
               >
                 Clear
               </button>
-          </div>
-          <div class="p-4 flex-1 flex flex-col">
-            <textarea
+            </div>
+            <div class="p-4 flex-1 flex flex-col">
+              <textarea
                 id="regex-input"
                 class="flex-1 w-full bg-vscode-input text-vscode-text code-font text-xs p-3 rounded border border-vscode-border focus:outline-none focus:border-vscode-accent resize-none min-h-[220px]"
               >
-Contact us at support@xconflictionx.cc or https://xconflictionx.cc/contact/. Visit https://xconflictionx.cc/tools/ or call 192.168.1.1 for assistance. UUID: 123e4567-e89b-12d3-a456-426614174000.</textarea>
+Contact us at support@xconflictionx.cc or https://xconflictionx.cc/contact/. Visit https://xconflictionx.cc/tools/ or call 192.168.1.1 for assistance. UUID: 123e4567-e89b-12d3-a456-426614174000.</textarea
+              >
+            </div>
           </div>
-        </div>
 
-        <div class="bg-vscode-sidebar border border-vscode-border rounded-lg flex flex-col overflow-hidden shadow-lg">
-          <div class="bg-vscode-hover px-4 py-3 border-b border-vscode-border flex justify-between items-center">
-            <span
+          <div
+            class="bg-vscode-sidebar border border-vscode-border rounded-lg flex flex-col overflow-hidden shadow-lg"
+          >
+            <div
+              class="bg-vscode-hover px-4 py-3 border-b border-vscode-border flex justify-between items-center"
+            >
+              <span
                 class="text-xs font-semibold uppercase tracking-wider text-vscode-green"
-                >Matches & Substitution</span>
-            <span
+                >Matches & Substitution</span
+              >
+              <span
                 id="regex-match-count"
                 class="text-xs text-vscode-muted font-mono"
-                >0 matches</span>
-          </div>
-          <div class="p-4 flex-1 flex flex-col gap-4">
-            <div>
-              <label
-                  class="text-[10px] uppercase font-bold text-vscode-muted tracking-wider block mb-1"
-                  >Replaced Output</label>
-              <pre id="regex-replaced-output"
-                class="bg-vscode-input p-2.5 rounded border border-vscode-border text-vscode-text code-font text-xs overflow-x-auto max-h-32">
--</pre>
+                >0 matches</span
+              >
             </div>
-            <div class="flex-1 flex flex-col">
-              <label
+            <div class="p-4 flex-1 flex flex-col gap-4">
+              <div>
+                <span
                   class="text-[10px] uppercase font-bold text-vscode-muted tracking-wider block mb-1"
-                  >Matched Groups</label>
-              <div id="regex-matches-list"
-                class="flex-1 bg-vscode-input p-2.5 rounded border border-vscode-border code-font text-xs overflow-y-auto max-h-40 flex flex-col gap-1 text-vscode-muted">
-                No matches found.
+                  >Replaced Output</span
+                >
+                <pre
+                  id="regex-replaced-output"
+                  class="bg-vscode-input p-2.5 rounded border border-vscode-border text-vscode-text code-font text-xs overflow-x-auto max-h-32"
+                >
+-</pre
+                >
+              </div>
+              <div class="flex-1 flex flex-col">
+                <span
+                  class="text-[10px] uppercase font-bold text-vscode-muted tracking-wider block mb-1"
+                  >Matched Groups</span
+                >
+                <div
+                  id="regex-matches-list"
+                  class="flex-1 bg-vscode-input p-2.5 rounded border border-vscode-border code-font text-xs overflow-y-auto max-h-40 flex flex-col gap-1 text-vscode-muted"
+                >
+                  No matches found.
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- TOOL 3: Hash Generator -->
-    <div id="tool-hash" class="tool-view hidden flex-1 flex flex-col gap-6">
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1">
-        <div
-          class="bg-vscode-sidebar border border-vscode-border rounded-lg flex flex-col overflow-hidden shadow-lg lg:col-span-1">
-          <div class="bg-vscode-hover px-4 py-3 border-b border-vscode-border flex justify-between items-center">
-            <span
-                class="text-xs font-semibold uppercase tracking-wider text-vscode-purple"
-                >Input Data</span>
-            <button
+      <!-- TOOL 3: Hash Generator -->
+      <div id="tool-hash" class="tool-view hidden flex-1 flex flex-col gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1">
+          <div
+            class="bg-vscode-sidebar border border-vscode-border rounded-lg flex flex-col overflow-hidden shadow-lg lg:col-span-1"
+          >
+            <div
+              class="bg-vscode-hover px-4 py-3 border-b border-vscode-border flex justify-between items-center"
+            >
+              <label
+                for="hash-input"
+                class="text-xs font-semibold uppercase tracking-wider text-vscode-purple cursor-pointer"
+              >
+                Input Data
+              </label>
+              <button
                 type="button"
                 id="hash-clear"
                 class="text-xs text-vscode-muted hover:text-white"
               >
                 Clear
               </button>
-          </div>
-          <div class="p-4 flex-1 flex flex-col">
-            <textarea
+            </div>
+            <div class="p-4 flex-1 flex flex-col">
+              <textarea
                 id="hash-input"
                 placeholder="Type or paste text..."
                 class="flex-1 w-full bg-vscode-input text-vscode-text code-font text-xs p-3 rounded border border-vscode-border focus:outline-none focus:border-vscode-accent resize-none min-h-[250px]"
               ></textarea>
-            <div class="mt-3 text-xs text-vscode-muted flex items-center justify-between">
-              <span>Web Crypto API</span>
-              <span id="hash-chars-count">0 chars</span>
+              <div
+                class="mt-3 text-xs text-vscode-muted flex items-center justify-between"
+              >
+                <span>Web Crypto API</span>
+                <span id="hash-chars-count">0 chars</span>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div
-          class="bg-vscode-sidebar border border-vscode-border rounded-lg flex flex-col overflow-hidden shadow-lg lg:col-span-2">
-          <div class="bg-vscode-hover px-4 py-3 border-b border-vscode-border flex justify-between items-center">
-            <span
+          <div
+            class="bg-vscode-sidebar border border-vscode-border rounded-lg flex flex-col overflow-hidden shadow-lg lg:col-span-2"
+          >
+            <div
+              class="bg-vscode-hover px-4 py-3 border-b border-vscode-border flex justify-between items-center"
+            >
+              <span
                 class="text-xs font-semibold uppercase tracking-wider text-vscode-green"
-                >Generated Cryptographic Digests</span>
-          </div>
-          <div class="p-4 flex-1 flex flex-col gap-4">
-            <div class="flex flex-col gap-1">
-              <div class="flex justify-between items-center">
-                <label
+                >Generated Cryptographic Digests</span
+              >
+            </div>
+            <div class="p-4 flex-1 flex flex-col gap-4">
+              <div class="flex flex-col gap-1">
+                <div class="flex justify-between items-center">
+                  <label
+                    for="hash-sha256"
                     class="text-[10px] uppercase font-bold text-vscode-blue tracking-wider"
-                    >SHA-256</label>
-                <button
+                    >SHA-256</label
+                  >
+                  <button
                     type="button"
                     class="hash-copy-btn text-xs text-vscode-muted hover:text-white"
                     data-target="hash-sha256"
                   >
                     Copy
                   </button>
-              </div>
-              <input
+                </div>
+                <input
                   type="text"
                   readonly
                   id="hash-sha256"
                   class="w-full bg-vscode-input text-vscode-text code-font text-xs p-2 rounded border border-vscode-border select-all"
                 />
-            </div>
-            <div class="flex flex-col gap-1">
-              <div class="flex justify-between items-center">
-                <label
+              </div>
+              <div class="flex flex-col gap-1">
+                <div class="flex justify-between items-center">
+                  <label
+                    for="hash-sha384"
                     class="text-[10px] uppercase font-bold text-vscode-purple tracking-wider"
-                    >SHA-384</label>
-                <button
+                    >SHA-384</label
+                  >
+                  <button
                     type="button"
                     class="hash-copy-btn text-xs text-vscode-muted hover:text-white"
                     data-target="hash-sha384"
                   >
                     Copy
                   </button>
-              </div>
-              <input
+                </div>
+                <input
                   type="text"
                   readonly
                   id="hash-sha384"
                   class="w-full bg-vscode-input text-vscode-text code-font text-xs p-2 rounded border border-vscode-border select-all"
                 />
-            </div>
-            <div class="flex flex-col gap-1">
-              <div class="flex justify-between items-center">
-                <label
+              </div>
+              <div class="flex flex-col gap-1">
+                <div class="flex justify-between items-center">
+                  <label
+                    for="hash-sha512"
                     class="text-[10px] uppercase font-bold text-vscode-orange tracking-wider"
-                    >SHA-512</label>
-                <button
+                    >SHA-512</label
+                  >
+                  <button
                     type="button"
                     class="hash-copy-btn text-xs text-vscode-muted hover:text-white"
                     data-target="hash-sha512"
                   >
                     Copy
                   </button>
-              </div>
-              <input
+                </div>
+                <input
                   type="text"
                   readonly
                   id="hash-sha512"
                   class="w-full bg-vscode-input text-vscode-text code-font text-xs p-2 rounded border border-vscode-border select-all"
                 />
-            </div>
-            <div class="flex flex-col gap-1">
-              <div class="flex justify-between items-center">
-                <label
+              </div>
+              <div class="flex flex-col gap-1">
+                <div class="flex justify-between items-center">
+                  <label
+                    for="hash-md5"
                     class="text-[10px] uppercase font-bold text-vscode-green tracking-wider"
-                    >MD5</label>
-                <button
+                    >MD5</label
+                  >
+                  <button
                     type="button"
                     class="hash-copy-btn text-xs text-vscode-muted hover:text-white"
                     data-target="hash-md5"
                   >
                     Copy
                   </button>
-              </div>
-              <input
+                </div>
+                <input
                   type="text"
                   readonly
                   id="hash-md5"
                   class="w-full bg-vscode-input text-vscode-text code-font text-xs p-2 rounded border border-vscode-border select-all"
                 />
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- TOOL 4: Text Diff Tool -->
-    <div id="tool-diff" class="tool-view hidden flex-1 flex flex-col gap-6">
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div class="flex flex-col bg-vscode-sidebar border border-vscode-border rounded-lg overflow-hidden shadow-lg">
-          <div class="bg-vscode-hover px-4 py-3 border-b border-vscode-border flex justify-between items-center">
-            <span
-                class="text-xs font-semibold uppercase tracking-wider text-vscode-orange"
-                >Original Text (A)</span>
-            <button
+      <!-- TOOL 4: Text Diff Tool -->
+      <div id="tool-diff" class="tool-view hidden flex-1 flex flex-col gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div
+            class="flex flex-col bg-vscode-sidebar border border-vscode-border rounded-lg overflow-hidden shadow-lg"
+          >
+            <div
+              class="bg-vscode-hover px-4 py-3 border-b border-vscode-border flex justify-between items-center"
+            >
+              <label
+                for="diff-input-a"
+                class="text-xs font-semibold uppercase tracking-wider text-vscode-orange cursor-pointer"
+                >Original Text (A)</label
+              >
+              <button
                 type="button"
                 id="diff-clear-a"
                 class="text-xs text-vscode-muted hover:text-white"
               >
                 Clear
               </button>
-          </div>
-          <div class="p-4 flex-1 flex flex-col">
-            <textarea
+            </div>
+            <div class="p-4 flex-1 flex flex-col">
+              <textarea
                 id="diff-input-a"
                 placeholder="Paste original text here..."
                 class="flex-1 w-full bg-vscode-input text-vscode-text code-font text-xs p-3 rounded border border-vscode-border focus:outline-none focus:border-vscode-accent resize-none min-h-[220px]"
@@ -627,24 +750,31 @@ const config = {
     version: '1.0.0',
     debug: false,
     autoSave: true
-};</textarea>
+};</textarea
+              >
+            </div>
           </div>
-        </div>
-        <div class="flex flex-col bg-vscode-sidebar border border-vscode-border rounded-lg overflow-hidden shadow-lg">
-          <div class="bg-vscode-hover px-4 py-3 border-b border-vscode-border flex justify-between items-center">
-            <span
-                class="text-xs font-semibold uppercase tracking-wider text-vscode-green"
-                >Modified Text (B)</span>
-            <button
+          <div
+            class="flex flex-col bg-vscode-sidebar border border-vscode-border rounded-lg overflow-hidden shadow-lg"
+          >
+            <div
+              class="bg-vscode-hover px-4 py-3 border-b border-vscode-border flex justify-between items-center"
+            >
+              <label
+                for="diff-input-b"
+                class="text-xs font-semibold uppercase tracking-wider text-vscode-green cursor-pointer"
+                >Modified Text (B)</label
+              >
+              <button
                 type="button"
                 id="diff-clear-b"
                 class="text-xs text-vscode-muted hover:text-white"
               >
                 Clear
               </button>
-          </div>
-          <div class="p-4 flex-1 flex flex-col">
-            <textarea
+            </div>
+            <div class="p-4 flex-1 flex flex-col">
+              <textarea
                 id="diff-input-b"
                 placeholder="Paste modified text here..."
                 class="flex-1 w-full bg-vscode-input text-vscode-text code-font text-xs p-3 rounded border border-vscode-border focus:outline-none focus:border-vscode-accent resize-none min-h-[220px]"
@@ -655,164 +785,220 @@ const config = {
     debug: true,
     autoSave: true,
     timeout: 5000
-};</textarea>
+};</textarea
+              >
+            </div>
+          </div>
+        </div>
+        <div
+          class="flex flex-col bg-vscode-sidebar border border-vscode-border rounded-lg overflow-hidden shadow-lg flex-1"
+        >
+          <div
+            class="bg-vscode-hover px-4 py-3 border-b border-vscode-border flex justify-between items-center"
+          >
+            <span
+              class="text-xs font-semibold uppercase tracking-wider text-vscode-blue"
+              >Line-by-Line Diff Comparison</span
+            >
+            <span id="diff-stats" class="text-xs text-vscode-muted font-mono"
+              >0 additions, 0 deletions</span
+            >
+          </div>
+          <div class="p-4">
+            <pre
+              id="diff-output"
+              class="bg-vscode-input p-3 rounded border border-vscode-border code-font text-xs overflow-x-auto max-h-96 leading-relaxed flex flex-col gap-0.5"
+            >
+-</pre
+            >
           </div>
         </div>
       </div>
-      <div
-        class="flex flex-col bg-vscode-sidebar border border-vscode-border rounded-lg overflow-hidden shadow-lg flex-1">
-        <div class="bg-vscode-hover px-4 py-3 border-b border-vscode-border flex justify-between items-center">
-          <span
-              class="text-xs font-semibold uppercase tracking-wider text-vscode-blue"
-              >Line-by-Line Diff Comparison</span>
-          <span id="diff-stats" class="text-xs text-vscode-muted font-mono"
-              >0 additions, 0 deletions</span>
-        </div>
-        <div class="p-4">
-          <pre id="diff-output"
-            class="bg-vscode-input p-3 rounded border border-vscode-border code-font text-xs overflow-x-auto max-h-96 leading-relaxed flex flex-col gap-0.5">
--</pre>
-        </div>
-      </div>
-    </div>
 
-    <!-- TOOL 5: Client Recon & Security -->
-    <div id="tool-recon" class="tool-view hidden flex-1 flex flex-col gap-6">
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- IP & Network Card -->
-        <div class="bg-vscode-sidebar border border-vscode-border rounded-lg flex flex-col overflow-hidden shadow-lg">
-          <div class="bg-vscode-hover px-4 py-3 border-b border-vscode-border flex justify-between items-center">
-            <span
+      <!-- TOOL 5: Client Recon & Security -->
+      <div id="tool-recon" class="tool-view hidden flex-1 flex flex-col gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- IP & Network Card -->
+          <div
+            class="bg-vscode-sidebar border border-vscode-border rounded-lg flex flex-col overflow-hidden shadow-lg"
+          >
+            <div
+              class="bg-vscode-hover px-4 py-3 border-b border-vscode-border flex justify-between items-center"
+            >
+              <span
                 class="text-xs font-semibold uppercase tracking-wider text-vscode-blue"
-                >Network & Geo Recon</span>
-            <button
+                >Network & Geo Recon</span
+              >
+              <button
                 type="button"
                 id="recon-refresh-ip"
                 class="text-xs text-vscode-accent hover:underline"
               >
                 Refresh IP
               </button>
+            </div>
+            <div class="p-4 flex flex-col gap-3 text-xs">
+              <div class="flex flex-col gap-1">
+                <span class="text-[10px] uppercase font-bold text-vscode-muted"
+                  >Public IP Address (IPv4)</span
+                >
+                <div
+                  id="recon-ip"
+                  class="bg-vscode-input p-2 rounded border border-vscode-border code-font text-vscode-green select-all"
+                >
+                  Detecting...
+                </div>
+              </div>
+              <div class="flex flex-col gap-1">
+                <span class="text-[10px] uppercase font-bold text-vscode-muted"
+                  >Location / ISP</span
+                >
+                <div
+                  id="recon-geo"
+                  class="bg-vscode-input p-2 rounded border border-vscode-border code-font text-vscode-text select-all"
+                >
+                  Detecting...
+                </div>
+              </div>
+              <div class="flex flex-col gap-1">
+                <span class="text-[10px] uppercase font-bold text-vscode-muted"
+                  >WebRTC IP Leak Check</span
+                >
+                <div
+                  id="recon-webrtc"
+                  class="bg-vscode-input p-2 rounded border border-vscode-border code-font text-vscode-orange select-all"
+                >
+                  Scanning local candidates...
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="p-4 flex flex-col gap-3 text-xs">
-            <div class="flex flex-col gap-1">
-              <span class="text-[10px] uppercase font-bold text-vscode-muted"
-                  >Public IP Address (IPv4)</span>
-              <div id="recon-ip"
-                class="bg-vscode-input p-2 rounded border border-vscode-border code-font text-vscode-green select-all">
-                Detecting...
-              </div>
-            </div>
-            <div class="flex flex-col gap-1">
-              <span class="text-[10px] uppercase font-bold text-vscode-muted"
-                  >Location / ISP</span>
-              <div id="recon-geo"
-                class="bg-vscode-input p-2 rounded border border-vscode-border code-font text-vscode-text select-all">
-                Detecting...
-              </div>
-            </div>
-            <div class="flex flex-col gap-1">
-              <span class="text-[10px] uppercase font-bold text-vscode-muted"
-                  >WebRTC IP Leak Check</span>
-              <div id="recon-webrtc"
-                class="bg-vscode-input p-2 rounded border border-vscode-border code-font text-vscode-orange select-all">
-                Scanning local candidates...
-              </div>
-            </div>
-          </div>
-        </div>
 
-        <!-- OS & Browser Fingerprint Card -->
-        <div class="bg-vscode-sidebar border border-vscode-border rounded-lg flex flex-col overflow-hidden shadow-lg">
-          <div class="bg-vscode-hover px-4 py-3 border-b border-vscode-border flex justify-between items-center">
-            <span
+          <!-- OS & Browser Fingerprint Card -->
+          <div
+            class="bg-vscode-sidebar border border-vscode-border rounded-lg flex flex-col overflow-hidden shadow-lg"
+          >
+            <div
+              class="bg-vscode-hover px-4 py-3 border-b border-vscode-border flex justify-between items-center"
+            >
+              <span
                 class="text-xs font-semibold uppercase tracking-wider text-vscode-purple"
-                >Environment & OS</span>
+                >Environment & OS</span
+              >
+            </div>
+            <div class="p-4 flex flex-col gap-3 text-xs">
+              <div class="flex flex-col gap-1">
+                <span class="text-[10px] uppercase font-bold text-vscode-muted"
+                  >Operating System / Platform</span
+                >
+                <div
+                  id="recon-os"
+                  class="bg-vscode-input p-2 rounded border border-vscode-border code-font text-vscode-text select-all"
+                >
+                  -
+                </div>
+              </div>
+              <div class="flex flex-col gap-1">
+                <span class="text-[10px] uppercase font-bold text-vscode-muted"
+                  >Browser Engine & Version</span
+                >
+                <div
+                  id="recon-browser"
+                  class="bg-vscode-input p-2 rounded border border-vscode-border code-font text-vscode-text select-all"
+                >
+                  -
+                </div>
+              </div>
+              <div class="flex flex-col gap-1">
+                <span class="text-[10px] uppercase font-bold text-vscode-muted"
+                  >Hardware Concurrency / RAM</span
+                >
+                <div
+                  id="recon-hardware"
+                  class="bg-vscode-input p-2 rounded border border-vscode-border code-font text-vscode-text select-all"
+                >
+                  -
+                </div>
+              </div>
+              <div class="flex flex-col gap-1">
+                <span class="text-[10px] uppercase font-bold text-vscode-muted"
+                  >Screen Resolution & Color Depth</span
+                >
+                <div
+                  id="recon-screen"
+                  class="bg-vscode-input p-2 rounded border border-vscode-border code-font text-vscode-text select-all"
+                >
+                  -
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="p-4 flex flex-col gap-3 text-xs">
-            <div class="flex flex-col gap-1">
-              <span class="text-[10px] uppercase font-bold text-vscode-muted"
-                  >Operating System / Platform</span>
-              <div id="recon-os"
-                class="bg-vscode-input p-2 rounded border border-vscode-border code-font text-vscode-text select-all">
-                -
-              </div>
-            </div>
-            <div class="flex flex-col gap-1">
-              <span class="text-[10px] uppercase font-bold text-vscode-muted"
-                  >Browser Engine & Version</span>
-              <div id="recon-browser"
-                class="bg-vscode-input p-2 rounded border border-vscode-border code-font text-vscode-text select-all">
-                -
-              </div>
-            </div>
-            <div class="flex flex-col gap-1">
-              <span class="text-[10px] uppercase font-bold text-vscode-muted"
-                  >Hardware Concurrency / RAM</span>
-              <div id="recon-hardware"
-                class="bg-vscode-input p-2 rounded border border-vscode-border code-font text-vscode-text select-all">
-                -
-              </div>
-            </div>
-            <div class="flex flex-col gap-1">
-              <span class="text-[10px] uppercase font-bold text-vscode-muted"
-                  >Screen Resolution & Color Depth</span>
-              <div id="recon-screen"
-                class="bg-vscode-input p-2 rounded border border-vscode-border code-font text-vscode-text select-all">
-                -
-              </div>
-            </div>
-          </div>
-        </div>
 
-        <!-- Security & Privacy Card -->
-        <div class="bg-vscode-sidebar border border-vscode-border rounded-lg flex flex-col overflow-hidden shadow-lg">
-          <div class="bg-vscode-hover px-4 py-3 border-b border-vscode-border flex justify-between items-center">
-            <span
+          <!-- Security & Privacy Card -->
+          <div
+            class="bg-vscode-sidebar border border-vscode-border rounded-lg flex flex-col overflow-hidden shadow-lg"
+          >
+            <div
+              class="bg-vscode-hover px-4 py-3 border-b border-vscode-border flex justify-between items-center"
+            >
+              <span
                 class="text-xs font-semibold uppercase tracking-wider text-vscode-orange"
-                >Security & Privacy Posture</span>
-          </div>
-          <div class="p-4 flex flex-col gap-3 text-xs">
-            <div class="flex flex-col gap-1">
-              <span class="text-[10px] uppercase font-bold text-vscode-muted"
-                  >Do Not Track (DNT) / GPC</span>
-              <div id="recon-dnt"
-                class="bg-vscode-input p-2 rounded border border-vscode-border code-font text-vscode-text">
-                -
-              </div>
+                >Security & Privacy Posture</span
+              >
             </div>
-            <div class="flex flex-col gap-1">
-              <span class="text-[10px] uppercase font-bold text-vscode-muted"
-                  >Cookies Enabled</span>
-              <div id="recon-cookies"
-                class="bg-vscode-input p-2 rounded border border-vscode-border code-font text-vscode-text">
-                -
+            <div class="p-4 flex flex-col gap-3 text-xs">
+              <div class="flex flex-col gap-1">
+                <span class="text-[10px] uppercase font-bold text-vscode-muted"
+                  >Do Not Track (DNT) / GPC</span
+                >
+                <div
+                  id="recon-dnt"
+                  class="bg-vscode-input p-2 rounded border border-vscode-border code-font text-vscode-text"
+                >
+                  -
+                </div>
               </div>
-            </div>
-            <div class="flex flex-col gap-1">
-              <span class="text-[10px] uppercase font-bold text-vscode-muted"
-                  >Connection Security (HTTPS/Protocol)</span>
-              <div id="recon-protocol"
-                class="bg-vscode-input p-2 rounded border border-vscode-border code-font text-vscode-text">
-                -
+              <div class="flex flex-col gap-1">
+                <span class="text-[10px] uppercase font-bold text-vscode-muted"
+                  >Cookies Enabled</span
+                >
+                <div
+                  id="recon-cookies"
+                  class="bg-vscode-input p-2 rounded border border-vscode-border code-font text-vscode-text"
+                >
+                  -
+                </div>
               </div>
-            </div>
-            <div class="flex flex-col gap-1">
-              <span class="text-[10px] uppercase font-bold text-vscode-muted"
-                  >Canvas Fingerprint Hash</span>
-              <div id="recon-canvas"
-                class="bg-vscode-input p-2 rounded border border-vscode-border code-font text-vscode-green select-all truncate">
-                -
+              <div class="flex flex-col gap-1">
+                <span class="text-[10px] uppercase font-bold text-vscode-muted"
+                  >Connection Security (HTTPS/Protocol)</span
+                >
+                <div
+                  id="recon-protocol"
+                  class="bg-vscode-input p-2 rounded border border-vscode-border code-font text-vscode-text"
+                >
+                  -
+                </div>
+              </div>
+              <div class="flex flex-col gap-1">
+                <span class="text-[10px] uppercase font-bold text-vscode-muted"
+                  >Canvas Fingerprint Hash</span
+                >
+                <div
+                  id="recon-canvas"
+                  class="bg-vscode-input p-2 rounded border border-vscode-border code-font text-vscode-green select-all truncate"
+                >
+                  -
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-  </main>
+    </main>
 
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-        // Tab Switching
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
         const tabButtons = document.querySelectorAll(".tab-btn");
         tabButtons.forEach((btn) => {
           btn.addEventListener("click", () => {
@@ -886,7 +1072,6 @@ const config = {
             .replace(/\//g, "_");
         }
 
-        // Decode Token -> JSON fields
         function decodeJwt(forceReset = false) {
           if (isUpdatingFromJson) return;
           isUpdatingFromToken = true;
@@ -928,7 +1113,6 @@ const config = {
           isUpdatingFromToken = false;
         }
 
-        // Encode JSON fields -> Token string
         function encodeJwtFromFields() {
           if (isUpdatingFromToken) return;
           isUpdatingFromJson = true;
@@ -942,7 +1126,6 @@ const config = {
               JSON.stringify(payloadParsed)
             );
 
-            // Preserve signature from existing token if available, otherwise use a placeholder signature
             const currentParts = jwtInput.value.trim().split(".");
             const signature =
               currentParts.length === 3 && currentParts[2]
@@ -1247,7 +1430,6 @@ const config = {
 
         // --- 5. CLIENT RECON & SECURITY TOOL ---
         async function runRecon() {
-          // IP Lookup via ipify (CORS-friendly, whitelisted in CSP)
           const ipEl = document.getElementById("recon-ip");
           const geoEl = document.getElementById("recon-geo");
           ipEl.textContent = "Detecting IPv4...";
@@ -1269,7 +1451,6 @@ const config = {
             geoEl.textContent = "IPv6 not available on this network";
           }
 
-          // WebRTC Local/Public IP Leak Detection
           const webRtcEl = document.getElementById("recon-webrtc");
           webRtcEl.textContent = "Scanning...";
           try {
@@ -1298,7 +1479,6 @@ const config = {
             webRtcEl.textContent = "WebRTC disabled or unsupported";
           }
 
-          // OS & Browser Details from UA and Platform
           const ua = navigator.userAgent;
           const platform =
             navigator.platform ||
@@ -1318,7 +1498,6 @@ const config = {
 
           osEl.textContent = `${osName} (Platform: ${platform})`;
 
-          // Browser Version Detection
           const browserEl = document.getElementById("recon-browser");
           let browserName = "Unknown Browser";
           let browserVer = "";
@@ -1337,7 +1516,6 @@ const config = {
           }
           browserEl.textContent = `${browserName} v${browserVer} (User-Agent: ${ua})`;
 
-          // Hardware Concurrency & Memory
           const hwEl = document.getElementById("recon-hardware");
           const cores = navigator.hardwareConcurrency || "Unknown";
           const memory = navigator.deviceMemory
@@ -1345,11 +1523,9 @@ const config = {
             : "Unknown / Restricted";
           hwEl.textContent = `${cores} CPU Logical Cores | Approx. RAM: ${memory}`;
 
-          // Screen Resolution & Color Depth
           const screenEl = document.getElementById("recon-screen");
           screenEl.textContent = `${window.screen.width}x${window.screen.height} (Available: ${window.screen.availWidth}x${window.screen.availHeight}) — Color Depth: ${window.screen.colorDepth}-bit`;
 
-          // Security & Privacy Posture
           const dntEl = document.getElementById("recon-dnt");
           const dntVal =
             navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
@@ -1368,7 +1544,6 @@ const config = {
             window.isSecureContext ? "Yes" : "No"
           })`;
 
-          // Canvas Fingerprint Hash
           const canvasEl = document.getElementById("recon-canvas");
           try {
             const canvas = document.createElement("canvas");
@@ -1383,7 +1558,6 @@ const config = {
             ctx.fillText("xCONFLiCTiONx recon", 12, 10);
             const dataUrl = canvas.toDataURL();
 
-            // Simple hash generator for canvas
             let hash = 0;
             for (let i = 0; i < dataUrl.length; i++) {
               hash = (hash << 5) - hash + dataUrl.charCodeAt(i);
@@ -1402,7 +1576,6 @@ const config = {
           .getElementById("recon-refresh-ip")
           .addEventListener("click", runRecon);
 
-        // Initial load triggers (Load sample token by default so encoder is ready)
         jwtInput.value =
           "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ4Q09ORkxpQ1RJT054IiwibmFtZSI6Ik1pY2hhZWwiLCJpYXQiOjE3NTAwMDAwMDAsImV4cCI6MjAwMDAwMDAwMH0.signature";
         decodeJwt(true);
@@ -1410,27 +1583,28 @@ const config = {
         generateHashes();
         computeDiff();
       });
-  </script>
+    </script>
 
-  <footer class="site-footer" style="margin-top: 4rem">
-    <div class="container" style="display: block; max-width: 1200px; margin: 0 auto; padding: 2rem">
-      <p>
-        &copy; 2026 <span class="user-name-js"></span>. Built with pure logic
-        and the GitHub API.
-      </p>
-    </div>
-  </footer>
+    <footer class="site-footer" style="margin-top: 4rem">
+      <div
+        class="container"
+        style="display: block; max-width: 1200px; margin: 0 auto; padding: 2rem"
+      >
+        <p>
+          &copy; 2026 <span class="user-name-js"></span>. Built with pure logic
+          and the GitHub API.
+        </p>
+      </div>
+    </footer>
 
-  <script src="../../js/framework.js"></script>
-  <script src="../../js/jquery-3.2.1.min.js"></script>
-  <script src="../../js/github-fetch.js?v=25"></script>
-  <script>
-    // Mobile Menu Toggle
+    <script src="../../js/framework.js"></script>
+    <script src="../../js/jquery-3.2.1.min.js"></script>
+    <script src="../../js/github-fetch.js?v=25"></script>
+    <script>
       $("#menuToggle").click(function () {
         $("#navLinks").toggleClass("active");
         $(this).find("i").toggleClass("im-menu im-x-mark");
       });
-  </script>
-</body>
-
+    </script>
+  </body>
 </html>
