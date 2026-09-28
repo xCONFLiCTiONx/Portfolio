@@ -49,7 +49,7 @@ Deploy the repository as static files to any hosting service:
 
 Adding a new tool to your portfolio requires **zero modifications** to core framework code:
 
-### Step 1: Copy the Template
+### Step 1: Copy the other tools examples
 Copy the example tool folder:
 ```text
 /tools/example-tool/

@@ -178,9 +178,9 @@
         const navLinksHtml = config.navigation.map(item => {
             const relUrl = toRelativeUrl(item.path);
             const currentPath = window.location.pathname.toLowerCase();
-            const targetPath = item.path.toLowerCase();
-            const isActive = currentPath.endsWith(targetPath) ||
-                (targetPath === 'index.html' && (currentPath.endsWith('/') || currentPath.endsWith('/portfolio/')));
+            const targetUrl = new URL(relUrl, window.location.origin).pathname.toLowerCase();
+            const isActive = currentPath === targetUrl ||
+                (currentPath.endsWith('/') && targetUrl.endsWith('index.html') && currentPath === targetUrl.substring(0, targetUrl.length - 10));
 
             return `<li><a href="${relUrl}" class="${isActive ? 'active' : ''}"><i class="${item.icon}"></i> ${item.label}</a></li>`;
         }).join('');

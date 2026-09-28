@@ -134,20 +134,6 @@
         "sidebar": false,
         "footer": true
       }
-    },
-    {
-      "id": "example-tool",
-      "name": "Example Tool",
-      "description": "Example tool demonstrating the portfolio tool framework.",
-      "path": "tools/example-tool/index.html",
-      "icon": "im im-wrench",
-      "category": "Example",
-      "enabled": true,
-      "layout": {
-        "header": true,
-        "sidebar": false,
-        "footer": true
-      }
     }
   ]
 }
