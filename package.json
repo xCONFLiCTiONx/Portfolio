@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/xCONFLiCTiONx/Portfolio#readme",
   "devDependencies": {
-    "tailwindcss": "^4.3.3"
+    "@tailwindcss/cli": "^4.3.3",
+    "tailwindcss": "^3.4.19"
   }
 }

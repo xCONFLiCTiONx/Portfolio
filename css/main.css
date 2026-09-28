@@ -5,6 +5,10 @@
 
 @import url("iconic/css/iconmonstr-iconic-font.min.css");
 @import url("fonts.css");
+/* Standard CSS import syntax that editors recognize natively */
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
 
 /* Reset & Base
  * ------------------------------------------------------------------- */
