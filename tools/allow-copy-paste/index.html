@@ -946,36 +946,6 @@
         window.addEventListener("load", function() {
             config.test.right.click.action();
         });
-
-        // Search and Category Filter Logic
-        const filterBtns = document.querySelectorAll('.filter-btn');
-        const testCards = document.querySelectorAll('.test-card');
-
-        function filterScenarios() {
-            const activeCategory = document.querySelector('.filter-btn.active').getAttribute('data-category');
-
-            testCards.forEach(card => {
-                const cardCategory = card.getAttribute('data-category');
-                const cardText = card.textContent.toLowerCase();
-
-                const categoryMatches = (activeCategory === 'all' || cardCategory === activeCategory);
-                const searchMatches = !searchQuery || cardText.includes(searchQuery);
-
-                if (categoryMatches && searchMatches) {
-                    card.style.display = 'flex';
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-        }
-
-        filterBtns.forEach(btn => {
-            btn.addEventListener('click', function() {
-                filterBtns.forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                filterScenarios();
-            });
-        });
     </script>
 </body>
 
