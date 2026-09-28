@@ -48,6 +48,11 @@ async function crawlOne(item){
   const description=(doc.querySelector('meta[name="description"]')?.content||"").trim();
   const canonicalRaw=doc.querySelector('link[rel~="canonical"]')?.href||"";
   const canonical=canonicalRaw?urlKey(canonicalRaw,item.url)||canonicalRaw:"";
+  const ogImageRaw=doc.querySelector('meta[property="og:image"]')?.content||doc.querySelector('meta[name="og:image"]')?.content||doc.querySelector('meta[name="twitter:image"]')?.content||"";
+  if(ogImageRaw && !val("ogImage") && item.url===root){
+    const resolvedOg = urlKey(ogImageRaw, item.url) || ogImageRaw;
+    $("ogImage").value = resolvedOg;
+  }
   const robots=(doc.querySelector('meta[name="robots"]')?.content||"")+" "+(doc.querySelector('meta[name="googlebot"]')?.content||"");
   const noindex=/\bnoindex\b/i.test(robots);
   const h1=[...doc.querySelectorAll("h1")].map(x=>x.textContent.trim()).filter(Boolean);
