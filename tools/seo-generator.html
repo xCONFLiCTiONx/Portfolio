@@ -843,9 +843,26 @@
        STATE
     ========================================================= */
     
-    let pageId = 0;
-    const pages = [];
-    
+    let pages = [
+        {
+            path: "/",
+            lastmod: "",
+            changefreq: "weekly",
+            priority: "1.0"
+        },
+        {
+            path: "/about",
+            lastmod: "",
+            changefreq: "monthly",
+            priority: "0.8"
+        },
+        {
+            path: "/projects",
+            lastmod: "",
+            changefreq: "weekly",
+            priority: "0.9"
+        }
+    ];
     
     /* =========================================================
        HELPERS
@@ -861,7 +878,7 @@
             .replace(/</g, "&lt;")
             .replace(/>/g, "&gt;")
             .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#39;");
+            .replace(/'/g, "&#039;");
     }
     
     function escapeXml(value) {
@@ -873,183 +890,76 @@
             .replace(/'/g, "&apos;");
     }
     
-    function normalizeDomain(url) {
-        let value = String(url || "").trim();
-    
-        if (!value) {
-            return "";
-        }
-    
-        if (!/^https?:\/\//i.test(value)) {
-            value = "https://" + value;
-        }
-    
-        try {
-            const parsed = new URL(value);
-            parsed.hash = "";
-            parsed.search = "";
-            return parsed.toString().replace(/\/$/, "");
-        } catch {
-            return value.replace(/\/+$/, "");
-        }
+    function normalizeUrl(url) {
+        return String(url || "").trim().replace(/\/+$/, "");
     }
     
-    function normalizePath(path) {
-        let value = String(path || "").trim();
-    
-        if (!value) {
-            return "/";
-        }
-    
-        if (!value.startsWith("/")) {
-            value = "/" + value;
-        }
-    
-        value = value.replace(/\/{2,}/g, "/");
-    
-        if (
-            value !== "/" &&
-            !value.includes("?") &&
-            !value.includes("#")
-        ) {
-            value = value.replace(/\/+$/, "");
-        }
-    
-        return value;
+    function getSiteUrl() {
+        return normalizeUrl($("siteUrl")?.value || "");
     }
     
-    function getUrl(path) {
-        const domain = normalizeDomain($("siteUrl").value);
-        const cleanPath = normalizePath(path);
-    
-        if (!domain) {
-            return cleanPath;
-        }
-    
-        if (cleanPath === "/") {
-            return domain + "/";
-        }
-    
-        return domain + cleanPath;
+    function getValue(id, fallback = "") {
+        const el = $(id);
+        return el ? String(el.value || "").trim() : fallback;
     }
     
-    function downloadFile(
-        filename,
-        content,
-        type = "text/plain;charset=utf-8"
-    ) {
-        const blob = new Blob([content], { type });
+    function getChecked(id, fallback = false) {
+        const el = $(id);
+        return el ? !!el.checked : fallback;
+    }
+    
+    function todayIso() {
+        return new Date().toISOString().slice(0, 10);
+    }
+    
+    function downloadFile(filename, content, mime = "text/plain;charset=utf-8") {
+        const blob = new Blob([content], { type: mime });
         const url = URL.createObjectURL(blob);
     
         const a = document.createElement("a");
         a.href = url;
         a.download = filename;
-    
         document.body.appendChild(a);
         a.click();
         a.remove();
     
-        setTimeout(() => {
-            URL.revokeObjectURL(url);
-        }, 1000);
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
     }
     
-    async function copyText(text) {
-        try {
-            await navigator.clipboard.writeText(text);
-            alert("Copied to clipboard.");
-        } catch {
-            alert("Clipboard access was unavailable.");
-        }
-    }
+    function showStatus(message, type = "success") {
+        const status =
+            $("status") ||
+            $("validationStatus") ||
+            $("outputStatus");
     
+        if (!status) return;
+    
+        status.textContent = message;
+        status.className = "status " + type;
+        status.style.display = "block";
+    
+        clearTimeout(showStatus.timer);
+    
+        showStatus.timer = setTimeout(() => {
+            status.style.display = "none";
+        }, 5000);
+    }
     
     /* =========================================================
-       PAGE MANAGEMENT
+       PAGE TABLE
     ========================================================= */
     
-    function addPage(
-        path = "/",
-        lastmod = "",
-        freq = "weekly",
-        priority = "1.0"
-    ) {
-        pageId++;
-    
-        pages.push({
-            id: pageId,
-            path,
-            lastmod,
-            freq,
-            priority
-        });
-    
-        renderPages();
-        generate();
-    }
-    
-    function removePage(id) {
-        const index = pages.findIndex(page => page.id === id);
-    
-        if (index !== -1) {
-            pages.splice(index, 1);
-        }
-    
-        renderPages();
-        generate();
-    }
-    
-    function updatePage(id, field, value) {
-        const page = pages.find(item => item.id === id);
-    
-        if (!page) {
-            return;
-        }
-    
-        page[field] = value;
-        generate();
-    }
-    
-    function addCommonPages() {
-        const common = [
-            ["/", "", "weekly", "1.0"],
-            ["/about", "", "monthly", "0.8"],
-            ["/projects", "", "weekly", "0.8"],
-            ["/contact", "", "monthly", "0.6"],
-            ["/privacy", "", "yearly", "0.3"],
-            ["/terms", "", "yearly", "0.3"]
-        ];
-    
-        for (const item of common) {
-            const exists = pages.some(
-                page =>
-                    normalizePath(page.path) ===
-                    normalizePath(item[0])
-            );
-    
-            if (!exists) {
-                pageId++;
-    
-                pages.push({
-                    id: pageId,
-                    path: item[0],
-                    lastmod: item[1],
-                    freq: item[2],
-                    priority: item[3]
-                });
-            }
-        }
-    
-        renderPages();
-        generate();
-    }
-    
     function renderPages() {
-        const body = $("pagesBody");
+        const tbody =
+            $("pagesBody") ||
+            $("pageTableBody") ||
+            $("sitemapBody");
     
-        body.innerHTML = "";
+        if (!tbody) return;
     
-        pages.forEach(page => {
+        tbody.innerHTML = "";
+    
+        pages.forEach((page, index) => {
             const tr = document.createElement("tr");
     
             tr.innerHTML = `
@@ -1057,288 +967,506 @@
                     <input
                         type="text"
                         value="${escapeHtml(page.path)}"
-                        oninput="updatePage(${page.id}, 'path', this.value)"
-                        placeholder="/about">
+                        data-field="path"
+                        data-index="${index}"
+                    >
                 </td>
     
                 <td>
                     <input
                         type="date"
                         value="${escapeHtml(page.lastmod)}"
-                        onchange="updatePage(${page.id}, 'lastmod', this.value)">
+                        data-field="lastmod"
+                        data-index="${index}"
+                    >
                 </td>
     
                 <td>
-                    <select onchange="updatePage(${page.id}, 'freq', this.value)">
+                    <select data-field="changefreq" data-index="${index}">
                         ${[
-                            ["always", "Always"],
-                            ["hourly", "Hourly"],
-                            ["daily", "Daily"],
-                            ["weekly", "Weekly"],
-                            ["monthly", "Monthly"],
-                            ["yearly", "Yearly"],
-                            ["never", "Never"]
-                        ].map(([value, label]) => `
-                            <option
-                                value="${value}"
-                                ${page.freq === value ? "selected" : ""}>
-                                ${label}
+                            "always",
+                            "hourly",
+                            "daily",
+                            "weekly",
+                            "monthly",
+                            "yearly",
+                            "never"
+                        ].map(freq => `
+                            <option value="${freq}" ${page.changefreq === freq ? "selected" : ""}>
+                                ${freq}
                             </option>
                         `).join("")}
                     </select>
                 </td>
     
                 <td>
-                    <select onchange="updatePage(${page.id}, 'priority', this.value)">
-                        ${[
-                            "1.0",
-                            "0.9",
-                            "0.8",
-                            "0.7",
-                            "0.6",
-                            "0.5",
-                            "0.4",
-                            "0.3",
-                            "0.2",
-                            "0.1"
-                        ].map(value => `
-                            <option
-                                value="${value}"
-                                ${page.priority === value ? "selected" : ""}>
-                                ${value}
-                            </option>
-                        `).join("")}
-                    </select>
+                    <input
+                        type="number"
+                        min="0"
+                        max="1"
+                        step="0.1"
+                        value="${escapeHtml(page.priority)}"
+                        data-field="priority"
+                        data-index="${index}"
+                    >
                 </td>
     
                 <td>
                     <button
-                        class="danger small"
-                        onclick="removePage(${page.id})">
+                        type="button"
+                        class="danger"
+                        onclick="removePage(${index})"
+                    >
                         Remove
                     </button>
                 </td>
             `;
     
-            body.appendChild(tr);
+            tbody.appendChild(tr);
         });
+    
+        tbody.querySelectorAll("[data-field]").forEach(input => {
+            input.addEventListener("input", updatePageFromInput);
+            input.addEventListener("change", updatePageFromInput);
+        });
+    
+        updatePreview();
     }
     
+    function updatePageFromInput(event) {
+        const input = event.target;
+        const index = Number(input.dataset.index);
+        const field = input.dataset.field;
     
-    /* =========================================================
-       ROBOTS.TXT
-    ========================================================= */
+        if (!Number.isInteger(index) || !pages[index]) return;
     
-    function generateRobots() {
-        const domain = normalizeDomain($("siteUrl").value);
+        pages[index][field] = input.value;
     
-        return [
-            "User-agent: *",
-            "Allow: /",
-            "",
-            "# Cloudflare Pages internal endpoints/assets",
-            "Disallow: /cdn-cgi/",
-            "",
-            domain
-                ? `Sitemap: ${domain}/sitemap.xml`
-                : "# Sitemap: https://example.com/sitemap.xml",
-            ""
-        ].join("\n");
+        updatePreview();
     }
     
+    function addPage() {
+        pages.push({
+            path: "/new-page",
+            lastmod: "",
+            changefreq: "monthly",
+            priority: "0.5"
+        });
     
-    /* =========================================================
-       SITEMAP.XML
-    ========================================================= */
+        renderPages();
+    }
     
-    function generateSitemap() {
-        const urls = [];
-        const seen = new Set();
+    function removePage(index) {
+        if (!Number.isInteger(index)) return;
     
-        for (const page of pages) {
-            const path = normalizePath(page.path);
-            const loc = getUrl(path);
-    
-            if (!loc || seen.has(loc)) {
-                continue;
-            }
-    
-            seen.add(loc);
-    
-            const element = [
-                "  <url>",
-                `    <loc>${escapeXml(loc)}</loc>`
-            ];
-    
-            if (page.lastmod) {
-                element.push(
-                    `    <lastmod>${escapeXml(page.lastmod)}</lastmod>`
-                );
-            }
-    
-            if (page.freq) {
-                element.push(
-                    `    <changefreq>${escapeXml(page.freq)}</changefreq>`
-                );
-            }
-    
-            if (page.priority) {
-                element.push(
-                    `    <priority>${escapeXml(page.priority)}</priority>`
-                );
-            }
-    
-            element.push("  </url>");
-    
-            urls.push(element.join("\n"));
+        if (pages.length <= 1) {
+            showStatus("You must keep at least one page.", "error");
+            return;
         }
     
-        return [
-            '<?xml version="1.0" encoding="UTF-8"?>',
-            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
-            urls.join("\n"),
-            "</urlset>",
-            ""
-        ].join("\n");
+        pages.splice(index, 1);
+        renderPages();
     }
     
+    function addCommonPages() {
+        const commonPages = [
+            {
+                path: "/",
+                changefreq: "weekly",
+                priority: "1.0"
+            },
+            {
+                path: "/about",
+                changefreq: "monthly",
+                priority: "0.8"
+            },
+            {
+                path: "/projects",
+                changefreq: "weekly",
+                priority: "0.9"
+            },
+            {
+                path: "/contact",
+                changefreq: "monthly",
+                priority: "0.7"
+            },
+            {
+                path: "/privacy",
+                changefreq: "yearly",
+                priority: "0.5"
+            },
+            {
+                path: "/terms",
+                changefreq: "yearly",
+                priority: "0.5"
+            }
+        ];
+    
+        for (const common of commonPages) {
+            const exists = pages.some(
+                page => normalizePath(page.path) === normalizePath(common.path)
+            );
+    
+            if (!exists) {
+                pages.push({
+                    ...common,
+                    lastmod: ""
+                });
+            }
+        }
+    
+        renderPages();
+        showStatus("Common pages added.");
+    }
+    
+    function normalizePath(path) {
+        let value = String(path || "").trim();
+    
+        if (!value) return "/";
+    
+        if (!value.startsWith("/")) {
+            value = "/" + value;
+        }
+    
+        if (value.length > 1) {
+            value = value.replace(/\/+$/, "");
+        }
+    
+        return value;
+    }
+    
+    /* =========================================================
+       CONFIGURATION
+    ========================================================= */
+    
+    function getConfig() {
+        const siteUrl = getSiteUrl();
+    
+        return {
+            siteUrl,
+    
+            siteName: getValue(
+                "siteName",
+                "xCONFLiCTiONx"
+            ),
+    
+            homeTitle: getValue(
+                "homeTitle",
+                "xCONFLiCTiONx — Privacy, Security & Technology"
+            ),
+    
+            description: getValue(
+                "metaDescription",
+                ""
+            ),
+    
+            canonical: getValue(
+                "canonical",
+                siteUrl
+            ) || siteUrl,
+    
+            author: getValue(
+                "author",
+                ""
+            ),
+    
+            publisher: getValue(
+                "publisher",
+                ""
+            ),
+    
+            ogImage: getValue(
+                "ogImage",
+                ""
+            ),
+    
+            favicon: getValue(
+                "favicon",
+                "/favicon.ico"
+            ),
+    
+            themeColor: getValue(
+                "themeColor",
+                "#0b0d10"
+            ),
+    
+            robots: getValue(
+                "robots",
+                "index, follow"
+            ),
+    
+            schemaType: getValue(
+                "schemaType",
+                "WebSite"
+            ),
+    
+            schemaDescription: getValue(
+                "schemaDescription",
+                ""
+            ),
+    
+            searchAction: getChecked(
+                "searchAction",
+                false
+            ),
+    
+            searchUrl: getValue(
+                "searchUrl",
+                ""
+            ),
+    
+            ogTitle: getValue(
+                "ogTitle",
+                ""
+            ),
+    
+            ogDescription: getValue(
+                "ogDescription",
+                ""
+            ),
+    
+            twitterCard: getValue(
+                "twitterCard",
+                "summary_large_image"
+            ),
+    
+            twitterSite: getValue(
+                "twitterSite",
+                ""
+            )
+        };
+    }
+    
+    /* =========================================================
+       VALIDATION
+    ========================================================= */
+    
+    function validate() {
+        const config = getConfig();
+        const errors = [];
+        const warnings = [];
+    
+        if (!config.siteUrl) {
+            errors.push("Website URL is required.");
+        } else {
+            try {
+                const url = new URL(config.siteUrl);
+    
+                if (!["http:", "https:"].includes(url.protocol)) {
+                    errors.push("Website URL must use HTTP or HTTPS.");
+                }
+            } catch {
+                errors.push("Website URL is not valid.");
+            }
+        }
+    
+        if (!config.siteName) {
+            errors.push("Site name is required.");
+        }
+    
+        if (!config.homeTitle) {
+            errors.push("Homepage title is required.");
+        }
+    
+        if (!config.description) {
+            warnings.push("Meta description is empty.");
+        } else if (config.description.length > 160) {
+            warnings.push(
+                `Meta description is ${config.description.length} characters long.`
+            );
+        }
+    
+        if (!config.ogImage) {
+            warnings.push("No Open Graph image URL is configured.");
+        }
+    
+        if (!config.favicon) {
+            warnings.push("No favicon URL is configured.");
+        }
+    
+        if (pages.length === 0) {
+            errors.push("At least one sitemap page is required.");
+        }
+    
+        pages.forEach((page, index) => {
+            if (!page.path) {
+                errors.push(`Page ${index + 1} has no path.`);
+            }
+    
+            const priority = Number(page.priority);
+    
+            if (
+                Number.isNaN(priority) ||
+                priority < 0 ||
+                priority > 1
+            ) {
+                errors.push(
+                    `Page ${index + 1} has an invalid priority.`
+                );
+            }
+        });
+    
+        if (config.searchAction && !config.searchUrl) {
+            warnings.push(
+                "SearchAction is enabled but no search URL is configured."
+            );
+        }
+    
+        const result = {
+            valid: errors.length === 0,
+            errors,
+            warnings
+        };
+    
+        renderValidation(result);
+    
+        return result;
+    }
+    
+    function renderValidation(result) {
+        const container =
+            $("validationResults") ||
+            $("validationOutput");
+    
+        if (!container) return;
+    
+        let html = "";
+    
+        if (result.errors.length) {
+            html += `
+                <div class="validation-error">
+                    <strong>Errors</strong>
+                    <ul>
+                        ${result.errors.map(error =>
+                            `<li>${escapeHtml(error)}</li>`
+                        ).join("")}
+                    </ul>
+                </div>
+            `;
+        }
+    
+        if (result.warnings.length) {
+            html += `
+                <div class="validation-warning">
+                    <strong>Warnings</strong>
+                    <ul>
+                        ${result.warnings.map(warning =>
+                            `<li>${escapeHtml(warning)}</li>`
+                        ).join("")}
+                    </ul>
+                </div>
+            `;
+        }
+    
+        if (!result.errors.length && !result.warnings.length) {
+            html = `
+                <div class="validation-success">
+                    SEO configuration looks good.
+                </div>
+            `;
+        }
+    
+        container.innerHTML = html;
+    }
     
     /* =========================================================
        JSON-LD
     ========================================================= */
     
-    function generateJsonLdObject() {
-        const domain = normalizeDomain($("siteUrl").value);
-        const name = $("siteName").value.trim();
+    function generateJsonLd() {
+        const config = getConfig();
+    
+        const schemaType =
+            config.schemaType || "WebSite";
     
         const description =
-            $("schemaDescription").value.trim() ||
-            $("description").value.trim();
-    
-        const type = $("schemaType").value;
+            config.schemaDescription ||
+            config.description;
     
         const data = {
             "@context": "https://schema.org",
-            "@type": type,
-            "name": name,
-            "url": domain ? domain + "/" : "",
-            "description": description
+            "@type": schemaType,
+            "name": config.siteName,
+            "url": config.siteUrl
         };
     
-        if ($("author").value.trim()) {
+        if (description) {
+            data.description = description;
+        }
+    
+        if (config.author) {
             data.author = {
-                "@type": type === "Person"
-                    ? "Person"
-                    : "Organization",
-                "name": $("author").value.trim()
+                "@type": "Person",
+                "name": config.author
             };
         }
     
-        if ($("ogImage").value.trim()) {
-            data.image = $("ogImage").value.trim();
+        if (config.publisher) {
+            data.publisher = {
+                "@type": "Organization",
+                "name": config.publisher
+            };
         }
     
         if (
-            $("enableSearchAction").checked &&
-            domain
+            schemaType === "WebSite" &&
+            config.searchAction &&
+            config.searchUrl
         ) {
-            const searchUrl =
-                $("searchUrl").value.trim() ||
-                "/search?q={search_term_string}";
-    
             data.potentialAction = {
                 "@type": "SearchAction",
                 "target": {
                     "@type": "EntryPoint",
-                    "urlTemplate":
-                        domain +
-                        (
-                            searchUrl.startsWith("/")
-                                ? searchUrl
-                                : "/" + searchUrl
-                        )
+                    "urlTemplate": config.searchUrl
                 },
-                "query-input":
-                    "required name=search_term_string"
+                "query-input": "required name=search_term_string"
             };
         }
     
-        return data;
+        return JSON.stringify(data, null, 2);
     }
-    
-    function generateJsonLd() {
-        return JSON.stringify(
-            generateJsonLdObject(),
-            null,
-            2
-        );
-    }
-    
     
     /* =========================================================
        SEO HEAD
     ========================================================= */
     
     function generateHead() {
-        const domain = normalizeDomain($("siteUrl").value);
+        const config = getConfig();
     
         const title =
-            $("title").value.trim();
+            config.homeTitle ||
+            config.siteName;
     
         const description =
-            $("description").value.trim();
+            config.description;
     
         const canonical =
-            $("canonical").value.trim() ||
-            (domain ? domain + "/" : "");
+            config.canonical ||
+            config.siteUrl;
     
         const ogTitle =
-            $("ogTitle").value.trim() ||
+            config.ogTitle ||
             title;
     
         const ogDescription =
-            $("ogDescription").value.trim() ||
+            config.ogDescription ||
             description;
-    
-        const image =
-            $("ogImage").value.trim();
-    
-        const favicon =
-            $("favicon").value.trim();
-    
-        const theme =
-            $("themeColor").value.trim();
-    
-        const author =
-            $("author").value.trim();
-    
-        const robots =
-            $("robotsPolicy").value;
     
         const lines = [];
     
         lines.push(
-            "<!-- =====================================================",
-            "     SEO META TAGS",
-            "     Generated by Static Website SEO Generator",
-            "     ===================================================== -->"
+            `<title>${escapeHtml(title)}</title>`
         );
     
-        lines.push(
-            `<title>${escapeHtml(title)}</title>`,
-            `<meta name="description" content="${escapeHtml(description)}">`,
-            `<meta name="robots" content="${escapeHtml(robots)}">`
-        );
-    
-        if (author) {
+        if (description) {
             lines.push(
-                `<meta name="author" content="${escapeHtml(author)}">`
+                `<meta name="description" content="${escapeHtml(description)}">`
             );
         }
     
-        if (theme) {
+        if (config.robots) {
             lines.push(
-                `<meta name="theme-color" content="${escapeHtml(theme)}">`
+                `<meta name="robots" content="${escapeHtml(config.robots)}">`
             );
         }
     
@@ -1348,9 +1476,21 @@
             );
         }
     
-        if (favicon) {
+        if (config.author) {
             lines.push(
-                `<link rel="icon" href="${escapeHtml(favicon)}">`
+                `<meta name="author" content="${escapeHtml(config.author)}">`
+            );
+        }
+    
+        if (config.themeColor) {
+            lines.push(
+                `<meta name="theme-color" content="${escapeHtml(config.themeColor)}">`
+            );
+        }
+    
+        if (config.favicon) {
+            lines.push(
+                `<link rel="icon" href="${escapeHtml(config.favicon)}">`
             );
         }
     
@@ -1359,28 +1499,19 @@
             "<!-- Open Graph -->",
             `<meta property="og:type" content="website">`,
             `<meta property="og:title" content="${escapeHtml(ogTitle)}">`,
-            `<meta property="og:description" content="${escapeHtml(ogDescription)}">`
+            `<meta property="og:description" content="${escapeHtml(ogDescription)}">`,
+            `<meta property="og:url" content="${escapeHtml(canonical || config.siteUrl)}">`
         );
     
-        if (canonical) {
+        if (config.siteName) {
             lines.push(
-                `<meta property="og:url" content="${escapeHtml(canonical)}">`
+                `<meta property="og:site_name" content="${escapeHtml(config.siteName)}">`
             );
         }
     
-        const siteName =
-            $("siteName").value.trim();
-    
-        if (siteName) {
+        if (config.ogImage) {
             lines.push(
-                `<meta property="og:site_name" content="${escapeHtml(siteName)}">`
-            );
-        }
-    
-        if (image) {
-            lines.push(
-                `<meta property="og:image" content="${escapeHtml(image)}">`,
-                `<meta property="og:image:alt" content="${escapeHtml(ogTitle)}">`,
+                `<meta property="og:image" content="${escapeHtml(config.ogImage)}">`,
                 `<meta property="og:image:width" content="1200">`,
                 `<meta property="og:image:height" content="630">`
             );
@@ -1389,550 +1520,624 @@
         lines.push(
             "",
             "<!-- Twitter / X -->",
-            `<meta name="twitter:card" content="${escapeHtml($("twitterCard").value)}">`,
+            `<meta name="twitter:card" content="${escapeHtml(config.twitterCard || "summary_large_image")}">`,
             `<meta name="twitter:title" content="${escapeHtml(ogTitle)}">`,
             `<meta name="twitter:description" content="${escapeHtml(ogDescription)}">`
         );
     
-        if (image) {
+        if (config.ogImage) {
             lines.push(
-                `<meta name="twitter:image" content="${escapeHtml(image)}">`
+                `<meta name="twitter:image" content="${escapeHtml(config.ogImage)}">`
             );
         }
     
-        const twitterSite =
-            $("twitterSite").value.trim();
-    
-        if (twitterSite) {
+        if (config.twitterSite) {
             lines.push(
-                `<meta name="twitter:site" content="${escapeHtml(twitterSite)}">`
+                `<meta name="twitter:site" content="${escapeHtml(config.twitterSite)}">`
             );
         }
     
-        /*
-         * IMPORTANT:
-         * This is intentionally generated as text.
-         * The generated seo-head.html contains its own
-         * application/ld+json script block.
-         */
         lines.push(
             "",
             "<!-- Structured Data -->",
             `<script type="application/ld+json">`,
             generateJsonLd(),
-            `
-    </script>
-    );
+            "<" + "/script>"
+        );
     
-    return lines.join("\n");
+        return lines.join("\n");
     }
     
+    /* =========================================================
+       ROBOTS.TXT
+    ========================================================= */
+    
+    function generateRobots() {
+        const config = getConfig();
+    
+        const sitemapUrl = config.siteUrl
+            ? `${config.siteUrl}/sitemap.xml`
+            : "/sitemap.xml";
+    
+        return [
+            "User-agent: *",
+            "Allow: /",
+            "",
+            `Sitemap: ${sitemapUrl}`,
+            ""
+        ].join("\n");
+    }
     
     /* =========================================================
-    WEB MANIFEST
+       SITEMAP.XML
+    ========================================================= */
+    
+    function generateSitemap() {
+        const config = getConfig();
+    
+        const baseUrl = config.siteUrl;
+    
+        const urls = pages.map(page => {
+            const path = normalizePath(page.path);
+    
+            let loc;
+    
+            if (path === "/") {
+                loc = `${baseUrl}/`;
+            } else {
+                loc = `${baseUrl}${path}`;
+            }
+    
+            const parts = [
+                "  <url>",
+                `    <loc>${escapeXml(loc)}</loc>`
+            ];
+    
+            if (page.lastmod) {
+                parts.push(
+                    `    <lastmod>${escapeXml(page.lastmod)}</lastmod>`
+                );
+            }
+    
+            if (page.changefreq) {
+                parts.push(
+                    `    <changefreq>${escapeXml(page.changefreq)}</changefreq>`
+                );
+            }
+    
+            if (page.priority !== "") {
+                parts.push(
+                    `    <priority>${escapeXml(page.priority)}</priority>`
+                );
+            }
+    
+            parts.push("  </url>");
+    
+            return parts.join("\n");
+        });
+    
+        return [
+            `<?xml version="1.0" encoding="UTF-8"?>`,
+            `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">`,
+            urls.join("\n"),
+            `</urlset>`,
+            ""
+        ].join("\n");
+    }
+    
+    /* =========================================================
+       WEB MANIFEST
     ========================================================= */
     
     function generateManifest() {
-    const manifest = {
-    name: $("siteName").value.trim(),
-    short_name:
-    $("siteName").value.trim().slice(0, 12),
-    start_url: "/",
-    display: "browser",
-    background_color:
-    $("themeColor").value.trim() ||
-    "#0f172a",
-    theme_color:
-    $("themeColor").value.trim() ||
-    "#0f172a",
-    description:
-    $("description").value.trim(),
-    scope: "/"
-    };
+        const config = getConfig();
     
-    const favicon =
-    $("favicon").value.trim();
+        const manifest = {
+            name: config.siteName,
+            short_name: config.siteName,
+            start_url: "/",
+            display: "standalone",
+            theme_color: config.themeColor || "#0b0d10",
+            background_color: config.themeColor || "#0b0d10"
+        };
     
-    if (favicon) {
-    manifest.icons = [
-    {
-    src: favicon,
-    sizes: "any",
-    type: "image/x-icon"
+        if (config.favicon) {
+            manifest.icons = [
+                {
+                    src: config.favicon,
+                    sizes: "any",
+                    type: "image/x-icon"
+                }
+            ];
+        }
+    
+        return JSON.stringify(manifest, null, 2) + "\n";
     }
-    ];
-    }
-    
-    return JSON.stringify(
-    manifest,
-    null,
-    2
-    ) + "\n";
-    }
-    
     
     /* =========================================================
-    LLMS.TXT
+       LLMS.TXT
     ========================================================= */
     
     function generateLlms() {
-    const domain =
-    normalizeDomain($("siteUrl").value);
+        const config = getConfig();
     
-    const lines = [
-    `# ${$("siteName").value.trim()}`,
-    "",
-    $("description").value.trim(),
-    "",
-    "## Website",
-    "",
-    domain ? domain + "/" : "",
-    "",
-    "## Pages",
-    ""
-    ];
+        const lines = [
+            `# ${config.siteName}`,
+            ""
+        ];
     
-    const seen = new Set();
-    
-    for (const page of pages) {
-    const path =
-    normalizePath(page.path);
-    
-    const url =
-    getUrl(path);
-    
-    if (seen.has(url)) {
-    continue;
-    }
-    
-    seen.add(url);
-    
-    lines.push(`- ${url}`);
-    }
-    
-    lines.push(
-    "",
-    "## Notes",
-    "",
-    "This file provides a concise description of the website and its publicly available pages."
-    );
-    
-    return lines.join("\n") + "\n";
-    }
-    
-    
-    /* =========================================================
-    SEO VALIDATION
-    ========================================================= */
-    
-    function validate() {
-    const issues = [];
-    
-    const domain =
-    normalizeDomain($("siteUrl").value);
-    
-    const title =
-    $("title").value.trim();
-    
-    const description =
-    $("description").value.trim();
-    
-    const image =
-    $("ogImage").value.trim();
-    
-    /* Website URL */
-    
-    if (!domain) {
-    issues.push({
-    type: "error",
-    text: "Website URL is missing."
-    });
-    } else if (!/^https:\/\//i.test(domain)) {
-    issues.push({
-    type: "warning",
-    text: "Use HTTPS for the production website URL."
-    });
-    } else {
-    issues.push({
-    type: "good",
-    text: "Website URL is configured."
-    });
-    }
-    
-    /* Title */
-    
-    if (!title) {
-    issues.push({
-    type: "error",
-    text: "Homepage title is empty."
-    });
-    } else if (title.length < 30) { issues.push({ type: "warning" , text: `Homepage title is only ${title.length}
-        characters. ` + "It may be too short to describe the page well." }); } else if (title.length> 60) {
-        issues.push({
-        type: "warning",
-        text:
-        `Homepage title is ${title.length} characters. ` +
-        "Search engines may truncate it."
-        });
-        } else {
-        issues.push({
-        type: "good",
-        text:
-        `Homepage title length is ${title.length} characters.`
-        });
+        if (config.description) {
+            lines.push(
+                config.description,
+                ""
+            );
         }
     
-        /* Description */
+        if (config.siteUrl) {
+            lines.push(
+                `Website: ${config.siteUrl}`,
+                ""
+            );
+        }
     
-        if (!description) {
-        issues.push({
-        type: "error",
-        text: "Meta description is empty."
+        lines.push(
+            "## Pages",
+            ""
+        );
+    
+        pages.forEach(page => {
+            const path = normalizePath(page.path);
+            const url =
+                path === "/"
+                    ? `${config.siteUrl}/`
+                    : `${config.siteUrl}${path}`;
+    
+            lines.push(
+                `- [${path}](${url})`
+            );
         });
-        } else if (description.length < 100) { issues.push({ type: "warning" , text: `Meta description is only
-            ${description.length} characters.` }); } else if (description.length> 160) {
-            issues.push({
-            type: "warning",
-            text:
-            `Meta description is ${description.length} characters. ` +
-            "Search engines may truncate it."
-            });
-            } else {
-            issues.push({
-            type: "good",
-            text:
-            `Meta description length is ${description.length} characters.`
-            });
-            }
     
-            /* Canonical */
+        lines.push("");
     
-            if (!$("canonical").value.trim() && domain) {
-            issues.push({
-            type: "good",
-            text:
-            "Canonical URL will default to the site homepage."
-            });
-            }
+        return lines.join("\n");
+    }
     
-            /* OG image */
+    /* =========================================================
+       SEO REPORT
+    ========================================================= */
     
-            if (!image) {
-            issues.push({
-            type: "warning",
-            text:
-            "No Open Graph image is configured. " +
-            "Social shares may have no custom preview image."
-            });
-            } else {
-            issues.push({
-            type: "good",
-            text: "Open Graph image is configured."
-            });
-            }
+    function generateReport() {
+        const config = getConfig();
+        const validation = validate();
     
-            /* Sitemap */
+        const titleLength =
+            config.homeTitle.length;
     
-            if (pages.length === 0) {
-            issues.push({
-            type: "error",
-            text:
-            "Sitemap contains no URLs. " +
-            "Add the pages you actually want indexed."
-            });
-            } else {
-            issues.push({
-            type: "good",
-            text:
-            `Sitemap contains ${pages.length} configured page(s).`
-            });
-            }
+        const descriptionLength =
+            config.description.length;
     
-            /* Duplicate paths */
+        const lines = [
+            `SEO GENERATOR REPORT`,
+            `====================`,
+            ``,
+            `Generated: ${new Date().toISOString()}`,
+            ``,
+            `SITE`,
+            `----`,
+            `Name: ${config.siteName}`,
+            `URL: ${config.siteUrl}`,
+            `Canonical: ${config.canonical}`,
+            ``,
+            `TITLE`,
+            `-----`,
+            `Title: ${config.homeTitle}`,
+            `Length: ${titleLength} characters`,
+            ``,
+            `DESCRIPTION`,
+            `-----------`,
+            `Length: ${descriptionLength} characters`,
+            `Description: ${config.description}`,
+            ``,
+            `PAGES`,
+            `-----`,
+            `Pages in sitemap: ${pages.length}`,
+            ``
+        ];
     
-            const normalized =
-            pages.map(page =>
-            normalizePath(page.path)
+        if (validation.errors.length) {
+            lines.push(
+                "ERRORS",
+                "------"
             );
     
-            const duplicates =
-            normalized.filter(
-            (path, index) =>
-            normalized.indexOf(path) !== index
+            validation.errors.forEach(error => {
+                lines.push(`- ${error}`);
+            });
+    
+            lines.push("");
+        }
+    
+        if (validation.warnings.length) {
+            lines.push(
+                "WARNINGS",
+                "--------"
             );
     
-            if (duplicates.length) {
-            issues.push({
-            type: "warning",
-            text:
-            `Duplicate sitemap path(s): ` +
-            `${[...new Set(duplicates)].join(", ")}`
+            validation.warnings.forEach(warning => {
+                lines.push(`- ${warning}`);
             });
-            }
     
-            /* Homepage */
+            lines.push("");
+        }
     
-            if (!normalized.includes("/")) {
-            issues.push({
-            type: "warning",
-            text:
-            "Your sitemap does not currently contain the homepage (/)."
-            });
-            }
+        if (
+            !validation.errors.length &&
+            !validation.warnings.length
+        ) {
+            lines.push(
+                "STATUS",
+                "------",
+                "No validation errors or warnings.",
+                ""
+            );
+        }
     
-            /* Noindex */
+        return lines.join("\n");
+    }
     
-            if (
-            $("robotsPolicy").value
-            .startsWith("noindex")
-            ) {
-            issues.push({
-            type: "warning",
-            text:
-            "The generated page metadata is configured with NOINDEX."
-            });
-            }
+    /* =========================================================
+       PREVIEW
+    ========================================================= */
     
-            return issues;
-            }
+    function updatePreview() {
+        const config = getConfig();
     
-            function renderValidation() {
-            const issues = validate();
+        const title =
+            config.homeTitle ||
+            config.siteName ||
+            "Your Website";
     
-            const good =
-            issues.filter(
-            issue => issue.type === "good"
-            ).length;
-    
-            const warnings =
-            issues.filter(
-            issue => issue.type === "warning"
-            ).length;
-    
-            const errors =
-            issues.filter(
-            issue => issue.type === "error"
-            ).length;
-    
-            $("statusGrid").innerHTML = `
-            <div class="status ${errors ? " bad" : "good" }">
-                <strong>${errors}</strong>
-                <span>Errors</span>
-            </div>
-    
-            <div class="status ${warnings ? " warning" : "good" }">
-                <strong>${warnings}</strong>
-                <span>Warnings</span>
-            </div>
-    
-            <div class="status good">
-                <strong>${good}</strong>
-                <span>Checks Passed</span>
-            </div>
-    
-            <div class="status">
-                <strong>${pages.length}</strong>
-                <span>Sitemap URLs</span>
-            </div>
-            `;
-    
-            $("issues").innerHTML =
-            issues.map(issue => `
-            <div class="issue ${issue.type}">
-                ${
-                issue.type === "good"
-                ? "✓"
-                : issue.type === "warning"
-                ? "⚠"
-                : "✕"
-                }
-                ${escapeHtml(issue.text)}
-            </div>
-            `).join("");
-            }
-    
-    
-            /* =========================================================
-            SEARCH PREVIEW
-            ========================================================= */
-    
-            function updatePreview() {
-            const title =
-            $("title").value.trim() ||
-            "Your Website Title";
-    
-            const description =
-            $("description").value.trim() ||
+        const description =
+            config.description ||
             "Your website description will appear here.";
     
-            const url =
-            normalizeDomain($("siteUrl").value) ||
+        const url =
+            config.siteUrl ||
             "https://example.com";
     
-            $("previewTitle").textContent =
-            title;
+        const titleElement =
+            $("previewTitle") ||
+            $("searchTitle");
     
-            $("previewUrl").textContent =
-            url;
+        const descriptionElement =
+            $("previewDescription") ||
+            $("searchDescription");
     
-            $("previewDescription").textContent =
-            description;
+        const urlElement =
+            $("previewUrl") ||
+            $("searchUrlPreview");
     
-            updateCounter(
-            $("titleCounter"),
-            title.length,
-            30,
-            60
+        if (titleElement) {
+            titleElement.textContent = title;
+        }
+    
+        if (descriptionElement) {
+            descriptionElement.textContent = description;
+        }
+    
+        if (urlElement) {
+            urlElement.textContent = url;
+        }
+    }
+    
+    /* =========================================================
+       GENERATE ALL
+    ========================================================= */
+    
+    function generateAll() {
+        const validation = validate();
+    
+        if (!validation.valid) {
+            showStatus(
+                "Fix the validation errors before generating files.",
+                "error"
             );
+            return null;
+        }
     
-            updateCounter(
-            $("descriptionCounter"),
-            description.length,
-            100,
-            160
-            );
-            }
+        return {
+            "robots.txt": generateRobots(),
+            "sitemap.xml": generateSitemap(),
+            "seo-head.html": generateHead(),
+            "structured-data.json": generateJsonLd() + "\n",
+            "site.webmanifest": generateManifest(),
+            "llms.txt": generateLlms(),
+            "seo-report.txt": generateReport()
+        };
+    }
     
-            function updateCounter(
-            element,
-            length,
-            minimum,
-            maximum
-            ) {
-            element.className = "counter";
+    /* =========================================================
+       INDIVIDUAL DOWNLOADS
+    ========================================================= */
     
-            if (
-            length >= minimum &&
-            length <= maximum ) { element.classList.add("good"); } else if ( length>= minimum - 10 &&
-                length <= maximum + 20 ) { element.classList.add("warning"); } else { element.classList.add("bad"); }
-                    element.textContent=`${length} characters`; }
-                    /*=========================================================SEO
-                    REPORT=========================================================*/ function generateReport() { const
-                    issues=validate(); const lines=[ "STATIC WEBSITE SEO REPORT" , "==========================" , "" ,
-                    `Generated: ${new Date().toLocaleString()}`, "" , `Website: ${normalizeDomain($("siteUrl").value)}`,
-                    `Site name: ${$("siteName").value.trim()}`, `Title: ${$("title").value.trim()}`, `Title length:
-                    ${$("title").value.trim().length}`, `Description length: ${$("description").value.trim().length}`,
-                    `Robots policy: ${$("robotsPolicy").value}`, `Schema type: ${$("schemaType").value}`, `Sitemap URLs:
-                    ${pages.length}`, "" , "VALIDATION" , "----------" ]; for (const issue of issues) { lines.push(
-                    `[${issue.type.toUpperCase()}] ${issue.text}` ); } lines.push( "" , "FILES" , "-----" , "robots.txt"
-                    , "sitemap.xml" , "seo-head.html" , "site.webmanifest" , "llms.txt" ); return lines.join("\n") + "\n" ;
-                    } /*=========================================================DOWNLOAD
-                    ALL=========================================================*/ function downloadAll() { const files=[ {
-                    name: "robots.txt" , content: generateRobots(), type: "text/plain;charset=utf-8" }, {
-                    name: "sitemap.xml" , content: generateSitemap(), type: "application/xml;charset=utf-8" }, {
-                    name: "seo-head.html" , content: generateHead(), type: "text/html;charset=utf-8" }, {
-                    name: "site.webmanifest" , content: generateManifest(), type: "application/manifest+json;charset=utf-8"
-                    }, { name: "llms.txt" , content: generateLlms(), type: "text/plain;charset=utf-8" }, {
-                    name: "SEO-REPORT.txt" , content: generateReport(), type: "text/plain;charset=utf-8" } ]; /* * Browsers
-                    can block rapid multi-downloads. * A small delay between files makes the operation * considerably more
-                    reliable. */ files.forEach((file, index)=> {
-                    setTimeout(() => {
+    function downloadRobots() {
+        downloadFile(
+            "robots.txt",
+            generateRobots()
+        );
+    }
+    
+    function downloadSitemap() {
+        downloadFile(
+            "sitemap.xml",
+            generateSitemap(),
+            "application/xml;charset=utf-8"
+        );
+    }
+    
+    function downloadHead() {
+        downloadFile(
+            "seo-head.html",
+            generateHead(),
+            "text/html;charset=utf-8"
+        );
+    }
+    
+    function downloadJsonLd() {
+        downloadFile(
+            "structured-data.json",
+            generateJsonLd() + "\n",
+            "application/ld+json;charset=utf-8"
+        );
+    }
+    
+    function downloadManifest() {
+        downloadFile(
+            "site.webmanifest",
+            generateManifest(),
+            "application/manifest+json;charset=utf-8"
+        );
+    }
+    
+    function downloadLlms() {
+        downloadFile(
+            "llms.txt",
+            generateLlms()
+        );
+    }
+    
+    function downloadReport() {
+        downloadFile(
+            "seo-report.txt",
+            generateReport()
+        );
+    }
+    
+    /* =========================================================
+       DOWNLOAD ALL
+    ========================================================= */
+    
+    function downloadAll() {
+        const files = generateAll();
+    
+        if (!files) return;
+    
+        Object.entries(files).forEach(
+            ([filename, content], index) => {
+                setTimeout(() => {
                     downloadFile(
-                    file.name,
-                    file.content,
-                    file.type
+                        filename,
+                        content,
+                        filename.endsWith(".xml")
+                            ? "application/xml;charset=utf-8"
+                            : filename.endsWith(".html")
+                                ? "text/html;charset=utf-8"
+                                : "text/plain;charset=utf-8"
                     );
-                    }, index * 400);
-                    });
-                    }
+                }, index * 250);
+            }
+        );
     
+        showStatus(
+            "All SEO files generated and downloaded."
+        );
+    }
     
-                    /* =========================================================
-                    MAIN GENERATION
-                    ========================================================= */
+    /* =========================================================
+       COPY OUTPUT
+    ========================================================= */
     
-                    function generate() {
-                    $("robotsOutput").textContent =
-                    generateRobots();
+    function copyText(text) {
+        if (
+            navigator.clipboard &&
+            window.isSecureContext
+        ) {
+            return navigator.clipboard.writeText(text);
+        }
     
-                    $("sitemapOutput").textContent =
-                    generateSitemap();
+        const textarea =
+            document.createElement("textarea");
     
-                    $("headOutput").textContent =
-                    generateHead();
+        textarea.value = text;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
     
-                    $("jsonOutput").textContent =
-                    generateJsonLd();
+        document.body.appendChild(textarea);
     
-                    $("manifestOutput").textContent =
-                    generateManifest();
+        textarea.focus();
+        textarea.select();
     
-                    $("llmsOutput").textContent =
-                    generateLlms();
+        try {
+            document.execCommand("copy");
+        } finally {
+            textarea.remove();
+        }
     
-                    updatePreview();
-                    renderValidation();
-                    }
+        return Promise.resolve();
+    }
     
+    function copyHead() {
+        copyText(generateHead())
+            .then(() => showStatus("SEO head copied."));
+    }
     
-                    /* =========================================================
-                    EVENT HANDLERS
-                    ========================================================= */
+    function copyRobots() {
+        copyText(generateRobots())
+            .then(() => showStatus("robots.txt copied."));
+    }
     
-                    document
-                    .querySelectorAll(
-                    "input, textarea, select"
-                    )
-                    .forEach(element => {
-                    element.addEventListener(
+    function copySitemap() {
+        copyText(generateSitemap())
+            .then(() => showStatus("sitemap.xml copied."));
+    }
+    
+    function copyJsonLd() {
+        copyText(generateJsonLd())
+            .then(() => showStatus("JSON-LD copied."));
+    }
+    
+    /* =========================================================
+       OUTPUT PREVIEW
+    ========================================================= */
+    
+    function updateOutputPreview() {
+        const headOutput = $("headOutput");
+        const robotsOutput = $("robotsOutput");
+        const sitemapOutput = $("sitemapOutput");
+        const jsonLdOutput = $("jsonLdOutput");
+    
+        if (headOutput) {
+            headOutput.textContent = generateHead();
+        }
+    
+        if (robotsOutput) {
+            robotsOutput.textContent = generateRobots();
+        }
+    
+        if (sitemapOutput) {
+            sitemapOutput.textContent = generateSitemap();
+        }
+    
+        if (jsonLdOutput) {
+            jsonLdOutput.textContent = generateJsonLd();
+        }
+    }
+    
+    /* =========================================================
+       FORM EVENTS
+    ========================================================= */
+    
+    function bindInputs() {
+        document.querySelectorAll("input, textarea, select")
+            .forEach(element => {
+                element.addEventListener(
                     "input",
-                    generate
-                    );
+                    updateOutputPreview
+                );
     
-                    element.addEventListener(
+                element.addEventListener(
                     "change",
-                    generate
-                    );
-                    });
+                    updateOutputPreview
+                );
     
-                    $("enableSearchAction")
-                    .addEventListener(
+                element.addEventListener(
+                    "input",
+                    updatePreview
+                );
+    
+                element.addEventListener(
                     "change",
-                    () => {
-                    $("searchActionFields")
-                    .classList.toggle(
-                    "hidden",
-                    !$("enableSearchAction").checked
-                    );
+                    updatePreview
+                );
+            });
+    }
     
-                    generate();
-                    }
-                    );
+    /* =========================================================
+       BUTTON DISCOVERY
+    ========================================================= */
     
+    function bindButtons() {
+        const mappings = {
+            addPageBtn: addPage,
+            addCommonPagesBtn: addCommonPages,
+            validateBtn: validate,
+            generateBtn: generateAll,
+            downloadAllBtn: downloadAll,
+            downloadRobotsBtn: downloadRobots,
+            downloadSitemapBtn: downloadSitemap,
+            downloadHeadBtn: downloadHead,
+            downloadJsonLdBtn: downloadJsonLd,
+            downloadManifestBtn: downloadManifest,
+            downloadLlmsBtn: downloadLlms,
+            downloadReportBtn: downloadReport,
+            copyHeadBtn: copyHead,
+            copyRobotsBtn: copyRobots,
+            copySitemapBtn: copySitemap,
+            copyJsonLdBtn: copyJsonLd
+        };
     
-                    /* =========================================================
-                    INITIAL DATA
-                    ========================================================= */
+        Object.entries(mappings).forEach(
+            ([id, handler]) => {
+                const element = $(id);
     
-                    addPage(
-                    "/",
-                    "",
-                    "weekly",
-                    "1.0"
-                    );
+                if (!element) return;
     
-                    addPage(
-                    "/about",
-                    "",
-                    "monthly",
-                    "0.8"
-                    );
+                element.addEventListener(
+                    "click",
+                    handler
+                );
+            }
+        );
+    }
     
-                    addPage(
-                    "/projects",
-                    "",
-                    "weekly",
-                    "0.8"
-                    );
+    /* =========================================================
+       INITIALIZATION
+    ========================================================= */
     
+    function initialize() {
+        renderPages();
+        bindInputs();
+        bindButtons();
+        updatePreview();
+        updateOutputPreview();
+        validate();
+    }
     
-                    /* =========================================================
-                    INITIAL GENERATION
-                    ========================================================= */
+    if (document.readyState === "loading") {
+        document.addEventListener(
+            "DOMContentLoaded",
+            initialize
+        );
+    } else {
+        initialize();
+    }
     
-                    generate();
+    /* =========================================================
+       GLOBAL FUNCTIONS
+       Needed by existing inline onclick="" attributes.
+    ========================================================= */
     
-                    </script>
+    window.addPage = addPage;
+    window.removePage = removePage;
+    window.addCommonPages = addCommonPages;
+    
+    window.validate = validate;
+    window.generateAll = generateAll;
+    
+    window.downloadRobots = downloadRobots;
+    window.downloadSitemap = downloadSitemap;
+    window.downloadHead = downloadHead;
+    window.downloadJsonLd = downloadJsonLd;
+    window.downloadManifest = downloadManifest;
+    window.downloadLlms = downloadLlms;
+    window.downloadReport = downloadReport;
+    window.downloadAll = downloadAll;
+    
+    window.copyHead = copyHead;
+    window.copyRobots = copyRobots;
+    window.copySitemap = copySitemap;
+    window.copyJsonLd = copyJsonLd;
+    </script>
 
 </body>
 
