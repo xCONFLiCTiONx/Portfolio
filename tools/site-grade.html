@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>SiteGrade — Website audit v1.0</title>
+    <title>SiteGrade — Website audit</title>
     <style>
         :root {
             color-scheme: light dark;
@@ -27,7 +27,8 @@
             margin: 0;
             background: var(--bg);
             color: var(--text);
-            font: 15px/1.5 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            font: 15px/1.5 Inter, ui-sans-serif, system-ui, -apple-system,
+                BlinkMacSystemFont, "Segoe UI", sans-serif;
         }
 
         #app {
@@ -104,7 +105,7 @@
             font-size: clamp(30px, 5vw, 43px);
             letter-spacing: -1.6px;
             line-height: 1.1;
-            margin: 10px 0 10px;
+            margin: 10px 0;
         }
 
         .sub {
@@ -335,37 +336,37 @@
 
         @media(max-width:760px) {
             main {
-                padding-top: 30px
+                padding-top: 30px;
             }
 
             .grid {
-                grid-template-columns: 1fr
+                grid-template-columns: 1fr;
             }
 
             .search {
-                flex-wrap: wrap
+                flex-wrap: wrap;
             }
 
             .search input {
                 height: 42px;
-                flex-basis: 100%
+                flex-basis: 100%;
             }
 
             .search button {
-                width: 100%
+                width: 100%;
             }
 
             .score-wrap {
-                gap: 15px
+                gap: 15px;
             }
 
             .grade {
                 width: 92px;
-                height: 92px
+                height: 92px;
             }
 
             .grade span {
-                font-size: 32px
+                font-size: 32px;
             }
         }
     </style>
@@ -374,8 +375,8 @@
 <body>
     <div id="app">
         <header class="top">
-            <div class="brand"><span class="mark">S</span> SiteGrade</div><a class="back"
-                href="https://xconflictionx.cc/tools/">← Back to Tools</a>
+            <div class="brand"><span class="mark">S</span> SiteGrade</div>
+            <a class="back" href="https://xconflictionx.cc/tools/">← Back to Tools</a>
         </header>
         <main>
             <div class="eyebrow">Website scanner</div>
@@ -383,11 +384,13 @@
             <p class="sub">Run a real public-facing audit for security, privacy, performance, SEO, configuration, and
                 accessibility. Get a score, evidence-backed findings, and clear areas to improve.</p>
             <form class="search" id="scanForm">
-                <input id="url" type="url" placeholder="https://example.com" aria-label="Website URL" required><button id="scanBtn" type="submit">Scan website <span aria-hidden="true">→</span></button>
+                <input id="url" type="url" placeholder="https://example.com" aria-label="Website URL" required>
+                <button id="scanBtn" type="submit">Scan website <span aria-hidden="true">→</span></button>
             </form>
             <p class="note">Scan only websites you own or have permission to assess. SiteGrade uses a Cloudflare Worker
                 to perform the public-facing audit.</p>
             <div class="status" id="status" role="status"></div>
+
             <section class="grid" aria-label="Example audit dashboard">
                 <div class="card">
                     <h2>Overall assessment <span class="pill" id="statePill" style="float:right">Ready</span></h2>
@@ -401,6 +404,7 @@
                     </div>
                     <div class="footer" id="scanMeta">No site has been scanned yet.</div>
                 </div>
+
                 <div class="card">
                     <h2>Audit categories</h2>
                     <div class="metrics">
@@ -430,12 +434,14 @@
                         </div>
                     </div>
                 </div>
+
                 <div class="card">
                     <h2>Findings</h2>
                     <p class="sidecopy" id="findingIntro">Run a scan to see evidence-backed findings from the connected
                         scanner.</p>
                     <div class="findings" id="findings">
-                        <div class="finding"><span class="dot"></span>
+                        <div class="finding">
+                            <span class="dot"></span>
                             <div><b>Waiting for results</b>
                                 <p>The scanner will report verified observations here.</p>
                             </div>
@@ -443,6 +449,7 @@
                     </div>
                     <div class="footer" id="scanDetails"></div>
                 </div>
+
                 <div class="card">
                     <h2>Audit coverage</h2>
                     <p class="sidecopy">SiteGrade evaluates what can be verified from the public website without
@@ -460,25 +467,166 @@
             </section>
         </main>
     </div>
+
     <script>
-        const API_URL='https://scanner.xconflictionx.cc/scan';
-const form=document.getElementById('scanForm');
-const input=document.getElementById('url');
-const statusBox=document.getElementById('status');
-const btn=document.getElementById('scanBtn');
-function setScore(id,value){const el=document.getElementById(id);el.textContent=value+'/100';el.classList.toggle('good',value>=80);}
-function esc(value){return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-function renderFindings(items){const box=document.getElementById('findings');if(!items?.length){box.innerHTML='<div class="finding"><span class="dot" style="background:var(--green)"></span><div><b>No findings returned</b><p>The connected checks did not report an issue.</p></div></div>';return;}box.innerHTML=items.map(f=>{const sev=String(f.severity||'info').toLowerCase();const dot=sev==='info'?'var(--green)':'var(--amber)';return '<div class="finding"><span class="dot" style="background:'+dot+'"></span><div><b>'+esc(sev.toUpperCase())+' · '+esc(f.title)+'</b><p>'+esc(f.detail||f.description||'')+'</p></div></div>';}).join('');}
-function renderDetails(data){const p=data.page||{},perf=data.performance||{},priv=data.privacy||{},acc=data.accessibility||{},cfg=data.configuration||{};const items=[['Page',p.title||'Untitled'],['HTML',p.htmlBytes?Math.round(p.htmlBytes/1024)+' KiB':'—'],['Links',String(p.links??'—')],['Images',String(perf.imageCount??acc.imageCount??'—')],['Third parties',String(priv.thirdPartyOrigins?.length??'—')],['Response',perf.ttfbMs!=null?perf.ttfbMs+' ms':'—']];document.getElementById('findingIntro').textContent=(data.findings||[]).length+' verified observation(s) returned by scanner '+(data.scannerVersion||'')+'.';document.getElementById('scanDetails').textContent=items.map(x=>esc(x[0])+': '+esc(x[1])).join(' · ')+' · redirects: '+esc(cfg.redirects??0)+' · missing alt: '+esc(acc.missingAlt??0);}
-form.addEventListener('submit',async event=>{
- event.preventDefault();
- let parsed;
- try { parsed=new URL(input.value.trim()); } catch { statusBox.className='status show';statusBox.textContent='Enter a valid website URL, including https:// or http://.';return; }
- if(!['http:','https:'].includes(parsed.protocol)){statusBox.className='status show';statusBox.textContent='Only HTTP and HTTPS website URLs are supported.';return;}
- btn.disabled=true;btn.textContent='Scanning…';statusBox.className='status show';statusBox.innerHTML='<strong>Scanning:</strong> '+esc(parsed.href)+'<br>Fetching the public page and running security, privacy, SEO, performance, and configuration checks…';
- try { const response=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:parsed.href})}); const data=await response.json().catch(()=>({error:'Scanner returned invalid JSON.'})); if(!response.ok) throw new Error(data.error||'Scanner returned HTTP '+response.status); const scores=data.scores||{}; const overall=Number(data.overall?.score??data.score??0); document.getElementById('grade').textContent=data.overall?.grade||data.grade||'—'; document.getElementById('scoreTitle').textContent=overall+'/100 overall score';document.getElementById('scoreDesc').textContent=data.finalUrl?'Audited '+data.finalUrl:'Audit completed';document.getElementById('statePill').textContent='Complete';document.getElementById('statePill').classList.add('good');document.getElementById('scanMeta').textContent='Scanned '+new Date().toLocaleString()+' · '+(data.durationMs||0)+' ms';['security','privacy','performance','seo','configuration','accessibility'].forEach(k=>setScore(k+'Score',Number(scores[k]??0)));renderFindings(data.findings||[]);renderDetails(data);statusBox.innerHTML='<strong>Scan complete:</strong> '+esc(data.finalUrl||parsed.href)+'<br>'+esc(data.summary||'Results are based on checks the Worker could verify from the public site.');
- } catch(error) { statusBox.innerHTML='<strong>Scan failed:</strong> '+esc(error.message)+'<br><br>Check that the Worker URL is deployed and that its CORS policy allows this SiteGrade page.'; }
- finally {btn.disabled=false;btn.innerHTML='Scan website <span aria-hidden="true">→</span>';}
+        const API_URL = 'https://scanner.xconflictionx.cc/scan';
+const form = document.getElementById('scanForm');
+const input = document.getElementById('url');
+const statusBox = document.getElementById('status');
+const btn = document.getElementById('scanBtn');
+
+function setScore(id, value) {
+  const el = document.getElementById(id);
+  el.textContent = value + '/100';
+  el.classList.toggle('good', value >= 80);
+}
+
+function esc(value) {
+  return String(value ?? '').replace(/[&<>"']/g, c => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  }[c]));
+}
+
+function renderFindings(items) {
+  const box = document.getElementById('findings');
+
+  if (!items?.length) {
+    box.innerHTML = '<div class="finding"><span class="dot" style="background:var(--green)"></span><div><b>No findings returned</b><p>The connected checks did not report an issue.</p></div></div>';
+    return;
+  }
+
+  box.innerHTML = items.map(f => {
+    const sev = String(f.severity || 'info').toLowerCase();
+    const dot = sev === 'info' ? 'var(--green)' : 'var(--amber)';
+
+    return '<div class="finding"><span class="dot" style="background:' + dot + '"></span><div><b>' +
+      esc(sev.toUpperCase()) + ' · ' + esc(f.title) +
+      '</b><p>' + esc(f.detail || f.description || '') +
+      '</p></div></div>';
+  }).join('');
+}
+
+function renderDetails(data) {
+  const p = data.page || {};
+  const perf = data.performance || {};
+  const priv = data.privacy || {};
+  const acc = data.accessibility || {};
+  const cfg = data.configuration || {};
+  const findings = data.findings || [];
+
+  const items = [
+    ['Page', p.title || 'Untitled'],
+    ['HTML', p.htmlBytes ? Math.round(p.htmlBytes / 1024) + ' KiB' : '—'],
+    ['Links', String(p.links ?? '—')],
+    ['Images', String(perf.imageCount ?? acc.imageCount ?? '—')],
+    ['Third parties', String(priv.thirdPartyOrigins?.length ?? '—')],
+    ['Response', perf.ttfbMs != null ? perf.ttfbMs + ' ms' : '—']
+  ];
+
+  const actionable = findings.filter(f =>
+    String(f.severity || 'info').toLowerCase() !== 'info'
+  ).length;
+
+  document.getElementById('findingIntro').textContent =
+    findings.length + ' verified observation(s) · ' +
+    actionable + ' actionable finding(s) returned by scanner ' +
+    (data.scannerVersion || '') + '.';
+
+  document.getElementById('scanDetails').textContent =
+    items.map(x => esc(x[0]) + ': ' + esc(x[1])).join(' · ') +
+    ' · redirects: ' + esc(cfg.redirects ?? 0) +
+    ' · missing alt: ' + esc(acc.missingAlt ?? 0);
+}
+
+form.addEventListener('submit', async event => {
+  event.preventDefault();
+
+  let parsed;
+  try {
+    parsed = new URL(input.value.trim());
+  } catch {
+    statusBox.className = 'status show';
+    statusBox.textContent = 'Enter a valid website URL, including https:// or http://.';
+    return;
+  }
+
+  if (!['http:', 'https:'].includes(parsed.protocol)) {
+    statusBox.className = 'status show';
+    statusBox.textContent = 'Only HTTP and HTTPS website URLs are supported.';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Scanning…';
+  statusBox.className = 'status show';
+  statusBox.innerHTML =
+    '<strong>Scanning:</strong> ' + esc(parsed.href) +
+    '<br>Fetching the public page and running security, privacy, SEO, performance, and configuration checks…';
+
+  try {
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: parsed.href })
+    });
+
+    const data = await response.json().catch(() => ({
+      error: 'Scanner returned invalid JSON.'
+    }));
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Scanner returned HTTP ' + response.status);
+    }
+
+    const scores = data.scores || {};
+    const overall = Number(data.overall?.score ?? data.score ?? 0);
+
+    document.getElementById('grade').textContent =
+      data.overall?.grade || data.grade || '—';
+
+    document.getElementById('scoreTitle').textContent =
+      overall + '/100 overall score';
+
+    document.getElementById('scoreDesc').textContent =
+      data.finalUrl ? 'Audited ' + data.finalUrl : 'Audit completed';
+
+    document.getElementById('statePill').textContent = 'Complete';
+    document.getElementById('statePill').classList.add('good');
+
+    document.getElementById('scanMeta').textContent =
+      'Scanned ' + new Date().toLocaleString() +
+      ' · ' + (data.durationMs || 0) + ' ms';
+
+    [
+      'security',
+      'privacy',
+      'performance',
+      'seo',
+      'configuration',
+      'accessibility'
+    ].forEach(k => setScore(k + 'Score', Number(scores[k] ?? 0)));
+
+    renderFindings(data.findings || []);
+    renderDetails(data);
+
+    statusBox.innerHTML =
+      '<strong>Scan complete:</strong> ' +
+      esc(data.finalUrl || parsed.href) + '<br>' +
+      esc(data.summary ||
+        'Results are based on checks the Worker could verify from the public site.');
+
+  } catch (error) {
+    statusBox.innerHTML =
+      '<strong>Scan failed:</strong> ' + esc(error.message) +
+      '<br><br>Check that the Worker URL is deployed and that its CORS policy allows this SiteGrade page.';
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = 'Scan website <span aria-hidden="true">→</span>';
+  }
 });
     </script>
 </body>
