@@ -71,6 +71,21 @@
             font-size: 12px;
         }
 
+        .back {
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 7px 10px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+        }
+
+        .back:hover {
+            color: var(--text);
+            border-color: var(--accent);
+        }
+
         main {
             max-width: 1160px;
             margin: 0 auto;
@@ -359,14 +374,14 @@
 <body>
     <div id="app">
         <header class="top">
-            <div class="brand"><span class="mark">S</span> SiteGrade</div>
-            <div class="tag">WEBSITE AUDIT WORKSPACE</div>
+            <div class="brand"><span class="mark">S</span> SiteGrade</div><a class="back"
+                href="https://xconflictionx.cc/tools/">← Back to Tools</a>
         </header>
         <main>
             <div class="eyebrow">Website scanner</div>
             <h1>Know what your website<br>is really made of.</h1>
-            <p class="sub">Enter a public website URL to audit its security, privacy, performance, SEO, and
-                configuration. Review findings and understand what to fix.</p>
+            <p class="sub">Run a real public-facing audit for security, privacy, performance, SEO, configuration, and
+                accessibility. Get a score, evidence-backed findings, and clear areas to improve.</p>
             <form class="search" id="scanForm">
                 <input id="url" type="url" placeholder="https://example.com" aria-label="Website URL" required><button id="scanBtn" type="submit">Scan website <span aria-hidden="true">→</span></button>
             </form>
@@ -417,7 +432,8 @@
                 </div>
                 <div class="card">
                     <h2>Findings</h2>
-                    <p class="sidecopy" id="findingIntro">Run a scan to see evidence-backed findings.</p>
+                    <p class="sidecopy" id="findingIntro">Run a scan to see evidence-backed findings from the connected
+                        scanner.</p>
                     <div class="findings" id="findings">
                         <div class="finding"><span class="dot"></span>
                             <div><b>Waiting for results</b>
@@ -427,15 +443,17 @@
                     </div>
                 </div>
                 <div class="card">
-                    <h2>What a connected scan checks</h2>
-                    <p class="sidecopy">The scanner can inspect public-facing behavior without installing software on
-                        the target site.</p>
+                    <h2>Audit coverage</h2>
+                    <p class="sidecopy">SiteGrade evaluates what can be verified from the public website without
+                        installing software or requiring access to the target server.</p>
                     <ul class="list">
-                        <li><span class="check">✓</span> HTTPS, certificate, redirects, and security headers</li>
-                        <li><span class="check">✓</span> Public DNS records and common configuration issues</li>
-                        <li><span class="check">✓</span> Page metadata, links, and crawl directives</li>
-                        <li><span class="check">✓</span> Cookie and third-party resource inventory</li>
-                        <li><span class="check">✓</span> Performance measurements and recommendations</li>
+                        <li><span class="check">✓</span> HTTPS, redirects, and security response headers</li>
+                        <li><span class="check">✓</span> Cookies and third-party resources</li>
+                        <li><span class="check">✓</span> Titles, descriptions, canonicals, headings, and crawl signals
+                        </li>
+                        <li><span class="check">✓</span> HTML response time, size, compression, and caching</li>
+                        <li><span class="check">✓</span> Accessibility structure and common image/text issues</li>
+                        <li><span class="check">✓</span> Public-facing configuration observations</li>
                     </ul>
                 </div>
             </section>
