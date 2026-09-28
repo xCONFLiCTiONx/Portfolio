@@ -134,6 +134,20 @@
         "sidebar": false,
         "footer": true
       }
+    },
+    {
+      "id": "image-tool",
+      "name": "Image Tool",
+      "description": "Manipulates images for websites and programs.",
+      "path": "tools/image-tool/",
+      "icon": "im im-shield",
+      "category": "Developer Utility",
+      "enabled": true,
+      "layout": {
+        "header": true,
+        "sidebar": false,
+        "footer": true
+      }
     }
   ]
 }
