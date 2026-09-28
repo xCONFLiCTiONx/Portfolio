@@ -4,19 +4,23 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>SiteGrade — Website audit</title>
+    <title>SiteGrade — Website Audit</title>
+
     <style>
         :root {
             color-scheme: light dark;
+
             --bg: light-dark(#f4f6fa, #0b1018);
             --panel: light-dark(#ffffff, #121a25);
             --panel2: light-dark(#f8fafc, #172130);
             --text: light-dark(#172033, #edf2fa);
             --muted: light-dark(#64748b, #9ba9bc);
             --line: light-dark(#e3e8f0, #263244);
+
             --accent: light-dark(#635bdb, #a59dff);
             --green: light-dark(#16845b, #53d6a1);
             --amber: light-dark(#b7791f, #f4c46b);
+            --red: light-dark(#c53030, #ff7777);
         }
 
         * {
@@ -34,8 +38,7 @@
         #app {
             min-height: 100vh;
             width: 100%;
-            background-color: var(--bg);
-            border-radius: 0;
+            background: var(--bg);
         }
 
         .top {
@@ -44,7 +47,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 max(24px, calc((100% - 1160px)/2));
+            padding: 0 max(24px, calc((100% - 1160px) / 2));
         }
 
         .brand {
@@ -111,7 +114,7 @@
         .sub {
             color: var(--muted);
             margin: 0 0 27px;
-            max-width: 700px;
+            max-width: 760px;
         }
 
         .search {
@@ -304,6 +307,21 @@
             margin: 3px 0 0;
         }
 
+        .finding.evidence {
+            display: block;
+        }
+
+        .finding-evidence {
+            margin-top: 8px;
+            padding: 9px 10px;
+            border-radius: 8px;
+            background: var(--panel2);
+            color: var(--muted);
+            font: 11px/1.45 ui-monospace, SFMono-Regular, Consolas, monospace;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+        }
+
         .sidecopy {
             color: var(--muted);
             font-size: 13px;
@@ -328,10 +346,61 @@
             font-weight: 900;
         }
 
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .detail {
+            background: var(--panel2);
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            padding: 11px;
+        }
+
+        .detail-label {
+            color: var(--muted);
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: .8px;
+        }
+
+        .detail-value {
+            margin-top: 3px;
+            font-size: 13px;
+            font-weight: 700;
+            overflow-wrap: anywhere;
+        }
+
+        .subsection {
+            margin-top: 20px;
+        }
+
+        .subsection h3 {
+            font-size: 12px;
+            margin: 0 0 9px;
+        }
+
+        .code-list {
+            background: var(--panel2);
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            padding: 10px;
+            font: 11px/1.55 ui-monospace, SFMono-Regular, Consolas, monospace;
+            color: var(--muted);
+            overflow-wrap: anywhere;
+        }
+
         .footer {
             color: var(--muted);
             font-size: 11px;
             margin-top: 18px;
+        }
+
+        .error {
+            color: var(--red);
         }
 
         @media(max-width:760px) {
@@ -368,267 +437,687 @@
             .grade span {
                 font-size: 32px;
             }
+
+            .metrics {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 
 <body>
     <div id="app">
+
         <header class="top">
-            <div class="brand"><span class="mark">S</span> SiteGrade</div>
-            <a class="back" href="https://xconflictionx.cc/tools/">← Back to Tools</a>
+            <div class="brand">
+                <span class="mark">S</span>
+                SiteGrade
+            </div>
+
+            <a class="back" href="https://xconflictionx.cc/tools/">
+                ← Back to Tools
+            </a>
         </header>
+
         <main>
+
             <div class="eyebrow">Website scanner</div>
-            <h1>Know what your website<br>is really made of.</h1>
-            <p class="sub">Run a real public-facing audit for security, privacy, performance, SEO, configuration, and
-                accessibility. Get a score, evidence-backed findings, and clear areas to improve.</p>
+
+            <h1>
+                Know what your website<br>
+  is really made of.
+            </h1>
+
+            <p class="sub">
+                Run a real public-facing audit for security, privacy, performance,
+                SEO, configuration, and accessibility. Get a score, verified evidence,
+                and clear areas to improve.
+            </p>
+
             <form class="search" id="scanForm">
-                <input id="url" type="url" placeholder="https://example.com" aria-label="Website URL" required>
-                <button id="scanBtn" type="submit">Scan website <span aria-hidden="true">→</span></button>
+                <input
+    id="url"
+    type="url"
+    placeholder="https://example.com"
+    aria-label="Website URL"
+    required
+  >
+
+                <button id="scanBtn" type="submit">
+    Scan website
+    <span aria-hidden="true">→</span>
+  </button>
             </form>
-            <p class="note">Scan only websites you own or have permission to assess. SiteGrade uses a Cloudflare Worker
-                to perform the public-facing audit.</p>
+
+            <p class="note">
+                Scan only websites you own or have permission to assess.
+                SiteGrade performs a public-facing audit through its Cloudflare Worker.
+            </p>
+
             <div class="status" id="status" role="status"></div>
 
-            <section class="grid" aria-label="Example audit dashboard">
+            <section class="grid" aria-label="SiteGrade audit results">
+
                 <div class="card">
-                    <h2>Overall assessment <span class="pill" id="statePill" style="float:right">Ready</span></h2>
+                    <h2>
+                        Overall assessment
+                        <span class="pill" id="statePill" style="float:right">
+        Ready
+      </span>
+                    </h2>
+
                     <div class="score-wrap">
-                        <div class="grade" id="gradeRing"><span id="grade">—</span></div>
+                        <div class="grade" id="gradeRing">
+                            <span id="grade">—</span>
+                        </div>
+
                         <div>
-                            <div class="score-title" id="scoreTitle">Awaiting scan</div>
-                            <div class="score-desc" id="scoreDesc">Enter a public website URL and run a real audit.
+                            <div class="score-title" id="scoreTitle">
+                                Awaiting scan
+                            </div>
+
+                            <div class="score-desc" id="scoreDesc">
+                                Enter a public website URL and run a real audit.
                             </div>
                         </div>
                     </div>
-                    <div class="footer" id="scanMeta">No site has been scanned yet.</div>
+
+                    <div class="footer" id="scanMeta">
+                        No site has been scanned yet.
+                    </div>
                 </div>
+
 
                 <div class="card">
                     <h2>Audit categories</h2>
+
                     <div class="metrics">
+
                         <div class="metric">
-                            <div class="metric-top">Security <span class="pill" id="securityScore">—</span></div>
-                            <small>TLS, headers, exposed risks</small>
+                            <div class="metric-top">
+                                Security
+                                <span class="pill" id="securityScore">—</span>
+                            </div>
+                            <small>TLS, headers, mixed content, exposed risks</small>
                         </div>
+
                         <div class="metric">
-                            <div class="metric-top">Privacy <span class="pill" id="privacyScore">—</span></div>
-                            <small>Cookies, trackers, third parties</small>
+                            <div class="metric-top">
+                                Privacy
+                                <span class="pill" id="privacyScore">—</span>
+                            </div>
+                            <small>Cookies and third-party resources</small>
                         </div>
+
                         <div class="metric">
-                            <div class="metric-top">Performance <span class="pill" id="performanceScore">—</span></div>
-                            <small>Response, assets, load metrics</small>
+                            <div class="metric-top">
+                                Performance
+                                <span class="pill" id="performanceScore">—</span>
+                            </div>
+                            <small>Response timing, compression, scripts, caching</small>
                         </div>
+
                         <div class="metric">
-                            <div class="metric-top">SEO <span class="pill" id="seoScore">—</span></div>
-                            <small>Metadata, crawlability, structure</small>
+                            <div class="metric-top">
+                                SEO
+                                <span class="pill" id="seoScore">—</span>
+                            </div>
+                            <small>Metadata, headings, canonicals, crawl signals</small>
                         </div>
+
                         <div class="metric">
-                            <div class="metric-top">Configuration <span class="pill" id="configurationScore">—</span>
-                            </div><small>DNS, redirects, server setup</small>
+                            <div class="metric-top">
+                                Configuration
+                                <span class="pill" id="configurationScore">—</span>
+                            </div>
+                            <small>Public files, redirects, robots, sitemap</small>
                         </div>
+
                         <div class="metric">
-                            <div class="metric-top">Accessibility <span class="pill" id="accessibilityScore">—</span>
-                            </div><small>Semantic and usability checks</small>
+                            <div class="metric-top">
+                                Accessibility
+                                <span class="pill" id="accessibilityScore">—</span>
+                            </div>
+                            <small>Language, images, forms, headings, landmarks</small>
                         </div>
+
                     </div>
                 </div>
+
 
                 <div class="card">
                     <h2>Findings</h2>
-                    <p class="sidecopy" id="findingIntro">Run a scan to see evidence-backed findings from the connected
-                        scanner.</p>
+
+                    <p class="sidecopy" id="findingIntro">
+                        Run a scan to see verified observations from the connected scanner.
+                    </p>
+
                     <div class="findings" id="findings">
                         <div class="finding">
                             <span class="dot"></span>
-                            <div><b>Waiting for results</b>
-                                <p>The scanner will report verified observations here.</p>
+
+                            <div>
+                                <b>Waiting for results</b>
+                                <p>
+                                    The scanner will report verified observations here.
+                                </p>
                             </div>
                         </div>
                     </div>
-                    <div class="footer" id="scanDetails"></div>
                 </div>
+
+
+                <div class="card">
+                    <h2>Scan details</h2>
+
+                    <div class="detail-grid">
+
+                        <div class="detail">
+                            <div class="detail-label">Final URL</div>
+                            <div class="detail-value" id="detailUrl">—</div>
+                        </div>
+
+                        <div class="detail">
+                            <div class="detail-label">HTTP status</div>
+                            <div class="detail-value" id="detailStatus">—</div>
+                        </div>
+
+                        <div class="detail">
+                            <div class="detail-label">Response time</div>
+                            <div class="detail-value" id="detailTtfb">—</div>
+                        </div>
+
+                        <div class="detail">
+                            <div class="detail-label">Scan duration</div>
+                            <div class="detail-value" id="detailDuration">—</div>
+                        </div>
+
+                        <div class="detail">
+                            <div class="detail-label">HTML size</div>
+                            <div class="detail-value" id="detailHtml">—</div>
+                        </div>
+
+                        <div class="detail">
+                            <div class="detail-label">Links</div>
+                            <div class="detail-value" id="detailLinks">—</div>
+                        </div>
+
+                        <div class="detail">
+                            <div class="detail-label">Images</div>
+                            <div class="detail-value" id="detailImages">—</div>
+                        </div>
+
+                        <div class="detail">
+                            <div class="detail-label">Third-party origins</div>
+                            <div class="detail-value" id="detailThirdParty">—</div>
+                        </div>
+
+                        <div class="detail">
+                            <div class="detail-label">Redirects</div>
+                            <div class="detail-value" id="detailRedirects">—</div>
+                        </div>
+
+                        <div class="detail">
+                            <div class="detail-label">Missing image alt</div>
+                            <div class="detail-value" id="detailAlt">—</div>
+                        </div>
+
+                        <div class="detail">
+                            <div class="detail-label">Cookies</div>
+                            <div class="detail-value" id="detailCookies">—</div>
+                        </div>
+
+                        <div class="detail">
+                            <div class="detail-label">Scanner</div>
+                            <div class="detail-value" id="detailScanner">—</div>
+                        </div>
+
+                    </div>
+
+                    <div class="subsection">
+                        <h3>Third-party origins</h3>
+                        <div class="code-list" id="thirdPartyList">
+                            None detected.
+                        </div>
+                    </div>
+
+                    <div class="subsection">
+                        <h3>DNS observations</h3>
+                        <div class="code-list" id="dnsList">
+                            No DNS results yet.
+                        </div>
+                    </div>
+                </div>
+
 
                 <div class="card">
                     <h2>Audit coverage</h2>
-                    <p class="sidecopy">SiteGrade evaluates what can be verified from the public website without
-                        installing software or requiring access to the target server.</p>
+
+                    <p class="sidecopy">
+                        SiteGrade evaluates what can be verified from the public website
+                        without installing software or requiring access to the target server.
+                    </p>
+
                     <ul class="list">
-                        <li><span class="check">✓</span> HTTPS, redirects, and security response headers</li>
-                        <li><span class="check">✓</span> Cookies and third-party resources</li>
-                        <li><span class="check">✓</span> Titles, descriptions, canonicals, headings, and crawl signals
+                        <li>
+                            <span class="check">✓</span>
+                            HTTPS, redirects, and security response headers
                         </li>
-                        <li><span class="check">✓</span> HTML response time, size, compression, and caching</li>
-                        <li><span class="check">✓</span> Accessibility structure and common image/text issues</li>
-                        <li><span class="check">✓</span> Public-facing configuration observations</li>
+
+                        <li>
+                            <span class="check">✓</span>
+                            CSP, clickjacking protection, mixed content, and HSTS
+                        </li>
+
+                        <li>
+                            <span class="check">✓</span>
+                            Cookies and third-party resources
+                        </li>
+
+                        <li>
+                            <span class="check">✓</span>
+                            Titles, descriptions, canonicals, headings, and crawl signals
+                        </li>
+
+                        <li>
+                            <span class="check">✓</span>
+                            Response timing, compression, caching, and scripts
+                        </li>
+
+                        <li>
+                            <span class="check">✓</span>
+                            Accessibility structure, forms, IDs, and image alt text
+                        </li>
+
+                        <li>
+                            <span class="check">✓</span>
+                            Public configuration and accidental exposure checks
+                        </li>
+
+                        <li>
+                            <span class="check">✓</span>
+                            Public DNS observations
+                        </li>
                     </ul>
                 </div>
+
             </section>
+
         </main>
     </div>
 
     <script>
-        const API_URL = 'https://scanner.xconflictionx.cc/scan';
-const form = document.getElementById('scanForm');
-const input = document.getElementById('url');
-const statusBox = document.getElementById('status');
-const btn = document.getElementById('scanBtn');
+        const API_URL = "https://scanner.xconflictionx.cc/scan";
+
+const form = document.getElementById("scanForm");
+const input = document.getElementById("url");
+const statusBox = document.getElementById("status");
+const btn = document.getElementById("scanBtn");
+
+function esc(value) {
+  return String(value ?? "").replace(
+    /[&<>"']/g,
+    c => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;"
+    }[c])
+  );
+}
 
 function setScore(id, value) {
   const el = document.getElementById(id);
-  el.textContent = value + '/100';
-  el.classList.toggle('good', value >= 80);
+
+  const number = Number(value);
+
+  if (!Number.isFinite(number)) {
+    el.textContent = "—";
+    el.classList.remove("good");
+    return;
+  }
+
+  el.textContent = number + "/100";
+  el.classList.toggle("good", number >= 80);
 }
 
-function esc(value) {
-  return String(value ?? '').replace(/[&<>"']/g, c => ({
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#39;'
-  }[c]));
+function formatBytes(bytes) {
+  const value = Number(bytes);
+
+  if (!Number.isFinite(value)) {
+    return "—";
+  }
+
+  if (value < 1024) {
+    return value + " B";
+  }
+
+  if (value < 1024 * 1024) {
+    return Math.round(value / 1024) + " KiB";
+  }
+
+  return (value / 1024 / 1024).toFixed(1) + " MiB";
 }
 
 function renderFindings(items) {
-  const box = document.getElementById('findings');
+  const box = document.getElementById("findings");
 
   if (!items?.length) {
-    box.innerHTML = '<div class="finding"><span class="dot" style="background:var(--green)"></span><div><b>No findings returned</b><p>The connected checks did not report an issue.</p></div></div>';
+    box.innerHTML = `
+      <div class="finding">
+        <span
+          class="dot"
+          style="background:var(--green)"
+        ></span>
+
+        <div>
+          <b>No findings returned</b>
+          <p>
+            The configured checks did not report an issue.
+          </p>
+        </div>
+      </div>
+    `;
+
     return;
   }
 
   box.innerHTML = items.map(f => {
-    const sev = String(f.severity || 'info').toLowerCase();
-    const dot = sev === 'info' ? 'var(--green)' : 'var(--amber)';
+    const severity =
+      String(f.severity || "info").toLowerCase();
 
-    return '<div class="finding"><span class="dot" style="background:' + dot + '"></span><div><b>' +
-      esc(sev.toUpperCase()) + ' · ' + esc(f.title) +
-      '</b><p>' + esc(f.detail || f.description || '') +
-      '</p></div></div>';
-  }).join('');
+    const dot =
+      severity === "high"
+        ? "var(--red)"
+        : severity === "info"
+          ? "var(--green)"
+          : "var(--amber)";
+
+    let evidence = "";
+
+    if (Array.isArray(f.evidence) && f.evidence.length) {
+      evidence = `
+        <div class="finding-evidence">${esc(
+          f.evidence.join("\n")
+        )}</div>
+      `;
+    }
+
+    return `
+      <div class="finding">
+        <span
+          class="dot"
+          style="background:${dot}"
+        ></span>
+
+        <div>
+          <b>
+            ${esc(severity.toUpperCase())}
+            ·
+            ${esc(f.title)}
+          </b>
+
+          <p>
+            ${esc(f.detail || "")}
+          </p>
+
+          ${evidence}
+        </div>
+      </div>
+    `;
+  }).join("");
 }
 
 function renderDetails(data) {
-  const p = data.page || {};
+  const page = data.page || {};
   const perf = data.performance || {};
-  const priv = data.privacy || {};
-  const acc = data.accessibility || {};
-  const cfg = data.configuration || {};
+  const privacy = data.privacy || {};
+  const accessibility = data.accessibility || {};
+  const config = data.configuration || {};
+
   const findings = data.findings || [];
 
-  const items = [
-    ['Page', p.title || 'Untitled'],
-    ['HTML', p.htmlBytes ? Math.round(p.htmlBytes / 1024) + ' KiB' : '—'],
-    ['Links', String(p.links ?? '—')],
-    ['Images', String(perf.imageCount ?? acc.imageCount ?? '—')],
-    ['Third parties', String(priv.thirdPartyOrigins?.length ?? '—')],
-    ['Response', perf.ttfbMs != null ? perf.ttfbMs + ' ms' : '—']
-  ];
-
-  const actionable = findings.filter(f =>
-    String(f.severity || 'info').toLowerCase() !== 'info'
+  const actionable = findings.filter(
+    f =>
+      String(f.severity || "info").toLowerCase() !==
+      "info"
   ).length;
 
-  document.getElementById('findingIntro').textContent =
-    findings.length + ' verified observation(s) · ' +
-    actionable + ' actionable finding(s) returned by scanner ' +
-    (data.scannerVersion || '') + '.';
+  document.getElementById("findingIntro").textContent =
+    `${findings.length} verified observation(s) · ` +
+    `${actionable} actionable finding(s) returned by ` +
+    `scanner ${data.scannerVersion || "unknown"}.`;
 
-  document.getElementById('scanDetails').textContent =
-    items.map(x => esc(x[0]) + ': ' + esc(x[1])).join(' · ') +
-    ' · redirects: ' + esc(cfg.redirects ?? 0) +
-    ' · missing alt: ' + esc(acc.missingAlt ?? 0);
+  document.getElementById("detailUrl").textContent =
+    data.finalUrl || "—";
+
+  document.getElementById("detailStatus").textContent =
+    page.status != null ? page.status : "—";
+
+  document.getElementById("detailTtfb").textContent =
+    perf.ttfbMs != null
+      ? perf.ttfbMs + " ms"
+      : "—";
+
+  document.getElementById("detailDuration").textContent =
+    perf.scanDurationMs != null
+      ? perf.scanDurationMs + " ms"
+      : "—";
+
+  document.getElementById("detailHtml").textContent =
+    formatBytes(page.htmlBytes);
+
+  document.getElementById("detailLinks").textContent =
+    page.links != null
+      ? page.links
+      : "—";
+
+  document.getElementById("detailImages").textContent =
+    accessibility.imageCount != null
+      ? accessibility.imageCount
+      : "—";
+
+  document.getElementById("detailThirdParty").textContent =
+    privacy.thirdPartyOrigins?.length ?? 0;
+
+  document.getElementById("detailRedirects").textContent =
+    config.redirects ?? 0;
+
+  document.getElementById("detailAlt").textContent =
+    accessibility.missingAlt ?? 0;
+
+  document.getElementById("detailCookies").textContent =
+    privacy.cookies?.length ?? 0;
+
+  document.getElementById("detailScanner").textContent =
+    data.scannerVersion || "—";
+
+  const origins =
+    privacy.thirdPartyOrigins || [];
+
+  document.getElementById("thirdPartyList").textContent =
+    origins.length
+      ? origins.join("\n")
+      : "None detected.";
+
+  const dns = data.dns || {};
+
+  const dnsLines = [];
+
+  for (const type of ["A", "AAAA", "CNAME", "MX", "NS"]) {
+    const records = Array.isArray(dns[type])
+      ? dns[type]
+      : [];
+
+    if (!records.length) {
+      continue;
+    }
+
+    for (const record of records) {
+      dnsLines.push(
+        `${type}: ${record.data} (TTL ${record.ttl ?? "?"})`
+      );
+    }
+  }
+
+  document.getElementById("dnsList").textContent =
+    dnsLines.length
+      ? dnsLines.join("\n")
+      : "No DNS records returned.";
 }
 
-form.addEventListener('submit', async event => {
+form.addEventListener("submit", async event => {
   event.preventDefault();
 
   let parsed;
+
   try {
     parsed = new URL(input.value.trim());
   } catch {
-    statusBox.className = 'status show';
-    statusBox.textContent = 'Enter a valid website URL, including https:// or http://.';
+    statusBox.className = "status show";
+    statusBox.textContent =
+      "Enter a valid website URL, including https:// or http://.";
     return;
   }
 
-  if (!['http:', 'https:'].includes(parsed.protocol)) {
-    statusBox.className = 'status show';
-    statusBox.textContent = 'Only HTTP and HTTPS website URLs are supported.';
+  if (!["http:", "https:"].includes(parsed.protocol)) {
+    statusBox.className = "status show";
+    statusBox.textContent =
+      "Only HTTP and HTTPS website URLs are supported.";
     return;
   }
 
   btn.disabled = true;
-  btn.textContent = 'Scanning…';
-  statusBox.className = 'status show';
+  btn.textContent = "Scanning…";
+
+  statusBox.className = "status show";
+
   statusBox.innerHTML =
-    '<strong>Scanning:</strong> ' + esc(parsed.href) +
-    '<br>Fetching the public page and running security, privacy, SEO, performance, and configuration checks…';
+    "<strong>Scanning:</strong> " +
+    esc(parsed.href) +
+    "<br>" +
+    "Fetching the public page and running security, privacy, SEO, " +
+    "performance, accessibility, configuration, and DNS checks…";
+
+  document.getElementById("statePill").textContent =
+    "Scanning";
+
+  document.getElementById("statePill").classList.remove("good");
 
   try {
     const response = await fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url: parsed.href })
+      method: "POST",
+
+      headers: {
+        "Content-Type": "application/json"
+      },
+
+      body: JSON.stringify({
+        url: parsed.href
+      })
     });
 
-    const data = await response.json().catch(() => ({
-      error: 'Scanner returned invalid JSON.'
-    }));
+    const data = await response
+      .json()
+      .catch(() => ({
+        error: "Scanner returned invalid JSON."
+      }));
 
     if (!response.ok) {
-      throw new Error(data.error || 'Scanner returned HTTP ' + response.status);
+      throw new Error(
+        data.error ||
+        "Scanner returned HTTP " +
+        response.status
+      );
     }
 
     const scores = data.scores || {};
-    const overall = Number(data.overall?.score ?? data.score ?? 0);
 
-    document.getElementById('grade').textContent =
-      data.overall?.grade || data.grade || '—';
+    const overall = Number(
+      data.overall?.score ??
+      data.score ??
+      0
+    );
 
-    document.getElementById('scoreTitle').textContent =
-      overall + '/100 overall score';
+    const grade =
+      data.overall?.grade ||
+      data.grade ||
+      "—";
 
-    document.getElementById('scoreDesc').textContent =
-      data.finalUrl ? 'Audited ' + data.finalUrl : 'Audit completed';
+    document.getElementById("grade").textContent =
+      grade;
 
-    document.getElementById('statePill').textContent = 'Complete';
-    document.getElementById('statePill').classList.add('good');
+    document.getElementById("scoreTitle").textContent =
+      overall + "/100 overall score";
 
-    document.getElementById('scanMeta').textContent =
-      'Scanned ' + new Date().toLocaleString() +
-      ' · ' + (data.durationMs || 0) + ' ms';
+    document.getElementById("scoreDesc").textContent =
+      data.finalUrl
+        ? "Audited " + data.finalUrl
+        : "Audit completed.";
+
+    document.getElementById("statePill").textContent =
+      "Complete";
+
+    document
+      .getElementById("statePill")
+      .classList.add("good");
+
+    document.getElementById("scanMeta").textContent =
+      "Scanned " +
+      new Date().toLocaleString() +
+      " · scanner " +
+      (data.scannerVersion || "unknown");
 
     [
-      'security',
-      'privacy',
-      'performance',
-      'seo',
-      'configuration',
-      'accessibility'
-    ].forEach(k => setScore(k + 'Score', Number(scores[k] ?? 0)));
+      "security",
+      "privacy",
+      "performance",
+      "seo",
+      "configuration",
+      "accessibility"
+    ].forEach(category => {
+      setScore(
+        category + "Score",
+        Number(scores[category] ?? 0)
+      );
+    });
 
     renderFindings(data.findings || []);
     renderDetails(data);
 
     statusBox.innerHTML =
-      '<strong>Scan complete:</strong> ' +
-      esc(data.finalUrl || parsed.href) + '<br>' +
-      esc(data.summary ||
-        'Results are based on checks the Worker could verify from the public site.');
+      "<strong>Scan complete:</strong> " +
+      esc(data.finalUrl || parsed.href) +
+      "<br>" +
+      esc(
+        data.summary ||
+        "Results are based on checks the Worker could verify from the public site."
+      );
 
   } catch (error) {
+    document.getElementById("statePill").textContent =
+      "Failed";
+
+    document
+      .getElementById("statePill")
+      .classList.remove("good");
+
     statusBox.innerHTML =
-      '<strong>Scan failed:</strong> ' + esc(error.message) +
-      '<br><br>Check that the Worker URL is deployed and that its CORS policy allows this SiteGrade page.';
+      '<strong class="error">Scan failed:</strong> ' +
+      esc(error.message) +
+      "<br><br>" +
+      "Check that the Worker URL is deployed and that its CORS policy allows this SiteGrade page.";
+
   } finally {
     btn.disabled = false;
-    btn.innerHTML = 'Scan website <span aria-hidden="true">→</span>';
+
+    btn.innerHTML =
+      'Scan website <span aria-hidden="true">→</span>';
   }
 });
     </script>
+
 </body>
 
 </html>
