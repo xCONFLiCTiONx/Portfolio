@@ -949,12 +949,10 @@
 
         // Search and Category Filter Logic
         const filterBtns = document.querySelectorAll('.filter-btn');
-        const searchInput = document.getElementById('search-tests');
         const testCards = document.querySelectorAll('.test-card');
 
         function filterScenarios() {
             const activeCategory = document.querySelector('.filter-btn.active').getAttribute('data-category');
-            const searchQuery = searchInput.value.toLowerCase().trim();
 
             testCards.forEach(card => {
                 const cardCategory = card.getAttribute('data-category');
@@ -978,8 +976,6 @@
                 filterScenarios();
             });
         });
-
-        searchInput.addEventListener('input', filterScenarios);
     </script>
 </body>
 
