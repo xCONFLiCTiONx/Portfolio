@@ -1230,7 +1230,7 @@ async function scanTarget(targetUrl) {
             "low",
             "Form controls may lack labels",
             `${formIssues.length} form control(s) were not associated with a matching label.`,
-            formIssues.slice(0, 20)
+            formIssues.map(i => `${i.element} (name: "${i.name || 'unnamed'}", id: "${i.id || 'none'}")`).slice(0, 20)
         );
     }
 
@@ -1256,7 +1256,7 @@ async function scanTarget(targetUrl) {
             "low",
             "Heading levels skip",
             `${headingProblems.length} heading transition(s) skip one or more levels.`,
-            headingProblems.slice(0, 20)
+            headingProblems.map(h => `H${h.from} to H${h.to}: "${h.text}"`).slice(0, 20)
         );
     }
 
