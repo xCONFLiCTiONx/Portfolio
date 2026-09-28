@@ -1,0 +1,13 @@
+# xCONFLiCTiONx
+
+Privacy, security, technology, software projects, tools and technical resources from xCONFLiCTiONx.
+
+Website: https://xconflictionx.cc
+
+## Pages
+
+- [/](https://xconflictionx.cc/)
+- [/about.html](https://xconflictionx.cc/about.html)
+- [/contact.html](https://xconflictionx.cc/contact.html)
+- [/privacy.html](https://xconflictionx.cc/privacy.html)
+- [/tools/index.html](https://xconflictionx.cc/tools/index.html)

@@ -1,12 +1,12 @@
 {
     "github_username": "xCONFLiCTiONx",
     "github_token": "",
-    "name": "Developer Portfolio",
-    "short_name": "Portfolio",
-    "start_url": "index.html",
+    "name": "xCONFLiCTiONx",
+    "short_name": "xCONFLiCTiONx",
+    "start_url": "/",
     "display": "standalone",
-    "background_color": "#0d1117",
-    "theme_color": "#161b22",
+    "background_color": "#0b0d10",
+    "theme_color": "#0b0d10",
     "icons": [
         {
             "src": "favicon-32x32.png",

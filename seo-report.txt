@@ -1,0 +1,17 @@
+STATIC WEBSITE SEO REPORT
+==========================
+Generated: 2026-09-28T16:17:29.687Z
+Site: https://xconflictionx.cc
+
+Discovered URLs: 6
+Analyzed pages: 6
+Sitemap entries: 5
+Maximum crawl depth: 1
+
+ERRORS
+------
+None
+
+WARNINGS
+--------
+https://xconflictionx.cc/index.html — server returned the homepage (soft 404)

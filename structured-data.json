@@ -1,0 +1,15 @@
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "xCONFLiCTiONx",
+  "url": "https://xconflictionx.cc",
+  "description": "Privacy, security, technology, software projects, tools and technical resources from xCONFLiCTiONx.",
+  "author": {
+    "@type": "Person",
+    "name": "xCONFLiCTiONx"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "xCONFLiCTiONx"
+  }
+}
