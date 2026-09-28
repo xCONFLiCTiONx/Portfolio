@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>xCONFLiCTiONx Image Manipulator</title>
+    <style>
+        :root {
+            color-scheme: light dark;
+            --bg: light-dark(#f5f7fb, #0c1017);
+            --panel: light-dark(#fff, #141a23);
+            --panel2: light-dark(#eef2f7, #1b2330);
+            --text: light-dark(#172033, #eef3fb);
+            --muted: light-dark(#657084, #9aa8bc);
+            --line: light-dark(#d9e0ea, #2a3545);
+            --accent: light-dark(#5b42e8, #8b7cff)
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+            font: 14px/1.45 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif
+        }
+
+        .app {
+            min-height: 100vh;
+            background: var(--bg)
+        }
+
+        header {
+            padding: 28px 24px 18px;
+            border-bottom: 1px solid var(--line)
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 27px
+        }
+
+        header p {
+            margin: 6px 0 0;
+            color: var(--muted)
+        }
+
+        .wrap {
+            max-width: 1200px;
+            margin: auto;
+            padding: 22px 24px 40px
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 18px
+        }
+
+        .tab {
+            border: 1px solid var(--line);
+            background: var(--panel);
+            color: var(--text);
+            padding: 9px 13px;
+            border-radius: 9px;
+            cursor: pointer
+        }
+
+        .tab.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff
+        }
+
+        .tool {
+            display: none
+        }
+
+        .tool.active {
+            display: block
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 330px 1fr;
+            gap: 18px
+        }
+
+        .card {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 17px
+        }
+
+        .card h2 {
+            font-size: 16px;
+            margin: 0 0 14px
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin: 13px 0 6px
+        }
+
+        input,
+        select,
+        textarea,
+        button {
+            font: inherit
+        }
+
+        input[type=text],
+        input[type=number],
+        select,
+        textarea {
+            width: 100%;
+            padding: 9px 10px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: var(--panel2);
+            color: var(--text)
+        }
+
+        input[type=file] {
+            width: 100%;
+            padding: 8px;
+            border: 1px dashed var(--line);
+            border-radius: 8px
+        }
+
+        .row {
+            display: flex;
+            gap: 8px
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 14px
+        }
+
+        button {
+            border: 1px solid var(--line);
+            background: var(--panel2);
+            color: var(--text);
+            padding: 9px 12px;
+            border-radius: 8px;
+            cursor: pointer
+        }
+
+        button.primary {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff
+        }
+
+        .preview {
+            min-height: 480px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: repeating-conic-gradient(#e1e5ec 0 25%, #fff 0 50%) 50%/20px 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            padding: 15px
+        }
+
+        .preview canvas,
+        .preview img {
+            max-width: 100%;
+            max-height: 620px;
+            object-fit: contain
+        }
+
+        .drop {
+            border: 2px dashed var(--line);
+            padding: 36px;
+            text-align: center;
+            color: var(--muted)
+        }
+
+        .stat {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 10px
+        }
+
+        .check {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500
+        }
+
+        .check input {
+            width: auto
+        }
+
+        .notice {
+            padding: 10px 12px;
+            background: var(--panel2);
+            border-radius: 8px;
+            color: var(--muted);
+            font-size: 12px;
+            margin-top: 12px
+        }
+
+        .code {
+            font-family: ui-monospace, SFMono-Regular, Consolas, monospace
+        }
+
+        .icon-preview {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap
+        }
+
+        .icon-preview img {
+            width: 128px;
+            height: 128px;
+            border: 1px solid var(--line);
+            border-radius: 10px
+        }
+
+        @media(max-width:850px) {
+            .grid {
+                grid-template-columns: 1fr
+            }
+
+            .preview {
+                min-height: 330px
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app">
+        <header>
+            <h1>xCONFLiCTiONx Image Manipulator</h1>
+            <p>Crop, resize, convert, generate icons, and edit SVG graphics entirely in your browser.</p>
+        </header>
+        <main class="wrap">
+            <nav class="tabs">
+                <button class="tab active" data-tool="crop">Crop &amp; Resize</button><button class="tab" data-tool="ico">PNG → ICO</button><button class="tab" data-tool="svgpng">SVG → PNG</button><button class="tab" data-tool="exticon">Chrome Extension Icons</button><button class="tab" data-tool="svgedit">SVG Generator / Editor</button>
+            </nav>
+            <section id="crop" class="tool active">
+                <div class="grid">
+                    <div class="card">
+                        <h2>Image settings</h2>
+                        <label>Image</label><input id="cropFile" type="file" accept="image/*"><label>Target width</label><input id="cw" type="number" value="1200" min="1"><label>Target height</label><input id="ch" type="number" value="630" min="1"><label class="check"><input id="centerCrop" type="checkbox" checked> Center crop automatically</label><label>Output format</label><select id="cropFormat"><option value="image/png">PNG</option><option value="image/jpeg">JPEG</option><option value="image/webp">WebP</option></select><label>Quality <span id="qv">92%</span></label><input id="quality" type="range" min="1" max="100" value="92">
+                        <div class="actions">
+                            <button class="primary" id="cropRun">Crop &amp; Resize</button><button id="cropDownload" disabled>Download</button>
+                        </div>
+                        <div id="cropInfo" class="stat">No image loaded.</div>
+                        <div class="notice">The image is center-cropped to the target aspect ratio, then resized to the
+                            exact dimensions.</div>
+                    </div>
+                    <div class="card">
+                        <h2>Preview</h2>
+                        <div class="preview" id="cropPreview">
+                            <div class="drop">Upload an image to preview it here.</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <section id="ico" class="tool">
+                <div class="grid">
+                    <div class="card">
+                        <h2>PNG → ICO</h2>
+                        <label>PNG image</label><input id="icoFile" type="file" accept="image/png,image/*"><label>Icon sizes</label><input id="icoSizes" value="16,32,48,64,128,256">
+                        <div class="actions"><button class="primary" id="icoRun">Generate ICO</button></div>
+                        <div class="notice">Creates a standards-compatible ICO containing PNG image entries.</div>
+                    </div>
+                    <div class="card">
+                        <h2>Preview</h2>
+                        <div class="preview"><img id="icoPreview" hidden></div>
+                    </div>
+                </div>
+            </section>
+            <section id="svgpng" class="tool">
+                <div class="grid">
+                    <div class="card">
+                        <h2>SVG graphics → PNG</h2>
+                        <label>SVG file</label><input id="svgFile" type="file" accept=".svg,image/svg+xml"><label>Output width</label><input id="sw" type="number" value="1200" min="1"><label>Output height</label><input id="sh" type="number" value="630" min="1"><label>Background</label><input id="sbg" type="color" value="#ffffff">
+                        <div class="actions">
+                            <button class="primary" id="svgRun">Convert to PNG</button><button id="svgDownload" disabled>Download</button>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h2>Preview</h2>
+                        <div class="preview" id="svgPreview">
+                            <div class="drop">Choose an SVG.</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <section id="exticon" class="tool">
+                <div class="grid">
+                    <div class="card">
+                        <h2>Chrome Extension Icon Generator</h2>
+                        <label>Source image</label><input id="extFile" type="file" accept="image/*"><label>Icon shape</label><select id="extShape"><option value="square">Square</option><option value="rounded">Rounded square</option><option value="circle">Circle</option></select><label>Padding</label><input id="extPad" type="range" min="0" max="30" value="8">
+                        <div class="stat"><span id="padVal">8%</span></div>
+                        <div class="actions"><button class="primary" id="extRun">Generate Icons</button></div>
+                        <div class="notice">Creates 16×16, 32×32, 48×48 and 128×128 PNG icons. The download button
+                            downloads each generated PNG.</div>
+                    </div>
+                    <div class="card">
+                        <h2>Generated icons</h2>
+                        <div id="extPreview" class="icon-preview"></div>
+                        <div class="actions"><button id="extDownload" disabled>Download Icons</button></div>
+                    </div>
+                </div>
+            </section>
+            <section id="svgedit" class="tool">
+                <div class="grid">
+                    <div class="card">
+                        <h2>SVG Generator / Editor</h2>
+                        <label>Canvas width</label><input id="ew" type="number" value="512" min="1"><label>Canvas height</label><input id="eh" type="number" value="512" min="1"><label>Background</label><input id="ebg" type="color" value="#ffffff"><label>SVG markup</label><textarea id="svgCode" rows="18" class="code"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="72" fill="#5b42e8"/><circle cx="256" cy="220" r="110" fill="#fff"/><path d="M120 390 Q256 300 392 390" fill="none" stroke="#fff" stroke-width="28" stroke-linecap="round"/></svg></textarea>
+                        <div class="actions">
+                            <button class="primary" id="svgUpdate">Update Preview</button><button id="svgSave">Download SVG</button>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h2>SVG preview</h2>
+                        <div class="preview" id="editPreview"></div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script>
+        const $=s=>document.querySelector(s),state={};
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.tool').forEach(x=>x.classList.remove('active'));b.classList.add('active');$('#'+b.dataset.tool).classList.add('active')});
+function loadImage(file){return new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=reject;im.src=URL.createObjectURL(file)})}
+function blob(c,type,q){return new Promise(r=>c.toBlob(r,type,q))} function dl(b,n){const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=n;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+function crop(im,w,h){const target=w/h,source=im.width/im.height;let sw=im.width,sh=im.height,sx=0,sy=0;if(source>target){sw=im.height*target;sx=(im.width-sw)/2}else if(source<target){sh=im.width/target;sy=(im.height-sh)/2}const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(im,sx,sy,sw,sh,0,0,w,h);return c}
+$('#quality').oninput=()=>$('#qv').textContent=$('#quality').value+'%';$('#cropFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;state.crop=await loadImage(f);$('#cropInfo').textContent=`Original: ${state.crop.width} × ${state.crop.height}px`;const p=$('#cropPreview');p.innerHTML='';const i=new Image();i.src=URL.createObjectURL(f);p.append(i)};
+$('#cropRun').onclick=async()=>{if(!state.crop)return alert('Choose an image first.');const w=+$('#cw').value,h=+$('#ch').value,type=$('#cropFormat').value;const c=crop(state.crop,w,h);state.cropBlob=await blob(c,type,+$('#quality').value/100);const im=new Image();im.src=URL.createObjectURL(state.cropBlob);im.onload=()=>{$('#cropPreview').innerHTML='';$('#cropPreview').append(im)};$('#cropInfo').textContent=`Output: ${w} × ${h}px • ${type.split('/')[1].toUpperCase()} • centered crop`;$('#cropDownload').disabled=false};$('#cropDownload').onclick=()=>dl(state.cropBlob,'cropped-image.'+($('#cropFormat').value==='image/jpeg'?'jpg':$('#cropFormat').value.split('/')[1]));
+async function ico(im,sizes){const es=[];for(const s of sizes){const c=document.createElement('canvas');c.width=c.height=s;c.getContext('2d').drawImage(im,0,0,s,s);es.push(new Uint8Array(await(await blob(c,'image/png')).arrayBuffer()))}const t=new Uint8Array(6+16*es.length+es.reduce((n,x)=>n+x.length,0));t.set([0,0,1,0,sizes.length&255,(sizes.length>>8)&255]);let off=6+16*es.length,p=6;es.forEach((x,i)=>{const s=sizes[i]>=256?0:sizes[i],d=new DataView(t.buffer,p,16);t[p]=s;t[p+1]=s;d.setUint16(4,1,true);d.setUint16(6,32,true);d.setUint32(8,x.length,true);d.setUint32(12,off,true);t.set(x,off);off+=x.length;p+=16});return new Blob([t],{type:'image/x-icon'})}
+$('#icoFile').onchange=async e=>{const f=e.target.files[0];if(f){state.ico=await loadImage(f);$('#icoPreview').hidden=false;$('#icoPreview').src=URL.createObjectURL(f)}};$('#icoRun').onclick=async()=>{if(!state.ico)return alert('Choose a PNG first.');const s=$('#icoSizes').value.split(',').map(x=>+x.trim()).filter(x=>x>0&&x<=256);if(!s.length)return alert('Enter valid sizes.');dl(await ico(state.ico,s),'icon.ico')};
+$('#svgFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;state.svg=await f.text();const im=new Image();im.onload=()=>{$('#svgPreview').innerHTML='';$('#svgPreview').append(im)};im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(state.svg)};$('#svgRun').onclick=async()=>{if(!state.svg)return alert('Choose an SVG first.');const c=document.createElement('canvas');c.width=+$('#sw').value;c.height=+$('#sh').value;const x=c.getContext('2d');x.fillStyle=$('#sbg').value;x.fillRect(0,0,c.width,c.height);const im=new Image();im.onload=async()=>{x.drawImage(im,0,0,c.width,c.height);state.svgBlob=await blob(c,'image/png');$('#svgPreview').innerHTML='';$('#svgPreview').append(c);$('#svgDownload').disabled=false};im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(state.svg)};$('#svgDownload').onclick=()=>dl(state.svgBlob,'converted.png');
+$('#extPad').oninput=()=>$('#padVal').textContent=$('#extPad').value+'%';$('#extFile').onchange=async e=>{const f=e.target.files[0];if(f)state.ext=await loadImage(f)};$('#extRun').onclick=async()=>{if(!state.ext)return alert('Choose an image first.');const sizes=[16,32,48,128],pad=+$('#extPad').value/100,shape=$('#extShape').value;$('#extPreview').innerHTML='';state.extBlobs=[];for(const s of sizes){const c=document.createElement('canvas');c.width=c.height=s;const x=c.getContext('2d'),p=s*pad;if(shape==='circle'){x.beginPath();x.arc(s/2,s/2,s/2,0,Math.PI*2);x.clip()}else if(shape==='rounded'){x.beginPath();x.roundRect(0,0,s,s,s*.18);x.clip()}x.fillStyle='#fff';x.fillRect(0,0,s,s);x.drawImage(state.ext,p,p,s-2*p,s-2*p);const b=await blob(c,'image/png');state.extBlobs.push([s,b]);const im=new Image();im.src=URL.createObjectURL(b);$('#extPreview').append(im)}$('#extDownload').disabled=false};$('#extDownload').onclick=()=>state.extBlobs.forEach(([s,b])=>dl(b,`${s}.png`));
+function validSvg(s){const d=new DOMParser().parseFromString(s,'image/svg+xml');if(d.querySelector('parsererror'))throw Error('Invalid SVG');return new XMLSerializer().serializeToString(d.documentElement)}function edit(){try{const s=validSvg($('#svgCode').value),im=new Image();im.onload=()=>{$('#editPreview').innerHTML='';$('#editPreview').append(im)};im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(s)}catch(e){alert(e.message)}}$('#svgUpdate').onclick=edit;$('#svgSave').onclick=()=>{try{dl(new Blob([validSvg($('#svgCode').value)],{type:'image/svg+xml'}),'graphic.svg')}catch(e){alert(e.message)}};edit();
+    </script>
+</body>
+
+</html>
