@@ -5,9 +5,18 @@
 
 @import url("iconic/css/iconmonstr-iconic-font.min.css");
 @import url("fonts.css");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Explicit font-path override for compiled CSS */
+@font-face {
+    font-family: 'iconmonstr-iconic-font';
+    src: url('/css/iconic/fonts/iconmonstr-iconic-font.woff2?v=1.2.0') format('woff2'),
+        url('/css/iconic/fonts/iconmonstr-iconic-font.woff?v=1.2.0') format('woff'),
+        url('/css/iconic/fonts/iconmonstr-iconic-font.ttf?v=1.2.0') format('truetype');
+}
 
 /* Reset & Base
  * ------------------------------------------------------------------- */
