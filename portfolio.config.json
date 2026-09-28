@@ -60,7 +60,7 @@
       "githubUrl": "https://github.com/xCONFLiCTiONx/PDF-Tools",
       "layout": {
         "header": true,
-        "sidebar": true,
+        "sidebar": false,
         "footer": true
       }
     },
@@ -74,7 +74,7 @@
       "enabled": true,
       "layout": {
         "header": true,
-        "sidebar": true,
+        "sidebar": false,
         "footer": true
       }
     },
@@ -88,7 +88,7 @@
       "enabled": true,
       "layout": {
         "header": true,
-        "sidebar": true,
+        "sidebar": false,
         "footer": true
       }
     },
@@ -102,7 +102,7 @@
       "enabled": true,
       "layout": {
         "header": true,
-        "sidebar": true,
+        "sidebar": false,
         "footer": true
       }
     },
@@ -117,7 +117,7 @@
       "workerUrl": "https://scanner.xconflictionx.cc/scan",
       "layout": {
         "header": true,
-        "sidebar": true,
+        "sidebar": false,
         "footer": true
       }
     },
@@ -131,7 +131,7 @@
       "enabled": true,
       "layout": {
         "header": true,
-        "sidebar": true,
+        "sidebar": false,
         "footer": true
       }
     },
