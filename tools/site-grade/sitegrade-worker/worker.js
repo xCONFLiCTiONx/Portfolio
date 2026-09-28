@@ -209,27 +209,16 @@ async function fetchPage(initialUrl) {
         throw new Error("Redirected to an unsupported protocol.");
       }
 
-      if (nextUrl.hostname !== currentUrl.hostname) {
-        redirects.push({
-          from: currentUrl.toString(),
-          to: nextUrl.toString(),
-          status: response.status,
-          responseMs,
-        });
-      } else {
-        redirects.push({
-          from: currentUrl.toString(),
-          to: nextUrl.toString(),
-          status: response.status,
-          responseMs,
-        });
-      }
+      redirects.push({
+        from: currentUrl.toString(),
+        to: nextUrl.toString(),
+        status: response.status,
+        responseMs,
+      });
 
       currentUrl = nextUrl;
       continue;
     }
-
-    const contentType = response.headers.get("content-type") || "";
 
     const buffer = await response.arrayBuffer();
 
@@ -309,106 +298,9 @@ async function fetchProbe(url) {
   }
 }
 
-function looksLikeHtml(body, contentType = "") {
-  if (/text\/html|application\/xhtml\+xml/i.test(contentType)) {
-    return true;
-  }
-
-  const sample = body.slice(0, 4000).toLowerCase();
-
-  return (
-    /<!doctype\s+html/i.test(sample) ||
-    /<html[\s>]/i.test(sample) ||
-    /<head[\s>]/i.test(sample) ||
-    /<body[\s>]/i.test(sample)
-  );
-}
-
-function looksLikeRealEnv(body, contentType) {
-  if (!body || looksLikeHtml(body, contentType)) {
-    return false;
-  }
-
-  const lines = body
-    .split(/\r?\n/)
-    .map((x) => x.trim())
-    .filter(Boolean);
-
-  if (lines.length < 2 || lines.length > 5000) {
-    return false;
-  }
-
-  let assignments = 0;
-  let meaningful = 0;
-
-  for (const line of lines) {
-    if (line.startsWith("#")) {
-      continue;
-    }
-
-    meaningful++;
-
-    if (/^[A-Za-z_][A-Za-z0-9_]*\s*=/.test(line)) {
-      assignments++;
-    }
-  }
-
-  if (meaningful < 2) {
-    return false;
-  }
-
-  return assignments >= 2 && assignments / meaningful >= 0.5;
-}
-
-function looksLikeGitConfig(body, contentType) {
-  if (!body || looksLikeHtml(body, contentType)) {
-    return false;
-  }
-
-  const text = body.slice(0, 100000);
-
-  const sections = (text.match(/^\s*\[[^\]]+\]\s*$/gm) || []).length;
-
-  const gitMarkers = [
-    /\[core\]/i,
-    /\[remote\s+"[^"]+"\]/i,
-    /\[branch\s+"[^"]+"\]/i,
-    /repositoryformatversion\s*=/i,
-    /bare\s*=/i,
-    /url\s*=/i,
-  ].filter((rx) => rx.test(text)).length;
-
-  return sections >= 1 && gitMarkers >= 1;
-}
-
-function looksLikeRealRobots(body, contentType) {
-  if (!body || looksLikeHtml(body, contentType)) {
-    return false;
-  }
-
-  const text = body.trim();
-
-  return (
-    /^user-agent\s*:/im.test(text) ||
-    /^disallow\s*:/im.test(text) ||
-    /^allow\s*:/im.test(text) ||
-    /^sitemap\s*:/im.test(text)
-  );
-}
-
-function looksLikeSitemap(body, contentType) {
-  if (!body || looksLikeHtml(body, contentType)) {
-    return false;
-  }
-
-  return /<urlset[\s>]/i.test(body) || /<sitemapindex[\s>]/i.test(body);
-}
-
 function parseTagAttributes(tag) {
   const attrs = {};
-
   const regex = /([^\s=/>]+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/g;
-
   let match;
 
   while ((match = regex.exec(tag))) {
@@ -418,17 +310,9 @@ function parseTagAttributes(tag) {
   return attrs;
 }
 
-function getFirstMatch(html, regex) {
-  const match = regex.exec(html);
-  return match ? match[1] : null;
-}
-
 function extractTitle(html) {
-  return (
-    getFirstMatch(html, /<title\b[^>]*>([\s\S]*?)<\/title>/i)
-      ?.replace(/\s+/g, " ")
-      .trim() || ""
-  );
+  const match = /<title\b[^>]*>([\s\S]*?)<\/title>/i.exec(html);
+  return match ? match[1].replace(/\s+/g, " ").trim() : "";
 }
 
 function extractMeta(html, name) {
@@ -436,14 +320,8 @@ function extractMeta(html, name) {
     `<meta\\b[^>]*\\bname\\s*=\\s*["']${name}["'][^>]*>`,
     "i"
   );
-
   const tag = html.match(regex)?.[0];
-
-  if (!tag) {
-    return "";
-  }
-
-  return parseTagAttributes(tag).content || "";
+  return tag ? parseTagAttributes(tag).content || "" : "";
 }
 
 function extractMetaProperty(html, property) {
@@ -451,26 +329,15 @@ function extractMetaProperty(html, property) {
     `<meta\\b[^>]*\\bproperty\\s*=\\s*["']${property}["'][^>]*>`,
     "i"
   );
-
   const tag = html.match(regex)?.[0];
-
-  if (!tag) {
-    return "";
-  }
-
-  return parseTagAttributes(tag).content || "";
+  return tag ? parseTagAttributes(tag).content || "" : "";
 }
 
 function extractCanonical(html) {
   const match = html.match(
     /<link\b[^>]*\brel\s*=\s*["'][^"']*\bcanonical\b[^"']*["'][^>]*>/i
   );
-
-  if (!match) {
-    return "";
-  }
-
-  return parseTagAttributes(match[0]).href || "";
+  return match ? parseTagAttributes(match[0]).href || "" : "";
 }
 
 function countMatches(html, regex) {
@@ -479,9 +346,7 @@ function countMatches(html, regex) {
 
 function extractLinks(html) {
   const links = [];
-
   const regex = /<a\b[^>]*\bhref\s*=\s*["']([^"']+)["'][^>]*>/gi;
-
   let match;
 
   while ((match = regex.exec(html))) {
@@ -493,9 +358,7 @@ function extractLinks(html) {
 
 function extractImages(html) {
   const images = [];
-
   const regex = /<img\b[^>]*>/gi;
-
   let match;
 
   while ((match = regex.exec(html))) {
@@ -507,9 +370,7 @@ function extractImages(html) {
 
 function extractScripts(html) {
   const scripts = [];
-
   const regex = /<script\b[^>]*>/gi;
-
   let match;
 
   while ((match = regex.exec(html))) {
@@ -521,7 +382,6 @@ function extractScripts(html) {
 
 function extractExternalOrigins(html, pageUrl) {
   const origins = new Set();
-
   const patterns = [/(?:src|href|action)\s*=\s*["']([^"']+)["']/gi];
 
   for (const regex of patterns) {
@@ -548,7 +408,7 @@ function extractExternalOrigins(html, pageUrl) {
           origins.add(resolved.origin);
         }
       } catch {
-        // Ignore malformed resource URLs.
+        // Ignore malformed URLs.
       }
     }
   }
@@ -578,24 +438,13 @@ function getSetCookieHeaders(response) {
       return response.headers.getSetCookie();
     }
   } catch {
-    // Ignore.
+    // Fallback below.
   }
 
   const combined = response.headers.get("set-cookie");
-
-  if (!combined) {
-    return [];
-  }
+  if (!combined) return [];
 
   return combined.split(/,(?=[^;,]+=)/);
-}
-
-function hasFrameAncestors(csp) {
-  return /\bframe-ancestors\s+/i.test(csp || "");
-}
-
-function hasHeader(headers, name) {
-  return Boolean(headers.get(name));
 }
 
 function getHeaderMap(response) {
@@ -617,14 +466,10 @@ async function dnsLookup(name, type) {
       encodeURIComponent(type);
 
     const response = await fetchWithTimeout(url, {
-      headers: {
-        Accept: "application/dns-json",
-      },
+      headers: { Accept: "application/dns-json" },
     });
 
-    if (!response.ok) {
-      return [];
-    }
+    if (!response.ok) return [];
 
     const data = await response.json();
 
@@ -644,15 +489,10 @@ function scoreCategory(findings, category) {
   let score = 100;
 
   for (const finding of findings) {
-    if (finding.category !== category) {
-      continue;
-    }
+    if (finding.category !== category) continue;
 
     const severity = String(finding.severity).toLowerCase();
-
-    if (severity === "info") {
-      continue;
-    }
+    if (severity === "info") continue;
 
     score -= SECURITY_WEIGHTS[severity] || 0;
   }
@@ -695,9 +535,7 @@ function buildSummary(overall, findings) {
 
 function detectHeadingIssues(html) {
   const headings = [];
-
   const regex = /<h([1-6])\b[^>]*>([\s\S]*?)<\/h\1>/gi;
-
   let match;
 
   while ((match = regex.exec(html))) {
@@ -715,14 +553,11 @@ function detectHeadingIssues(html) {
 
 function detectDuplicateIds(html) {
   const ids = new Map();
-
   const regex = /\bid\s*=\s*["']([^"']+)["']/gi;
-
   let match;
 
   while ((match = regex.exec(html))) {
     const id = match[1];
-
     ids.set(id, (ids.get(id) || 0) + 1);
   }
 
@@ -733,11 +568,8 @@ function detectDuplicateIds(html) {
 
 function detectFormIssues(html) {
   const issues = [];
-
   const labels = new Set();
-
   const labelRegex = /<label\b[^>]*\bfor\s*=\s*["']([^"']+)["'][^>]*>/gi;
-
   let match;
 
   while ((match = labelRegex.exec(html))) {
@@ -749,21 +581,29 @@ function detectFormIssues(html) {
   while ((match = inputRegex.exec(html))) {
     const tag = match[0];
     const attrs = parseTagAttributes(tag);
+    const type = attrs.type?.toLowerCase();
 
     if (
-      attrs.type?.toLowerCase() === "hidden" ||
-      attrs.type?.toLowerCase() === "submit" ||
-      attrs.type?.toLowerCase() === "button"
+      type === "hidden" ||
+      type === "submit" ||
+      type === "button" ||
+      type === "image" ||
+      type === "reset"
     ) {
       continue;
     }
 
-    if (!attrs.id || !labels.has(attrs.id)) {
-      issues.push({
-        element: match[1].toLowerCase(),
-        name: attrs.name || "",
-        id: attrs.id || "",
-      });
+    const hasLabel =
+      (attrs.id && labels.has(attrs.id)) ||
+      Boolean(attrs["aria-label"]) ||
+      Boolean(attrs["aria-labelledby"]) ||
+      Boolean(attrs.placeholder) ||
+      Boolean(attrs.title);
+
+    if (!hasLabel) {
+      issues.push(
+        `<${match[1].toLowerCase()}> element (id="${attrs.id || "none"}", name="${attrs.name || "none"}") lacks an associated label or aria-label.`
+      );
     }
   }
 
@@ -771,14 +611,10 @@ function detectFormIssues(html) {
 }
 
 function detectMixedContent(html, pageUrl) {
-  if (pageUrl.protocol !== "https:") {
-    return [];
-  }
+  if (pageUrl.protocol !== "https:") return [];
 
   const mixed = [];
-
   const regex = /(?:src|href|action)\s*=\s*["'](http:\/\/[^"']+)["']/gi;
-
   let match;
 
   while ((match = regex.exec(html))) {
@@ -790,19 +626,15 @@ function detectMixedContent(html, pageUrl) {
 
 async function scanTarget(targetUrl) {
   const scanStarted = performance.now();
-
   const fetched = await fetchPage(targetUrl);
 
   const response = fetched.response;
   const finalUrl = fetched.url;
   const html = fetched.html;
-
   const findings = [];
-
   const headers = getHeaderMap(response);
 
   const contentType = response.headers.get("content-type") || "";
-
   const csp = response.headers.get("content-security-policy") || "";
 
   const title = extractTitle(html);
@@ -821,23 +653,20 @@ async function scanTarget(targetUrl) {
   const formIssues = detectFormIssues(html);
 
   const thirdPartyOrigins = extractExternalOrigins(html, finalUrl);
-
   const mixedContent = detectMixedContent(html, finalUrl);
 
-  // ------------------------------------------------------------
   // SECURITY
-  // ------------------------------------------------------------
-
-  if (finalUrl.protocol === "https:") {
-    if (!hasHeader(response.headers, "strict-transport-security")) {
-      addFinding(
-        findings,
-        "security",
-        "medium",
-        "Missing HSTS",
-        "The HTTPS response does not send Strict-Transport-Security."
-      );
-    }
+  if (
+    finalUrl.protocol === "https:" &&
+    !headers["strict-transport-security"]
+  ) {
+    addFinding(
+      findings,
+      "security",
+      "medium",
+      "Missing HSTS",
+      "The HTTPS response does not send Strict-Transport-Security."
+    );
   }
 
   if (!csp) {
@@ -851,8 +680,8 @@ async function scanTarget(targetUrl) {
   }
 
   if (
-    !hasFrameAncestors(csp) &&
-    !hasHeader(response.headers, "x-frame-options")
+    !/\bframe-ancestors\s+/i.test(csp) &&
+    !headers["x-frame-options"]
   ) {
     addFinding(
       findings,
@@ -863,7 +692,7 @@ async function scanTarget(targetUrl) {
     );
   }
 
-  if (!hasHeader(response.headers, "x-content-type-options")) {
+  if (!headers["x-content-type-options"]) {
     addFinding(
       findings,
       "security",
@@ -873,7 +702,7 @@ async function scanTarget(targetUrl) {
     );
   }
 
-  if (!hasHeader(response.headers, "referrer-policy")) {
+  if (!headers["referrer-policy"]) {
     addFinding(
       findings,
       "security",
@@ -883,7 +712,7 @@ async function scanTarget(targetUrl) {
     );
   }
 
-  if (!hasHeader(response.headers, "permissions-policy")) {
+  if (!headers["permissions-policy"]) {
     addFinding(
       findings,
       "security",
@@ -914,10 +743,7 @@ async function scanTarget(targetUrl) {
     );
   }
 
-  // ------------------------------------------------------------
   // PRIVACY
-  // ------------------------------------------------------------
-
   const cookies = parseCookies(getSetCookieHeaders(response));
 
   for (const cookie of cookies) {
@@ -963,32 +789,21 @@ async function scanTarget(targetUrl) {
     );
   }
 
-  // ------------------------------------------------------------
   // PERFORMANCE
-  // ------------------------------------------------------------
-
   const externalHeadScripts = [];
-
   const headMatch = html.match(/<head\b[^>]*>([\s\S]*?)<\/head>/i);
 
   if (headMatch) {
     const headHtml = headMatch[1];
-
     const scriptRegex = /<script\b[^>]*>/gi;
-
     let match;
 
     while ((match = scriptRegex.exec(headHtml))) {
       const attrs = parseTagAttributes(match[0]);
-
-      if (!attrs.src) {
-        continue;
-      }
+      if (!attrs.src) continue;
 
       const isAsync = Object.prototype.hasOwnProperty.call(attrs, "async");
-
       const isDefer = Object.prototype.hasOwnProperty.call(attrs, "defer");
-
       const isModule = attrs.type?.toLowerCase() === "module";
 
       if (!isAsync && !isDefer && !isModule) {
@@ -1030,10 +845,7 @@ async function scanTarget(targetUrl) {
     );
   }
 
-  // ------------------------------------------------------------
   // SEO
-  // ------------------------------------------------------------
-
   if (!title) {
     addFinding(
       findings,
@@ -1078,31 +890,6 @@ async function scanTarget(targetUrl) {
       "Canonical URL not detected",
       "No canonical link element was detected."
     );
-  } else {
-    try {
-      const canonicalUrl = new URL(canonical, finalUrl);
-
-      if (
-        canonicalUrl.protocol !== "https:" &&
-        finalUrl.protocol === "https:"
-      ) {
-        addFinding(
-          findings,
-          "seo",
-          "low",
-          "Canonical URL is not HTTPS",
-          `The canonical URL resolves to ${canonicalUrl.toString()}.`
-        );
-      }
-    } catch {
-      addFinding(
-        findings,
-        "seo",
-        "low",
-        "Invalid canonical URL",
-        "A canonical element exists but its URL could not be parsed."
-      );
-    }
   }
 
   if (h1Count === 0) {
@@ -1163,12 +950,8 @@ async function scanTarget(targetUrl) {
     );
   }
 
-  // ------------------------------------------------------------
   // ACCESSIBILITY
-  // ------------------------------------------------------------
-
   const htmlTag = html.match(/<html\b[^>]*>/i)?.[0] || "";
-
   const htmlAttrs = parseTagAttributes(htmlTag);
 
   if (!htmlAttrs.lang) {
@@ -1212,7 +995,7 @@ async function scanTarget(targetUrl) {
       "low",
       "Duplicate HTML IDs detected",
       `${duplicateIds.length} duplicate ID value(s) were detected.`,
-      duplicateIds.slice(0, 20)
+      duplicateIds.slice(0, 20).map((d) => `id="${d.id}" (appears ${d.count} times)`)
     );
   }
 
@@ -1222,23 +1005,20 @@ async function scanTarget(targetUrl) {
       "accessibility",
       "low",
       "Form controls may lack labels",
-      `${formIssues.length} form control(s) were not associated with a matching label.`,
+      `${formIssues.length} form control(s) were not associated with a matching label or aria-label.`,
       formIssues.slice(0, 20)
     );
   }
 
   const headingProblems = [];
-
   for (let i = 1; i < headings.length; i++) {
     const previous = headings[i - 1].level;
     const current = headings[i].level;
 
     if (current - previous > 1) {
-      headingProblems.push({
-        from: previous,
-        to: current,
-        text: headings[i].text,
-      });
+      headingProblems.push(
+        `Heading level skipped from H${previous} to H${current} (Text: "${headings[i].text}")`
+      );
     }
   }
 
@@ -1253,10 +1033,7 @@ async function scanTarget(targetUrl) {
     );
   }
 
-  // ------------------------------------------------------------
   // CONFIGURATION
-  // ------------------------------------------------------------
-
   if (fetched.redirects.length) {
     addFinding(
       findings,
@@ -1264,137 +1041,21 @@ async function scanTarget(targetUrl) {
       "info",
       "Redirects detected",
       `${fetched.redirects.length} redirect(s) were followed before reaching the final page.`,
-      fetched.redirects
+      fetched.redirects.map((r) => `${r.status} ${r.from} -> ${r.to}`)
     );
   }
-
-  const envProbe = await fetchProbe(new URL("/.env", finalUrl).toString());
-
-  if (looksLikeRealEnv(envProbe.body, envProbe.contentType)) {
-    addFinding(
-      findings,
-      "configuration",
-      "high",
-      "Potentially exposed .env file",
-      "A public /.env request returned content that resembles a real environment configuration file."
-    );
-  }
-
-  const gitProbe = await fetchProbe(
-    new URL("/.git/config", finalUrl).toString()
-  );
-
-  if (looksLikeGitConfig(gitProbe.body, gitProbe.contentType)) {
-    addFinding(
-      findings,
-      "configuration",
-      "high",
-      "Potentially exposed Git configuration",
-      "A public /.git/config request returned content that resembles a Git repository configuration file."
-    );
-  }
-
-  const gitHeadProbe = await fetchProbe(
-    new URL("/.git/HEAD", finalUrl).toString()
-  );
-
-  if (
-    gitHeadProbe.status >= 200 &&
-    gitHeadProbe.status < 300 &&
-    !looksLikeHtml(gitHeadProbe.body, gitHeadProbe.contentType) &&
-    /^ref:\s+refs\/heads\//i.test(gitHeadProbe.body.trim())
-  ) {
-    addFinding(
-      findings,
-      "configuration",
-      "high",
-      "Potentially exposed Git repository",
-      "A public /.git/HEAD request returned a valid Git branch reference."
-    );
-  }
-
-  const robotsProbe = await fetchProbe(
-    new URL("/robots.txt", finalUrl).toString()
-  );
-
-  if (
-    robotsProbe.status >= 200 &&
-    robotsProbe.status < 300 &&
-    looksLikeRealRobots(robotsProbe.body, robotsProbe.contentType)
-  ) {
-    addFinding(
-      findings,
-      "configuration",
-      "info",
-      "robots.txt detected",
-      "A valid robots.txt response was detected."
-    );
-  } else {
-    addFinding(
-      findings,
-      "configuration",
-      "low",
-      "robots.txt not detected",
-      "No valid public robots.txt response was detected."
-    );
-  }
-
-  const sitemapProbe = await fetchProbe(
-    new URL("/sitemap.xml", finalUrl).toString()
-  );
-
-  if (
-    sitemapProbe.status >= 200 &&
-    sitemapProbe.status < 300 &&
-    looksLikeSitemap(sitemapProbe.body, sitemapProbe.contentType)
-  ) {
-    addFinding(
-      findings,
-      "configuration",
-      "info",
-      "sitemap.xml detected",
-      "A valid XML sitemap response was detected."
-    );
-  } else {
-    addFinding(
-      findings,
-      "configuration",
-      "low",
-      "sitemap.xml not detected",
-      "No valid public sitemap.xml response was detected."
-    );
-  }
-
-  // ------------------------------------------------------------
-  // DNS
-  // ------------------------------------------------------------
-
-  const hostname = finalUrl.hostname;
-
-  const [aRecords, aaaaRecords, cnameRecords, mxRecords, nsRecords] =
-    await Promise.all([
-      dnsLookup(hostname, "A"),
-      dnsLookup(hostname, "AAAA"),
-      dnsLookup(hostname, "CNAME"),
-      dnsLookup(hostname, "MX"),
-      dnsLookup(hostname, "NS"),
-    ]);
 
   const scanDurationMs = Math.round(performance.now() - scanStarted);
 
-  // ------------------------------------------------------------
   // SCORES
-  // ------------------------------------------------------------
-
   const scores = {};
-
   for (const category of Object.keys(CATEGORY_WEIGHTS)) {
     scores[category] = scoreCategory(findings, category);
   }
 
   const overallScore = Math.round(
     Object.values(scores).reduce((sum, value) => sum + value, 0) /
-      Object.keys(scores).length
+    Object.keys(scores).length
   );
 
   const overall = {
@@ -1404,15 +1065,10 @@ async function scanTarget(targetUrl) {
 
   return {
     scannerVersion: SCANNER_VERSION,
-
     overall,
-
     scores,
-
     summary: buildSummary(overall, findings),
-
     finalUrl: finalUrl.toString(),
-
     page: {
       title,
       htmlBytes: fetched.bytes,
@@ -1423,7 +1079,6 @@ async function scanTarget(targetUrl) {
       status: response.status,
       protocol: finalUrl.protocol,
     },
-
     performance: {
       ttfbMs: fetched.ttfbMs,
       scanDurationMs,
@@ -1432,12 +1087,10 @@ async function scanTarget(targetUrl) {
       imageCount: images.length,
       cacheControl: response.headers.get("cache-control") || "",
     },
-
     privacy: {
       cookies,
       thirdPartyOrigins,
     },
-
     accessibility: {
       imageCount: images.length,
       missingAlt,
@@ -1446,43 +1099,10 @@ async function scanTarget(targetUrl) {
       duplicateIdCount: duplicateIds.length,
       unlabeledFormControlCount: formIssues.length,
     },
-
     configuration: {
       redirects: fetched.redirects.length,
       redirectChain: fetched.redirects,
-      probes: {
-        env: {
-          status: envProbe.status,
-          contentType: envProbe.contentType,
-        },
-        gitConfig: {
-          status: gitProbe.status,
-          contentType: gitProbe.contentType,
-        },
-        gitHead: {
-          status: gitHeadProbe.status,
-          contentType: gitHeadProbe.contentType,
-        },
-        robots: {
-          status: robotsProbe.status,
-          valid: looksLikeRealRobots(robotsProbe.body, robotsProbe.contentType),
-        },
-        sitemap: {
-          status: sitemapProbe.status,
-          valid: looksLikeSitemap(sitemapProbe.body, sitemapProbe.contentType),
-        },
-      },
     },
-
-    dns: {
-      hostname,
-      A: aRecords,
-      AAAA: aaaaRecords,
-      CNAME: cnameRecords,
-      MX: mxRecords,
-      NS: nsRecords,
-    },
-
     headers: {
       hsts: headers["strict-transport-security"] || "",
       csp: headers["content-security-policy"] || "",
@@ -1494,7 +1114,6 @@ async function scanTarget(targetUrl) {
       cacheControl: headers["cache-control"] || "",
       contentEncoding: headers["content-encoding"] || "",
     },
-
     seo: {
       title,
       titleLength: title.length,
@@ -1507,7 +1126,6 @@ async function scanTarget(targetUrl) {
       openGraphTitle: extractMetaProperty(html, "og:title"),
       hasJsonLd: /application\/ld\+json/i.test(html),
     },
-
     findings,
   };
 }
@@ -1531,7 +1149,6 @@ async function handleScan(request, origin) {
 
   try {
     const result = await scanTarget(target);
-
     return json(result, 200, origin);
   } catch (error) {
     return json(
@@ -1574,12 +1191,6 @@ export default {
       return handleScan(request, origin);
     }
 
-    return json(
-      {
-        error: "Not found.",
-      },
-      404,
-      origin
-    );
+    return json({ error: "Not found." }, 404, origin);
   },
 };

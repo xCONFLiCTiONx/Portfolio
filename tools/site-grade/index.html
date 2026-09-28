@@ -770,9 +770,20 @@
         );
       }
 
+      function formatEvidenceItem(item) {
+        if (typeof item === "string") return item;
+        if (typeof item === "object" && item !== null) {
+          try {
+            return JSON.stringify(item, null, 2);
+          } catch {
+            return String(item);
+          }
+        }
+        return String(item ?? "");
+      }
+
       function setScore(id, value) {
         const el = document.getElementById(id);
-
         const number = Number(value);
 
         if (!Number.isFinite(number)) {
@@ -822,7 +833,6 @@
         </div>
       </div>
     `;
-
           return;
         }
 
@@ -840,8 +850,11 @@
             let evidence = "";
 
             if (Array.isArray(f.evidence) && f.evidence.length) {
+              const formattedEvidence = f.evidence
+                .map((e) => formatEvidenceItem(e))
+                .join("\n");
               evidence = `
-        <div class="finding-evidence">${esc(f.evidence.join("\n"))}</div>
+        <div class="finding-evidence">${esc(formattedEvidence)}</div>
       `;
             }
 
