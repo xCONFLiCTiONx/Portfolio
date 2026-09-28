@@ -1,0 +1,24 @@
+{
+  "name": "portfolio",
+  "version": "1.0.0",
+  "description": "A portable, reusable static GitHub-backed developer portfolio framework. This framework allows developers to fork the repository, make minimal configuration changes in a single file, deploy it to any static hosting service, and easily add custom browser utilities without touching core framework code.",
+  "main": "sw.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xCONFLiCTiONx/Portfolio.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/xCONFLiCTiONx/Portfolio/issues"
+  },
+  "homepage": "https://github.com/xCONFLiCTiONx/Portfolio#readme",
+  "devDependencies": {
+    "tailwindcss": "^4.3.3"
+  }
+}

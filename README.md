@@ -10,7 +10,8 @@ A portable, reusable static GitHub-backed developer portfolio framework. This fr
 - **Shared Site Shell**: Reusable header, sidebar profile card, and footer managed dynamically across all pages.
 - **Independent Layout Controls**: Each tool can independently enable or disable `header`, `sidebar`, and `footer` via 3 boolean settings in `portfolio.config.json`.
 - **Dynamic Tools Directory**: Tools are registered via configuration and automatically render on the `Tools` page.
-- **Zero-Build Static Hosting**: Runs pure HTML, CSS, and vanilla JavaScript with no runtime servers, Node.js, databases, or build steps required.
+- **Zero-Build Static Hosting**: Runs pure HTML, CSS, and vanilla JavaScript with no runtime servers, Node.js, databases, or build steps required for deployment.
+- **Tailwind CSS Integration**: Ships with production-compiled CSS for tools, plus an optional CLI workflow for customization.
 - **GitHub API Integration**: Automatically loads profile avatar, bio, repositories, and issue selector based on configured GitHub username.
 - **Portable Relative Paths**: Fully compatible with subdirectory deployments (e.g. GitHub Pages project pages or custom domains).
 - **Optional Worker Backends**: Supports standalone client-side tools as well as optional Cloudflare Worker backends (e.g. for API proxying or website scanning).
@@ -37,7 +38,7 @@ Fork this repository, open `portfolio.config.json` at the root directory, and cu
 ```
 
 ### 2. Deploy
-Deploy the repository as static files to any hosting service:
+Deploy the repository as static files to any hosting service. Pre-compiled production CSS is included out-of-the-box, so no build step is required for deployment:
 - Cloudflare Pages
 - GitHub Pages
 - Netlify / Vercel
@@ -45,11 +46,48 @@ Deploy the repository as static files to any hosting service:
 
 ---
 
+## 💻 Local Development & Tailwind CSS Setup
+
+If you are modifying utility styles, customizing themes, or building new tools that use Tailwind CSS, follow these steps in the root directory:
+
+### Step 1: Initial Repository Setup
+If you are setting up the project from scratch or installing Tailwind for the first time:
+```bash
+npm init -y
+npm install -D tailwindcss
+npx tailwindcss init
+```
+
+If you are cloning this repository with `package.json` already present, simply run:
+```bash
+npm install
+```
+
+### Step 2: Build & Watch Scripts
+Use the NPM scripts defined in `package.json` to compile production CSS or watch for live changes:
+
+- **Build Production Minified CSS:**
+  ```bash
+  npm run build:css
+  ```
+
+- **Watch Mode (Live re-compilation during development):**
+  ```bash
+  npm run watch:css
+  ```
+
+- **Manual Tailwind CLI Command:**
+  ```bash
+  npx tailwindcss -i ./css/main.css -o ./css/tailwind-output.css --minify
+  ```
+
+---
+
 ## 🧰 Creating a New Tool
 
 Adding a new tool to your portfolio requires **zero modifications** to core framework code:
 
-### Step 1: Copy the other tools examples
+### Step 1: Copy the Example Directory
 Copy the example tool folder:
 ```text
 /tools/example-tool/
@@ -63,6 +101,11 @@ to a new directory:
 Modify `index.html`, `tool.js`, and `tool.css` inside `/tools/my-tool/`. Make sure `index.html` references the framework script:
 ```html
 <script src="../../js/framework.js"></script>
+```
+
+If your tool relies on Tailwind CSS, point its stylesheet link to the compiled production CSS:
+```html
+<link rel="stylesheet" href="../../css/tailwind-output.css" />
 ```
 
 ### Step 3: Register in Configuration
@@ -127,4 +170,4 @@ For example, the **Website Grading Tool** (`SiteGrade`) utilizes an optional Clo
 
 ## 📜 License
 
-This project is licensed under the MIT License. See the [LICENSE](file:///E:/Portfolio/LICENSE) file for details.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
