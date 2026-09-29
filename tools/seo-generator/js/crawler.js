@@ -5,40 +5,37 @@ async function fetchWithCors(url, opts={redirect:"follow",cache:"no-store",crede
     if(r.ok || (r.status > 0 && r.status !== 0)) return r;
   }catch(e){}
 
-  const proxies = [
-    async (targetUrl) => {
-      const r = await fetch("https://api.codetabs.com/v1/proxy?quest=" + encodeURIComponent(targetUrl), { cache: "no-store" });
-      if(r.ok) {
-        const text = await r.text();
-        return new Response(text, { status: 200, headers: { "content-type": "text/html; charset=utf-8" } });
-      }
-    },
-    async (targetUrl) => {
-      const r = await fetch("https://api.allorigins.win/get?url=" + encodeURIComponent(targetUrl), { cache: "no-store" });
-      if(r.ok) {
-        const data = await r.json();
-        if(data && data.contents) {
+  const userProxy = (val("corsProxy")||"").trim();
+  const templates = [];
+  if(userProxy) templates.push(userProxy);
+  templates.push(
+    "https://api.allorigins.win/raw?url={url}",
+    "https://api.allorigins.win/get?url={url}",
+    "https://api.codetabs.com/v1/proxy?quest={url}",
+    "https://cors.eu.org/{url}",
+    "https://corsproxy.org/?{url}"
+  );
+
+  for(const tmpl of templates){
+    try{
+      const isJsonAllOrigins = tmpl.includes("/get?url=");
+      const pUrl = tmpl.includes("{url}") ? tmpl.replace("{url}", encodeURIComponent(url)) : tmpl + encodeURIComponent(url);
+      const res = await fetch(pUrl, { cache: "no-store" });
+      if(!res.ok) continue;
+      if(isJsonAllOrigins){
+        const data = await res.json();
+        if(data && data.contents){
           return new Response(data.contents, { status: data.status?.http_code || 200, headers: { "content-type": "text/html; charset=utf-8" } });
         }
+      }else{
+        const txt = await res.text();
+        if(txt && txt.trim()){
+          return new Response(txt, { status: 200, headers: { "content-type": "text/html; charset=utf-8" } });
+        }
       }
-    },
-    async (targetUrl) => {
-      const r = await fetch("https://corsproxy.io/?" + encodeURIComponent(targetUrl), { cache: "no-store" });
-      if(r.ok) return r;
-    },
-    async (targetUrl) => {
-      const r = await fetch("https://thingproxy.freeboard.io/fetch/" + encodeURIComponent(targetUrl), { cache: "no-store" });
-      if(r.ok) return r;
-    }
-  ];
-
-  for(const p of proxies){
-    try{
-      const res = await p(url);
-      if(res && (res.ok || res.status === 200)) return res;
-    }catch{}
+    }catch(e){}
   }
-  return await fetch(url, opts);
+  throw new Error("CORS / Network Error: Could not fetch URL directly or via CORS proxies.");
 }
 
 function parseRobots(txt){let active=false,out=[];for(let raw of txt.split(/\r?\n/)){let line=raw.split("#")[0].trim(),i=line.indexOf(":");if(!line||i<0)continue;let k=line.slice(0,i).trim().toLowerCase(),v=line.slice(i+1).trim();if(k==="user-agent")active=v==="*";else if(active&&(k==="allow"||k==="disallow")&&v)out.push({k,v})}return out}
