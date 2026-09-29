@@ -5,21 +5,18 @@ async function fetchWithCors(url, opts={redirect:"follow",cache:"no-store",crede
     if(r.ok || (r.status > 0 && r.status !== 0)) return r;
   }catch(e){}
 
-  const userProxy = (val("corsProxy")||"").trim();
-  const templates = [];
-  if(userProxy) templates.push(userProxy);
-  templates.push(
+  const templates = [
     "https://api.allorigins.win/raw?url={url}",
     "https://api.allorigins.win/get?url={url}",
     "https://api.codetabs.com/v1/proxy?quest={url}",
     "https://cors.eu.org/{url}",
     "https://corsproxy.org/?{url}"
-  );
+  ];
 
   for(const tmpl of templates){
     try{
       const isJsonAllOrigins = tmpl.includes("/get?url=");
-      const pUrl = tmpl.includes("{url}") ? tmpl.replace("{url}", encodeURIComponent(url)) : tmpl + encodeURIComponent(url);
+      const pUrl = tmpl.replace("{url}", encodeURIComponent(url));
       const res = await fetch(pUrl, { cache: "no-store" });
       if(!res.ok) continue;
       if(isJsonAllOrigins){
