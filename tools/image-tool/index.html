@@ -391,7 +391,31 @@
         function crc32(data){let c=0xffffffff;for(const b of data){c^=b;for(let i=0;i<8;i++)c=c&1?(c>>>1)^0xedb88320:c>>>1}return(c^0xffffffff)>>>0}
         function w16(a,o,v){new DataView(a.buffer,a.byteOffset+o,2).setUint16(0,v,true)}function w32(a,o,v){new DataView(a.buffer,a.byteOffset+o,4).setUint32(0,v,true)}
         function createZip(files){const enc=new TextEncoder(),locals=[],centrals=[];let off=0;for(const f of files){const n=enc.encode(f.name),d=f.data,c=crc32(d),l=new Uint8Array(30+n.length);w32(l,0,0x04034b50);w16(l,4,20);w32(l,14,c);w32(l,18,d.length);w32(l,22,d.length);w16(l,26,n.length);l.set(n,30);locals.push(l,d);const z=new Uint8Array(46+n.length);w32(z,0,0x02014b50);w16(z,4,20);w16(z,6,20);w32(z,16,c);w32(z,20,d.length);w32(z,24,d.length);w16(z,28,n.length);w32(z,42,off);z.set(n,46);centrals.push(z);off+=l.length+d.length}const end=new Uint8Array(22);w32(end,0,0x06054b50);w16(end,8,files.length);w16(end,10,files.length);const cs=centrals.reduce((n,x)=>n+x.length,0);w32(end,12,cs);w32(end,16,off);return new Blob([...locals,...centrals,end],{type:"application/zip"})}
-        $("#icoRun").addEventListener("click",async()=>{if(!state.icoImage)return alert("Choose an image first.");const sizes=parseIconSizes($("#icoSizes").value);if(!sizes.length)return alert("Enter valid icon sizes between 16 and 256.");try{const files=[];for(const s of sizes){const p=await createPngForSize(state.icoImage,s);files.push({name:`icon-${s}x${s}.png`,data:new Uint8Array(await p.arrayBuffer())})}const ico=await createIco(state.icoImage,sizes);files.push({name:"icon.ico",data:new Uint8Array(await ico.arrayBuffer())});state.icoZip=createZip(files);$("#icoInfo").textContent=`Generated ${sizes.length} PNGs + 1 combined ICO. ZIP contains ${files.length} files.`;$("#icoZip").disabled=false;downloadBlob(state.icoZip,"icon-package.zip")}catch(err){alert("Icon generation failed: "+err.message)}});$("#icoZip").addEventListener("click",()=>state.icoZip&&downloadBlob(state.icoZip,"icon-package.zip"));
+        $("#icoRun").addEventListener("click", async () => {
+        if (!state.icoImage) return alert("Choose an image first.");
+        
+        const sizes = parseIconSizes($("#icoSizes").value);
+        if (!sizes.length) return alert("Enter valid icon sizes between 16 and 256.");
+        
+        try {
+        const files = [];
+        for (const s of sizes) {
+        const p = await createPngForSize(state.icoImage, s);
+        files.push({ name: `icon-${s}x${s}.png`, data: new Uint8Array(await p.arrayBuffer()) });
+        }
+        
+        const ico = await createIco(state.icoImage, sizes);
+        files.push({ name: "icon.ico", data: new Uint8Array(await ico.arrayBuffer()) });
+        
+        state.icoZip = createZip(files);
+        $("#icoInfo").textContent = `Generated ${sizes.length} PNGs + 1 combined ICO. ZIP contains ${files.length} files.`;
+        
+        // Auto-download the zip immediately:
+        downloadBlob(state.icoZip, "icon-package.zip");
+        } catch (err) {
+        alert("Icon generation failed: " + err.message);
+        }
+        });
         
         /* SVG → PNG: detect native SVG size, put it in the fields, and render at exactly that size. */
         function getSvgDimensions(text){const doc=new DOMParser().parseFromString(text,"image/svg+xml");if(doc.querySelector("parsererror")||!doc.documentElement||doc.documentElement.tagName.toLowerCase()!=="svg")return null;const svg=doc.documentElement;const parseLen=v=>{if(!v)return null;const m=String(v).trim().match(/^([0-9]+(?:\.[0-9]+)?)(?:px)?$/i);if(!m)return null;const n=Number(m[1]);return Number.isFinite(n)&&n>0?n:null};let w=parseLen(svg.getAttribute("width")),h=parseLen(svg.getAttribute("height"));const vb=svg.getAttribute("viewBox");if(vb){const p=vb.trim().split(/[\s,]+/).map(Number);if(p.length===4&&p.every(Number.isFinite)&&p[2]>0&&p[3]>0){if(!(w>0))w=p[2];if(!(h>0))h=p[3]}}if(!(w>0)||!(h>0))return null;return{width:Math.max(1,Math.round(w)),height:Math.max(1,Math.round(h))}}
