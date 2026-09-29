@@ -2,16 +2,40 @@
 async function fetchWithCors(url, opts={redirect:"follow",cache:"no-store",credentials:"omit"}){
   try{
     const r = await fetch(url, opts);
-    if(r.ok || r.status > 0) return r;
+    if(r.ok || (r.status > 0 && r.status !== 0)) return r;
   }catch(e){}
-  const proxyUrls = [
-    "https://api.allorigins.win/raw?url=" + encodeURIComponent(url),
-    "https://corsproxy.io/?" + encodeURIComponent(url)
-  ];
-  for(const p of proxyUrls){
-    try{
-      const r = await fetch(p, {cache:"no-store"});
+
+  const proxies = [
+    async (targetUrl) => {
+      const r = await fetch("https://api.codetabs.com/v1/proxy?quest=" + encodeURIComponent(targetUrl), { cache: "no-store" });
+      if(r.ok) {
+        const text = await r.text();
+        return new Response(text, { status: 200, headers: { "content-type": "text/html; charset=utf-8" } });
+      }
+    },
+    async (targetUrl) => {
+      const r = await fetch("https://api.allorigins.win/get?url=" + encodeURIComponent(targetUrl), { cache: "no-store" });
+      if(r.ok) {
+        const data = await r.json();
+        if(data && data.contents) {
+          return new Response(data.contents, { status: data.status?.http_code || 200, headers: { "content-type": "text/html; charset=utf-8" } });
+        }
+      }
+    },
+    async (targetUrl) => {
+      const r = await fetch("https://corsproxy.io/?" + encodeURIComponent(targetUrl), { cache: "no-store" });
       if(r.ok) return r;
+    },
+    async (targetUrl) => {
+      const r = await fetch("https://thingproxy.freeboard.io/fetch/" + encodeURIComponent(targetUrl), { cache: "no-store" });
+      if(r.ok) return r;
+    }
+  ];
+
+  for(const p of proxies){
+    try{
+      const res = await p(url);
+      if(res && (res.ok || res.status === 200)) return res;
     }catch{}
   }
   return await fetch(url, opts);
@@ -50,15 +74,21 @@ async function loadHomepageProfile(){
 async function crawlOne(item){
   let response;
   try{response=await fetchWithCors(item.url)}
-  catch(e){results.push({url:item.url,depth:item.depth,status:0,error:e.message||String(e)});return}
+  catch(e){
+    results.push({url:item.url,depth:item.depth,status:0,error:e.message||String(e),soft404:false,title:"",description:"",canonical:"",noindex:false,indexable:false,h1:0,h1Text:"",links:0,internal:0,external:0,missingAlt:0,images:0,viewport:false,lang:false,jsonLd:0});
+    return;
+  }
   const type=response.headers.get("content-type")||"";
   if(!/text\/html/i.test(type)){
-    if(checked("nonHtml"))results.push({url:item.url,depth:item.depth,status:response.status,error:"Non-HTML resource"});
+    if(checked("nonHtml"))results.push({url:item.url,depth:item.depth,status:response.status,error:"Non-HTML resource",soft404:false,title:"",description:"",canonical:"",noindex:false,indexable:false,h1:0,h1Text:"",links:0,internal:0,external:0,missingAlt:0,images:0,viewport:false,lang:false,jsonLd:0});
     return;
   }
   let doc;
   try{doc=new DOMParser().parseFromString(await response.text(),"text/html")}
-  catch(e){results.push({url:item.url,depth:item.depth,status:response.status,error:e.message||String(e)});return}
+  catch(e){
+    results.push({url:item.url,depth:item.depth,status:response.status,error:e.message||String(e),soft404:false,title:"",description:"",canonical:"",noindex:false,indexable:false,h1:0,h1Text:"",links:0,internal:0,external:0,missingAlt:0,images:0,viewport:false,lang:false,jsonLd:0});
+    return;
+  }
   const profile=profileFor(doc);
   const root=urlKey(site(),site());
   const soft404=!!(homepageProfile&&item.url!==root&&response.status===200&&profile.title===homepageProfile.title&&profile.description===homepageProfile.description&&profile.h1===homepageProfile.h1&&profile.links===homepageProfile.links);
@@ -134,7 +164,7 @@ async function crawlSite(){
  const limit=Math.max(1,Math.min(100000,Number(val("maxPages","10000"))||10000));
  while(queue.length&&!stopRequested&&results.length<limit){
    const item=queue.shift();
-   if(!allowed(item.url)){results.push({url:item.url,depth:item.depth,status:0,error:"Blocked by robots.txt"});stats();renderResults();continue}
+   if(!allowed(item.url)){results.push({url:item.url,depth:item.depth,status:0,error:"Blocked by robots.txt",soft404:false,title:"",description:"",canonical:"",noindex:false,indexable:false,h1:0,h1Text:"",links:0,internal:0,external:0,missingAlt:0,images:0,viewport:false,lang:false,jsonLd:0});stats();renderResults();continue}
    await crawlOne(item);stats();renderResults();
    await sleep(Math.max(0,Math.min(10000,Number(val("delay","0"))||0)));
  }

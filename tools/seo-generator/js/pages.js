@@ -3,7 +3,7 @@ function renderResults(){
  const body=$("crawlRows");body.innerHTML="";
  for(const r of results){let tr=document.createElement("tr"),ok=r.status>=200&&r.status<400&&!r.error&&!r.soft404;
  const cell=x=>"<td>"+x+"</td>";
- tr.innerHTML=cell('<span class="url">'+esc(r.url)+'</span>')+cell('<span class="'+(r.soft404?"warntext":ok?"ok":"bad")+'">'+esc(r.soft404?"Soft 404":r.error||r.status)+'</span>')+cell(r.depth)+cell(r.title?esc(r.title):'<span class="bad">Missing</span>')+cell(r.description?esc(r.description):'<span class="bad">Missing</span>')+cell(r.canonical?esc(r.canonical):'<span class="bad">Missing</span>')+cell(r.noindex?'<span class="warntext">noindex</span>':r.indexable?'<span class="ok">indexable</span>':'—')+cell(r.h1===1?esc(r.h1Text):r.h1===0?'<span class="bad">Missing</span>':'<span class="warntext">'+r.h1+'</span>')+cell((r.links||0)+" ("+(r.internal||0)+" internal)");
+ tr.innerHTML=cell('<span class="url">'+esc(r.url)+'</span>')+cell('<span class="'+(r.soft404?"warntext":ok?"ok":"bad")+'">'+esc(r.soft404?"Soft 404":r.error||r.status)+'</span>')+cell(r.depth)+cell(r.title?esc(r.title):'<span class="bad">Missing</span>')+cell(r.description?esc(r.description):'<span class="bad">Missing</span>')+cell(r.canonical?esc(r.canonical):'<span class="bad">Missing</span>')+cell(r.noindex?'<span class="warntext">noindex</span>':r.indexable?'<span class="ok">indexable</span>':'—')+cell(r.h1===1?esc(r.h1Text):(r.h1||0)===0?'<span class="bad">Missing</span>':'<span class="warntext">'+r.h1+'</span>')+cell((r.links||0)+" ("+(r.internal||0)+" internal)");
  body.appendChild(tr)}
 }
 function addPage(){pages.push({path:"/new-page",lastmod:"",changefreq:"monthly",priority:"0.5"});renderPages();updateAll()}
