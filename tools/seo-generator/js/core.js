@@ -1,11 +1,11 @@
 "use strict";
 const $=id=>document.getElementById(id);
 let pages = [{ path: "/", lastmod: "", changefreq: "weekly", priority: "1.0" }], results = [], queue = [], seen = new Map(), running = false, stopRequested = false, robotsRules = null;
-const val=(id,def="")=>($(id)?.value??def).trim();
+const val=(id,def="")=>($(id)?.value?.trim() || def);
 const checked=id=>!!$(id)?.checked;
 const esc=s=>String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
 const xml=s=>esc(s).replace(/&#39;/g,"&apos;");
-function site(){return val("siteUrl").replace(/\/+$/,"")}
+function site(){return val("siteUrl").replace(/[,;\s]+$/,"").replace(/\/+$/,"")}
 function status(msg,type="good"){$("status").textContent=msg;$("status").className="status "+type}
 function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
 function urlKey(raw,base){try{let u=new URL(raw,base);if(!/^https?:$/.test(u.protocol))return null;u.hash="";if(!checked("queryUrls"))u.search="";if(u.pathname.length>1&&!u.pathname.endsWith("/"))u.pathname=u.pathname.replace(/\/+$/,"");return u.href}catch{return null}}
