@@ -1,5 +1,4 @@
 "use strict";
-"use strict";
 const $=id=>document.getElementById(id);
 let pages = [{ path: "/", lastmod: "", changefreq: "weekly", priority: "1.0" }], results = [], queue = [], seen = new Map(), running = false, stopRequested = false, robotsRules = null;
 const val=(id,def="")=>($(id)?.value??def).trim();

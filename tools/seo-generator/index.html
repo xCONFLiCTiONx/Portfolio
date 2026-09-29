@@ -34,7 +34,7 @@
 <div class="grid"><section>
 <div class="card">
 <h2>Website Crawler</h2>
-<div class="row"><div><label for="siteUrl">Website URL</label><input id="siteUrl" value="https://xconflictionx.cc" placeholder="https://example.com"></div><div><label for="siteName">Site Name</label><input id="siteName" value="xCONFLiCTiONx"></div></div>
+<div class="row"><div><label for="siteUrl">Website URL</label><input id="siteUrl" placeholder="https://example.com"></div><div><label for="siteName">Site Name</label><input id="siteName" placeholder="My Website"></div></div>
 <div class="row" style="margin-top:12px"><div><label for="maxPages">Maximum pages (safety limit)</label><input id="maxPages" type="number" min="1" max="100000" value="10000"></div><div><label for="delay">Delay between requests (ms)</label><input id="delay" type="number" min="0" max="10000" value="0"></div></div>
 <div class="check"><input id="queryUrls" type="checkbox"><label for="queryUrls">Treat query-string URLs as separate pages</label></div>
 <div class="check"><input id="nonHtml" type="checkbox"><label for="nonHtml">Include linked non-HTML resources in results</label></div>
@@ -42,15 +42,15 @@
 <div class="actions"><button class="primary" id="crawlBtn">Crawl Site</button><button id="stopBtn">Stop</button><button id="clearBtn" class="danger">Clear Results</button></div>
 <div id="status" class="status"></div><div class="progress"><div id="progress"></div></div>
 <div class="stats"><div class="stat"><strong id="discovered">0</strong><span>Discovered</span></div><div class="stat"><strong id="crawled">0</strong><span>Analyzed</span></div><div class="stat"><strong id="queued">0</strong><span>Queued</span></div><div class="stat"><strong id="failed">0</strong><span>Failed</span></div><div class="stat"><strong id="depth">0</strong><span>Max depth</span></div></div>
-<div class="note">The crawler reads HTML directly into browser memory using fetch(); it does not require downloading pages. Run this tool from your own site for same-origin access. Browsers block cross-origin reads unless the target site permits them with CORS. Link crawling cannot discover orphan pages that are not linked; sitemap URLs are also used as discovery seeds when available.</div>
+<div class="note">The crawler reads HTML directly into browser memory using fetch(); it does not require downloading pages. Run this tool from your own site for same-origin access, or let the crawler fallback to CORS proxies for cross-origin URLs. Link crawling cannot discover orphan pages that are not linked; sitemap URLs are also used as discovery seeds when available.</div>
 </div>
 <div class="card">
 <h2>SEO Defaults</h2>
-<label for="title">Homepage / default title</label><input id="title" value="xCONFLiCTiONx — Privacy, Security &amp; Technology">
-<label for="description" style="margin-top:10px">Default meta description</label><textarea id="description">Privacy, security, technology, software projects, tools and technical resources from xCONFLiCTiONx.</textarea>
-<div class="row" style="margin-top:10px"><div><label for="author">Author</label><input id="author"></div><div><label for="publisher">Publisher</label><input id="publisher" value="xCONFLiCTiONx"></div></div>
-<div class="row" style="margin-top:10px"><div><label for="canonical">Default canonical URL</label><input id="canonical" value="https://xconflictionx.cc/"></div><div><label for="favicon">Favicon URL</label><input id="favicon" value="/favicon.ico"></div></div>
-<div class="row" style="margin-top:10px"><div><label for="ogImage">Open Graph image URL</label><input id="ogImage" value="https://xconflictionx.cc/android-chrome-256x256.png"></div><div><label for="theme">Theme color</label><input id="theme" value="#0b0d10"></div></div>
+<label for="title">Homepage / default title</label><input id="title" placeholder="Website Title">
+<label for="description" style="margin-top:10px">Default meta description</label><textarea id="description" placeholder="Website meta description..."></textarea>
+<div class="row" style="margin-top:10px"><div><label for="author">Author</label><input id="author" placeholder="Author Name"></div><div><label for="publisher">Publisher</label><input id="publisher" placeholder="Publisher Name"></div></div>
+<div class="row" style="margin-top:10px"><div><label for="canonical">Default canonical URL</label><input id="canonical" placeholder="https://example.com/"></div><div><label for="favicon">Favicon URL</label><input id="favicon" placeholder="/favicon.ico"></div></div>
+<div class="row" style="margin-top:10px"><div><label for="ogImage">Open Graph image URL</label><input id="ogImage" placeholder="https://example.com/og-image.png"></div><div><label for="theme">Theme color</label><input id="theme" value="#0b0d10"></div></div>
 <label for="robots" style="margin-top:10px">Robots meta policy</label><input id="robots" value="index, follow">
 </div>
 <div class="card">

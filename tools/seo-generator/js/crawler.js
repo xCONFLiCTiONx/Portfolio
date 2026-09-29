@@ -1,16 +1,34 @@
 "use strict";
+async function fetchWithCors(url, opts={redirect:"follow",cache:"no-store",credentials:"omit"}){
+  try{
+    const r = await fetch(url, opts);
+    if(r.ok || r.status > 0) return r;
+  }catch(e){}
+  const proxyUrls = [
+    "https://api.allorigins.win/raw?url=" + encodeURIComponent(url),
+    "https://corsproxy.io/?" + encodeURIComponent(url)
+  ];
+  for(const p of proxyUrls){
+    try{
+      const r = await fetch(p, {cache:"no-store"});
+      if(r.ok) return r;
+    }catch{}
+  }
+  return await fetch(url, opts);
+}
+
 function parseRobots(txt){let active=false,out=[];for(let raw of txt.split(/\r?\n/)){let line=raw.split("#")[0].trim(),i=line.indexOf(":");if(!line||i<0)continue;let k=line.slice(0,i).trim().toLowerCase(),v=line.slice(i+1).trim();if(k==="user-agent")active=v==="*";else if(active&&(k==="allow"||k==="disallow")&&v)out.push({k,v})}return out}
 function allowed(u){if(!robotsRules)return true;let p=new URL(u).pathname,best=-1,allow=true;for(let r of robotsRules){let pattern=r.v,end=pattern.endsWith("$");if(end)pattern=pattern.slice(0,-1);let re=new RegExp("^"+pattern.replace(/[.*+?^${}()|[\]\\]/g,"\\$&").replace(/\\\*/g,".*")+(end?"$":""));if(re.test(p)&&pattern.length>=best){best=pattern.length;allow=r.k==="allow"}}return allow}
-async function loadRobots(){robotsRules=null;if(!checked("respectRobots"))return;try{let r=await fetch(new URL("/robots.txt",site()),{cache:"no-store",credentials:"omit"});if(r.ok)robotsRules=parseRobots(await r.text())}catch{}}
+async function loadRobots(){robotsRules=null;if(!checked("respectRobots"))return;try{let r=await fetchWithCors(new URL("/robots.txt",site()).href);if(r.ok)robotsRules=parseRobots(await r.text())}catch{}}
 async function addSitemapSeeds(){
   const origin=new URL(site()).origin;
   const candidates=new Set([new URL("/sitemap.xml",site()).href]);
-  if(robotsRules){try{let r=await fetch(new URL("/robots.txt",site()),{cache:"no-store"});if(r.ok)for(let line of (await r.text()).split(/\r?\n/)){let m=line.match(/^\s*Sitemap:\s*(\S+)/i);if(m)candidates.add(m[1])}}catch{}}
+  if(robotsRules){try{let r=await fetchWithCors(new URL("/robots.txt",site()).href);if(r.ok)for(let line of (await r.text()).split(/\r?\n/)){let m=line.match(/^\s*Sitemap:\s*(\S+)/i);if(m)candidates.add(m[1])}}catch{}}
   const visited=new Set();
   while(candidates.size){
     const sm=candidates.values().next().value;candidates.delete(sm);if(visited.has(sm)||visited.size>=25)continue;visited.add(sm);
     try{
-      const r=await fetch(sm,{cache:"no-store",credentials:"omit"});if(!r.ok)continue;
+      const r=await fetchWithCors(sm);if(!r.ok)continue;
       const doc=new DOMParser().parseFromString(await r.text(),"application/xml");
       if(doc.querySelector("parsererror"))continue;
       for(const loc of doc.querySelectorAll("sitemap > loc")){const u=loc.textContent.trim();if(u)candidates.add(u)}
@@ -27,11 +45,11 @@ function profileFor(doc){
  return {title:norm(doc.querySelector("title")?.textContent),description:norm(doc.querySelector('meta[name="description"]')?.content),h1:[...doc.querySelectorAll("h1")].map(x=>norm(x.textContent)).filter(Boolean).join("|"),links:[...doc.querySelectorAll("a[href]")].map(a=>norm(a.getAttribute("href"))).filter(Boolean).sort().join("\n")};
 }
 async function loadHomepageProfile(){
- homepageProfile=null;try{const u=urlKey(site(),site()),r=await fetch(u,{redirect:"follow",cache:"no-store",credentials:"omit"});if(!r.ok||!/text\/html/i.test(r.headers.get("content-type")||""))return;homepageProfile=profileFor(new DOMParser().parseFromString(await r.text(),"text/html"))}catch{}
+ homepageProfile=null;try{const u=urlKey(site(),site()),r=await fetchWithCors(u);if(!r.ok||!/text\/html/i.test(r.headers.get("content-type")||""))return;homepageProfile=profileFor(new DOMParser().parseFromString(await r.text(),"text/html"))}catch{}
 }
 async function crawlOne(item){
   let response;
-  try{response=await fetch(item.url,{redirect:"follow",cache:"no-store",credentials:"omit"})}
+  try{response=await fetchWithCors(item.url)}
   catch(e){results.push({url:item.url,depth:item.depth,status:0,error:e.message||String(e)});return}
   const type=response.headers.get("content-type")||"";
   if(!/text\/html/i.test(type)){
@@ -45,18 +63,62 @@ async function crawlOne(item){
   const root=urlKey(site(),site());
   const soft404=!!(homepageProfile&&item.url!==root&&response.status===200&&profile.title===homepageProfile.title&&profile.description===homepageProfile.description&&profile.h1===homepageProfile.h1&&profile.links===homepageProfile.links);
   const title=(doc.querySelector("title")?.textContent||"").trim();
-  const description=(doc.querySelector('meta[name="description"]')?.content||"").trim();
-  const canonicalRaw=doc.querySelector('link[rel~="canonical"]')?.href||"";
+  const description=(doc.querySelector('meta[name="description"]')?.getAttribute("content")||"").trim();
+  const canonicalRaw=doc.querySelector('link[rel~="canonical"]')?.getAttribute("href")||"";
   const canonical=canonicalRaw?urlKey(canonicalRaw,item.url)||canonicalRaw:"";
   const ogImageRaw=(doc.querySelector('meta[property="og:image"]')?.getAttribute("content")||doc.querySelector('meta[name="og:image"]')?.getAttribute("content")||doc.querySelector('meta[name="twitter:image"]')?.getAttribute("content")||"").trim();
-  if(ogImageRaw && item.url===root){
-    let resolvedOg = "";
-    try { resolvedOg = new URL(ogImageRaw, item.url).href; } catch { resolvedOg = ogImageRaw; }
-    if(resolvedOg){
-      $("ogImage").value = resolvedOg;
+  
+  if(item.url===root){
+    if(title) $("title").value = title;
+    if(description) $("description").value = description;
+    
+    const ogSiteName = (doc.querySelector('meta[property="og:site_name"]')?.getAttribute("content")||"").trim();
+    let sName = ogSiteName;
+    if(!sName){
+      try { sName = new URL(site()).hostname.replace(/^www\./i, ""); } catch{}
     }
+    if(sName) $("siteName").value = sName;
+    
+    if(canonical) $("canonical").value = canonical;
+    else $("canonical").value = site() + "/";
+    
+    const fav = doc.querySelector('link[rel~="icon"]')?.getAttribute("href") || doc.querySelector('link[rel~="shortcut icon"]')?.getAttribute("href") || "";
+    if(fav){
+      try { $("favicon").value = new URL(fav, item.url).href; } catch { $("favicon").value = fav; }
+    } else {
+      $("favicon").value = "/favicon.ico";
+    }
+    
+    if(ogImageRaw){
+      try { $("ogImage").value = new URL(ogImageRaw, item.url).href; } catch { $("ogImage").value = ogImageRaw; }
+    }
+    
+    const author = (doc.querySelector('meta[name="author"]')?.getAttribute("content")||"").trim();
+    if(author) $("author").value = author;
+    
+    const publisher = (doc.querySelector('meta[property="article:publisher"]')?.getAttribute("content")||doc.querySelector('meta[name="publisher"]')?.getAttribute("content")||"").trim();
+    if(publisher) $("publisher").value = publisher;
+    
+    const theme = (doc.querySelector('meta[name="theme-color"]')?.getAttribute("content")||"").trim();
+    if(theme) $("theme").value = theme;
+    
+    const rob = (doc.querySelector('meta[name="robots"]')?.getAttribute("content")||"").trim();
+    if(rob) $("robots").value = rob;
+    
+    const ogTitle = (doc.querySelector('meta[property="og:title"]')?.getAttribute("content")||"").trim();
+    if(ogTitle) $("ogTitle").value = ogTitle;
+    
+    const ogDesc = (doc.querySelector('meta[property="og:description"]')?.getAttribute("content")||"").trim();
+    if(ogDesc) $("ogDescription").value = ogDesc;
+    
+    const twCard = (doc.querySelector('meta[name="twitter:card"]')?.getAttribute("content")||"").trim();
+    if(twCard) $("twitterCard").value = twCard;
+    
+    const twSite = (doc.querySelector('meta[name="twitter:site"]')?.getAttribute("content")||doc.querySelector('meta[name="twitter:creator"]')?.getAttribute("content")||"").trim();
+    if(twSite) $("twitterSite").value = twSite;
   }
-  const robots=(doc.querySelector('meta[name="robots"]')?.content||"")+" "+(doc.querySelector('meta[name="googlebot"]')?.content||"");
+
+  const robots=(doc.querySelector('meta[name="robots"]')?.getAttribute("content")||"")+" "+(doc.querySelector('meta[name="googlebot"]')?.getAttribute("content")||"");
   const noindex=/\bnoindex\b/i.test(robots);
   const h1=[...doc.querySelectorAll("h1")].map(x=>x.textContent.trim()).filter(Boolean);
   const links=[...doc.querySelectorAll("a[href]")];let internal=0,external=0;
