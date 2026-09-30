@@ -72,7 +72,7 @@
       "icon": "im im-shield",
       "category": "Security & Extension Test",
       "enabled": true,
-      "githubUrl": "https://github.com/xCONFLiCTiONx/Portfolio/tree/main/tools/allow-copy-paste",
+      "githubUrl": "https://github.com/xCONFLiCTiONx/Allow-Copy-Paste",
       "layout": {
         "header": true,
         "sidebar": false,
@@ -87,8 +87,7 @@
       "icon": "im im-shield",
       "category": "Developer Utility",
       "enabled": true,
-      "githubUrl": "https://github.com/xCONFLiCTiONx/Portfolio/tree/main/tools/dev-box",
-      "layout": {
+      "githubUrl": "": {
         "header": true,
         "sidebar": false,
         "footer": true
@@ -102,7 +101,7 @@
       "icon": "im im-shield",
       "category": "Developer Utility",
       "enabled": true,
-      "githubUrl": "https://github.com/xCONFLiCTiONx/Portfolio/tree/main/tools/warp-test",
+      "githubUrl": "",
       "layout": {
         "header": true,
         "sidebar": false,
@@ -117,7 +116,7 @@
       "icon": "im im-shield",
       "category": "Developer Utility",
       "enabled": true,
-      "githubUrl": "https://github.com/xCONFLiCTiONx/Portfolio/tree/main/tools/site-grade",
+      "githubUrl": "",
       "workerUrl": "https://scanner.xconflictionx.cc/scan",
       "layout": {
         "header": true,
@@ -133,7 +132,7 @@
       "icon": "im im-shield",
       "category": "Developer Utility",
       "enabled": true,
-      "githubUrl": "https://github.com/xCONFLiCTiONx/Portfolio/tree/main/tools/seo-generator",
+      "githubUrl": "",
       "layout": {
         "header": true,
         "sidebar": false,
@@ -148,7 +147,7 @@
       "icon": "im im-shield",
       "category": "Developer Utility",
       "enabled": true,
-      "githubUrl": "https://github.com/xCONFLiCTiONx/Portfolio/tree/main/tools/image-tool",
+      "githubUrl": "",
       "layout": {
         "header": true,
         "sidebar": false,
