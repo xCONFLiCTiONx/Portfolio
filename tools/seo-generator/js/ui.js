@@ -234,8 +234,8 @@ function crc32(data){
   return (c ^ 0xffffffff) >>> 0;
 }
 
-function w16(a, o, v){ new DataView(a.buffer, a.byteOffset + o, 2).setUint16(0, v, true); }
-function w32(a, o, v){ new DataView(a.buffer, a.byteOffset + o, 4).setUint32(0, v, true); }
+function w16(a, o, v){ a[o] = v & 0xff; a[o + 1] = (v >> 8) & 0xff; }
+function w32(a, o, v){ a[o] = v & 0xff; a[o + 1] = (v >> 8) & 0xff; a[o + 2] = (v >> 16) & 0xff; a[o + 3] = (v >>> 24) & 0xff; }
 
 function createZip(files){
   const enc = new TextEncoder();
