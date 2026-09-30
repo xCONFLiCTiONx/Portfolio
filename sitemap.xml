@@ -6,17 +6,17 @@
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://xconflictionx.cc/about/</loc>
+    <loc>https://xconflictionx.cc/about</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://xconflictionx.cc/contact/</loc>
+    <loc>https://xconflictionx.cc/contact</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://xconflictionx.cc/privacy/</loc>
+    <loc>https://xconflictionx.cc/privacy</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -41,17 +41,7 @@
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://xconflictionx.cc/tools/index.html</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://xconflictionx.cc/tools/pdf-tools</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
-    <loc>https://xconflictionx.cc/tools/pdf-tools/index.html</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>

@@ -6,6 +6,11 @@
   "name": "xCONFLiCTiONx — Privacy, Security & Technology",
   "inLanguage": "en",
   "description": "Software Developer Portfolio - Building tools for freedom & productivity.",
+  "author": {
+    "@type": "Person",
+    "@id": "https://xconflictionx.cc/#person",
+    "name": "xCONFLiCTiONx"
+  },
   "publisher": {
     "@type": "Organization",
     "@id": "https://xconflictionx.cc/#organization",
@@ -16,9 +21,8 @@
       "url": "https://xconflictionx.cc/assets/logo.png"
     },
     "sameAs": [
-      "https://github.com/xCONFLiCTiONx",
       "https://x.com/xCONFLiCTiONx",
-      "https://linkedin.com/xCONFLiCTiONx"
+      "https://github.com/xCONFLiCTiONx"
     ]
   }
 }
