@@ -1,0 +1,146 @@
+:root {
+  --background: #050505;
+  --card: #111;
+  --border: #252525;
+  --text: #eee;
+  --accent: #00ff88;
+  --warning: #ffaa00;
+  --danger: #ff4444;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 20px;
+
+  background: var(--background);
+
+  color: var(--text);
+
+  font-family: system-ui, -apple-system, Segoe UI, sans-serif;
+}
+
+header h1 {
+  color: var(--accent);
+
+  letter-spacing: 4px;
+}
+
+header p {
+  color: #888;
+}
+
+.card {
+  background: var(--card);
+
+  border: 1px solid var(--border);
+
+  border-radius: 16px;
+
+  padding: 20px;
+
+  margin: 20px 0;
+}
+
+.hero {
+  text-align: center;
+}
+
+#scoreCircle {
+  width: 180px;
+
+  height: 180px;
+
+  border-radius: 50%;
+
+  border: 6px solid var(--accent);
+
+  margin: auto;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  flex-direction: column;
+}
+
+#score {
+  font-size: 48px;
+
+  font-weight: bold;
+
+  color: var(--accent);
+}
+
+#scoreCircle small {
+  color: #888;
+}
+
+button {
+  width: 100%;
+
+  padding: 16px;
+
+  margin-top: 12px;
+
+  border-radius: 12px;
+
+  border: 0;
+
+  background: var(--accent);
+
+  color: #000;
+
+  font-size: 16px;
+
+  font-weight: bold;
+}
+
+button:disabled {
+  opacity: 0.4;
+}
+
+.result {
+  background: #0b0b0b;
+
+  border-radius: 12px;
+
+  padding: 15px;
+
+  margin-top: 15px;
+}
+
+.row {
+  display: flex;
+
+  justify-content: space-between;
+
+  padding: 8px 0;
+
+  border-bottom: 1px solid #222;
+}
+
+.pass {
+  color: var(--accent);
+}
+
+.warn {
+  color: var(--warning);
+}
+
+.fail {
+  color: var(--danger);
+}
+
+footer {
+  text-align: center;
+
+  color: #555;
+
+  margin-top: 40px;
+}

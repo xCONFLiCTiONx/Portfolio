@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>xSECURITY AUDIT</title>
+
+    <meta name="theme-color" content="#050505" />
+
+    <link rel="manifest" href="manifest.json" />
+
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+
+  <body>
+    <header>
+      <h1>xSECURITY AUDIT</h1>
+
+      <p>Android Privacy & Security Diagnostic</p>
+    </header>
+
+    <main>
+      <section class="card hero">
+        <div id="scoreCircle">
+          <span id="score"> -- </span>
+
+          <small> Security Score </small>
+        </div>
+
+        <button id="scanButton">START SECURITY SCAN</button>
+
+        <button id="reportButton" disabled>EXPORT REPORT</button>
+      </section>
+
+      <section class="card">
+        <h2>Scan Status</h2>
+
+        <div id="status">Waiting for scan...</div>
+      </section>
+
+      <section id="results"></section>
+    </main>
+
+    <footer>xCONFLiCTiONx Security Tools</footer>
+
+    <script type="module" src="js/app.js"></script>
+
+    <script>
+      if(
+    "serviceWorker" in navigator
+    ){
+    
+    navigator.serviceWorker.register(
+    "service-worker.js"
+    )
+    
+    .then(()=>{
+    
+    console.log(
+    "xSECURITY AUDIT offline enabled"
+    );
+    
+    })
+    
+    .catch(
+    err=>
+    console.log(err)
+    );
+    
+    }
+    
+    </script>
+  </body>
+</html>
