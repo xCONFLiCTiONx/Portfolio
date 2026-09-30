@@ -4,6 +4,8 @@ function normPath(p){
   p = String(p || "").trim();
   if(!p.startsWith("/")) p = "/" + p;
   p = p.replace(/\/(?:index\.html?|index\.htm)$/i, "/");
+  p = p.replace(/(?:\/|^)index\.html?$/i, "");
+  if(!p.startsWith("/")) p = "/" + p;
   if(p.toLowerCase() === "/index.html" || p.toLowerCase() === "/index.htm") p = "/";
   if(p.length > 1 && p.endsWith("/")) p = p.slice(0, -1);
   return p || "/";
@@ -65,7 +67,7 @@ function useCrawledPages(){
   let found = results.filter(r => r.status >= 200 && r.status < 400 && !r.error && htmlUrl(r.url));
   let arr = [];
   for(const r of found){
-    let p = pathOf(r.url);
+    let p = normPath(pathOf(r.url));
     if(!arr.some(x => normPath(x.path) === normPath(p))){
       arr.push({
         path: p,
