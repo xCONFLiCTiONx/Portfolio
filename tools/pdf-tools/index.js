@@ -443,12 +443,16 @@ function createCardElement(pageId, fileName, subtitleText) {
     return btn;
   };
 
+  const moveLeftIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>`;
+  const moveRightIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>`;
   const zoomIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>`;
   const downloadImageIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>`;
   const rotLeftIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 2v6h6M2.66 15.57a10 10 0 1 0 .57-8.38"></path></svg>`;
   const rotRightIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38"></path></svg>`;
   const deleteIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"></path></svg>`;
 
+  overlayActions.appendChild(createIconBtn(moveLeftIcon, 'Move Left', '', () => moveCard(card, 'left')));
+  overlayActions.appendChild(createIconBtn(moveRightIcon, 'Move Right', '', () => moveCard(card, 'right')));
   overlayActions.appendChild(createIconBtn(zoomIcon, 'Zoom Page', '', () => openZoomModal(pageId)));
   overlayActions.appendChild(createIconBtn(downloadImageIcon, 'Download as Image', '', () => exportPageAsImage(pageId)));
   overlayActions.appendChild(createIconBtn(rotLeftIcon, 'Rotate Left', '', () => rotatePage(card, pageId, 'left')));
@@ -546,6 +550,16 @@ function updateCardBadges() {
       badge.textContent = index + 1;
     }
   });
+}
+
+// 1-Tap Card Movement Handler for Mobile/Desktop
+function moveCard(card, direction) {
+  if (direction === 'left' && card.previousElementSibling && card.previousElementSibling !== placeholder) {
+    card.parentNode.insertBefore(card, card.previousElementSibling);
+  } else if (direction === 'right' && card.nextElementSibling) {
+    card.parentNode.insertBefore(card.nextElementSibling, card);
+  }
+  updateCardBadges();
 }
 
 // Page Rotation State Handler
