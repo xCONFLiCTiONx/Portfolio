@@ -13,9 +13,8 @@
 /* Explicit font-path override for compiled CSS */
 @font-face {
     font-family: 'iconmonstr-iconic-font';
-    src: url('/css/iconic/fonts/iconmonstr-iconic-font.woff2?v=1.2.0') format('woff2'),
-        url('/css/iconic/fonts/iconmonstr-iconic-font.woff?v=1.2.0') format('woff'),
-        url('/css/iconic/fonts/iconmonstr-iconic-font.ttf?v=1.2.0') format('truetype');
+    src: url('/css/iconic/fonts/iconmonstr-iconic-font.woff2?v=1.2.0') format('woff2');
+    font-display: swap;
 }
 
 /* Reset & Base
@@ -58,7 +57,8 @@ a:hover {
 
 h1, h2, h3, h4 {
     color: #f0f6fc;
-    font-family: "montserrat-semibold", sans-serif;
+    font-family: "Montserrat", sans-serif;
+    font-weight: 600;
 }
 
 /* Layout
