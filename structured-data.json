@@ -1,15 +1,24 @@
 {
   "@context": "https://schema.org",
   "@type": "WebSite",
-  "name": "xCONFLiCTiONx",
-  "url": "https://xconflictionx.cc",
-  "description": "Privacy, security, technology, software projects, tools and technical resources from xCONFLiCTiONx.",
-  "author": {
-    "@type": "Person",
-    "name": "xCONFLiCTiONx"
-  },
+  "@id": "https://xconflictionx.cc/#website",
+  "url": "https://xconflictionx.cc/",
+  "name": "xCONFLiCTiONx — Privacy, Security & Technology",
+  "inLanguage": "en",
+  "description": "Software Developer Portfolio - Building tools for freedom & productivity.",
   "publisher": {
     "@type": "Organization",
-    "name": "xCONFLiCTiONx"
+    "@id": "https://xconflictionx.cc/#organization",
+    "name": "xCONFLiCTiONx",
+    "url": "https://xconflictionx.cc",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://xconflictionx.cc/logo.png"
+    },
+    "sameAs": [
+      "https://github.com/xCONFLiCTiONx",
+      "https://x.com/xCONFLiCTiONx",
+      "https://linkedin.com/xCONFLiCTiONx"
+    ]
   }
 }

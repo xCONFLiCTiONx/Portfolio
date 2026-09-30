@@ -1,27 +1,15 @@
 {
-    "github_username": "xCONFLiCTiONx",
-    "github_token": "",
-    "name": "xCONFLiCTiONx",
-    "short_name": "xCONFLiCTiONx",
-    "start_url": "/",
-    "display": "standalone",
-    "background_color": "#0b0d10",
-    "theme_color": "#0b0d10",
-    "icons": [
-        {
-            "src": "favicon-32x32.png",
-            "sizes": "32x32",
-            "type": "image/png"
-        },
-        {
-            "src": "android-chrome-192x192.png",
-            "sizes": "192x192",
-            "type": "image/png"
-        },
-        {
-            "src": "android-chrome-256x256.png",
-            "sizes": "256x256",
-            "type": "image/png"
-        }
-    ]
+  "name": "xCONFLiCTiONx",
+  "short_name": "xCONFLiCTiONx",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#0b0d10",
+  "background_color": "#0b0d10",
+  "icons": [
+    {
+      "src": "https://xconflictionx.cc/favicon.ico",
+      "sizes": "any",
+      "type": "image/x-icon"
+    }
+  ]
 }

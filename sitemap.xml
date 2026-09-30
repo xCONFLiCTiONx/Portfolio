@@ -21,43 +21,53 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://xconflictionx.cc/tools/</loc>
+    <loc>https://xconflictionx.cc/tools</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://xconflictionx.cc/tools/pdf-tools/</loc>
+    <loc>https://xconflictionx.cc/tools/allow-copy-paste</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://xconflictionx.cc/tools/allow-copy-paste/</loc>
+    <loc>https://xconflictionx.cc/tools/dev-box</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://xconflictionx.cc/tools/dev-box/</loc>
+    <loc>https://xconflictionx.cc/tools/image-tool</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://xconflictionx.cc/tools/warp-test/</loc>
+    <loc>https://xconflictionx.cc/tools/index.html</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://xconflictionx.cc/tools/site-grade/</loc>
+    <loc>https://xconflictionx.cc/tools/pdf-tools</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://xconflictionx.cc/tools/seo-generator/</loc>
+    <loc>https://xconflictionx.cc/tools/pdf-tools/index.html</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://xconflictionx.cc/tools/image-tool/</loc>
+    <loc>https://xconflictionx.cc/tools/seo-generator</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://xconflictionx.cc/tools/site-grade</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://xconflictionx.cc/tools/warp-test</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
   </url>
 </urlset>
