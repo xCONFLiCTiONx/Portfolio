@@ -1,6 +1,32 @@
 "use strict";
+let lastScrapedUrl = "";
+
+function setupUrlScraper(){
+  const siteInput = $("siteUrl");
+  if(!siteInput) return;
+  const handleUrlChange = () => {
+    let raw = siteInput.value.trim();
+    if(!raw) return;
+    if(!/^https?:\/\//i.test(raw)){
+      raw = "https://" + raw;
+    }
+    if(raw.toLowerCase() !== lastScrapedUrl.toLowerCase()){
+      lastScrapedUrl = raw;
+      scrapeSiteMetadata(raw);
+    }
+  };
+  siteInput.addEventListener("change", handleUrlChange);
+  siteInput.addEventListener("blur", handleUrlChange);
+}
+
 function init(){
- renderPages();renderResults();initPreviewTabs();updateAll();validate();
+ renderPages();renderResults();initPreviewTabs();setupUrlScraper();
+ updateAll();validate();
+ const initialUrl = val("siteUrl");
+ if(initialUrl){
+   lastScrapedUrl = initialUrl;
+   scrapeSiteMetadata(initialUrl);
+ }
  $("crawlBtn").onclick=crawlSite;$("stopBtn").onclick=stopCrawl;
  $("clearBtn").onclick=()=>{if(running){status("Stop the crawl before clearing.","warn");return}results=[];queue=[];seen.clear();pages=[];renderPages();renderResults();stats();$("progress").style.width="0";updateAll();validate();status("Results cleared.","good")};
  $("addPage").onclick=addPage;$("addCommon").onclick=addCommon;

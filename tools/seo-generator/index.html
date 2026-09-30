@@ -61,7 +61,7 @@
 <div class="grid"><section>
 <div class="card">
 <h2>Website Crawler</h2>
-<div class="row"><div><label for="siteUrl">Website URL</label><input id="siteUrl" value="https://xconflictionx.cc" placeholder="https://example.com"></div><div><label for="siteName">Site Name</label><input id="siteName" value="xCONFLiCTiONx" placeholder="My Website"></div></div>
+<div class="row"><div><label for="siteUrl">Website URL</label><input id="siteUrl" value="https://xconflictionx.cc" placeholder="https://example.com"></div><div><label for="siteName">Site Name</label><input id="siteName" placeholder="My Website"></div></div>
 <div class="row" style="margin-top:12px"><div><label for="maxPages">Maximum pages (safety limit)</label><input id="maxPages" type="number" min="1" max="100000" value="10000"></div><div><label for="delay">Delay between requests (ms)</label><input id="delay" type="number" min="0" max="10000" value="0"></div></div>
 
 <div class="check"><input id="queryUrls" type="checkbox"><label for="queryUrls">Treat query-string URLs as separate pages</label></div>
@@ -74,19 +74,19 @@
 </div>
 <div class="card">
 <h2>SEO Defaults</h2>
-<label for="title">Homepage / default title</label><input id="title" value="xCONFLiCTiONx — Privacy, Security &amp; Technology" placeholder="Website Title">
-<label for="description" style="margin-top:10px">Default meta description</label><textarea id="description" placeholder="Website meta description...">Privacy, security, technology, software projects, tools and technical resources from xCONFLiCTiONx.</textarea>
-<div class="row" style="margin-top:10px"><div><label for="author">Author</label><input id="author" placeholder="Author Name"></div><div><label for="publisher">Publisher</label><input id="publisher" value="xCONFLiCTiONx" placeholder="Publisher Name"></div></div>
-<div class="row" style="margin-top:10px"><div><label for="canonical">Default canonical URL</label><input id="canonical" value="https://xconflictionx.cc/" placeholder="https://example.com/"></div><div><label for="favicon">Favicon URL</label><input id="favicon" value="/favicon.ico" placeholder="/favicon.ico"></div></div>
-<div class="row" style="margin-top:10px"><div><label for="ogImage">Open Graph image URL</label><input id="ogImage" value="https://xconflictionx.cc/android-chrome-256x256.png" placeholder="https://example.com/og-image.png"></div><div><label for="theme">Theme color</label><input id="theme" value="#0b0d10"></div></div>
-<label for="robots" style="margin-top:10px">Robots meta policy</label><input id="robots" value="index, follow">
+<label for="title">Homepage / default title</label><input id="title" placeholder="Website Title">
+<label for="description" style="margin-top:10px">Default meta description</label><textarea id="description" placeholder="Website meta description..."></textarea>
+<div class="row" style="margin-top:10px"><div><label for="author">Author</label><input id="author" placeholder="Author Name"></div><div><label for="publisher">Publisher</label><input id="publisher" placeholder="Publisher Name"></div></div>
+<div class="row" style="margin-top:10px"><div><label for="canonical">Default canonical URL</label><input id="canonical" placeholder="https://example.com/"></div><div><label for="favicon">Favicon URL</label><input id="favicon" placeholder="/favicon.ico"></div></div>
+<div class="row" style="margin-top:10px"><div><label for="ogImage">Open Graph image URL</label><input id="ogImage" placeholder="https://example.com/og-image.png"></div><div><label for="theme">Theme color</label><input id="theme" placeholder="#0b0d10"></div></div>
+<label for="robots" style="margin-top:10px">Robots meta policy</label><input id="robots" placeholder="index, follow">
 </div>
 <div class="card">
 <h2>Structured Data</h2><div class="row"><div><label for="schemaType">Schema type</label><select id="schemaType"><option>WebSite</option><option>WebPage</option><option>Organization</option><option>Person</option></select></div><div><label for="schemaDescription">Schema description (optional)</label><input id="schemaDescription"></div></div>
 <div class="check"><input id="searchAction" type="checkbox"><label for="searchAction">Include WebSite SearchAction</label></div><label for="searchUrl">Search URL template (use {search_term_string})</label><input id="searchUrl" placeholder="https://example.com/search?q={search_term_string}">
 </div>
 <div class="card">
-<h2>Social Metadata</h2><div class="row"><div><label for="ogTitle">Open Graph title</label><input id="ogTitle"></div><div><label for="ogDescription">Open Graph description</label><input id="ogDescription"></div></div>
+<h2>Social Metadata</h2><div class="row"><div><label for="ogTitle">Open Graph title</label><input id="ogTitle" placeholder="Open Graph Title"></div><div><label for="ogDescription">Open Graph description</label><input id="ogDescription" placeholder="Open Graph Description"></div></div>
 <div class="row" style="margin-top:10px"><div><label for="twitterCard">X / Twitter card</label><select id="twitterCard"><option value="summary_large_image">summary_large_image</option><option value="summary">summary</option></select></div><div><label for="twitterSite">X / Twitter username</label><input id="twitterSite" placeholder="@username"></div></div>
 </div>
 </section><section>

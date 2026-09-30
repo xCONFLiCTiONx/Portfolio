@@ -154,6 +154,7 @@ async function crawlSite(){
  if(running)return;try{let u=new URL(site());if(!/^https?:$/.test(u.protocol))throw 0}catch{status("Enter a valid HTTP or HTTPS website URL.","error");return}
  running=true;stopRequested=false;results=[];queue=[];seen.clear();robotsRules=null;
  let start=urlKey(site(),site());seen.set(start,{url:start,depth:0});queue.push({url:start,depth:0});renderResults();stats();status("Preparing crawl…","info");
+ await scrapeSiteMetadata(site());
  await loadHomepageProfile();await loadRobots();await addSitemapSeeds();
  const limit=Math.max(1,Math.min(100000,Number(val("maxPages","10000"))||10000));
  while(queue.length&&!stopRequested&&results.length<limit){
@@ -167,3 +168,66 @@ async function crawlSite(){
  useCrawledPages();renderPages();updateAll();validate();
 }
 function stopCrawl(){if(running){stopRequested=true;status("Stopping after the current request…","warn")}}
+
+async function scrapeSiteMetadata(targetUrl){
+  if(!targetUrl)return;
+  let formattedUrl=targetUrl.trim();
+  if(!/^https?:\/\//i.test(formattedUrl)){formattedUrl="https://"+formattedUrl}
+  try{let u=new URL(formattedUrl);if(!/^https?:$/.test(u.protocol))return;formattedUrl=u.href}catch{return}
+  status("Scraping metadata from "+formattedUrl+"...","info");
+  try{
+    const res=await fetchWithCors(formattedUrl);
+    if(!res.ok){status("Could not fetch "+formattedUrl+" (HTTP "+res.status+").","warn");return}
+    const html=await res.text();
+    const doc=new DOMParser().parseFromString(html,"text/html");
+
+    const title=(doc.querySelector("title")?.textContent||"").trim();
+    const description=(doc.querySelector('meta[name="description"]')?.getAttribute("content")||doc.querySelector('meta[property="og:description"]')?.getAttribute("content")||"").trim();
+    const ogSiteName=(doc.querySelector('meta[property="og:site_name"]')?.getAttribute("content")||"").trim();
+    let sName=ogSiteName;
+    if(!sName){try{sName=new URL(formattedUrl).hostname.replace(/^www\./i,"")}catch{}}
+
+    const canonicalRaw=(doc.querySelector('link[rel~="canonical"]')?.getAttribute("href")||"").trim();
+    let canonical=canonicalRaw;
+    if(canonicalRaw){try{canonical=new URL(canonicalRaw,formattedUrl).href}catch{}}
+    else{canonical=formattedUrl.replace(/\/+$/,"")+"/"}
+
+    const fav=(doc.querySelector('link[rel~="icon"]')?.getAttribute("href")||doc.querySelector('link[rel~="shortcut icon"]')?.getAttribute("href")||"").trim();
+    let favicon="/favicon.ico";
+    if(fav){try{favicon=new URL(fav,formattedUrl).href}catch{favicon=fav}}
+
+    const ogImageRaw=(doc.querySelector('meta[property="og:image"]')?.getAttribute("content")||doc.querySelector('meta[name="og:image"]')?.getAttribute("content")||doc.querySelector('meta[name="twitter:image"]')?.getAttribute("content")||"").trim();
+    let ogImage="";
+    if(ogImageRaw){try{ogImage=new URL(ogImageRaw,formattedUrl).href}catch{ogImage=ogImageRaw}}
+
+    const author=(doc.querySelector('meta[name="author"]')?.getAttribute("content")||"").trim();
+    const publisher=(doc.querySelector('meta[property="article:publisher"]')?.getAttribute("content")||doc.querySelector('meta[name="publisher"]')?.getAttribute("content")||"").trim();
+    const theme=(doc.querySelector('meta[name="theme-color"]')?.getAttribute("content")||"").trim();
+    const rob=(doc.querySelector('meta[name="robots"]')?.getAttribute("content")||"").trim();
+    const ogTitle=(doc.querySelector('meta[property="og:title"]')?.getAttribute("content")||title).trim();
+    const ogDesc=(doc.querySelector('meta[property="og:description"]')?.getAttribute("content")||description).trim();
+    const twCard=(doc.querySelector('meta[name="twitter:card"]')?.getAttribute("content")||"summary_large_image").trim();
+    const twSite=(doc.querySelector('meta[name="twitter:site"]')?.getAttribute("content")||doc.querySelector('meta[name="twitter:creator"]')?.getAttribute("content")||"").trim();
+
+    if($("siteName"))$("siteName").value=sName;
+    if($("title"))$("title").value=title;
+    if($("description"))$("description").value=description;
+    if($("author"))$("author").value=author;
+    if($("publisher"))$("publisher").value=publisher||sName;
+    if($("canonical"))$("canonical").value=canonical;
+    if($("favicon"))$("favicon").value=favicon;
+    if($("ogImage"))$("ogImage").value=ogImage;
+    if($("theme"))$("theme").value=theme||"#0b0d10";
+    if($("robots"))$("robots").value=rob||"index, follow";
+    if($("ogTitle"))$("ogTitle").value=ogTitle;
+    if($("ogDescription"))$("ogDescription").value=ogDesc;
+    if($("twitterCard"))$("twitterCard").value=twCard;
+    if($("twitterSite"))$("twitterSite").value=twSite;
+
+    status("Scraped metadata from "+formattedUrl+" successfully.","good");
+    updateAll();
+    validate();
+  }catch(e){
+    status("Could not scrape metadata from "+formattedUrl+": "+(e.message||String(e)),"warn");
+  }
+}
