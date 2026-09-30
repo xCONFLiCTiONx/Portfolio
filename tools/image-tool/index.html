@@ -353,6 +353,7 @@
                 <button class="tab" data-tool="ico">PNG → ICO</button>
                 <button class="tab" data-tool="svgpng">SVG → PNG</button>
                 <button class="tab" data-tool="exticon">Chrome Extension Icons</button>
+                <button class="tab" data-tool="androidicon">Android Icon Generator</button>
                 <button class="tab" data-tool="svgedit">SVG Generator / Editor</button>
             </nav>
 
@@ -491,6 +492,85 @@
             },</textarea>
                             <div class="code-actions">
                                 <button id="manifestCopy">Copy Code</button><span id="manifestCopyStatus" class="copy-status" aria-live="polite"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="androidicon" class="tool">
+                <div class="grid">
+                    <div class="card">
+                        <h2>Android Icon Generator</h2>
+                        <label for="androidFile">Source Image</label>
+                        <input id="androidFile" type="file" accept="image/*,.svg">
+
+                        <label for="androidName">Resource Name</label>
+                        <input id="androidName" type="text" value="ic_launcher">
+
+                        <div style="margin-top: 14px;">
+                            <label><input id="androidGenStandard" type="checkbox" checked> Standard Launcher Icons (mdpi, hdpi, xhdpi, xxhdpi, xxxhdpi)</label>
+                            <label style="margin-top: 6px;"><input id="androidGenRound" type="checkbox" checked> Round Launcher Icons (`_round.png`)</label>
+                            <label style="margin-top: 6px;"><input id="androidGenAdaptive" type="checkbox" checked> Adaptive Icons (foreground + background layers)</label>
+                            <label style="margin-top: 6px;"><input id="androidGenMonochrome" type="checkbox" checked> Monochrome Themed Icon</label>
+                        </div>
+
+                        <div id="androidAdaptiveOptions" style="margin-top: 14px; padding: 12px; background: #121212; border: 1px solid #333; border-radius: 6px;">
+                            <h3 style="margin-top: 0; font-size: 14px; color: #58a6ff;">Adaptive Icon Settings</h3>
+                            <label for="androidBgType">Background Type</label>
+                            <select id="androidBgType">
+                                <option value="color">Solid Color</option>
+                                <option value="transparent">Transparent</option>
+                                <option value="image">Uploaded Image</option>
+                            </select>
+
+                            <div id="androidBgColorWrap" style="margin-top: 10px;">
+                                <label for="androidBgColor">Background Color</label>
+                                <input id="androidBgColor" type="color" value="#FFFFFF" style="height: 40px; padding: 2px;">
+                            </div>
+
+                            <div id="androidBgImageWrap" style="margin-top: 10px; display: none;">
+                                <label for="androidBgFile">Background Image</label>
+                                <input id="androidBgFile" type="file" accept="image/*">
+                            </div>
+
+                            <label for="androidScale" style="margin-top: 10px;">Foreground Scaling: <span id="androidScaleVal">72%</span></label>
+                            <input id="androidScale" type="range" min="40" max="100" value="72">
+                        </div>
+
+                        <div class="actions">
+                            <button class="primary" id="androidRun">Generate Android Icons</button>
+                            <button id="androidDownload" disabled>Download ZIP</button>
+                        </div>
+                        <div id="androidInfo" class="stat">Upload an image to generate Android project icon resources.</div>
+                        <div class="notice">Generates standard mipmap densities, adaptive foreground/background resources, xml descriptors, and manifest snippets.</div>
+                    </div>
+
+                    <div class="card">
+                        <h2>Generated Previews &amp; Configuration</h2>
+                        <div id="androidPreview" class="icon-preview" style="margin-bottom: 20px;">Upload an image to view icon previews.</div>
+
+                        <div class="code-box">
+                            <div>Adaptive Icon XML (`mipmap-anydpi-v26/{name}.xml`)</div>
+                            <textarea id="androidAdaptiveXmlCode" rows="4" readonly spellcheck="false"></textarea>
+                            <div class="code-actions">
+                                <button id="androidAdaptiveCopy">Copy XML</button><span id="androidAdaptiveCopyStatus" class="copy-status" aria-live="polite"></span>
+                            </div>
+                        </div>
+
+                        <div class="code-box">
+                            <div>Background Color Resource (`values/{name}_background.xml`)</div>
+                            <textarea id="androidColorXmlCode" rows="3" readonly spellcheck="false"></textarea>
+                            <div class="code-actions">
+                                <button id="androidColorCopy">Copy XML</button><span id="androidColorCopyStatus" class="copy-status" aria-live="polite"></span>
+                            </div>
+                        </div>
+
+                        <div class="code-box">
+                            <div>AndroidManifest.xml Integration Snippet</div>
+                            <textarea id="androidManifestCode" rows="3" readonly spellcheck="false"></textarea>
+                            <div class="code-actions">
+                                <button id="androidManifestCopy">Copy Snippet</button><span id="androidManifestCopyStatus" class="copy-status" aria-live="polite"></span>
                             </div>
                         </div>
                     </div>
@@ -1481,6 +1561,226 @@
         $("#svgSave").addEventListener("click", () => {
             try{ downloadBlob(new Blob([validateSvg($("#svgCode").value)], { type: "image/svg+xml" }), "graphic.svg"); }
             catch(err){ alert(err.message); }
+        });
+
+        // Android Icon Generator Tool State & Logic
+        state.androidImage = null;
+        state.androidBgImage = null;
+        state.androidZip = null;
+        state.androidBlobs = [];
+
+        $("#androidScale").addEventListener("input", () => $("#androidScaleVal").textContent = $("#androidScale").value + "%");
+        $("#androidBgType").addEventListener("change", () => {
+            const t = $("#androidBgType").value;
+            $("#androidBgColorWrap").style.display = t === "color" ? "block" : "none";
+            $("#androidBgImageWrap").style.display = t === "image" ? "block" : "none";
+        });
+
+        $("#androidFile").addEventListener("change", async e => {
+            const f = e.target.files[0];
+            if(!f) return;
+            try{
+                state.androidImage = await loadImage(f);
+                state.androidZip = null;
+                $("#androidDownload").disabled = true;
+            }catch(err){ alert(err.message); }
+        });
+
+        $("#androidBgFile").addEventListener("change", async e => {
+            const f = e.target.files[0];
+            if(!f) return;
+            try{
+                state.androidBgImage = await loadImage(f);
+            }catch(err){ alert(err.message); }
+        });
+
+        $("#androidRun").addEventListener("click", async () => {
+            if(!state.androidImage) return alert("Choose a source image first.");
+            const name = $("#androidName").value.trim() || "ic_launcher";
+            const genStandard = $("#androidGenStandard").checked;
+            const genRound = $("#androidGenRound").checked;
+            const genAdaptive = $("#androidGenAdaptive").checked;
+            const genMonochrome = $("#androidGenMonochrome").checked;
+            const bgType = $("#androidBgType").value;
+            const bgColor = $("#androidBgColor").value;
+            const scale = Number($("#androidScale").value) / 100;
+
+            const files = [];
+            const previewContainer = $("#androidPreview");
+            previewContainer.innerHTML = "";
+            state.androidBlobs = [];
+
+            try {
+                // 1. Standard Launcher Icons
+                if (genStandard) {
+                    const densities = [
+                        { dir: "mipmap-mdpi", size: 48 },
+                        { dir: "mipmap-hdpi", size: 72 },
+                        { dir: "mipmap-xhdpi", size: 96 },
+                        { dir: "mipmap-xxhdpi", size: 144 },
+                        { dir: "mipmap-xxxhdpi", size: 192 }
+                    ];
+                    for (const d of densities) {
+                        const c = document.createElement("canvas");
+                        c.width = d.size; c.height = d.size;
+                        const ctx = c.getContext("2d");
+                        ctx.clearRect(0, 0, d.size, d.size);
+                        ctx.drawImage(state.androidImage, 0, 0, d.size, d.size);
+                        const blob = await canvasBlob(c, "image/png");
+                        const u8 = new Uint8Array(await blob.arrayBuffer());
+                        files.push({ name: `res/${d.dir}/${name}.png`, data: u8 });
+                        state.androidBlobs.push({ label: `${d.dir}/${name}.png`, blob, size: d.size });
+                    }
+                }
+
+                // 2. Round Launcher Icons
+                if (genRound) {
+                    const densities = [
+                        { dir: "mipmap-mdpi", size: 48 },
+                        { dir: "mipmap-hdpi", size: 72 },
+                        { dir: "mipmap-xhdpi", size: 96 },
+                        { dir: "mipmap-xxhdpi", size: 144 },
+                        { dir: "mipmap-xxxhdpi", size: 192 }
+                    ];
+                    for (const d of densities) {
+                        const c = document.createElement("canvas");
+                        c.width = d.size; c.height = d.size;
+                        const ctx = c.getContext("2d");
+                        ctx.clearRect(0, 0, d.size, d.size);
+                        ctx.beginPath();
+                        ctx.arc(d.size / 2, d.size / 2, d.size / 2, 0, Math.PI * 2);
+                        ctx.clip();
+                        ctx.drawImage(state.androidImage, 0, 0, d.size, d.size);
+                        const blob = await canvasBlob(c, "image/png");
+                        const u8 = new Uint8Array(await blob.arrayBuffer());
+                        files.push({ name: `res/${d.dir}/${name}_round.png`, data: u8 });
+                        state.androidBlobs.push({ label: `${d.dir}/${name}_round.png`, blob, size: d.size });
+                    }
+                }
+
+                // 3. Adaptive Icons
+                let hasBackground = false;
+                if (genAdaptive) {
+                    const adaptiveSize = 432;
+                    // Foreground
+                    const fgCanvas = document.createElement("canvas");
+                    fgCanvas.width = adaptiveSize; fgCanvas.height = adaptiveSize;
+                    const fgCtx = fgCanvas.getContext("2d");
+                    fgCtx.clearRect(0, 0, adaptiveSize, adaptiveSize);
+                    const drawSize = adaptiveSize * scale;
+                    const offset = (adaptiveSize - drawSize) / 2;
+                    fgCtx.drawImage(state.androidImage, offset, offset, drawSize, drawSize);
+                    const fgBlob = await canvasBlob(fgCanvas, "image/png");
+                    files.push({ name: `res/drawable/${name}_foreground.png`, data: new Uint8Array(await fgBlob.arrayBuffer()) });
+                    state.androidBlobs.push({ label: `drawable/${name}_foreground.png`, blob: fgBlob, size: 108 });
+
+                    // Background
+                    if (bgType === "color") {
+                        hasBackground = true;
+                        const bgXml = `<resources>\n    <color name="${name}_background">${bgColor}</color>\n</resources>`;
+                        files.push({ name: `res/values/${name}_background.xml`, data: new TextEncoder().encode(bgXml) });
+                        $("#androidColorXmlCode").value = bgXml;
+                    } else if (bgType === "image" && state.androidBgImage) {
+                        hasBackground = true;
+                        const bgCanvas = document.createElement("canvas");
+                        bgCanvas.width = adaptiveSize; bgCanvas.height = adaptiveSize;
+                        const bgCtx = bgCanvas.getContext("2d");
+                        bgCtx.drawImage(state.androidBgImage, 0, 0, adaptiveSize, adaptiveSize);
+                        const bgBlob = await canvasBlob(bgCanvas, "image/png");
+                        files.push({ name: `res/drawable/${name}_background.png`, data: new Uint8Array(await bgBlob.arrayBuffer()) });
+                        state.androidBlobs.push({ label: `drawable/${name}_background.png`, blob: bgBlob, size: 108 });
+                        $("#androidColorXmlCode").value = `<!-- Using background image: res/drawable/${name}_background.png -->`;
+                    } else {
+                        $("#androidColorXmlCode").value = `<!-- Transparent background selected -->`;
+                    }
+
+                    // Adaptive Icon XML descriptor
+                    const adaptiveXml = `<?xml version="1.0" encoding="utf-8"?>
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    ${hasBackground && bgType === "color" ? `<background android:drawable="@color/${name}_background"/>` : (hasBackground ? `<background android:drawable="@drawable/${name}_background"/>` : ``)}
+    <foreground android:drawable="@drawable/${name}_foreground"/>
+    ${genMonochrome ? `<monochrome android:drawable="@drawable/${name}_monochrome"/>` : ``}
+</adaptive-icon>`;
+                    files.push({ name: `res/mipmap-anydpi-v26/${name}.xml`, data: new TextEncoder().encode(adaptiveXml) });
+                    $("#androidAdaptiveXmlCode").value = adaptiveXml;
+                } else {
+                    $("#androidAdaptiveXmlCode").value = "<!-- Adaptive icons disabled -->";
+                    $("#androidColorXmlCode").value = "<!-- Adaptive icons disabled -->";
+                }
+
+                // 4. Monochrome Icon
+                if (genMonochrome) {
+                    const monoSize = 432;
+                    const monoCanvas = document.createElement("canvas");
+                    monoCanvas.width = monoSize; monoCanvas.height = monoSize;
+                    const mCtx = monoCanvas.getContext("2d");
+                    mCtx.clearRect(0, 0, monoSize, monoSize);
+                    const drawSize = monoSize * scale;
+                    const offset = (monoSize - drawSize) / 2;
+                    mCtx.drawImage(state.androidImage, offset, offset, drawSize, drawSize);
+
+                    const imgData = mCtx.getImageData(0, 0, monoSize, monoSize);
+                    const d = imgData.data;
+                    for (let i = 0; i < d.length; i += 4) {
+                        const alpha = d[i + 3];
+                        if (alpha > 10) {
+                            d[i] = 255;
+                            d[i + 1] = 255;
+                            d[i + 2] = 255;
+                            d[i + 3] = 255;
+                        }
+                    }
+                    mCtx.putImageData(imgData, 0, 0);
+                    const monoBlob = await canvasBlob(monoCanvas, "image/png");
+                    files.push({ name: `res/drawable/${name}_monochrome.png`, data: new Uint8Array(await monoBlob.arrayBuffer()) });
+                    state.androidBlobs.push({ label: `drawable/${name}_monochrome.png`, blob: monoBlob, size: 108 });
+                }
+
+                // 5. Manifest Snippet
+                const iconRef = `@mipmap/${name}`;
+                const roundIconRef = genRound ? `\n    android:roundIcon="@mipmap/${name}_round"` : ``;
+                const manifestSnippet = `<application\n    android:icon="${iconRef}"${roundIconRef}>`;
+                files.push({ name: `manifest-snippet.txt`, data: new TextEncoder().encode(manifestSnippet) });
+                $("#androidManifestCode").value = manifestSnippet;
+
+                state.androidZip = createZip(files);
+                $("#androidDownload").disabled = false;
+                $("#androidInfo").textContent = `Generated successfully! Total ${files.length} files prepared for download.`;
+
+                state.androidBlobs.slice(0, 8).forEach(item => {
+                    const wrap = document.createElement("div");
+                    const img = document.createElement("img");
+                    img.src = URL.createObjectURL(item.blob);
+                    img.width = 64; img.height = 64;
+                    const label = document.createElement("div");
+                    label.style.fontSize = "11px";
+                    label.style.marginTop = "4px";
+                    label.textContent = item.label.split("/").pop();
+                    wrap.append(img, label);
+                    previewContainer.appendChild(wrap);
+                });
+
+            } catch (err) {
+                alert("Android icon generation failed: " + err.message);
+            }
+        });
+
+        $("#androidDownload").addEventListener("click", () => state.androidZip && downloadBlob(state.androidZip, "android-icons.zip"));
+
+        [["androidAdaptiveCopy", "androidAdaptiveXmlCode", "androidAdaptiveCopyStatus"],
+         ["androidColorCopy", "androidColorXmlCode", "androidColorCopyStatus"],
+         ["androidManifestCopy", "androidManifestCode", "androidManifestCopyStatus"]].forEach(([btnId, textId, statusId]) => {
+            $(`#${btnId}`).addEventListener("click", async () => {
+                const code = $(`#${textId}`).value;
+                try {
+                    if(navigator.clipboard && window.isSecureContext) await navigator.clipboard.writeText(code);
+                    else { $(`#${textId}`).focus(); $(`#${textId}`).select(); document.execCommand("copy"); }
+                    $(`#${statusId}`).textContent = "Copied!";
+                } catch {
+                    $(`#${statusId}`).textContent = "Copy failed.";
+                }
+                setTimeout(() => $(`#${statusId}`).textContent = "", 1500);
+            });
         });
 
         updateSvgPreview();
