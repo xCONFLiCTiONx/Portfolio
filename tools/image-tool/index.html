@@ -374,6 +374,7 @@
 
                         <div style="margin-top: 10px;">
                             <label><input id="lockAspect" type="checkbox" checked> Lock Selection to Target Aspect Ratio</label>
+                            <label style="margin-top: 6px;"><input id="scaleOutput" type="checkbox"> Scale Cropped Selection to Target Dimensions (Optional Resizing)</label>
                         </div>
 
                         <label for="cropFormat">Output Format</label>
@@ -546,10 +547,15 @@
 
         function loadImage(file){
             return new Promise((resolve,reject)=>{
-                const u=URL.createObjectURL(file),i=new Image();
-                i.onload=()=>{URL.revokeObjectURL(u);resolve(i)};
-                i.onerror=()=>{URL.revokeObjectURL(u);reject(new Error("Unable to load image."))};
-                i.src=u;
+                const reader = new FileReader();
+                reader.onload = e => {
+                    const img = new Image();
+                    img.onload = () => resolve(img);
+                    img.onerror = () => reject(new Error("Unable to load image."));
+                    img.src = e.target.result;
+                };
+                reader.onerror = () => reject(new Error("Unable to read file."));
+                reader.readAsDataURL(file);
             });
         }
 
@@ -647,6 +653,7 @@
             workspaceEl.className = "crop-workspace";
 
             imgEl = document.createElement("img");
+            imgEl.onload = () => renderCropBoxUI();
             imgEl.src = state.cropImage.src;
             workspaceEl.appendChild(imgEl);
 
@@ -669,7 +676,11 @@
             p.appendChild(workspaceEl);
 
             setupDragAndDrop();
-            renderCropBoxUI();
+            if (imgEl.complete && imgEl.clientWidth > 0) {
+                renderCropBoxUI();
+            } else {
+                requestAnimationFrame(() => renderCropBoxUI());
+            }
         }
 
         function renderCropBoxUI(){
@@ -678,10 +689,13 @@
             const nw = state.cropImage.naturalWidth || state.cropImage.width;
             const nh = state.cropImage.naturalHeight || state.cropImage.height;
 
-            const dispW = imgEl.clientWidth;
-            const dispH = imgEl.clientHeight;
+            const dispW = imgEl.clientWidth || imgEl.offsetWidth;
+            const dispH = imgEl.clientHeight || imgEl.offsetHeight;
 
-            if(!dispW || !dispH) return;
+            if(!dispW || !dispH){
+                requestAnimationFrame(renderCropBoxUI);
+                return;
+            }
 
             const scaleX = dispW / nw;
             const scaleY = dispH / nh;
@@ -864,11 +878,11 @@
         ["cw", "ch"].forEach(id => {
             $(`#${id}`).addEventListener("input", () => {
                 if(!state.cropImage) return;
-                if($("#lockAspect").checked){
-                    const targetRatio = getTargetAspectRatio();
-                    state.cropRect.h = state.cropRect.w / targetRatio;
-                    clampCropRect();
-                }
+                const newW = Number($("#cw").value);
+                const newH = Number($("#ch").value);
+                if(newW > 0) state.cropRect.w = newW;
+                if(newH > 0) state.cropRect.h = newH;
+                clampCropRect();
                 renderCropBoxUI();
             });
         });
@@ -909,25 +923,28 @@
         $("#cropRun").addEventListener("click", async () => {
             if(!state.cropImage) return alert("Choose an image first.");
 
-            const targetW = Number($("#cw").value);
-            const targetH = Number($("#ch").value);
+            const scaleOutput = $("#scaleOutput") ? $("#scaleOutput").checked : false;
+            const targetW = Math.max(1, Number($("#cw").value) || Math.round(state.cropRect.w));
+            const targetH = Math.max(1, Number($("#ch").value) || Math.round(state.cropRect.h));
             const format = $("#cropFormat").value;
             const quality = Number($("#quality").value) / 100;
 
-            if(!Number.isInteger(targetW) || targetW < 1 || !Number.isInteger(targetH) || targetH < 1){
-                return alert("Enter valid target dimensions.");
-            }
+            const cropW = Math.round(state.cropRect.w);
+            const cropH = Math.round(state.cropRect.h);
+
+            const outputW = scaleOutput ? targetW : cropW;
+            const outputH = scaleOutput ? targetH : cropH;
 
             try{
                 const canvas = document.createElement("canvas");
-                canvas.width = targetW;
-                canvas.height = targetH;
+                canvas.width = outputW;
+                canvas.height = outputH;
                 const ctx = canvas.getContext("2d");
 
                 ctx.imageSmoothingEnabled = true;
                 ctx.imageSmoothingQuality = "high";
 
-                // Draw exact selected sub-rectangle from source image scaled to target width/height
+                // Draw exact selected sub-rectangle from source image at 1:1 scale (or scaled if scaleOutput is checked)
                 ctx.drawImage(
                     state.cropImage,
                     state.cropRect.x,
@@ -936,8 +953,8 @@
                     state.cropRect.h,
                     0,
                     0,
-                    targetW,
-                    targetH
+                    outputW,
+                    outputH
                 );
 
                 state.cropBlob = await canvasBlob(canvas, format, quality);
@@ -956,7 +973,8 @@
                 toggleBtn.textContent = "Adjust Crop Selection";
 
                 const ext = format === "image/jpeg" ? "jpg" : format.split("/")[1];
-                $("#cropInfo").textContent = `Successfully Cropped! Output: ${targetW} × ${targetH}px • ${ext.toUpperCase()}`;
+                const modeNote = scaleOutput ? " (Rescaled)" : " (1:1 Exact Crop)";
+                $("#cropInfo").textContent = `Successfully Cropped! Output: ${outputW} × ${outputH}px${modeNote} • ${ext.toUpperCase()}`;
                 $("#cropDownload").disabled = false;
             }catch(err){
                 alert(err.message);
