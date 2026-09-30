@@ -53,36 +53,36 @@
     </script>
     <style>
         * {
-            box-sizing: border-box
+            box-sizing: border-box;
         }
 
         body {
             margin: 0;
             font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
             background: #111;
-            color: #eee
+            color: #eee;
         }
 
         .img-header {
             padding: 24px;
             text-align: center;
-            border-bottom: 1px solid #333
+            border-bottom: 1px solid #333;
         }
 
         .img-header h1 {
-            margin: 0 0 8px
+            margin: 0 0 8px;
         }
 
         .img-header p {
             margin: 0;
-            color: #aaa
+            color: #aaa;
         }
 
         .tabs {
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
-            margin-bottom: 24px
+            margin-bottom: 24px;
         }
 
         .tabs button {
@@ -91,50 +91,57 @@
             border-radius: 6px;
             background: #1d1d1d;
             color: #eee;
-            cursor: pointer
+            cursor: pointer;
         }
 
         .tabs button.active {
             background: #fff;
-            color: #111
+            color: #111;
         }
 
         .tool {
-            display: none
+            display: none;
         }
 
         .tool.active {
-            display: block
+            display: block;
         }
 
         .grid {
             display: grid;
             grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-            gap: 20px
+            gap: 20px;
         }
 
         .card {
             padding: 20px;
             border: 1px solid #333;
             border-radius: 10px;
-            background: #181818
+            background: #181818;
         }
 
         .card h2 {
-            margin-top: 0
+            margin-top: 0;
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
         }
 
         label {
             display: block;
             margin: 14px 0 6px;
-            color: #ccc
+            color: #ccc;
+            font-size: 13px;
         }
 
         input,
         select,
         textarea,
         button {
-            font: inherit
+            font: inherit;
         }
 
         input[type=file],
@@ -147,28 +154,23 @@
             border: 1px solid #444;
             border-radius: 6px;
             background: #101010;
-            color: #eee
+            color: #eee;
         }
 
         input[type=range] {
-            width: 100%
-        }
-
-        input[type=color] {
-            width: 60px;
-            height: 40px
+            width: 100%;
         }
 
         textarea {
             resize: vertical;
-            font-family: Consolas, monospace
+            font-family: Consolas, monospace;
         }
 
         .actions {
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
-            margin-top: 18px
+            margin-top: 18px;
         }
 
         button {
@@ -177,21 +179,21 @@
             border-radius: 6px;
             background: #222;
             color: #eee;
-            cursor: pointer
+            cursor: pointer;
         }
 
         button:hover:not(:disabled) {
-            background: #333
+            background: #333;
         }
 
         button.primary {
             background: #fff;
-            color: #111
+            color: #111;
         }
 
         button:disabled {
             opacity: .45;
-            cursor: not-allowed
+            cursor: not-allowed;
         }
 
         .stat {
@@ -199,18 +201,21 @@
             padding: 10px;
             border-radius: 6px;
             background: #101010;
-            color: #aaa
+            color: #aaa;
+            font-size: 13px;
         }
 
         .notice {
             margin-top: 14px;
             color: #999;
-            line-height: 1.5
+            line-height: 1.5;
+            font-size: 13px;
         }
 
         .preview {
-            min-height: 300px;
+            min-height: 320px;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             padding: 16px;
@@ -218,58 +223,113 @@
             border-radius: 8px;
             background: linear-gradient(45deg, #202020 25%, transparent 25%), linear-gradient(-45deg, #202020 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #202020 75%), linear-gradient(-45deg, transparent 75%, #202020 75%);
             background-size: 20px 20px;
-            background-position: 0 0, 0 10px, 10px -10px, -10px 0
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0;
+            position: relative;
         }
 
         .preview img,
         .preview canvas {
             max-width: 100%;
-            max-height: 500px
+            max-height: 500px;
         }
+
+        /* Interactive Crop Workspace Styles */
+        .crop-workspace {
+            position: relative;
+            display: inline-block;
+            max-width: 100%;
+            max-height: 500px;
+            user-select: none;
+            overflow: hidden;
+            background: #000;
+            border-radius: 6px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+        }
+
+        .crop-workspace img {
+            display: block;
+            max-width: 100%;
+            max-height: 500px;
+            pointer-events: none;
+        }
+
+        .crop-overlay-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            cursor: crosshair;
+            touch-action: none;
+        }
+
+        .crop-selection-box {
+            position: absolute;
+            border: 2px solid #58a6ff;
+            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.65);
+            cursor: move;
+            box-sizing: border-box;
+            touch-action: none;
+        }
+
+        .crop-handle {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: #58a6ff;
+            border: 2px solid #ffffff;
+            border-radius: 3px;
+            box-sizing: border-box;
+        }
+
+        .crop-handle.tl { top: -6px; left: -6px; cursor: nwse-resize; }
+        .crop-handle.tr { top: -6px; right: -6px; cursor: nesw-resize; }
+        .crop-handle.bl { bottom: -6px; left: -6px; cursor: nesw-resize; }
+        .crop-handle.br { bottom: -6px; right: -6px; cursor: nwse-resize; }
 
         .icon-preview {
             display: flex;
             flex-wrap: wrap;
             align-items: center;
             gap: 20px;
-            min-height: 200px
+            min-height: 200px;
         }
 
         .icon-preview div {
-            text-align: center
+            text-align: center;
         }
 
         .icon-preview img {
             display: block;
-            margin: 0 auto 6px
+            margin: 0 auto 6px;
         }
 
         .code-box {
             margin-top: 24px;
             padding-top: 20px;
-            border-top: 1px solid #333
+            border-top: 1px solid #333;
         }
 
         .code-box textarea {
             margin-top: 12px;
             min-height: 180px;
-            line-height: 1.5
+            line-height: 1.5;
         }
 
         .code-actions {
             display: flex;
             align-items: center;
             gap: 10px;
-            margin-top: 10px
+            margin-top: 10px;
         }
 
         .copy-status {
-            color: #999
+            color: #999;
         }
 
         @media(max-width:800px) {
             .grid {
-                grid-template-columns: 1fr
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -297,16 +357,74 @@
             <section id="crop" class="tool active">
                 <div class="grid">
                     <div class="card">
-                        <h2>Crop &amp; Resize</h2>
-                        <label for="cropFile">Image</label><input id="cropFile" type="file" accept="image/*"><label for="cw">Target width</label><input id="cw" type="number" value="1200" min="1"><label for="ch">Target height</label><input id="ch" type="number" value="630" min="1"><label><input id="centerCrop" type="checkbox" checked> Center crop automatically</label><label for="cropFormat">Output format</label><select id="cropFormat"><option value="image/png">PNG</option><option value="image/jpeg">JPEG</option><option value="image/webp">WebP</option></select><label for="quality">Quality: <span id="qv">92%</span></label><input id="quality" type="range" min="1" max="100" value="92">
-                        <div class="actions">
-                            <button class="primary" id="cropRun">Crop &amp; Resize</button><button id="cropDownload" disabled>Download</button>
+                        <h2>Crop &amp; Resize Settings</h2>
+                        <label for="cropFile">Image Source</label>
+                        <input id="cropFile" type="file" accept="image/*">
+
+                        <div class="row">
+                            <div>
+                                <label for="cw">Target Width (px)</label>
+                                <input id="cw" type="number" value="1200" min="1">
+                            </div>
+                            <div>
+                                <label for="ch">Target Height (px)</label>
+                                <input id="ch" type="number" value="630" min="1">
+                            </div>
                         </div>
-                        <div id="cropInfo" class="stat">No image loaded.</div>
+
+                        <div style="margin-top: 10px;">
+                            <label><input id="lockAspect" type="checkbox" checked> Lock Selection to Target Aspect Ratio</label>
+                        </div>
+
+                        <label for="cropFormat">Output Format</label>
+                        <select id="cropFormat">
+                            <option value="image/png">PNG</option>
+                            <option value="image/jpeg">JPEG</option>
+                            <option value="image/webp">WebP</option>
+                        </select>
+
+                        <label for="quality">Quality: <span id="qv">92%</span></label>
+                        <input id="quality" type="range" min="1" max="100" value="92">
+
+                        <h3 style="margin-top: 18px; margin-bottom: 6px; font-size: 14px; color: #58a6ff;">Selection Coordinates (Source Image Pixels)</h3>
+                        <div class="row">
+                            <div>
+                                <label for="cropX">Left (X)</label>
+                                <input id="cropX" type="number" min="0" value="0">
+                            </div>
+                            <div>
+                                <label for="cropY">Top (Y)</label>
+                                <input id="cropY" type="number" min="0" value="0">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div>
+                                <label for="cropW">Width</label>
+                                <input id="cropW" type="number" min="1" value="0">
+                            </div>
+                            <div>
+                                <label for="cropH">Height</label>
+                                <input id="cropH" type="number" min="1" value="0">
+                            </div>
+                        </div>
+
+                        <div class="actions">
+                            <button class="primary" id="cropRun">Crop &amp; Resize</button>
+                            <button id="resetCropBtn" type="button" disabled>Reset Selection</button>
+                            <button id="cropDownload" disabled>Download Cropped Image</button>
+                        </div>
+                        <div id="cropInfo" class="stat">Upload an image to start cropping.</div>
                     </div>
+
                     <div class="card">
-                        <h2>Preview</h2>
-                        <div class="preview" id="cropPreview">Upload an image to preview it here.</div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                            <h2 style="margin: 0;">Interactive Crop Preview</h2>
+                            <button id="toggleResultBtn" type="button" style="display: none; padding: 4px 10px; font-size: 12px;">Toggle Result / Crop Tool</button>
+                        </div>
+                        <div class="preview" id="cropPreview">Upload an image to preview and drag a crop selection.</div>
+                        <div class="notice">
+                            <strong>Interactive Cropping:</strong> Click and drag inside the blue selection frame to move it over any area (e.g. a logo on the left). Drag the corner handles or drag across the image to redraw the selection area.
+                        </div>
                     </div>
                 </div>
             </section>
@@ -404,58 +522,771 @@
     <script>
         "use strict";
         const $=s=>document.querySelector(s);
-        const state={cropImage:null,cropBlob:null,icoImage:null,icoZip:null,svgText:null,svgBlob:null,extImage:null,extBlobs:[],extZip:null};
-        document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));document.querySelectorAll(".tool").forEach(x=>x.classList.remove("active"));b.classList.add("active");document.getElementById(b.dataset.tool)?.classList.add("active")}));
-        function loadImage(file){return new Promise((resolve,reject)=>{const u=URL.createObjectURL(file),i=new Image();i.onload=()=>{URL.revokeObjectURL(u);resolve(i)};i.onerror=()=>{URL.revokeObjectURL(u);reject(new Error("Unable to load image."))};i.src=u})}
-        function canvasBlob(c,type,q){return new Promise((resolve,reject)=>c.toBlob(b=>b?resolve(b):reject(new Error("Unable to create image.")),type,q))}
-        function downloadBlob(b,n){if(!b)return;const u=URL.createObjectURL(b),a=document.createElement("a");a.href=u;a.download=n;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1000)}
-        function imageToCanvas(i,w,h,crop){const c=document.createElement("canvas");c.width=w;c.height=h;const x=c.getContext("2d");if(!crop){x.drawImage(i,0,0,w,h);return c}const sr=i.width/i.height,tr=w/h;let sw=i.width,sh=i.height,sx=0,sy=0;if(sr>tr){sw=i.height*tr;sx=(i.width-sw)/2}else if(sr<tr){sh=i.width/tr;sy=(i.height-sh)/2}x.imageSmoothingEnabled=true;x.imageSmoothingQuality="high";x.drawImage(i,sx,sy,sw,sh,0,0,w,h);return c}
-        $("#quality").addEventListener("input",()=>$("#qv").textContent=$("#quality").value+"%");
-        $("#cropFile").addEventListener("change",async e=>{const f=e.target.files[0];if(!f)return;try{state.cropImage=await loadImage(f);$("#cropInfo").textContent=`Original: ${state.cropImage.width} × ${state.cropImage.height}px`;const p=$("#cropPreview");p.innerHTML="";const i=document.createElement("img"),u=URL.createObjectURL(f);i.src=u;i.onload=()=>URL.revokeObjectURL(u);p.appendChild(i)}catch(err){alert(err.message)}});
-        $("#cropRun").addEventListener("click",async()=>{if(!state.cropImage)return alert("Choose an image first.");const w=Number($("#cw").value),h=Number($("#ch").value),f=$("#cropFormat").value,q=Number($("#quality").value)/100;if(!Number.isInteger(w)||w<1||!Number.isInteger(h)||h<1)return alert("Enter valid dimensions.");try{state.cropBlob=await canvasBlob(imageToCanvas(state.cropImage,w,h,$("#centerCrop").checked),f,q);const p=$("#cropPreview");p.innerHTML="";const i=document.createElement("img"),u=URL.createObjectURL(state.cropBlob);i.src=u;i.onload=()=>URL.revokeObjectURL(u);p.appendChild(i);const ext=f==="image/jpeg"?"jpg":f.split("/")[1];$("#cropInfo").textContent=`Output: ${w} × ${h}px • ${ext.toUpperCase()}`;$("#cropDownload").disabled=false}catch(err){alert(err.message)}});
-        $("#cropDownload").addEventListener("click",()=>{const f=$("#cropFormat").value;if(state.cropBlob)downloadBlob(state.cropBlob,`cropped-image.${f==="image/jpeg"?"jpg":f.split("/")[1]}`)});
-        $("#icoFile").addEventListener("change",async e=>{const f=e.target.files[0];if(!f)return;try{state.icoImage=await loadImage(f);const p=$("#icoPreview"),old=p.dataset.url;if(old)URL.revokeObjectURL(old);const u=URL.createObjectURL(f);p.dataset.url=u;p.hidden=false;p.src=u}catch(err){alert(err.message)}});
-        function parseIconSizes(v){return[...new Set(v.split(",").map(Number).filter(x=>Number.isInteger(x)&&x>=16&&x<=256))]}
-        async function createPngForSize(i,s){return canvasBlob(imageToCanvas(i,s,s,true),"image/png")}
-        async function createIco(i,sizes){const es=[];for(const s of sizes){const p=await createPngForSize(i,s);es.push({size:s,data:new Uint8Array(await p.arrayBuffer())})}const bytes=new Uint8Array(6+16*es.length+es.reduce((n,e)=>n+e.data.length,0)),v=new DataView(bytes.buffer);v.setUint16(2,1,true);v.setUint16(4,es.length,true);let d=6,o=6+16*es.length;for(const e of es){const z=e.size===256?0:e.size;bytes[d]=z;bytes[d+1]=z;v.setUint16(d+4,1,true);v.setUint16(d+6,32,true);v.setUint32(d+8,e.data.length,true);v.setUint32(d+12,o,true);bytes.set(e.data,o);d+=16;o+=e.data.length}return new Blob([bytes],{type:"image/x-icon"})}
-        function crc32(data){let c=0xffffffff;for(const b of data){c^=b;for(let i=0;i<8;i++)c=c&1?(c>>>1)^0xedb88320:c>>>1}return(c^0xffffffff)>>>0}
-        function w16(a,o,v){new DataView(a.buffer,a.byteOffset+o,2).setUint16(0,v,true)}function w32(a,o,v){new DataView(a.buffer,a.byteOffset+o,4).setUint32(0,v,true)}
-        function createZip(files){const enc=new TextEncoder(),locals=[],centrals=[];let off=0;for(const f of files){const n=enc.encode(f.name),d=f.data,c=crc32(d),l=new Uint8Array(30+n.length);w32(l,0,0x04034b50);w16(l,4,20);w32(l,14,c);w32(l,18,d.length);w32(l,22,d.length);w16(l,26,n.length);l.set(n,30);locals.push(l,d);const z=new Uint8Array(46+n.length);w32(z,0,0x02014b50);w16(z,4,20);w16(z,6,20);w32(z,16,c);w32(z,20,d.length);w32(z,24,d.length);w16(z,28,n.length);w32(z,42,off);z.set(n,46);centrals.push(z);off+=l.length+d.length}const end=new Uint8Array(22);w32(end,0,0x06054b50);w16(end,8,files.length);w16(end,10,files.length);const cs=centrals.reduce((n,x)=>n+x.length,0);w32(end,12,cs);w32(end,16,off);return new Blob([...locals,...centrals,end],{type:"application/zip"})}
-        $("#icoRun").addEventListener("click", async () => {
-        if (!state.icoImage) return alert("Choose an image first.");
-        
-        const sizes = parseIconSizes($("#icoSizes").value);
-        if (!sizes.length) return alert("Enter valid icon sizes between 16 and 256.");
-        
-        try {
-        const files = [];
-        for (const s of sizes) {
-        const p = await createPngForSize(state.icoImage, s);
-        files.push({ name: `icon-${s}x${s}.png`, data: new Uint8Array(await p.arrayBuffer()) });
+        const state={
+            cropImage:null,
+            cropBlob:null,
+            icoImage:null,
+            icoZip:null,
+            svgText:null,
+            svgBlob:null,
+            extImage:null,
+            extBlobs:[],
+            extZip:null,
+            cropRect: { x: 0, y: 0, w: 0, h: 0 },
+            isCroppingView: true
+        };
+
+        // Tab switching
+        document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>{
+            document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+            document.querySelectorAll(".tool").forEach(x=>x.classList.remove("active"));
+            b.classList.add("active");
+            document.getElementById(b.dataset.tool)?.classList.add("active");
+        }));
+
+        function loadImage(file){
+            return new Promise((resolve,reject)=>{
+                const u=URL.createObjectURL(file),i=new Image();
+                i.onload=()=>{URL.revokeObjectURL(u);resolve(i)};
+                i.onerror=()=>{URL.revokeObjectURL(u);reject(new Error("Unable to load image."))};
+                i.src=u;
+            });
         }
-        
-        const ico = await createIco(state.icoImage, sizes);
-        files.push({ name: "icon.ico", data: new Uint8Array(await ico.arrayBuffer()) });
-        
-        state.icoZip = createZip(files);
-        $("#icoInfo").textContent = `Generated ${sizes.length} PNGs + 1 combined ICO. ZIP contains ${files.length} files.`;
-        
-        downloadBlob(state.icoZip, "icon-package.zip");
-        } catch (err) {
-        alert("Icon generation failed: " + err.message);
+
+        function canvasBlob(c,type,q){
+            return new Promise((resolve,reject)=>c.toBlob(b=>b?resolve(b):reject(new Error("Unable to create image.")),type,q));
         }
+
+        function downloadBlob(b,n){
+            if(!b)return;
+            const u=URL.createObjectURL(b),a=document.createElement("a");
+            a.href=u;
+            a.download=n;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            setTimeout(()=>URL.revokeObjectURL(u),1000);
+        }
+
+        // Target Aspect Ratio Helper
+        function getTargetAspectRatio(){
+            const w = Math.max(1, Number($("#cw").value) || 1200);
+            const h = Math.max(1, Number($("#ch").value) || 630);
+            return w / h;
+        }
+
+        // Clamp Crop Rect within Natural Image Dimensions
+        function clampCropRect(){
+            if(!state.cropImage) return;
+            const nw = state.cropImage.naturalWidth || state.cropImage.width;
+            const nh = state.cropImage.naturalHeight || state.cropImage.height;
+
+            state.cropRect.w = Math.max(10, Math.min(nw, state.cropRect.w));
+            state.cropRect.h = Math.max(10, Math.min(nh, state.cropRect.h));
+            state.cropRect.x = Math.max(0, Math.min(nw - state.cropRect.w, state.cropRect.x));
+            state.cropRect.y = Math.max(0, Math.min(nh - state.cropRect.h, state.cropRect.y));
+
+            updateNumericCropInputs();
+        }
+
+        function updateNumericCropInputs(){
+            $("#cropX").value = Math.round(state.cropRect.x);
+            $("#cropY").value = Math.round(state.cropRect.y);
+            $("#cropW").value = Math.round(state.cropRect.w);
+            $("#cropH").value = Math.round(state.cropRect.h);
+
+            const nw = state.cropImage ? (state.cropImage.naturalWidth || state.cropImage.width) : 0;
+            const nh = state.cropImage ? (state.cropImage.naturalHeight || state.cropImage.height) : 0;
+            const targetW = Number($("#cw").value) || 1200;
+            const targetH = Number($("#ch").value) || 630;
+
+            if(state.cropImage){
+                $("#cropInfo").textContent = `Original: ${nw} × ${nh}px • Crop Region: ${Math.round(state.cropRect.w)} × ${Math.round(state.cropRect.h)}px at (${Math.round(state.cropRect.x)}, ${Math.round(state.cropRect.y)}) → Target: ${targetW} × ${targetH}px`;
+            }
+        }
+
+        // Reset Crop Box to Center with Target Aspect Ratio
+        function initDefaultCropBox(){
+            if(!state.cropImage) return;
+            const nw = state.cropImage.naturalWidth || state.cropImage.width;
+            const nh = state.cropImage.naturalHeight || state.cropImage.height;
+            const targetRatio = getTargetAspectRatio();
+
+            let w = nw;
+            let h = w / targetRatio;
+            if(h > nh){
+                h = nh;
+                w = h * targetRatio;
+            }
+
+            state.cropRect = {
+                x: Math.round((nw - w) / 2),
+                y: Math.round((nh - h) / 2),
+                w: Math.round(w),
+                h: Math.round(h)
+            };
+            clampCropRect();
+        }
+
+        // Setup Interactive Workspace
+        let workspaceEl = null;
+        let imgEl = null;
+        let overlayEl = null;
+        let selectionBoxEl = null;
+
+        function buildInteractiveCropWorkspace(){
+            const p = $("#cropPreview");
+            p.innerHTML = "";
+
+            if(!state.cropImage){
+                p.textContent = "Upload an image to preview and drag a crop selection.";
+                return;
+            }
+
+            workspaceEl = document.createElement("div");
+            workspaceEl.className = "crop-workspace";
+
+            imgEl = document.createElement("img");
+            imgEl.src = state.cropImage.src;
+            workspaceEl.appendChild(imgEl);
+
+            overlayEl = document.createElement("div");
+            overlayEl.className = "crop-overlay-layer";
+
+            selectionBoxEl = document.createElement("div");
+            selectionBoxEl.className = "crop-selection-box";
+
+            const handles = ["tl", "tr", "bl", "br"];
+            handles.forEach(pos => {
+                const h = document.createElement("div");
+                h.className = `crop-handle ${pos}`;
+                h.dataset.handle = pos;
+                selectionBoxEl.appendChild(h);
+            });
+
+            overlayEl.appendChild(selectionBoxEl);
+            workspaceEl.appendChild(overlayEl);
+            p.appendChild(workspaceEl);
+
+            setupDragAndDrop();
+            renderCropBoxUI();
+        }
+
+        function renderCropBoxUI(){
+            if(!workspaceEl || !imgEl || !selectionBoxEl || !state.cropImage) return;
+
+            const nw = state.cropImage.naturalWidth || state.cropImage.width;
+            const nh = state.cropImage.naturalHeight || state.cropImage.height;
+
+            const dispW = imgEl.clientWidth;
+            const dispH = imgEl.clientHeight;
+
+            if(!dispW || !dispH) return;
+
+            const scaleX = dispW / nw;
+            const scaleY = dispH / nh;
+
+            const boxL = state.cropRect.x * scaleX;
+            const boxT = state.cropRect.y * scaleY;
+            const boxW = state.cropRect.w * scaleX;
+            const boxH = state.cropRect.h * scaleY;
+
+            selectionBoxEl.style.left = boxL + "px";
+            selectionBoxEl.style.top = boxT + "px";
+            selectionBoxEl.style.width = boxW + "px";
+            selectionBoxEl.style.height = boxH + "px";
+        }
+
+        function setupDragAndDrop(){
+            let isDragging = false;
+            let dragType = null; // "move", "new", "tl", "tr", "bl", "br"
+            let startX = 0, startY = 0;
+            let startRect = { ...state.cropRect };
+
+            function getMousePos(e){
+                const rect = overlayEl.getBoundingClientRect();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                return {
+                    x: clientX - rect.left,
+                    y: clientY - rect.top
+                };
+            }
+
+            function onPointerDown(e){
+                if(!state.cropImage) return;
+                const pos = getMousePos(e);
+                const handle = e.target.dataset ? e.target.dataset.handle : null;
+
+                const nw = state.cropImage.naturalWidth || state.cropImage.width;
+                const nh = state.cropImage.naturalHeight || state.cropImage.height;
+                const dispW = imgEl.clientWidth;
+                const dispH = imgEl.clientHeight;
+
+                const scaleX = nw / dispW;
+                const scaleY = nh / dispH;
+
+                startX = pos.x * scaleX;
+                startY = pos.y * scaleY;
+                startRect = { ...state.cropRect };
+
+                if(handle){
+                    isDragging = true;
+                    dragType = handle;
+                } else if(e.target === selectionBoxEl || selectionBoxEl.contains(e.target)){
+                    isDragging = true;
+                    dragType = "move";
+                } else if(e.target === overlayEl){
+                    isDragging = true;
+                    dragType = "new";
+                    state.cropRect.x = startX;
+                    state.cropRect.y = startY;
+                    state.cropRect.w = 10;
+                    state.cropRect.h = 10;
+                }
+
+                if(isDragging){
+                    e.preventDefault();
+                    window.addEventListener("pointermove", onPointerMove);
+                    window.addEventListener("pointerup", onPointerUp);
+                }
+            }
+
+            function onPointerMove(e){
+                if(!isDragging || !state.cropImage) return;
+                const pos = getMousePos(e);
+
+                const nw = state.cropImage.naturalWidth || state.cropImage.width;
+                const nh = state.cropImage.naturalHeight || state.cropImage.height;
+                const dispW = imgEl.clientWidth;
+                const dispH = imgEl.clientHeight;
+
+                const scaleX = nw / dispW;
+                const scaleY = nh / dispH;
+
+                const curX = pos.x * scaleX;
+                const curY = pos.y * scaleY;
+
+                const dx = curX - startX;
+                const dy = curY - startY;
+
+                const lockAspect = $("#lockAspect").checked;
+                const targetRatio = getTargetAspectRatio();
+
+                if(dragType === "move"){
+                    state.cropRect.x = Math.max(0, Math.min(nw - startRect.w, startRect.x + dx));
+                    state.cropRect.y = Math.max(0, Math.min(nh - startRect.h, startRect.y + dy));
+                } else if(dragType === "new"){
+                    let w = Math.abs(curX - startX);
+                    let h = Math.abs(curY - startY);
+                    let left = Math.min(startX, curX);
+                    let top = Math.min(startY, curY);
+
+                    if(lockAspect){
+                        if(w / h > targetRatio){
+                            h = w / targetRatio;
+                        } else {
+                            w = h * targetRatio;
+                        }
+                    }
+
+                    state.cropRect = { x: left, y: top, w, h };
+                } else if(dragType === "br" || dragType === "tr" || dragType === "tl" || dragType === "bl"){
+                    let newW = startRect.w;
+                    let newH = startRect.h;
+                    let newX = startRect.x;
+                    let newY = startRect.y;
+
+                    if(dragType === "br"){
+                        newW = startRect.w + dx;
+                        newH = startRect.h + dy;
+                    } else if(dragType === "tr"){
+                        newW = startRect.w + dx;
+                        newH = startRect.h - dy;
+                        newY = startRect.y + dy;
+                    } else if(dragType === "bl"){
+                        newW = startRect.w - dx;
+                        newX = startRect.x + dx;
+                        newH = startRect.h + dy;
+                    } else if(dragType === "tl"){
+                        newW = startRect.w - dx;
+                        newX = startRect.x + dx;
+                        newH = startRect.h - dy;
+                        newY = startRect.y + dy;
+                    }
+
+                    if(lockAspect){
+                        if(Math.abs(dx) > Math.abs(dy)){
+                            newH = newW / targetRatio;
+                        } else {
+                            newW = newH * targetRatio;
+                        }
+                    }
+
+                    state.cropRect.x = newX;
+                    state.cropRect.y = newY;
+                    state.cropRect.w = Math.max(10, newW);
+                    state.cropRect.h = Math.max(10, newH);
+                }
+
+                clampCropRect();
+                renderCropBoxUI();
+            }
+
+            function onPointerUp(){
+                isDragging = false;
+                dragType = null;
+                window.removeEventListener("pointermove", onPointerMove);
+                window.removeEventListener("pointerup", onPointerUp);
+            }
+
+            overlayEl.addEventListener("pointerdown", onPointerDown);
+        }
+
+        window.addEventListener("resize", () => {
+            if(state.isCroppingView) renderCropBoxUI();
         });
-        
-        function getSvgDimensions(text){const doc=new DOMParser().parseFromString(text,"image/svg+xml");if(doc.querySelector("parsererror")||!doc.documentElement||doc.documentElement.tagName.toLowerCase()!=="svg")return null;const svg=doc.documentElement;const parseLen=v=>{if(!v)return null;const m=String(v).trim().match(/^([0-9]+(?:\.[0-9]+)?)(?:px)?$/i);if(!m)return null;const n=Number(m[1]);return Number.isFinite(n)&&n>0?n:null};let w=parseLen(svg.getAttribute("width")),h=parseLen(svg.getAttribute("height"));const vb=svg.getAttribute("viewBox");if(vb){const p=vb.trim().split(/[\s,]+/).map(Number);if(p.length===4&&p.every(Number.isFinite)&&p[2]>0&&p[3]>0){if(!(w>0))w=p[2];if(!(h>0))h=p[3]}}if(!(w>0)||!(h>0))return null;return{width:Math.max(1,Math.round(w)),height:Math.max(1,Math.round(h))}}
-        $("#svgFile").addEventListener("change",async e=>{const f=e.target.files[0];if(!f)return;try{state.svgText=await f.text();state.svgBlob=null;$("#svgDownload").disabled=true;const d=getSvgDimensions(state.svgText);if(d){$("#sw").value=d.width;$("#sh").value=d.height}const b=new Blob([state.svgText],{type:"image/svg+xml"}),u=URL.createObjectURL(b),i=new Image();i.onload=()=>{URL.revokeObjectURL(u);$("#svgPreview").innerHTML="";$("#svgPreview").appendChild(i)};i.onerror=()=>{URL.revokeObjectURL(u);alert("Unable to render SVG.")};i.src=u;$("#svgInfo").textContent=d?`SVG loaded • Native size: ${d.width} × ${d.height}px • PNG will use the same size`:"SVG loaded. Native dimensions could not be detected."}catch(err){alert(err.message)}});
-        $("#svgRun").addEventListener("click",async()=>{if(!state.svgText)return alert("Choose an SVG first.");const w=Number($("#sw").value),h=Number($("#sh").value);if(!Number.isInteger(w)||w<1||!Number.isInteger(h)||h<1)return alert("Enter valid dimensions.");const c=document.createElement("canvas");c.width=w;c.height=h;const x=c.getContext("2d");x.clearRect(0,0,w,h);const b=new Blob([state.svgText],{type:"image/svg+xml"}),u=URL.createObjectURL(b),i=new Image();i.onload=async()=>{try{x.clearRect(0,0,w,h);x.drawImage(i,0,0,w,h);URL.revokeObjectURL(u);state.svgBlob=await canvasBlob(c,"image/png");$("#svgPreview").innerHTML="";const p=document.createElement("img"),pu=URL.createObjectURL(state.svgBlob);p.src=pu;p.onload=()=>URL.revokeObjectURL(pu);$("#svgPreview").appendChild(p);$("#svgDownload").disabled=false;$("#svgInfo").textContent=`PNG: ${w} × ${h}px • Same dimensions as SVG • Transparent background`}catch(err){URL.revokeObjectURL(u);alert(err.message)}};i.onerror=()=>{URL.revokeObjectURL(u);alert("Unable to render SVG.")};i.src=u});$("#svgDownload").addEventListener("click",()=>state.svgBlob&&downloadBlob(state.svgBlob,"converted.png"));
-        
-        $("#extPad").addEventListener("input",()=>$("#padVal").textContent=$("#extPad").value+"%");$("#extFile").addEventListener("change",async e=>{const f=e.target.files[0];if(!f)return;try{state.extImage=await loadImage(f);state.extZip=null;$("#extDownload").disabled=true}catch(err){alert(err.message)}});
-        $("#extRun").addEventListener("click",async()=>{if(!state.extImage)return alert("Choose an image first.");const sizes=[16,32,48,128],pad=Number($("#extPad").value)/100,shape=$("#extShape").value,p=$("#extPreview");p.innerHTML="";state.extBlobs=[];state.extZip=null;$("#extDownload").disabled=true;try{for(const s of sizes){const c=document.createElement("canvas");c.width=s;c.height=s;const x=c.getContext("2d"),d=s*pad;x.clearRect(0,0,s,s);if(shape==="circle"){x.beginPath();x.arc(s/2,s/2,s/2,0,Math.PI*2);x.clip()}else if(shape==="rounded"){x.beginPath();x.roundRect(0,0,s,s,s*.18);x.clip()}x.drawImage(state.extImage,d,d,s-d*2,s-d*2);const b=await canvasBlob(c,"image/png");state.extBlobs.push({size:s,blob:b,filename:`icon${s}.png`});const wrap=document.createElement("div"),im=document.createElement("img"),lab=document.createElement("div");im.src=URL.createObjectURL(b);im.width=s;im.height=s;lab.textContent=`${s} × ${s}`;wrap.append(im,lab);p.appendChild(wrap)}const files=[];for(const s of [128,16,32,48]){const it=state.extBlobs.find(x=>x.size===s);files.push({name:`icon${s}.png`,data:new Uint8Array(await it.blob.arrayBuffer())})}state.extZip=createZip(files);$("#extDownload").disabled=false}catch(err){alert("Icon generation failed: "+err.message)}});$("#extDownload").addEventListener("click",()=>state.extZip&&downloadBlob(state.extZip,"chrome-extension-icons.zip"));
-        $("#manifestCopy").addEventListener("click",async()=>{const code=$("#manifestCode").value;try{if(navigator.clipboard&&window.isSecureContext)await navigator.clipboard.writeText(code);else{$("#manifestCode").focus();$("#manifestCode").select();document.execCommand("copy")}$("#manifestCopyStatus").textContent="Copied!"}catch{$("#manifestCopyStatus").textContent="Copy failed."}setTimeout(()=>$("#manifestCopyStatus").textContent="",1500)});
-        function validateSvg(s){const d=new DOMParser().parseFromString(s,"image/svg+xml");if(d.querySelector("parsererror")||!d.documentElement||d.documentElement.tagName.toLowerCase()!=="svg")throw new Error("Invalid SVG.");return new XMLSerializer().serializeToString(d.documentElement)}
-        function updateSvgPreview(){try{const s=validateSvg($("#svgCode").value),b=new Blob([s],{type:"image/svg+xml"}),u=URL.createObjectURL(b),i=document.createElement("img");i.src=u;i.onload=()=>URL.revokeObjectURL(u);i.onerror=()=>{URL.revokeObjectURL(u);alert("Unable to render SVG.")};$("#editPreview").innerHTML="";$("#editPreview").appendChild(i)}catch(err){alert(err.message)}}
-        $("#svgUpdate").addEventListener("click",updateSvgPreview);$("#svgSave").addEventListener("click",()=>{try{downloadBlob(new Blob([validateSvg($("#svgCode").value)],{type:"image/svg+xml"}),"graphic.svg")}catch(err){alert(err.message)}});updateSvgPreview();
+
+        // Numeric Input Bindings
+        ["cropX", "cropY", "cropW", "cropH"].forEach(id => {
+            $(`#${id}`).addEventListener("input", () => {
+                if(!state.cropImage) return;
+                state.cropRect.x = Number($("#cropX").value) || 0;
+                state.cropRect.y = Number($("#cropY").value) || 0;
+                state.cropRect.w = Number($("#cropW").value) || 10;
+                state.cropRect.h = Number($("#cropH").value) || 10;
+                clampCropRect();
+                renderCropBoxUI();
+            });
+        });
+
+        // Target Dimensions Input Bindings
+        ["cw", "ch"].forEach(id => {
+            $(`#${id}`).addEventListener("input", () => {
+                if(!state.cropImage) return;
+                if($("#lockAspect").checked){
+                    const targetRatio = getTargetAspectRatio();
+                    state.cropRect.h = state.cropRect.w / targetRatio;
+                    clampCropRect();
+                }
+                renderCropBoxUI();
+            });
+        });
+
+        $("#lockAspect").addEventListener("change", () => {
+            if($("#lockAspect").checked && state.cropImage){
+                const targetRatio = getTargetAspectRatio();
+                state.cropRect.h = state.cropRect.w / targetRatio;
+                clampCropRect();
+                renderCropBoxUI();
+            }
+        });
+
+        $("#resetCropBtn").addEventListener("click", () => {
+            initDefaultCropBox();
+            renderCropBoxUI();
+        });
+
+        $("#quality").addEventListener("input", () => $("#qv").textContent = $("#quality").value + "%");
+
+        // Image File Load
+        $("#cropFile").addEventListener("change", async e => {
+            const f = e.target.files[0];
+            if(!f) return;
+            try{
+                state.cropImage = await loadImage(f);
+                state.isCroppingView = true;
+                $("#toggleResultBtn").style.display = "none";
+                $("#resetCropBtn").disabled = false;
+                initDefaultCropBox();
+                buildInteractiveCropWorkspace();
+            }catch(err){
+                alert(err.message);
+            }
+        });
+
+        // Crop & Resize Execution
+        $("#cropRun").addEventListener("click", async () => {
+            if(!state.cropImage) return alert("Choose an image first.");
+
+            const targetW = Number($("#cw").value);
+            const targetH = Number($("#ch").value);
+            const format = $("#cropFormat").value;
+            const quality = Number($("#quality").value) / 100;
+
+            if(!Number.isInteger(targetW) || targetW < 1 || !Number.isInteger(targetH) || targetH < 1){
+                return alert("Enter valid target dimensions.");
+            }
+
+            try{
+                const canvas = document.createElement("canvas");
+                canvas.width = targetW;
+                canvas.height = targetH;
+                const ctx = canvas.getContext("2d");
+
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = "high";
+
+                // Draw exact selected sub-rectangle from source image scaled to target width/height
+                ctx.drawImage(
+                    state.cropImage,
+                    state.cropRect.x,
+                    state.cropRect.y,
+                    state.cropRect.w,
+                    state.cropRect.h,
+                    0,
+                    0,
+                    targetW,
+                    targetH
+                );
+
+                state.cropBlob = await canvasBlob(canvas, format, quality);
+
+                // Display Cropped Result Preview
+                const p = $("#cropPreview");
+                p.innerHTML = "";
+                const resultImg = document.createElement("img");
+                const blobUrl = URL.createObjectURL(state.cropBlob);
+                resultImg.src = blobUrl;
+                p.appendChild(resultImg);
+
+                state.isCroppingView = false;
+                const toggleBtn = $("#toggleResultBtn");
+                toggleBtn.style.display = "inline-block";
+                toggleBtn.textContent = "Adjust Crop Selection";
+
+                const ext = format === "image/jpeg" ? "jpg" : format.split("/")[1];
+                $("#cropInfo").textContent = `Successfully Cropped! Output: ${targetW} × ${targetH}px • ${ext.toUpperCase()}`;
+                $("#cropDownload").disabled = false;
+            }catch(err){
+                alert(err.message);
+            }
+        });
+
+        // Toggle between Cropped Result & Interactive Workspace
+        $("#toggleResultBtn").addEventListener("click", () => {
+            state.isCroppingView = !state.isCroppingView;
+            const toggleBtn = $("#toggleResultBtn");
+            if(state.isCroppingView){
+                toggleBtn.textContent = "View Cropped Result";
+                buildInteractiveCropWorkspace();
+            } else if(state.cropBlob) {
+                toggleBtn.textContent = "Adjust Crop Selection";
+                const p = $("#cropPreview");
+                p.innerHTML = "";
+                const resultImg = document.createElement("img");
+                resultImg.src = URL.createObjectURL(state.cropBlob);
+                p.appendChild(resultImg);
+            }
+        });
+
+        $("#cropDownload").addEventListener("click", () => {
+            const format = $("#cropFormat").value;
+            if(state.cropBlob){
+                const ext = format === "image/jpeg" ? "jpg" : format.split("/")[1];
+                downloadBlob(state.cropBlob, `cropped-image.${ext}`);
+            }
+        });
+
+        // PNG -> ICO Tool
+        $("#icoFile").addEventListener("change", async e => {
+            const f = e.target.files[0];
+            if(!f) return;
+            try{
+                state.icoImage = await loadImage(f);
+                const p = $("#icoPreview");
+                const old = p.dataset.url;
+                if(old) URL.revokeObjectURL(old);
+                const u = URL.createObjectURL(f);
+                p.dataset.url = u;
+                p.hidden = false;
+                p.src = u;
+            }catch(err){
+                alert(err.message);
+            }
+        });
+
+        function parseIconSizes(v){
+            return [...new Set(v.split(",").map(Number).filter(x => Number.isInteger(x) && x >= 16 && x <= 256))];
+        }
+
+        async function createPngForSize(i, s){
+            const c = document.createElement("canvas");
+            c.width = s; c.height = s;
+            const ctx = c.getContext("2d");
+            ctx.drawImage(i, 0, 0, s, s);
+            return canvasBlob(c, "image/png");
+        }
+
+        async function createIco(i, sizes){
+            const es = [];
+            for(const s of sizes){
+                const p = await createPngForSize(i, s);
+                es.push({ size: s, data: new Uint8Array(await p.arrayBuffer()) });
+            }
+            const bytes = new Uint8Array(6 + 16 * es.length + es.reduce((n, e) => n + e.data.length, 0));
+            const v = new DataView(bytes.buffer);
+            v.setUint16(2, 1, true);
+            v.setUint16(4, es.length, true);
+            let d = 6, o = 6 + 16 * es.length;
+            for(const e of es){
+                const z = e.size === 256 ? 0 : e.size;
+                bytes[d] = z; bytes[d + 1] = z;
+                v.setUint16(d + 4, 1, true);
+                v.setUint16(d + 6, 32, true);
+                v.setUint32(d + 8, e.data.length, true);
+                v.setUint32(d + 12, o, true);
+                bytes.set(e.data, o);
+                d += 16; o += e.data.length;
+            }
+            return new Blob([bytes], { type: "image/x-icon" });
+        }
+
+        function crc32(data){
+            let c = 0xffffffff;
+            for(const b of data){
+                c ^= b;
+                for(let i = 0; i < 8; i++) c = c & 1 ? (c >>> 1) ^ 0xedb88320 : c >>> 1;
+            }
+            return (c ^ 0xffffffff) >>> 0;
+        }
+
+        function w16(a, o, v){ new DataView(a.buffer, a.byteOffset + o, 2).setUint16(0, v, true); }
+        function w32(a, o, v){ new DataView(a.buffer, a.byteOffset + o, 4).setUint32(0, v, true); }
+
+        function createZip(files){
+            const enc = new TextEncoder();
+            const locals = [], centrals = [];
+            let off = 0;
+            for(const f of files){
+                const n = enc.encode(f.name);
+                const d = f.data;
+                const c = crc32(d);
+                const l = new Uint8Array(30 + n.length);
+                w32(l, 0, 0x04034b50);
+                w16(l, 4, 20);
+                w32(l, 14, c);
+                w32(l, 18, d.length);
+                w32(l, 22, d.length);
+                w16(l, 26, n.length);
+                l.set(n, 30);
+                locals.push(l, d);
+
+                const z = new Uint8Array(46 + n.length);
+                w32(z, 0, 0x02014b50);
+                w16(z, 4, 20);
+                w16(z, 6, 20);
+                w32(z, 16, c);
+                w32(z, 20, d.length);
+                w32(z, 24, d.length);
+                w16(z, 28, n.length);
+                w32(z, 42, off);
+                z.set(n, 46);
+                centrals.push(z);
+                off += l.length + d.length;
+            }
+            const end = new Uint8Array(22);
+            w32(end, 0, 0x06054b50);
+            w16(end, 8, files.length);
+            w16(end, 10, files.length);
+            const cs = centrals.reduce((n, x) => n + x.length, 0);
+            w32(end, 12, cs);
+            w32(end, 16, off);
+            return new Blob([...locals, ...centrals, end], { type: "application/zip" });
+        }
+
+        $("#icoRun").addEventListener("click", async () => {
+            if(!state.icoImage) return alert("Choose an image first.");
+            const sizes = parseIconSizes($("#icoSizes").value);
+            if(!sizes.length) return alert("Enter valid icon sizes between 16 and 256.");
+            try{
+                const files = [];
+                for(const s of sizes){
+                    const p = await createPngForSize(state.icoImage, s);
+                    files.push({ name: `icon-${s}x${s}.png`, data: new Uint8Array(await p.arrayBuffer()) });
+                }
+                const ico = await createIco(state.icoImage, sizes);
+                files.push({ name: "icon.ico", data: new Uint8Array(await ico.arrayBuffer()) });
+                state.icoZip = createZip(files);
+                $("#icoInfo").textContent = `Generated ${sizes.length} PNGs + 1 combined ICO. ZIP contains ${files.length} files.`;
+                downloadBlob(state.icoZip, "icon-package.zip");
+            }catch(err){
+                alert("Icon generation failed: " + err.message);
+            }
+        });
+
+        // SVG -> PNG
+        function getSvgDimensions(text){
+            const doc = new DOMParser().parseFromString(text, "image/svg+xml");
+            if(doc.querySelector("parsererror") || !doc.documentElement || doc.documentElement.tagName.toLowerCase() !== "svg") return null;
+            const svg = doc.documentElement;
+            const parseLen = v => {
+                if(!v) return null;
+                const m = String(v).trim().match(/^([0-9]+(?:\.[0-9]+)?)(?:px)?$/i);
+                if(!m) return null;
+                const n = Number(m[1]);
+                return Number.isFinite(n) && n > 0 ? n : null;
+            };
+            let w = parseLen(svg.getAttribute("width"));
+            let h = parseLen(svg.getAttribute("height"));
+            const vb = svg.getAttribute("viewBox");
+            if(vb){
+                const p = vb.trim().split(/[\s,]+/).map(Number);
+                if(p.length === 4 && p.every(Number.isFinite) && p[2] > 0 && p[3] > 0){
+                    if(!(w > 0)) w = p[2];
+                    if(!(h > 0)) h = p[3];
+                }
+            }
+            if(!(w > 0) || !(h > 0)) return null;
+            return { width: Math.max(1, Math.round(w)), height: Math.max(1, Math.round(h)) };
+        }
+
+        $("#svgFile").addEventListener("change", async e => {
+            const f = e.target.files[0];
+            if(!f) return;
+            try{
+                state.svgText = await f.text();
+                state.svgBlob = null;
+                $("#svgDownload").disabled = true;
+                const d = getSvgDimensions(state.svgText);
+                if(d){ $("#sw").value = d.width; $("#sh").value = d.height; }
+                const b = new Blob([state.svgText], { type: "image/svg+xml" });
+                const u = URL.createObjectURL(b);
+                const i = new Image();
+                i.onload = () => {
+                    URL.revokeObjectURL(u);
+                    $("#svgPreview").innerHTML = "";
+                    $("#svgPreview").appendChild(i);
+                };
+                i.onerror = () => { URL.revokeObjectURL(u); alert("Unable to render SVG."); };
+                i.src = u;
+                $("#svgInfo").textContent = d ? `SVG loaded • Native size: ${d.width} × ${d.height}px • PNG will use the same size` : "SVG loaded. Native dimensions could not be detected.";
+            }catch(err){ alert(err.message); }
+        });
+
+        $("#svgRun").addEventListener("click", async () => {
+            if(!state.svgText) return alert("Choose an SVG first.");
+            const w = Number($("#sw").value), h = Number($("#sh").value);
+            if(!Number.isInteger(w) || w < 1 || !Number.isInteger(h) || h < 1) return alert("Enter valid dimensions.");
+            const c = document.createElement("canvas");
+            c.width = w; c.height = h;
+            const x = c.getContext("2d");
+            x.clearRect(0, 0, w, h);
+            const b = new Blob([state.svgText], { type: "image/svg+xml" });
+            const u = URL.createObjectURL(b);
+            const i = new Image();
+            i.onload = async () => {
+                try{
+                    x.clearRect(0, 0, w, h);
+                    x.drawImage(i, 0, 0, w, h);
+                    URL.revokeObjectURL(u);
+                    state.svgBlob = await canvasBlob(c, "image/png");
+                    $("#svgPreview").innerHTML = "";
+                    const p = document.createElement("img");
+                    const pu = URL.createObjectURL(state.svgBlob);
+                    p.src = pu;
+                    p.onload = () => URL.revokeObjectURL(pu);
+                    $("#svgPreview").appendChild(p);
+                    $("#svgDownload").disabled = false;
+                    $("#svgInfo").textContent = `PNG: ${w} × ${h}px • Same dimensions as SVG • Transparent background`;
+                }catch(err){ URL.revokeObjectURL(u); alert(err.message); }
+            };
+            i.onerror = () => { URL.revokeObjectURL(u); alert("Unable to render SVG."); };
+            i.src = u;
+        });
+
+        $("#svgDownload").addEventListener("click", () => state.svgBlob && downloadBlob(state.svgBlob, "converted.png"));
+
+        // Chrome Extension Icons Tool
+        $("#extPad").addEventListener("input", () => $("#padVal").textContent = $("#extPad").value + "%");
+        $("#extFile").addEventListener("change", async e => {
+            const f = e.target.files[0];
+            if(!f) return;
+            try{
+                state.extImage = await loadImage(f);
+                state.extZip = null;
+                $("#extDownload").disabled = true;
+            }catch(err){ alert(err.message); }
+        });
+
+        $("#extRun").addEventListener("click", async () => {
+            if(!state.extImage) return alert("Choose an image first.");
+            const sizes = [16, 32, 48, 128], pad = Number($("#extPad").value) / 100, shape = $("#extShape").value;
+            const p = $("#extPreview");
+            p.innerHTML = "";
+            state.extBlobs = []; state.extZip = null;
+            $("#extDownload").disabled = true;
+            try{
+                for(const s of sizes){
+                    const c = document.createElement("canvas");
+                    c.width = s; c.height = s;
+                    const x = c.getContext("2d"), d = s * pad;
+                    x.clearRect(0, 0, s, s);
+                    if(shape === "circle"){
+                        x.beginPath(); x.arc(s / 2, s / 2, s / 2, 0, Math.PI * 2); x.clip();
+                    } else if(shape === "rounded"){
+                        x.beginPath(); x.roundRect(0, 0, s, s, s * .18); x.clip();
+                    }
+                    x.drawImage(state.extImage, d, d, s - d * 2, s - d * 2);
+                    const b = await canvasBlob(c, "image/png");
+                    state.extBlobs.push({ size: s, blob: b, filename: `icon${s}.png` });
+                    const wrap = document.createElement("div"), im = document.createElement("img"), lab = document.createElement("div");
+                    im.src = URL.createObjectURL(b);
+                    im.width = s; im.height = s;
+                    lab.textContent = `${s} × ${s}`;
+                    wrap.append(im, lab);
+                    p.appendChild(wrap);
+                }
+                const files = [];
+                for(const s of [128, 16, 32, 48]){
+                    const it = state.extBlobs.find(x => x.size === s);
+                    files.push({ name: `icon${s}.png`, data: new Uint8Array(await it.blob.arrayBuffer()) });
+                }
+                state.extZip = createZip(files);
+                $("#extDownload").disabled = false;
+            }catch(err){ alert("Icon generation failed: " + err.message); }
+        });
+
+        $("#extDownload").addEventListener("click", () => state.extZip && downloadBlob(state.extZip, "chrome-extension-icons.zip"));
+
+        $("#manifestCopy").addEventListener("click", async () => {
+            const code = $("#manifestCode").value;
+            try{
+                if(navigator.clipboard && window.isSecureContext) await navigator.clipboard.writeText(code);
+                else { $("#manifestCode").focus(); $("#manifestCode").select(); document.execCommand("copy"); }
+                $("#manifestCopyStatus").textContent = "Copied!";
+            }catch{ $("#manifestCopyStatus").textContent = "Copy failed."; }
+            setTimeout(() => $("#manifestCopyStatus").textContent = "", 1500);
+        });
+
+        // SVG Editor Tool
+        function validateSvg(s){
+            const d = new DOMParser().parseFromString(s, "image/svg+xml");
+            if(d.querySelector("parsererror") || !d.documentElement || d.documentElement.tagName.toLowerCase() !== "svg") throw new Error("Invalid SVG.");
+            return new XMLSerializer().serializeToString(d.documentElement);
+        }
+
+        function updateSvgPreview(){
+            try{
+                const s = validateSvg($("#svgCode").value);
+                const b = new Blob([s], { type: "image/svg+xml" });
+                const u = URL.createObjectURL(b);
+                const i = document.createElement("img");
+                i.src = u;
+                i.onload = () => URL.revokeObjectURL(u);
+                i.onerror = () => { URL.revokeObjectURL(u); alert("Unable to render SVG."); };
+                $("#editPreview").innerHTML = "";
+                $("#editPreview").appendChild(i);
+            }catch(err){ alert(err.message); }
+        }
+
+        $("#svgUpdate").addEventListener("click", updateSvgPreview);
+        $("#svgSave").addEventListener("click", () => {
+            try{ downloadBlob(new Blob([validateSvg($("#svgCode").value)], { type: "image/svg+xml" }), "graphic.svg"); }
+            catch(err){ alert(err.message); }
+        });
+
+        updateSvgPreview();
     </script>
 </body>
 </html>
