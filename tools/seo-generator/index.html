@@ -26,6 +26,33 @@
 :root{color-scheme:dark;--bg:#0b0d10;--panel:#12161b;--panel2:#171c22;--line:#29313a;--text:#e8edf2;--muted:#9ca8b4;--blue:#6ea8fe;--green:#49d17d;--yellow:#f2c94c;--red:#ff7777}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}header{background:#0e1115;border-bottom:1px solid var(--line);padding:20px 24px}.wrap{max-width:1600px;margin:auto;padding:20px}header .wrap{padding:0;display:flex;align-items:center;justify-content:space-between;gap:20px}h1{font-size:24px;margin:0}h2{font-size:17px;margin:0 0 14px}p{color:var(--muted);margin:5px 0 0}.back{color:#a9cbff;text-decoration:none;border:1px solid var(--line);border-radius:7px;padding:8px 12px;white-space:nowrap}.back:hover{background:var(--panel2)}
 .grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px}.card{background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:17px;margin-bottom:18px}.row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.row3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}label{display:block;font-size:12px;color:var(--muted);margin:0 0 5px}input,textarea,select{width:100%;background:#0b0e12;color:var(--text);border:1px solid var(--line);border-radius:7px;padding:9px;font:inherit}textarea{min-height:76px;resize:vertical}input:focus,textarea:focus,select:focus{outline:1px solid var(--blue)}button{background:#1b2733;color:var(--text);border:1px solid #354555;border-radius:7px;padding:8px 12px;font:inherit;cursor:pointer}button:hover{background:#263748}button.primary{background:#245f9f;border-color:#397fc6}button.danger{background:#321c20;border-color:#633039;color:#ffaaaa}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.check{display:flex;gap:8px;align-items:center;margin:9px 0}.check input{width:auto}.check label{margin:0;color:var(--text)}.note{margin-top:12px;padding:10px;border:1px solid var(--line);border-radius:7px;color:var(--muted);font-size:12px;background:#101419}.status{display:none;padding:9px 11px;margin-top:12px;border-radius:7px}.status.info{display:block;background:#172332;border:1px solid #34577b}.status.good{display:block;background:#11271b;border:1px solid #245e3b;color:#8ce5ab}.status.warn{display:block;background:#302912;border:1px solid #665322;color:#f6d979}.status.error{display:block;background:#30171a;border:1px solid #71343b;color:#ffaaaa}.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:12px}.stat{background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:9px}.stat strong{display:block;font-size:19px}.stat span{font-size:11px;color:var(--muted)}.progress{height:8px;background:#080a0d;border:1px solid var(--line);border-radius:20px;overflow:hidden;margin-top:10px}.progress div{height:100%;width:0;background:var(--blue)}.tablebox{overflow:auto;border:1px solid var(--line);border-radius:8px}table{border-collapse:collapse;width:100%;min-width:900px}th,td{text-align:left;vertical-align:top;padding:8px;border-bottom:1px solid var(--line);font-size:12px}th{background:var(--panel2);color:#c4ced8;position:sticky;top:0}tr:last-child td{border-bottom:0}.url{max-width:280px;overflow-wrap:anywhere;font-family:ui-monospace,Consolas,monospace}.ok{color:var(--green)}.bad{color:var(--red)}.warntext{color:var(--yellow)}pre{white-space:pre-wrap;overflow:auto;overflow-wrap:anywhere;max-height:420px;background:#090c0f;border:1px solid var(--line);border-radius:7px;padding:11px;font:12px/1.5 ui-monospace,Consolas,monospace}details{margin-top:9px;padding:10px;border:1px solid var(--line);border-radius:8px;background:#0f1317}summary{cursor:pointer;color:#cbd5df}.validation{padding:9px 11px;border-radius:7px;margin-bottom:8px}.vbad{background:#30171a;border:1px solid #71343b;color:#ffaaaa}.vwarn{background:#302912;border:1px solid #665322;color:#f6d979}.vgood{background:#11271b;border:1px solid #245e3b;color:#8ce5ab}
+.preview-tabs{display:flex;gap:8px;margin-bottom:14px;border-bottom:1px solid var(--line);padding-bottom:10px;flex-wrap:wrap}
+.preview-tab{background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:6px 12px;font-size:12px;color:var(--muted);cursor:pointer;transition:all .2s}
+.preview-tab:hover{color:var(--text);background:#1f2630}
+.preview-tab.active{background:#245f9f;color:#fff;border-color:#397fc6;font-weight:600}
+.preview-container{display:flex;flex-direction:column;gap:16px}
+.preview-pane{display:none}
+.preview-pane.active{display:block}
+.social-post{background:#15181c;border:1px solid var(--line);border-radius:12px;padding:14px;color:#e7e9ea;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:14px}
+.social-header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.social-avatar{width:38px;height:38px;border-radius:50%;background:#2f3336;display:flex;align-items:center;justify-content:center;font-weight:bold;color:var(--blue);font-size:16px;flex-shrink:0}
+.social-author-info{display:flex;flex-direction:column;line-height:1.3}
+.social-author-name{font-weight:700;color:#f7f9f9;font-size:14px}
+.social-author-handle{color:#71767b;font-size:13px}
+.social-post-text{margin-bottom:12px;color:#e7e9ea;font-size:14px;line-height:1.4}
+.social-card{border:1px solid #2f3336;border-radius:12px;overflow:hidden;background:#000;transition:border-color .2s;cursor:pointer}
+.social-card:hover{border-color:#4a4e51}
+.social-card-img-wrap{width:100%;aspect-ratio:1.91 / 1;background:#16181c;overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center;color:#71767b}
+.social-card-img{width:100%;height:100%;object-fit:cover;display:block}
+.social-card-fallback{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12px;color:#71767b}
+.social-card-fallback svg{width:32px;height:32px;fill:currentColor}
+.social-card-body{padding:12px;display:flex;flex-direction:column;gap:4px;background:#080a0c;border-top:1px solid #2f3336}
+.social-card-domain{font-size:12px;color:#71767b;text-transform:lowercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.social-card-title{font-weight:700;font-size:14px;color:#f7f9f9;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.social-card-desc{font-size:13px;color:#71767b;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-top:2px}
+.social-card.card-summary{display:flex;flex-direction:row;align-items:stretch;height:110px}
+.social-card.card-summary .social-card-img-wrap{width:110px;height:110px;aspect-ratio:1 / 1;flex-shrink:0;border-right:1px solid #2f3336}
+.social-card.card-summary .social-card-body{flex:1;border-top:none;justify-content:center}
 @media(max-width:1000px){.grid{grid-template-columns:1fr}}@media(max-width:650px){.wrap{padding:12px}header{padding:16px}.row,.row3{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}header .wrap{align-items:flex-start;flex-direction:column}}
 </style>
 </head>
@@ -65,7 +92,79 @@
 </section><section>
 <div class="card"><h2>Crawl Results</h2><div id="validation"></div><div class="tablebox"><table><thead><tr><th>URL</th><th>HTTP</th><th>Depth</th><th>Title</th><th>Description</th><th>Canonical</th><th>Index</th><th>H1</th><th>Links</th></tr></thead><tbody id="crawlRows"></tbody></table></div></div>
 <div class="card"><h2>Sitemap Pages</h2><div class="actions"><button id="addPage">Add Page</button><button id="addCommon">Add Common Pages</button><button id="useCrawl" class="primary">Use Crawled Pages</button><button id="validateBtn">Validate</button></div><div class="tablebox" style="margin-top:12px"><table><thead><tr><th>Path</th><th>Last modified</th><th>Change frequency</th><th>Priority</th><th></th></tr></thead><tbody id="pageRows"></tbody></table></div></div>
-<div class="card"><h2>Search Preview</h2><div style="background:white;color:#202124;padding:15px;border-radius:8px"><div id="previewUrl" style="color:#188038;font-size:12px"></div><div id="previewTitle" style="color:#1a0dab;font-size:20px"></div><div id="previewDesc" style="color:#4d5156"></div></div></div>
+<div class="card">
+<h2>Previews</h2>
+<div class="preview-tabs">
+<button type="button" class="preview-tab active" data-tab="all">All Previews</button>
+<button type="button" class="preview-tab" data-tab="og">Open Graph / Facebook</button>
+<button type="button" class="preview-tab" data-tab="twitter">X / Twitter Post</button>
+<button type="button" class="preview-tab" data-tab="google">Google Search</button>
+</div>
+<div class="preview-container">
+<div id="pane-og" class="preview-pane active">
+<label style="margin-bottom:6px;font-weight:600;color:var(--text);">Open Graph / Facebook / LinkedIn Post Preview</label>
+<div class="social-post">
+<div class="social-header">
+<div class="social-avatar" id="ogAvatar">X</div>
+<div class="social-author-info">
+<span class="social-author-name" id="ogAuthorName">xCONFLiCTiONx</span>
+<span class="social-author-handle">Shared a link · Just now · 🌐</span>
+</div>
+</div>
+<div class="social-post-text">Check out this webpage metadata preview:</div>
+<div class="social-card" id="ogCardBox">
+<div class="social-card-img-wrap" id="ogImgWrap">
+<img id="ogPreviewImg" class="social-card-img" src="" alt="Open Graph Preview Image" style="display:none;">
+<div id="ogImgFallback" class="social-card-fallback">
+<svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+<span>No image provided or loading error</span>
+</div>
+</div>
+<div class="social-card-body">
+<div class="social-card-domain" id="ogPreviewDomain">xconflictionx.cc</div>
+<div class="social-card-title" id="ogPreviewTitle">Title</div>
+<div class="social-card-desc" id="ogPreviewDesc">Description...</div>
+</div>
+</div>
+</div>
+</div>
+<div id="pane-twitter" class="preview-pane active">
+<label style="margin-bottom:6px;font-weight:600;color:var(--text);">X / Twitter Card Post Preview</label>
+<div class="social-post">
+<div class="social-header">
+<div class="social-avatar" id="twAvatar">X</div>
+<div class="social-author-info">
+<span class="social-author-name" id="twAuthorName">xCONFLiCTiONx</span>
+<span class="social-author-handle" id="twAuthorHandle">@username · 1m</span>
+</div>
+</div>
+<div class="social-post-text">Check out our latest update:</div>
+<div class="social-card" id="twCardBox">
+<div class="social-card-img-wrap" id="twImgWrap">
+<img id="twPreviewImg" class="social-card-img" src="" alt="X / Twitter Preview Image" style="display:none;">
+<div id="twImgFallback" class="social-card-fallback">
+<svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+<span>No image provided or loading error</span>
+</div>
+</div>
+<div class="social-card-body">
+<div class="social-card-domain" id="twPreviewDomain">xconflictionx.cc</div>
+<div class="social-card-title" id="twPreviewTitle">Title</div>
+<div class="social-card-desc" id="twPreviewDesc">Description...</div>
+</div>
+</div>
+</div>
+</div>
+<div id="pane-google" class="preview-pane active">
+<label style="margin-bottom:6px;font-weight:600;color:var(--text);">Google Search Snippet Preview</label>
+<div style="background:white;color:#202124;padding:15px;border-radius:8px">
+<div id="previewUrl" style="color:#188038;font-size:12px"></div>
+<div id="previewTitle" style="color:#1a0dab;font-size:20px"></div>
+<div id="previewDesc" style="color:#4d5156"></div>
+</div>
+</div>
+</div>
+</div>
 <div class="card"><h2>Generated Files</h2><div class="actions"><button class="primary" id="all">Download All SEO Files</button><button id="dlRobots">robots.txt</button><button id="dlSitemap">sitemap.xml</button><button id="dlHead">seo-head.html</button><button id="dlJson">structured-data.json</button><button id="dlManifest">site.webmanifest</button><button id="dlLlms">llms.txt</button><button id="dlReport">seo-report.txt</button></div>
 <details><summary>robots.txt</summary><pre id="outRobots"></pre><button id="copyRobots">Copy</button></details><details><summary>sitemap.xml</summary><pre id="outSitemap"></pre><button id="copySitemap">Copy</button></details><details><summary>seo-head.html</summary><pre id="outHead"></pre><button id="copyHead">Copy</button></details><details><summary>structured-data.json</summary><pre id="outJson"></pre><button id="copyJson">Copy</button></details>
 </div>

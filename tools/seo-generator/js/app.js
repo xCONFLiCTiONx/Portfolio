@@ -1,6 +1,6 @@
 "use strict";
 function init(){
- renderPages();renderResults();updateAll();validate();
+ renderPages();renderResults();initPreviewTabs();updateAll();validate();
  $("crawlBtn").onclick=crawlSite;$("stopBtn").onclick=stopCrawl;
  $("clearBtn").onclick=()=>{if(running){status("Stop the crawl before clearing.","warn");return}results=[];queue=[];seen.clear();pages=[];renderPages();renderResults();stats();$("progress").style.width="0";updateAll();validate();status("Results cleared.","good")};
  $("addPage").onclick=addPage;$("addCommon").onclick=addCommon;
