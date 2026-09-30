@@ -58,7 +58,24 @@
 .social-card.card-summary .social-card-img-wrap{width:110px;height:110px;aspect-ratio:1 / 1;flex-shrink:0;border-right:1px solid #2f3336}
 .social-card.card-summary .social-card-body{flex:1;border-top:none;justify-content:center}
 .img-badge{font-size:11px;color:var(--muted);margin-top:4px}
-@media(max-width:1000px){.grid{grid-template-columns:1fr}}@media(max-width:650px){.wrap{padding:12px}header{padding:16px}.row,.row3{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}header .wrap{align-items:flex-start;flex-direction:column}}
+@media(max-width:960px){
+  .grid{grid-template-columns:1fr;gap:16px}
+  .row,.row3{grid-template-columns:1fr;gap:10px}
+  .stats{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:600px){
+  .wrap{padding:12px}
+  header{padding:14px 16px}
+  .card{padding:14px 12px}
+  .stats{grid-template-columns:1fr}
+  .actions{flex-direction:column}
+  .actions button{width:100%;text-align:center}
+  .preview-tabs{flex-direction:column}
+  .preview-tab{width:100%;text-align:center}
+  .social-card.card-summary{flex-direction:column;height:auto}
+  .social-card.card-summary .social-card-img-wrap{width:100%;height:auto;aspect-ratio:16/9;border-right:none;border-bottom:1px solid #2f3336}
+  header .wrap{align-items:flex-start;flex-direction:column}
+}
 </style>
 </head>
 <body>
