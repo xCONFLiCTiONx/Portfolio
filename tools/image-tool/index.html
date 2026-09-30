@@ -499,11 +499,188 @@
                 <div class="grid">
                     <div class="card">
                         <h2>SVG Generator / Editor</h2>
-                        <label for="ew">Canvas width</label><input id="ew" type="number" value="512" min="1"><label for="eh">Canvas height</label><input id="eh" type="number" value="512" min="1"><label for="svgCode">SVG markup</label><textarea id="svgCode" rows="18"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-    <rect width="512" height="512" rx="72" fill="#5b42e8"/>
-    <circle cx="256" cy="220" r="110" fill="#fff"/>
-    <path d="M120 390 Q256 300 392 390" fill="none" stroke="#fff" stroke-width="28" stroke-linecap="round"/>
-    </svg></textarea>
+                        <label for="ew">Canvas width</label><input id="ew" type="number" value="512" min="1"><label for="eh">Canvas height</label><input id="eh" type="number" value="512" min="1"><label for="svgCode">SVG markup</label><textarea id="svgCode" rows="18"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="100%" height="100%">
+  <defs>
+    <!-- Background Radial Gradient -->
+    <radialGradient id="bgGrad" cx="50%" cy="50%" r="75%" fx="50%" fy="50%">
+      <stop offset="0%" stop-color="#0c2638" />
+      <stop offset="50%" stop-color="#05131f" />
+      <stop offset="100%" stop-color="#02070c" />
+    </radialGradient>
+
+    <!-- Metallic Surface Gradient - Diagonal 1 (Brushed Steel) -->
+    <linearGradient id="metalGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7a9bb0" />
+      <stop offset="25%" stop-color="#c8dbec" />
+      <stop offset="50%" stop-color="#506a80" />
+      <stop offset="75%" stop-color="#98b4cb" />
+      <stop offset="100%" stop-color="#3d5468" />
+    </linearGradient>
+
+    <!-- Metallic Surface Gradient - Diagonal 2 (Reverse Angle) -->
+    <linearGradient id="metalGradCross" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#91abc0" />
+      <stop offset="30%" stop-color="#d6e6f5" />
+      <stop offset="55%" stop-color="#5c768c" />
+      <stop offset="80%" stop-color="#a2bdce" />
+      <stop offset="100%" stop-color="#476075" />
+    </linearGradient>
+
+    <!-- Bevel & Edge Specular Highlights -->
+    <linearGradient id="bevelHighlight" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.85" />
+      <stop offset="100%" stop-color="#3a5266" stop-opacity="0.2" />
+    </linearGradient>
+
+    <!-- Glowing Neon Cyan Gradient -->
+    <linearGradient id="neonGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#c2ffff" />
+      <stop offset="40%" stop-color="#00f0ff" />
+      <stop offset="80%" stop-color="#00a8e8" />
+      <stop offset="100%" stop-color="#006699" />
+    </linearGradient>
+
+    <!-- Neon Glow Filter -->
+    <filter id="glowFilter" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="6" result="blur1" />
+      <feGaussianBlur stdDeviation="15" result="blur2" />
+      <feMerge>
+        <feMergeNode in="blur2" />
+        <feMergeNode in="blur1" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+
+    <!-- 3D Extrusion Drop Shadow -->
+    <filter id="dropShadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="-10" dy="18" stdDeviation="20" flood-color="#000000" flood-opacity="0.85" />
+    </filter>
+  </defs>
+
+  <!-- Dark Cybernetic Canvas Background -->
+  <rect width="1000" height="1000" fill="url(#bgGrad)" />
+
+  <!-- Background Tech Grid / Cybernetic Mandala Circles -->
+  <g opacity="0.25">
+    <circle cx="500" cy="500" r="420" fill="none" stroke="#00e5ff" stroke-width="1.5" stroke-dasharray="8 8" />
+    <circle cx="500" cy="500" r="340" fill="none" stroke="#00f0ff" stroke-width="2" />
+    <circle cx="500" cy="500" r="260" fill="none" stroke="#0088cc" stroke-width="1.5" stroke-dasharray="16 8" />
+    <circle cx="500" cy="500" r="180" fill="none" stroke="#00e5ff" stroke-width="1" />
+    <!-- Tech Lines / Crosshairs -->
+    <line x1="80" y1="500" x2="920" y2="500" stroke="#00e5ff" stroke-width="1" stroke-dasharray="4 8" />
+    <line x1="500" y1="80" x2="500" y2="920" stroke="#00e5ff" stroke-width="1" stroke-dasharray="4 8" />
+    <line x1="200" y1="200" x2="800" y2="800" stroke="#00f0ff" stroke-width="1" stroke-dasharray="6 6" />
+    <line x1="800" y1="200" x2="200" y2="800" stroke="#00f0ff" stroke-width="1" stroke-dasharray="6 6" />
+  </g>
+
+  <!-- Main 3D "X" Structure Group -->
+  <g filter="url(#dropShadow)">
+
+    <!-- ============================================================
+         LAYER 1: CROSSING BAR / WINGS (TOP-LEFT TO BOTTOM-RIGHT)
+         ============================================================ -->
+
+    <!-- Top-Left Wing Base 3D Extrusion -->
+    <polygon points="120,160 360,160 280,240 430,390 350,470 200,320 120,400" fill="#091520" />
+
+    <!-- Top-Left Wing Main Metallic Face -->
+    <polygon points="140,140 380,140 300,220 450,370 370,450 220,300 140,380" fill="url(#metalGradCross)" stroke="#3d566e" stroke-width="2" />
+
+    <!-- Top-Left Wing Bevel Highlight -->
+    <polygon points="140,140 380,140 360,160 160,160" fill="url(#bevelHighlight)" />
+
+    <!-- Top-Left Wing Recessed Channel -->
+    <polygon points="180,180 330,180 280,230 410,360 360,410 230,280 180,330" fill="#030c14" />
+
+    <!-- Top-Left Wing Neon Glow Track -->
+    <path d="M 190 190 L 320 190 L 275 235 L 390 350 L 350 390 L 235 275 L 190 320 Z" fill="none" stroke="url(#neonGlow)" stroke-width="10" stroke-linejoin="round" filter="url(#glowFilter)" />
+    <path d="M 190 190 L 320 190 L 275 235 L 390 350 L 350 390 L 235 275 L 190 320 Z" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linejoin="round" />
+
+
+    <!-- Bottom-Right Wing Base 3D Extrusion -->
+    <polygon points="880,840 640,840 720,760 570,610 650,530 800,680 880,600" fill="#091520" />
+
+    <!-- Bottom-Right Wing Main Metallic Face -->
+    <polygon points="860,860 620,860 700,780 550,630 630,550 780,700 860,620" fill="url(#metalGradCross)" stroke="#3d566e" stroke-width="2" />
+
+    <!-- Bottom-Right Wing Bevel Highlight -->
+    <polygon points="860,860 620,860 640,840 840,840" fill="url(#bevelHighlight)" />
+
+    <!-- Bottom-Right Wing Recessed Channel -->
+    <polygon points="820,820 670,820 720,770 590,640 640,590 770,720 820,670" fill="#030c14" />
+
+    <!-- Bottom-Right Wing Neon Glow Track -->
+    <path d="M 810 810 L 680 810 L 725 765 L 610 650 L 650 610 L 765 725 L 810 680 Z" fill="none" stroke="url(#neonGlow)" stroke-width="10" stroke-linejoin="round" filter="url(#glowFilter)" />
+    <path d="M 810 810 L 680 810 L 725 765 L 610 650 L 650 610 L 765 725 L 810 680 Z" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linejoin="round" />
+
+
+    <!-- ============================================================
+         LAYER 2: MAIN ARROW SHAFT (BOTTOM-LEFT TO TOP-RIGHT)
+         ============================================================ -->
+
+    <!-- Main Arrow Base 3D Extrusion -->
+    <path d="M 880 160
+             L 640 160
+             L 720 240
+             L 240 720
+             L 160 800
+             L 240 880
+             L 320 800
+             L 800 320
+             L 880 400 Z"
+          fill="#08131e" />
+
+    <!-- Main Arrow Front Metallic Face -->
+    <path d="M 860 140
+             L 620 140
+             L 700 220
+             L 220 700
+             L 140 780
+             L 220 860
+             L 300 780
+             L 780 300
+             L 860 380 Z"
+          fill="url(#metalGrad)"
+          stroke="#42586e"
+          stroke-width="2" />
+
+    <!-- Main Arrow Bevel Highlights -->
+    <polygon points="860,140 620,140 640,160 840,160" fill="url(#bevelHighlight)" />
+    <polygon points="620,140 700,220 680,230 610,160" fill="url(#bevelHighlight)" opacity="0.6" />
+    <polygon points="700,220 220,700 235,715 715,235" fill="url(#bevelHighlight)" opacity="0.5" />
+
+    <!-- Main Arrow Recessed Channel -->
+    <polygon points="810,190 660,190 710,240 240,710 190,760 220,790 250,760 760,250 810,300" fill="#040e16" />
+
+    <!-- Main Arrow Neon Glow Track -->
+    <path d="M 660 190
+             L 710 240
+             L 245 705
+             L 220 770
+             L 255 770
+             L 770 255
+             L 810 295
+             L 810 190 Z"
+          fill="none"
+          stroke="url(#neonGlow)"
+          stroke-width="12"
+          stroke-linejoin="round"
+          filter="url(#glowFilter)" />
+    <path d="M 660 190
+             L 710 240
+             L 245 705
+             L 220 770
+             L 255 770
+             L 770 255
+             L 810 295
+             L 810 190 Z"
+          fill="none"
+          stroke="#ffffff"
+          stroke-width="3"
+          stroke-linejoin="round" />
+
+  </g>
+</svg></textarea>
                         <div class="actions">
                             <button class="primary" id="svgUpdate">Update Preview</button><button id="svgSave">Download SVG</button>
                         </div>
