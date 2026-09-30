@@ -130,6 +130,27 @@
             background-color: #2ea043;
             text-decoration: none;
         }
+
+        .github-repo-badge {
+            color: #8b949e;
+            font-size: 1.3rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.3rem 0.8rem;
+            border-radius: 6px;
+            background: rgba(110, 118, 129, 0.1);
+            border: 1px solid rgba(110, 118, 129, 0.2);
+            transition: color 0.2s, background-color 0.2s, border-color 0.2s;
+        }
+
+        .github-repo-badge:hover {
+            color: #58a6ff;
+            background: rgba(88, 166, 255, 0.1);
+            border-color: rgba(88, 166, 255, 0.3);
+            text-decoration: none;
+        }
     </style>
 </head>
 <body id="top">
@@ -179,22 +200,22 @@
 
             toolsGrid.innerHTML = enabledTools.map(tool => {
                 const toolUrl = window.PortfolioFramework.toRelativeUrl(tool.path);
-                const iconHtml = tool.iconImage
+                const hasIconImage = !!tool.iconImage;
+
+                const iconHtml = hasIconImage
                     ? `<img src="${window.PortfolioFramework.toRelativeUrl(tool.iconImage)}" width="48" height="48" alt="${tool.name} Logo" style="border-radius: 8px;">`
-                    : `<i class="${tool.icon || 'im im-wrench'} tool-card-icon" style="color: #f78166;"></i>`;
+                    : `<i class="${tool.icon || 'im im-wrench'} tool-card-icon" style="color: #f78166; margin-bottom: 0;"></i>`;
 
                 const githubRepoHtml = tool.githubUrl
-                    ? `<a href="${tool.githubUrl}" target="_blank" style="color: #8b949e; font-size: 1.3rem; text-decoration: none; display: flex; align-items: center; gap: 0.4rem;">
+                    ? `<a href="${tool.githubUrl}" target="_blank" class="github-repo-badge" title="View Source Code on GitHub">
                         <i class="im im-github"></i> GitHub Repo
                        </a>`
                     : '';
 
-                const topHeader = (tool.iconImage || tool.githubUrl)
-                    ? `<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.2rem;">
-                        ${iconHtml}
-                        ${githubRepoHtml}
-                       </div>`
-                    : iconHtml;
+                const topHeader = `<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.2rem;">
+                    ${iconHtml}
+                    ${githubRepoHtml}
+                   </div>`;
 
                 return `
                     <div class="tool-card">

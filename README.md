@@ -120,6 +120,7 @@ Add one entry to the `tools` array in `portfolio.config.json`:
   "icon": "im im-wrench",
   "category": "Utilities",
   "enabled": true,
+  "githubUrl": "https://github.com/your-username/my-tool",
   "layout": {
     "header": true,
     "sidebar": false,
