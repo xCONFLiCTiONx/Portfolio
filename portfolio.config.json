@@ -87,7 +87,7 @@
       "icon": "im im-shield",
       "category": "Developer Utility",
       "enabled": true,
-      "githubUrl": "",
+      "githubUrl": "https://github.com/xCONFLiCTiONx/Portfolio/blob/main/tools/dev-box/index.html",
       "layout": {
         "header": true,
         "sidebar": false,
@@ -102,7 +102,7 @@
       "icon": "im im-shield",
       "category": "Developer Utility",
       "enabled": true,
-      "githubUrl": "",
+      "githubUrl": "https://github.com/xCONFLiCTiONx/Portfolio/blob/main/tools/warp-test/index.html",
       "layout": {
         "header": true,
         "sidebar": false,
@@ -117,7 +117,7 @@
       "icon": "im im-shield",
       "category": "Developer Utility",
       "enabled": true,
-      "githubUrl": "",
+      "githubUrl": "https://github.com/xCONFLiCTiONx/Portfolio/blob/main/tools/site-grade/index.html",
       "workerUrl": "https://scanner.xconflictionx.cc/scan",
       "layout": {
         "header": true,
@@ -133,7 +133,7 @@
       "icon": "im im-shield",
       "category": "Developer Utility",
       "enabled": true,
-      "githubUrl": "",
+      "githubUrl": "https://github.com/xCONFLiCTiONx/Portfolio/blob/main/tools/seo-generator/index.html",
       "layout": {
         "header": true,
         "sidebar": false,
@@ -148,7 +148,7 @@
       "icon": "im im-shield",
       "category": "Developer Utility",
       "enabled": true,
-      "githubUrl": "",
+      "githubUrl": "https://github.com/xCONFLiCTiONx/Portfolio/blob/main/tools/image-tool/index.html",
       "layout": {
         "header": true,
         "sidebar": false,
