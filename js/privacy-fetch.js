@@ -4,8 +4,6 @@
  */
 
 async function initPrivacy() {
-    console.log('[DEBUG] Privacy: Initializing...');
-
     const SELECTOR_ID = '#policySelector';
     const CONTENT_ID = '#policy-content';
     const selector = $(SELECTOR_ID);
@@ -55,7 +53,6 @@ async function initPrivacy() {
             cache: 'no-cache'
         };
 
-        console.log('[DEBUG] Privacy: Fetching user repositories...');
         const reposURL = `https://api.github.com/users/${username}/repos?sort=updated&per_page=100`;
         const reposResponse = await fetch(reposURL, fetchOptions);
 
