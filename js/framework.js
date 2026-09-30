@@ -248,7 +248,7 @@
 
         if (sidebarEl) {
             if (!sidebarEl.innerHTML.trim()) {
-                const defaultAvatarUrl = toRelativeUrl(config.site.ogImage || 'android-chrome-256x256.png');
+                const defaultAvatarUrl = toRelativeUrl(config.site.ogImage || 'assets/android-chrome-256x256.png');
                 sidebarEl.innerHTML = `
                     <div id="profile-avatar" class="profile-avatar"><img src="${defaultAvatarUrl}" alt="${config.site.name}"></div>
                     <h1 id="profile-name" class="profile-name user-name-js">${config.site.name}</h1>

@@ -10,8 +10,8 @@
     <meta name="theme-color" content="#0b0d10">
     <link rel="manifest" href="../../site.webmanifest">
     <link rel="stylesheet" href="../../css/main.css">
-    <link rel="icon" id="favicon-js" href="../../favicon.ico" type="image/x-icon">
-    <link rel="apple-touch-icon" href="../../apple-touch-icon.png">
+    <link rel="icon" id="favicon-js" href="../../assets/favicon.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
 
     <!-- Open Graph / Social Metadata -->
     <meta property="og:type" content="website">
@@ -354,6 +354,7 @@
                 <button class="tab" data-tool="svgpng">SVG → PNG</button>
                 <button class="tab" data-tool="exticon">Chrome Extension Icons</button>
                 <button class="tab" data-tool="androidicon">Android Icon Generator</button>
+                <button class="tab" data-tool="pwaicon">PWA Icons</button>
                 <button class="tab" data-tool="svgedit">SVG Generator / Editor</button>
             </nav>
 
@@ -571,6 +572,79 @@
                             <textarea id="androidManifestCode" rows="3" readonly spellcheck="false"></textarea>
                             <div class="code-actions">
                                 <button id="androidManifestCopy">Copy Snippet</button><span id="androidManifestCopyStatus" class="copy-status" aria-live="polite"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="pwaicon" class="tool">
+                <div class="grid">
+                    <div class="card">
+                        <h2>PWA Icon Generator</h2>
+                        <label for="pwaFile">Source Image</label>
+                        <input id="pwaFile" type="file" accept="image/*,.svg">
+
+                        <div class="row">
+                            <div>
+                                <label for="pwaDir">Icon Directory</label>
+                                <input id="pwaDir" type="text" value="/icons/">
+                            </div>
+                            <div>
+                                <label for="pwaPrefix">Filename Prefix</label>
+                                <input id="pwaPrefix" type="text" value="icon">
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 14px;">
+                            <label><input id="pwaGenStandard" type="checkbox" checked> Standard PWA Icons (192px, 512px)</label>
+                            <label style="margin-top: 6px;"><input id="pwaGenMaskable" type="checkbox" checked> Maskable Android Icons (192px, 512px)</label>
+                            <label style="margin-top: 6px;"><input id="pwaGenApple" type="checkbox" checked> iOS Touch Icon (180px)</label>
+                            <label style="margin-top: 6px;"><input id="pwaGenFavicon" type="checkbox" checked> Favicons (32px, 16px)</label>
+                        </div>
+
+                        <div style="margin-top: 14px; padding: 12px; background: #121212; border: 1px solid #333; border-radius: 6px;">
+                            <h3 style="margin-top: 0; font-size: 14px; color: #58a6ff;">Background &amp; Padding Settings</h3>
+                            <label for="pwaBgType">Background Style</label>
+                            <select id="pwaBgType">
+                                <option value="transparent">Transparent (where supported)</option>
+                                <option value="color">Solid Color</option>
+                            </select>
+
+                            <div id="pwaBgColorWrap" style="margin-top: 10px; display: none;">
+                                <label for="pwaBgColor">Background Color</label>
+                                <input id="pwaBgColor" type="color" value="#ffffff" style="height: 40px; padding: 2px;">
+                            </div>
+
+                            <label for="pwaPad" style="margin-top: 10px;">Icon Padding / Safe Area: <span id="pwaPadVal">12%</span></label>
+                            <input id="pwaPad" type="range" min="0" max="35" value="12">
+                        </div>
+
+                        <div class="actions">
+                            <button class="primary" id="pwaRun">Generate PWA Icons</button>
+                            <button id="pwaDownload" disabled>Download ZIP</button>
+                        </div>
+                        <div id="pwaInfo" class="stat">Upload an image to generate PWA icons and manifest snippets.</div>
+                        <div class="notice">Generates standard icons, maskable icons with safe-zone padding, iOS icons, and favicons.</div>
+                    </div>
+
+                    <div class="card">
+                        <h2>Generated Previews &amp; Snippets</h2>
+                        <div id="pwaPreview" class="icon-preview" style="margin-bottom: 20px;">Upload an image to preview icons.</div>
+
+                        <div class="code-box">
+                            <div>Web App Manifest `icons` Array JSON</div>
+                            <textarea id="pwaManifestCode" rows="6" readonly spellcheck="false"></textarea>
+                            <div class="code-actions">
+                                <button id="pwaManifestCopy">Copy JSON</button><span id="pwaManifestCopyStatus" class="copy-status" aria-live="polite"></span>
+                            </div>
+                        </div>
+
+                        <div class="code-box" style="margin-top: 16px;">
+                            <div>HTML Head Favicon &amp; Touch Icon Links</div>
+                            <textarea id="pwaHtmlCode" rows="4" readonly spellcheck="false"></textarea>
+                            <div class="code-actions">
+                                <button id="pwaHtmlCopy">Copy HTML</button><span id="pwaHtmlCopyStatus" class="copy-status" aria-live="polite"></span>
                             </div>
                         </div>
                     </div>
@@ -1770,6 +1844,167 @@
         [["androidAdaptiveCopy", "androidAdaptiveXmlCode", "androidAdaptiveCopyStatus"],
          ["androidColorCopy", "androidColorXmlCode", "androidColorCopyStatus"],
          ["androidManifestCopy", "androidManifestCode", "androidManifestCopyStatus"]].forEach(([btnId, textId, statusId]) => {
+            $(`#${btnId}`).addEventListener("click", async () => {
+                const code = $(`#${textId}`).value;
+                try {
+                    if(navigator.clipboard && window.isSecureContext) await navigator.clipboard.writeText(code);
+                    else { $(`#${textId}`).focus(); $(`#${textId}`).select(); document.execCommand("copy"); }
+                    $(`#${statusId}`).textContent = "Copied!";
+                } catch {
+                    $(`#${statusId}`).textContent = "Copy failed.";
+                }
+                setTimeout(() => $(`#${statusId}`).textContent = "", 1500);
+            });
+        });
+
+        // PWA Icon Generator Tool State & Logic
+        state.pwaImage = null;
+        state.pwaZip = null;
+        state.pwaBlobs = [];
+
+        $("#pwaPad").addEventListener("input", () => $("#pwaPadVal").textContent = $("#pwaPad").value + "%");
+        $("#pwaBgType").addEventListener("change", () => {
+            const t = $("#pwaBgType").value;
+            $("#pwaBgColorWrap").style.display = t === "color" ? "block" : "none";
+        });
+
+        $("#pwaFile").addEventListener("change", async e => {
+            const f = e.target.files[0];
+            if(!f) return;
+            try{
+                state.pwaImage = await loadImage(f);
+                state.pwaZip = null;
+                $("#pwaDownload").disabled = true;
+            }catch(err){ alert(err.message); }
+        });
+
+        $("#pwaRun").addEventListener("click", async () => {
+            if(!state.pwaImage) return alert("Choose a source image first.");
+            const dir = $("#pwaDir").value.trim() || "/icons/";
+            const prefix = $("#pwaPrefix").value.trim() || "icon";
+            const genStandard = $("#pwaGenStandard").checked;
+            const genMaskable = $("#pwaGenMaskable").checked;
+            const genApple = $("#pwaGenApple").checked;
+            const genFavicon = $("#pwaGenFavicon").checked;
+            const bgType = $("#pwaBgType").value;
+            const bgColor = $("#pwaBgColor").value;
+            const padPercent = Number($("#pwaPad").value) / 100;
+
+            const files = [];
+            const manifestIcons = [];
+            const htmlLinks = [];
+            const previewContainer = $("#pwaPreview");
+            previewContainer.innerHTML = "";
+            state.pwaBlobs = [];
+
+            const cleanDir = dir.endsWith("/") ? dir : dir + "/";
+            const normalizedDir = cleanDir.startsWith("/") ? cleanDir : "/" + cleanDir;
+
+            try {
+                async function renderIcon(size, isMaskable = false, customPadding = null){
+                    const c = document.createElement("canvas");
+                    c.width = size; c.height = size;
+                    const ctx = c.getContext("2d");
+                    ctx.clearRect(0, 0, size, size);
+
+                    if (bgType === "color" || isMaskable) {
+                        ctx.fillStyle = bgColor;
+                        ctx.fillRect(0, 0, size, size);
+                    }
+
+                    const pad = customPadding !== null ? customPadding : padPercent;
+                    const drawSize = size * (1 - pad * 2);
+                    const offset = size * pad;
+                    ctx.drawImage(state.pwaImage, offset, offset, drawSize, drawSize);
+
+                    return await canvasBlob(c, "image/png");
+                }
+
+                if (genStandard) {
+                    for (const s of [192, 512]) {
+                        const blob = await renderIcon(s, false);
+                        const filename = `${prefix}-${s}.png`;
+                        files.push({ name: filename, data: new Uint8Array(await blob.arrayBuffer()) });
+                        state.pwaBlobs.push({ label: filename, blob, size: s });
+                        manifestIcons.push({
+                            src: normalizedDir + filename,
+                            sizes: `${s}x${s}`,
+                            type: "image/png",
+                            purpose: "any"
+                        });
+                    }
+                }
+
+                if (genMaskable) {
+                    for (const s of [192, 512]) {
+                        const maskablePad = Math.max(padPercent, 0.18);
+                        const blob = await renderIcon(s, true, maskablePad);
+                        const filename = `${prefix}-maskable-${s}.png`;
+                        files.push({ name: filename, data: new Uint8Array(await blob.arrayBuffer()) });
+                        state.pwaBlobs.push({ label: filename, blob, size: s });
+                        manifestIcons.push({
+                            src: normalizedDir + filename,
+                            sizes: `${s}x${s}`,
+                            type: "image/png",
+                            purpose: "maskable"
+                        });
+                    }
+                }
+
+                if (genApple) {
+                    const blob = await renderIcon(180, true);
+                    const filename = `apple-touch-icon.png`;
+                    files.push({ name: filename, data: new Uint8Array(await blob.arrayBuffer()) });
+                    state.pwaBlobs.push({ label: filename, blob, size: 180 });
+                    htmlLinks.push(`<link rel="apple-touch-icon" sizes="180x180" href="${normalizedDir}${filename}">`);
+                }
+
+                if (genFavicon) {
+                    for (const s of [32, 16]) {
+                        const blob = await renderIcon(s, false, 0.05);
+                        const filename = `favicon-${s}.png`;
+                        files.push({ name: filename, data: new Uint8Array(await blob.arrayBuffer()) });
+                        state.pwaBlobs.push({ label: filename, blob, size: s });
+                        htmlLinks.push(`<link rel="icon" type="image/png" sizes="${s}x${s}" href="${normalizedDir}${filename}">`);
+                    }
+                }
+
+                state.pwaZip = createZip(files);
+                $("#pwaDownload").disabled = false;
+                $("#pwaInfo").textContent = `Generated successfully! Total ${files.length} PWA icon files prepared.`;
+
+                if (manifestIcons.length > 0) {
+                    const iconsArraySnippet = `"icons": ` + JSON.stringify(manifestIcons, null, 2);
+                    $("#pwaManifestCode").value = iconsArraySnippet;
+                } else {
+                    $("#pwaManifestCode").value = "/* No standard or maskable icons selected */";
+                }
+
+                $("#pwaHtmlCode").value = htmlLinks.join("\n");
+
+                state.pwaBlobs.forEach(item => {
+                    const wrap = document.createElement("div");
+                    const img = document.createElement("img");
+                    img.src = URL.createObjectURL(item.blob);
+                    img.width = item.size >= 128 ? 64 : item.size;
+                    img.height = item.size >= 128 ? 64 : item.size;
+                    const label = document.createElement("div");
+                    label.style.fontSize = "11px";
+                    label.style.marginTop = "4px";
+                    label.textContent = `${item.label} (${item.size}px)`;
+                    wrap.append(img, label);
+                    previewContainer.appendChild(wrap);
+                });
+
+            } catch (err) {
+                alert("PWA icon generation failed: " + err.message);
+            }
+        });
+
+        $("#pwaDownload").addEventListener("click", () => state.pwaZip && downloadBlob(state.pwaZip, "pwa-icons.zip"));
+
+        [["pwaManifestCopy", "pwaManifestCode", "pwaManifestCopyStatus"],
+         ["pwaHtmlCopy", "pwaHtmlCode", "pwaHtmlCopyStatus"]].forEach(([btnId, textId, statusId]) => {
             $(`#${btnId}`).addEventListener("click", async () => {
                 const code = $(`#${textId}`).value;
                 try {

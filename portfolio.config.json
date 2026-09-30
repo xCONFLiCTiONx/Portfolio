@@ -5,7 +5,7 @@
     "description": "Software Developer Portfolio - Building tools for freedom & productivity.",
     "author": "xCONFLiCTiONx",
     "themeColor": "#0b0d10",
-    "favicon": "favicon.ico",
+    "favicon": "assets/favicon.ico",
     "canonicalBase": "https://xconflictionx.cc",
     "ogImage": "assets/og-image.png"
   },

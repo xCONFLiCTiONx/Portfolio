@@ -186,9 +186,9 @@ function manifest(){
     background_color: c.theme || "#0b0d10",
     orientation: "any",
     icons: [
-      { src: "android-chrome-192x192.png", sizes: "192x192", type: "image/png", purpose: "any maskable" },
-      { src: "android-chrome-512x512.png", sizes: "512x512", type: "image/png", purpose: "any maskable" },
-      { src: c.favicon || "favicon.ico", sizes: "any", type: "image/x-icon" }
+      { src: "assets/android-chrome-192x192.png", sizes: "192x192", type: "image/png", purpose: "any maskable" },
+      { src: "assets/android-chrome-512x512.png", sizes: "512x512", type: "image/png", purpose: "any maskable" },
+      { src: c.favicon || "assets/favicon.ico", sizes: "any", type: "image/x-icon" }
     ]
   };
   return JSON.stringify(o, null, 2) + "\n";
