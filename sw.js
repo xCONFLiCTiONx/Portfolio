@@ -1,9 +1,12 @@
-const CACHE_NAME = 'portfolio-v25';
+const CACHE_NAME = 'portfolio-v26';
 
 const ASSETS = [
   './',
   './index.html',
   './privacy.html',
+  './site.webmanifest',
+  './android-chrome-192x192.png',
+  './android-chrome-512x512.png',
   './css/main.css',
   './css/fonts.css',
   './js/config.js',

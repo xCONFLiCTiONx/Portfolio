@@ -179,12 +179,18 @@ function manifest(){
   const o = {
     name: c.name,
     short_name: c.name,
+    description: c.desc,
     start_url: "/",
     display: "standalone",
-    theme_color: c.theme,
-    background_color: c.theme
+    theme_color: c.theme || "#0b0d10",
+    background_color: c.theme || "#0b0d10",
+    orientation: "any",
+    icons: [
+      { src: "android-chrome-192x192.png", sizes: "192x192", type: "image/png", purpose: "any maskable" },
+      { src: "android-chrome-512x512.png", sizes: "512x512", type: "image/png", purpose: "any maskable" },
+      { src: c.favicon || "favicon.ico", sizes: "any", type: "image/x-icon" }
+    ]
   };
-  if(c.favicon) o.icons = [{ src: c.favicon, sizes: "any", type: "image/x-icon" }];
   return JSON.stringify(o, null, 2) + "\n";
 }
 
