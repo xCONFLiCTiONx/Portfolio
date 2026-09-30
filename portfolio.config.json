@@ -21,7 +21,7 @@
     },
     {
       "label": "About",
-      "path": "about.html",
+      "path": "about/",
       "icon": "im im-user-male"
     },
     {
@@ -31,12 +31,12 @@
     },
     {
       "label": "Privacy",
-      "path": "privacy.html",
+      "path": "privacy/",
       "icon": "im im-shield"
     },
     {
       "label": "Contact",
-      "path": "contact.html",
+      "path": "contact/",
       "icon": "im im-paperplane"
     }
   ],

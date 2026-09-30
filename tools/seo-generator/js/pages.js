@@ -40,9 +40,9 @@ function addPage(){
 function addCommon(){
   const defaults = [
     { path: "/", changefreq: "weekly", priority: "1.0" },
-    { path: "/about.html", changefreq: "monthly", priority: "0.8" },
-    { path: "/contact.html", changefreq: "monthly", priority: "0.8" },
-    { path: "/privacy.html", changefreq: "monthly", priority: "0.8" },
+    { path: "/about/", changefreq: "monthly", priority: "0.8" },
+    { path: "/contact/", changefreq: "monthly", priority: "0.8" },
+    { path: "/privacy/", changefreq: "monthly", priority: "0.8" },
     { path: "/tools/", changefreq: "monthly", priority: "0.8" },
     { path: "/tools/allow-copy-paste.html", changefreq: "monthly", priority: "0.5" },
     { path: "/tools/dev-box.html", changefreq: "monthly", priority: "0.5" },

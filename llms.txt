@@ -7,9 +7,9 @@ Website: https://xconflictionx.cc
 ## Pages
 
 - [/](https://xconflictionx.cc/)
-- [/about.html](https://xconflictionx.cc/about.html)
-- [/contact.html](https://xconflictionx.cc/contact.html)
-- [/privacy.html](https://xconflictionx.cc/privacy.html)
+- [/about/](https://xconflictionx.cc/about/)
+- [/contact/](https://xconflictionx.cc/contact/)
+- [/privacy/](https://xconflictionx.cc/privacy/)
 - [/tools](https://xconflictionx.cc/tools)
 - [/tools/allow-copy-paste](https://xconflictionx.cc/tools/allow-copy-paste)
 - [/tools/dev-box](https://xconflictionx.cc/tools/dev-box)

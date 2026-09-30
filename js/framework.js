@@ -108,10 +108,10 @@
                 },
                 navigation: [
                     { label: "Overview", path: "index.html", icon: "im im-home" },
-                    { label: "About", path: "about.html", icon: "im im-user-male" },
+                    { label: "About", path: "about/", icon: "im im-user-male" },
                     { label: "Tools", path: "tools/index.html", icon: "im im-tools" },
-                    { label: "Privacy", path: "privacy.html", icon: "im im-shield" },
-                    { label: "Contact", path: "contact.html", icon: "im im-paperplane" }
+                    { label: "Privacy", path: "privacy/", icon: "im im-shield" },
+                    { label: "Contact", path: "contact/", icon: "im im-paperplane" }
                 ],
                 socials: [
                     { name: "GitHub", url: "https://github.com/xCONFLiCTiONx", icon: "im im-github" }

@@ -5,18 +5,18 @@
     <title class="user-name-title-js">About | xCONFLiCTiONx</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" id="meta-description-js" content="Professional bio, development philosophy, and background of xCONFLiCTiONx.">
-    <link rel="canonical" href="https://xconflictionx.cc/about.html" />
+    <link rel="canonical" href="https://xconflictionx.cc/about/" />
     <meta name="theme-color" content="#0b0d10">
-    <link rel="manifest" href="site.webmanifest">
-    <link rel="stylesheet" href="css/main.css">
-    <link rel="icon" id="favicon-js" href="assets/favicon.ico" type="image/x-icon">
-    <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+    <link rel="manifest" href="../site.webmanifest">
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="icon" id="favicon-js" href="../assets/favicon.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
 
     <!-- Open Graph / Social Metadata -->
     <meta property="og:type" content="website">
     <meta property="og:title" content="About | xCONFLiCTiONx">
     <meta property="og:description" content="Professional bio, development philosophy, and background of xCONFLiCTiONx.">
-    <meta property="og:url" content="https://xconflictionx.cc/about.html">
+    <meta property="og:url" content="https://xconflictionx.cc/about/">
     <meta property="og:site_name" content="xCONFLiCTiONx">
     <meta property="og:image" content="https://xconflictionx.cc/assets/og-image.png">
 
@@ -31,8 +31,8 @@
     {
       "@context": "https://schema.org",
       "@type": "WebPage",
-      "@id": "https://xconflictionx.cc/about.html#webpage",
-      "url": "https://xconflictionx.cc/about.html",
+      "@id": "https://xconflictionx.cc/about/#webpage",
+      "url": "https://xconflictionx.cc/about/",
       "name": "About | xCONFLiCTiONx",
       "inLanguage": "en",
       "description": "Professional bio, development philosophy, and background of xCONFLiCTiONx.",
@@ -58,7 +58,7 @@
     <header class="site-header">
         <nav class="nav-content">
             <div class="nav-brand">
-                <a href="index.html">
+                <a href="../index.html">
                     <span id="header-avatar" class="nav-logo"></span>
                     <span class="user-name-js">Loading...</span>
                 </a>
@@ -67,11 +67,11 @@
                 <i class="im im-menu"></i>
             </button>
             <ul class="nav-links" id="navLinks">
-                <li><a href="index.html"><i class="im im-home"></i> Overview</a></li>
-                <li><a href="about.html" class="active"><i class="im im-user-male"></i> About</a></li>
-                <li><a href="tools/index.html"><i class="im im-tools"></i> Tools</a></li>
-                <li><a href="privacy.html"><i class="im im-shield"></i> Privacy</a></li>
-                <li><a href="contact.html"><i class="im im-paperplane"></i> Contact</a></li>
+                <li><a href="../index.html"><i class="im im-home"></i> Overview</a></li>
+                <li><a href="./" class="active"><i class="im im-user-male"></i> About</a></li>
+                <li><a href="../tools/"><i class="im im-tools"></i> Tools</a></li>
+                <li><a href="../privacy/"><i class="im im-shield"></i> Privacy</a></li>
+                <li><a href="../contact/"><i class="im im-paperplane"></i> Contact</a></li>
             </ul>
         </nav>
     </header>
@@ -121,14 +121,14 @@
         </div>
     </footer>
 
-    <script src="js/framework.js"></script>
-    <script src="js/jquery-3.2.1.min.js"></script>
-    <script src="js/github-fetch.js?v=25"></script>
+    <script src="../js/framework.js"></script>
+    <script src="../js/jquery-3.2.1.min.js"></script>
+    <script src="../js/github-fetch.js?v=25"></script>
     <script>
         // Register Service Worker for PWA (Only on HTTP/HTTPS)
         if ('serviceWorker' in navigator && (window.location.protocol === 'http:' || window.location.protocol === 'https:')) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW registration failed:', err));
+                navigator.serviceWorker.register('../sw.js').catch(err => console.log('SW registration failed:', err));
             });
         }
     </script>

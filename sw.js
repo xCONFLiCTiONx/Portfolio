@@ -3,7 +3,9 @@ const CACHE_NAME = 'portfolio-v26';
 const ASSETS = [
   './',
   './index.html',
-  './privacy.html',
+  './about/',
+  './contact/',
+  './privacy/',
   './site.webmanifest',
   './assets/android-chrome-192x192.png',
   './assets/android-chrome-512x512.png',

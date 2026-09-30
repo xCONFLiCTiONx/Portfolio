@@ -5,18 +5,18 @@
     <title class="user-name-title-js">Privacy Policy | xCONFLiCTiONx</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" id="meta-description-js" content="Privacy policy and data handling transparency for xCONFLiCTiONx software and web utilities.">
-    <link rel="canonical" href="https://xconflictionx.cc/privacy.html" />
+    <link rel="canonical" href="https://xconflictionx.cc/privacy/" />
     <meta name="theme-color" content="#0b0d10">
-    <link rel="manifest" href="site.webmanifest">
-    <link rel="stylesheet" href="css/main.css">
-    <link rel="icon" id="favicon-js" href="assets/favicon.ico" type="image/x-icon">
-    <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+    <link rel="manifest" href="../site.webmanifest">
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="icon" id="favicon-js" href="../assets/favicon.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
 
     <!-- Open Graph / Social Metadata -->
     <meta property="og:type" content="website">
     <meta property="og:title" content="Privacy Policy | xCONFLiCTiONx">
     <meta property="og:description" content="Privacy policy and data handling transparency for xCONFLiCTiONx software and web utilities.">
-    <meta property="og:url" content="https://xconflictionx.cc/privacy.html">
+    <meta property="og:url" content="https://xconflictionx.cc/privacy/">
     <meta property="og:site_name" content="xCONFLiCTiONx">
     <meta property="og:image" content="https://xconflictionx.cc/assets/og-image.png">
 
@@ -31,8 +31,8 @@
     {
       "@context": "https://schema.org",
       "@type": "WebPage",
-      "@id": "https://xconflictionx.cc/privacy.html#webpage",
-      "url": "https://xconflictionx.cc/privacy.html",
+      "@id": "https://xconflictionx.cc/privacy/#webpage",
+      "url": "https://xconflictionx.cc/privacy/",
       "name": "Privacy Policy | xCONFLiCTiONx",
       "inLanguage": "en",
       "description": "Privacy policy and data handling transparency for xCONFLiCTiONx software and web utilities.",
@@ -114,7 +114,7 @@
     <header class="site-header">
         <nav class="nav-content">
             <div class="nav-brand">
-                <a href="index.html">
+                <a href="../index.html">
                     <span id="header-avatar" class="nav-logo"></span>
                     <span class="user-name-js">Loading...</span>
                 </a>
@@ -123,40 +123,52 @@
                 <i class="im im-menu"></i>
             </button>
             <ul class="nav-links" id="navLinks">
-                <li><a href="index.html"><i class="im im-home"></i> Overview</a></li>
-                <li><a href="about.html"><i class="im im-user-male"></i> About</a></li>
-                <li><a href="tools/index.html"><i class="im im-tools"></i> Tools</a></li>
-                <li><a href="privacy.html" class="active"><i class="im im-shield"></i> Privacy</a></li>
-                <li><a href="contact.html"><i class="im im-paperplane"></i> Contact</a></li>
+                <li><a href="../index.html"><i class="im im-home"></i> Overview</a></li>
+                <li><a href="../about/"><i class="im im-user-male"></i> About</a></li>
+                <li><a href="../tools/"><i class="im im-tools"></i> Tools</a></li>
+                <li><a href="./" class="active"><i class="im im-shield"></i> Privacy</a></li>
+                <li><a href="../contact/"><i class="im im-paperplane"></i> Contact</a></li>
             </ul>
 
         </nav>
     </header>
 
     <main class="container">
-        
+
         <aside class="sidebar">
             <h1 class="profile-name">Legal</h1>
             <span class="profile-handle">Privacy & Terms</span>
+
             <p class="profile-bio">
-                Detailed information on how my applications handle your data. Transparency is a core value of my development process.
+                Transparent overview of privacy practices and data handling for all xCONFLiCTiONx applications and utilities.
             </p>
+
+            <ul class="profile-metadata">
+                <li>
+                    <i class="im im-calendar"></i>
+                    <span>Last Updated: <strong style="color: #f0f6fc;">2026</strong></span>
+                </li>
+                <li>
+                    <i class="im im-shield-check"></i>
+                    <span>Zero Telemetry Policy</span>
+                </li>
+            </ul>
         </aside>
 
         <section class="main-content">
-            <h2 class="section-title">Privacy Policy</h2>
-
             <div class="policy-header">
-                <select id="policySelector" class="policy-select">
-                    <option value="" disabled selected>-- Loading Policies... --</option>
+                <select id="policy-select" class="policy-select">
+                    <option value="" disabled selected>Select a policy or document...</option>
                 </select>
-                <button id="copyPolicyLink" class="copy-link-btn" title="Copy direct link to this policy">
-                    <i class="im im-link"></i> Copy Link
+                <button id="copyLinkBtn" class="copy-link-btn" title="Copy direct link">
+                    <i class="im im-link"></i> <span id="copyText">Copy Link</span>
                 </button>
             </div>
 
-            <div id="policy-content" class="policy-body">
-                <!-- Markdown content will be rendered here -->
+            <div id="policy-body" class="policy-body">
+                <div class="repo-loader">
+                    <i class="im im-spinner im-spin"></i> Loading privacy policy...
+                </div>
             </div>
         </section>
 
@@ -164,22 +176,19 @@
 
     <footer class="site-footer">
         <div class="container" style="display: block;">
-            <p>&copy; 2026 <span class="user-name-js"></span>. All policies are as open as the source code.</p>
+            <p>&copy; 2026 <span class="user-name-js"></span>. Privacy is a fundamental right.</p>
         </div>
     </footer>
 
-    <script src="js/framework.js"></script>
-    <script src="js/jquery-3.2.1.min.js"></script>
-    <script src="js/github-fetch.js?v=25"></script>
-    <script src="js/privacy-fetch.js?v=25"></script>
+    <script src="../js/framework.js"></script>
+    <script src="../js/jquery-3.2.1.min.js"></script>
+    <script src="../js/privacy-fetch.js?v=25"></script>
     <script>
-        // Register Service Worker for PWA (Only on HTTP/HTTPS)
         if ('serviceWorker' in navigator && (window.location.protocol === 'http:' || window.location.protocol === 'https:')) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW registration failed:', err));
+                navigator.serviceWorker.register('../sw.js').catch(err => console.log('SW registration failed:', err));
             });
         }
     </script>
-
 </body>
 </html>

@@ -6,17 +6,17 @@
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://xconflictionx.cc/about.html</loc>
+    <loc>https://xconflictionx.cc/about/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://xconflictionx.cc/contact.html</loc>
+    <loc>https://xconflictionx.cc/contact/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://xconflictionx.cc/privacy.html</loc>
+    <loc>https://xconflictionx.cc/privacy/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
