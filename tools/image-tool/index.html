@@ -1,378 +1,408 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="utf-8">
-    <title>Example Tool — Text Inspector & Counter | Portfolio</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Example tool demonstrating the portfolio tool framework architecture.">
-    <meta name="portfolio-tool-id" content="example-tool">
+    <title>Image Tool — Crop, Convert &amp; Icon Studio | xCONFLiCTiONx</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" id="meta-description-js" content="Crop, resize, convert formats (PNG, JPG, WebP, SVG, ICO), and generate Chrome extension icons locally in your browser.">
+    <meta name="portfolio-tool-id" content="image-tool">
+    <link rel="canonical" href="https://xconflictionx.cc/tools/image-tool/" />
+    <meta name="theme-color" content="#0b0d10">
     <link rel="stylesheet" href="../../css/main.css">
     <link rel="icon" id="favicon-js" href="../../favicon.ico" type="image/x-icon">
+
+    <!-- Open Graph / Social Metadata -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Image Tool — Crop, Convert &amp; Icon Studio | xCONFLiCTiONx">
+    <meta property="og:description" content="Crop, resize, convert formats (PNG, JPG, WebP, SVG, ICO), and generate Chrome extension icons locally in your browser.">
+    <meta property="og:url" content="https://xconflictionx.cc/tools/image-tool/">
+    <meta property="og:site_name" content="xCONFLiCTiONx">
+    <meta property="og:image" content="https://xconflictionx.cc/assets/og-image.png">
+
+    <!-- X / Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Image Tool — Crop, Convert &amp; Icon Studio | xCONFLiCTiONx">
+    <meta name="twitter:description" content="Crop, resize, convert formats (PNG, JPG, WebP, SVG, ICO), and generate Chrome extension icons locally in your browser.">
+    <meta name="twitter:image" content="https://xconflictionx.cc/assets/og-image.png">
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "@id": "https://xconflictionx.cc/tools/image-tool/#webpage",
+      "url": "https://xconflictionx.cc/tools/image-tool/",
+      "name": "Image Tool — Crop, Convert & Icon Studio | xCONFLiCTiONx",
+      "inLanguage": "en",
+      "description": "Crop, resize, convert formats (PNG, JPG, WebP, SVG, ICO), and generate Chrome extension icons locally in your browser.",
+      "author": {
+        "@type": "Person",
+        "@id": "https://xconflictionx.cc/#person",
+        "name": "xCONFLiCTiONx"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "@id": "https://xconflictionx.cc/#organization",
+        "name": "xCONFLiCTiONx",
+        "url": "https://xconflictionx.cc/",
+        "sameAs": [
+          "https://github.com/xCONFLiCTiONx"
+        ]
+      }
+    }
+    </script>
+    <style>
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: #111;
+            color: #eee
+        }
+
+        .img-header {
+            padding: 24px;
+            text-align: center;
+            border-bottom: 1px solid #333
+        }
+
+        .img-header h1 {
+            margin: 0 0 8px
+        }
+
+        .img-header p {
+            margin: 0;
+            color: #aaa
+        }
+
+        .tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 24px
+        }
+
+        .tabs button {
+            padding: 10px 14px;
+            border: 1px solid #444;
+            border-radius: 6px;
+            background: #1d1d1d;
+            color: #eee;
+            cursor: pointer
+        }
+
+        .tabs button.active {
+            background: #fff;
+            color: #111
+        }
+
+        .tool {
+            display: none
+        }
+
+        .tool.active {
+            display: block
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            gap: 20px
+        }
+
+        .card {
+            padding: 20px;
+            border: 1px solid #333;
+            border-radius: 10px;
+            background: #181818
+        }
+
+        .card h2 {
+            margin-top: 0
+        }
+
+        label {
+            display: block;
+            margin: 14px 0 6px;
+            color: #ccc
+        }
+
+        input,
+        select,
+        textarea,
+        button {
+            font: inherit
+        }
+
+        input[type=file],
+        input[type=number],
+        input[type=text],
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #444;
+            border-radius: 6px;
+            background: #101010;
+            color: #eee
+        }
+
+        input[type=range] {
+            width: 100%
+        }
+
+        input[type=color] {
+            width: 60px;
+            height: 40px
+        }
+
+        textarea {
+            resize: vertical;
+            font-family: Consolas, monospace
+        }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 18px
+        }
+
+        button {
+            padding: 10px 14px;
+            border: 1px solid #444;
+            border-radius: 6px;
+            background: #222;
+            color: #eee;
+            cursor: pointer
+        }
+
+        button:hover:not(:disabled) {
+            background: #333
+        }
+
+        button.primary {
+            background: #fff;
+            color: #111
+        }
+
+        button:disabled {
+            opacity: .45;
+            cursor: not-allowed
+        }
+
+        .stat {
+            margin-top: 14px;
+            padding: 10px;
+            border-radius: 6px;
+            background: #101010;
+            color: #aaa
+        }
+
+        .notice {
+            margin-top: 14px;
+            color: #999;
+            line-height: 1.5
+        }
+
+        .preview {
+            min-height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            border: 1px dashed #444;
+            border-radius: 8px;
+            background: linear-gradient(45deg, #202020 25%, transparent 25%), linear-gradient(-45deg, #202020 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #202020 75%), linear-gradient(-45deg, transparent 75%, #202020 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0
+        }
+
+        .preview img,
+        .preview canvas {
+            max-width: 100%;
+            max-height: 500px
+        }
+
+        .icon-preview {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 20px;
+            min-height: 200px
+        }
+
+        .icon-preview div {
+            text-align: center
+        }
+
+        .icon-preview img {
+            display: block;
+            margin: 0 auto 6px
+        }
+
+        .code-box {
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid #333
+        }
+
+        .code-box textarea {
+            margin-top: 12px;
+            min-height: 180px;
+            line-height: 1.5
+        }
+
+        .code-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px
+        }
+
+        .copy-status {
+            color: #999
+        }
+
+        @media(max-width:800px) {
+            .grid {
+                grid-template-columns: 1fr
+            }
+        }
+    </style>
 </head>
 
-<body id="top" data-tool-id="example-tool">
+<body id="top" data-tool-id="image-tool">
 
     <main class="container">
-
-        <!-- Sidebar (Optional - dynamically rendered based on portfolio.config.json) -->
         <aside class="sidebar profile-sidebar"></aside>
 
-        <!-- Tool Main Content -->
-
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Image Manipulator</title>
-            <style>
-                * {
-                    box-sizing: border-box
-                }
-
-                body {
-                    margin: 0;
-                    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-                    background: #111;
-                    color: #eee
-                }
-
-                header {
-                    padding: 24px;
-                    text-align: center;
-                    border-bottom: 1px solid #333
-                }
-
-                header h1 {
-                    margin: 0 0 8px
-                }
-
-                header p {
-                    margin: 0;
-                    color: #aaa
-                }
-
-                main {
-                    max-width: 1200px;
-                    margin: auto;
-                    padding: 24px
-                }
-
-                .tabs {
-                    display: flex;
-                    flex-wrap: wrap;
-                    gap: 8px;
-                    margin-bottom: 24px
-                }
-
-                .tabs button {
-                    padding: 10px 14px;
-                    border: 1px solid #444;
-                    border-radius: 6px;
-                    background: #1d1d1d;
-                    color: #eee;
-                    cursor: pointer
-                }
-
-                .tabs button.active {
-                    background: #fff;
-                    color: #111
-                }
-
-                .tool {
-                    display: none
-                }
-
-                .tool.active {
-                    display: block
-                }
-
-                .grid {
-                    display: grid;
-                    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-                    gap: 20px
-                }
-
-                .card {
-                    padding: 20px;
-                    border: 1px solid #333;
-                    border-radius: 10px;
-                    background: #181818
-                }
-
-                .card h2 {
-                    margin-top: 0
-                }
-
-                label {
-                    display: block;
-                    margin: 14px 0 6px;
-                    color: #ccc
-                }
-
-                input,
-                select,
-                textarea,
-                button {
-                    font: inherit
-                }
-
-                input[type=file],
-                input[type=number],
-                input[type=text],
-                select,
-                textarea {
-                    width: 100%;
-                    padding: 10px;
-                    border: 1px solid #444;
-                    border-radius: 6px;
-                    background: #101010;
-                    color: #eee
-                }
-
-                input[type=range] {
-                    width: 100%
-                }
-
-                input[type=color] {
-                    width: 60px;
-                    height: 40px
-                }
-
-                textarea {
-                    resize: vertical;
-                    font-family: Consolas, monospace
-                }
-
-                .actions {
-                    display: flex;
-                    flex-wrap: wrap;
-                    gap: 10px;
-                    margin-top: 18px
-                }
-
-                button {
-                    padding: 10px 14px;
-                    border: 1px solid #444;
-                    border-radius: 6px;
-                    background: #222;
-                    color: #eee;
-                    cursor: pointer
-                }
-
-                button:hover:not(:disabled) {
-                    background: #333
-                }
-
-                button.primary {
-                    background: #fff;
-                    color: #111
-                }
-
-                button:disabled {
-                    opacity: .45;
-                    cursor: not-allowed
-                }
-
-                .stat {
-                    margin-top: 14px;
-                    padding: 10px;
-                    border-radius: 6px;
-                    background: #101010;
-                    color: #aaa
-                }
-
-                .notice {
-                    margin-top: 14px;
-                    color: #999;
-                    line-height: 1.5
-                }
-
-                .preview {
-                    min-height: 300px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    padding: 16px;
-                    border: 1px dashed #444;
-                    border-radius: 8px;
-                    background: linear-gradient(45deg, #202020 25%, transparent 25%), linear-gradient(-45deg, #202020 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #202020 75%), linear-gradient(-45deg, transparent 75%, #202020 75%);
-                    background-size: 20px 20px;
-                    background-position: 0 0, 0 10px, 10px -10px, -10px 0
-                }
-
-                .preview img,
-                .preview canvas {
-                    max-width: 100%;
-                    max-height: 500px
-                }
-
-                .icon-preview {
-                    display: flex;
-                    flex-wrap: wrap;
-                    align-items: center;
-                    gap: 20px;
-                    min-height: 200px
-                }
-
-                .icon-preview div {
-                    text-align: center
-                }
-
-                .icon-preview img {
-                    display: block;
-                    margin: 0 auto 6px
-                }
-
-                .code-box {
-                    margin-top: 24px;
-                    padding-top: 20px;
-                    border-top: 1px solid #333
-                }
-
-                .code-box textarea {
-                    margin-top: 12px;
-                    min-height: 180px;
-                    line-height: 1.5
-                }
-
-                .code-actions {
-                    display: flex;
-                    align-items: center;
-                    gap: 10px;
-                    margin-top: 10px
-                }
-
-                .copy-status {
-                    color: #999
-                }
-
-                @media(max-width:800px) {
-                    .grid {
-                        grid-template-columns: 1fr
-                    }
-                }
-            </style>
-        </head>
-
-        <body>
-            <header>
+        <section class="main-content">
+            <div class="img-header">
                 <h1>Image Manipulator</h1>
                 <p>Crop, resize, convert, generate icons, and edit SVG graphics entirely in your browser.</p>
-            </header>
-            <main>
-                <nav class="tabs">
-                    <button class="tab active" data-tool="crop">Crop &amp; Resize</button>
-                    <button class="tab" data-tool="ico">PNG → ICO</button>
-                    <button class="tab" data-tool="svgpng">SVG → PNG</button>
-                    <button class="tab" data-tool="exticon">Chrome Extension Icons</button>
-                    <button class="tab" data-tool="svgedit">SVG Generator / Editor</button>
-                </nav>
-                <section id="crop" class="tool active">
-                    <div class="grid">
-                        <div class="card">
-                            <h2>Crop &amp; Resize</h2>
-                            <label for="cropFile">Image</label><input id="cropFile" type="file" accept="image/*"><label for="cw">Target width</label><input id="cw" type="number" value="1200" min="1"><label for="ch">Target height</label><input id="ch" type="number" value="630" min="1"><label><input id="centerCrop" type="checkbox" checked> Center crop automatically</label><label for="cropFormat">Output format</label><select id="cropFormat"><option value="image/png">PNG</option><option value="image/jpeg">JPEG</option><option value="image/webp">WebP</option></select><label for="quality">Quality: <span id="qv">92%</span></label><input id="quality" type="range" min="1" max="100" value="92">
-                            <div class="actions">
-                                <button class="primary" id="cropRun">Crop &amp; Resize</button><button id="cropDownload" disabled>Download</button>
-                            </div>
-                            <div id="cropInfo" class="stat">No image loaded.</div>
+            </div>
+
+            <nav class="tabs" style="margin-top: 20px;">
+                <button class="tab active" data-tool="crop">Crop &amp; Resize</button>
+                <button class="tab" data-tool="ico">PNG → ICO</button>
+                <button class="tab" data-tool="svgpng">SVG → PNG</button>
+                <button class="tab" data-tool="exticon">Chrome Extension Icons</button>
+                <button class="tab" data-tool="svgedit">SVG Generator / Editor</button>
+            </nav>
+
+            <section id="crop" class="tool active">
+                <div class="grid">
+                    <div class="card">
+                        <h2>Crop &amp; Resize</h2>
+                        <label for="cropFile">Image</label><input id="cropFile" type="file" accept="image/*"><label for="cw">Target width</label><input id="cw" type="number" value="1200" min="1"><label for="ch">Target height</label><input id="ch" type="number" value="630" min="1"><label><input id="centerCrop" type="checkbox" checked> Center crop automatically</label><label for="cropFormat">Output format</label><select id="cropFormat"><option value="image/png">PNG</option><option value="image/jpeg">JPEG</option><option value="image/webp">WebP</option></select><label for="quality">Quality: <span id="qv">92%</span></label><input id="quality" type="range" min="1" max="100" value="92">
+                        <div class="actions">
+                            <button class="primary" id="cropRun">Crop &amp; Resize</button><button id="cropDownload" disabled>Download</button>
                         </div>
-                        <div class="card">
-                            <h2>Preview</h2>
-                            <div class="preview" id="cropPreview">Upload an image to preview it here.</div>
-                        </div>
+                        <div id="cropInfo" class="stat">No image loaded.</div>
                     </div>
-                </section>
-                <section id="ico" class="tool">
-                    <div class="grid">
-                        <div class="card">
-                            <h2>PNG → ICO</h2>
-                            <label for="icoFile">Source image</label><input id="icoFile" type="file" accept="image/png,image/*"><label for="icoSizes">Icon sizes</label><input id="icoSizes" type="text" value="16,32,48,64,128,256">
-                            <div class="actions">
-                                <button class="primary" id="icoRun">Generate All Icons</button>
-                            </div>
-                            <div id="icoInfo" class="stat">No package generated.</div>
-                            <div class="notice">Generates one PNG for every requested size and one combined ICO
-                                containing every
-                                requested size. The ZIP contains all PNG files plus the ICO.</div>
-                        </div>
-                        <div class="card">
-                            <h2>Preview</h2>
-                            <div class="preview"><img id="icoPreview" hidden alt="Icon preview"></div>
-                        </div>
+                    <div class="card">
+                        <h2>Preview</h2>
+                        <div class="preview" id="cropPreview">Upload an image to preview it here.</div>
                     </div>
-                </section>
-                <section id="svgpng" class="tool">
-                    <div class="grid">
-                        <div class="card">
-                            <h2>SVG → PNG</h2>
-                            <label for="svgFile">SVG file</label><input id="svgFile" type="file" accept=".svg,image/svg+xml"><label for="sw">Output width</label><input id="sw" type="number" value="1200" min="1"><label for="sh">Output height</label><input id="sh" type="number" value="630" min="1">
-                            <div class="actions">
-                                <button class="primary" id="svgRun">Convert to PNG</button><button id="svgDownload" disabled>Download</button>
-                            </div>
-                            <div id="svgInfo" class="stat">No SVG loaded.</div>
-                            <div class="notice">The PNG uses the SVG's native dimensions and preserves its original
-                                appearance
-                                and transparency.</div>
+                </div>
+            </section>
+
+            <section id="ico" class="tool">
+                <div class="grid">
+                    <div class="card">
+                        <h2>PNG → ICO</h2>
+                        <label for="icoFile">Source image</label><input id="icoFile" type="file" accept="image/png,image/*"><label for="icoSizes">Icon sizes</label><input id="icoSizes" type="text" value="16,32,48,64,128,256">
+                        <div class="actions">
+                            <button class="primary" id="icoRun">Generate All Icons</button>
                         </div>
-                        <div class="card">
-                            <h2>Preview</h2>
-                            <div class="preview" id="svgPreview">Choose an SVG.</div>
-                        </div>
+                        <div id="icoInfo" class="stat">No package generated.</div>
+                        <div class="notice">Generates one PNG for every requested size and one combined ICO containing every requested size. The ZIP contains all PNG files plus the ICO.</div>
                     </div>
-                </section>
-                <section id="exticon" class="tool">
-                    <div class="grid">
-                        <div class="card">
-                            <h2>Chrome Extension Icon Generator</h2>
-                            <label for="extFile">Source image</label><input id="extFile" type="file" accept="image/*"><label for="extShape">Icon shape</label><select id="extShape"><option value="square">Square</option><option value="rounded">Rounded square</option><option value="circle">Circle</option></select><label for="extPad">Padding: <span id="padVal">8%</span></label><input id="extPad" type="range" min="0" max="30" value="8">
-                            <div class="actions">
-                                <button class="primary" id="extRun">Generate Icons</button><button id="extDownload" disabled>Download ZIP</button>
-                            </div>
-                            <div class="notice">Creates icon128.png, icon16.png, icon32.png, and icon48.png. All four
-                                icons are
-                                packaged into one ZIP file.</div>
+                    <div class="card">
+                        <h2>Preview</h2>
+                        <div class="preview"><img id="icoPreview" hidden alt="Icon preview"></div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="svgpng" class="tool">
+                <div class="grid">
+                    <div class="card">
+                        <h2>SVG → PNG</h2>
+                        <label for="svgFile">SVG file</label><input id="svgFile" type="file" accept=".svg,image/svg+xml"><label for="sw">Output width</label><input id="sw" type="number" value="1200" min="1"><label for="sh">Output height</label><input id="sh" type="number" value="630" min="1">
+                        <div class="actions">
+                            <button class="primary" id="svgRun">Convert to PNG</button><button id="svgDownload" disabled>Download</button>
                         </div>
-                        <div class="card">
-                            <h2>Generated Icons</h2>
-                            <div id="extPreview" class="icon-preview"></div>
-                            <div class="code-box">
-                                <div>Copy this code into your manifest.json file.</div>
-                                <div class="notice">After putting the icons folder into your project.</div><textarea id="manifestCode" rows="8" readonly spellcheck="false">        "icons": {
-                  "16": "icons/icon16.png",
-                  "32": "icons/icon32.png",
-                  "48": "icons/icon48.png",
-                  "128": "icons/icon128.png"
-                },</textarea>
-                                <div class="code-actions">
-                                    <button id="manifestCopy">Copy Code</button><span id="manifestCopyStatus" class="copy-status" aria-live="polite"></span>
-                                </div>
+                        <div id="svgInfo" class="stat">No SVG loaded.</div>
+                        <div class="notice">The PNG uses the SVG's native dimensions and preserves its original appearance and transparency.</div>
+                    </div>
+                    <div class="card">
+                        <h2>Preview</h2>
+                        <div class="preview" id="svgPreview">Choose an SVG.</div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="exticon" class="tool">
+                <div class="grid">
+                    <div class="card">
+                        <h2>Chrome Extension Icon Generator</h2>
+                        <label for="extFile">Source image</label><input id="extFile" type="file" accept="image/*"><label for="extShape">Icon shape</label><select id="extShape"><option value="square">Square</option><option value="rounded">Rounded square</option><option value="circle">Circle</option></select><label for="extPad">Padding: <span id="padVal">8%</span></label><input id="extPad" type="range" min="0" max="30" value="8">
+                        <div class="actions">
+                            <button class="primary" id="extRun">Generate Icons</button><button id="extDownload" disabled>Download ZIP</button>
+                        </div>
+                        <div class="notice">Creates icon128.png, icon16.png, icon32.png, and icon48.png. All four icons are packaged into one ZIP file.</div>
+                    </div>
+                    <div class="card">
+                        <h2>Generated Icons</h2>
+                        <div id="extPreview" class="icon-preview"></div>
+                        <div class="code-box">
+                            <div>Copy this code into your manifest.json file.</div>
+                            <div class="notice">After putting the icons folder into your project.</div><textarea id="manifestCode" rows="8" readonly spellcheck="false">        "icons": {
+              "16": "icons/icon16.png",
+              "32": "icons/icon32.png",
+              "48": "icons/icon48.png",
+              "128": "icons/icon128.png"
+            },</textarea>
+                            <div class="code-actions">
+                                <button id="manifestCopy">Copy Code</button><span id="manifestCopyStatus" class="copy-status" aria-live="polite"></span>
                             </div>
                         </div>
                     </div>
-                </section>
-                <section id="svgedit" class="tool">
-                    <div class="grid">
-                        <div class="card">
-                            <h2>SVG Generator / Editor</h2>
-                            <label for="ew">Canvas width</label><input id="ew" type="number" value="512" min="1"><label for="eh">Canvas height</label><input id="eh" type="number" value="512" min="1"><label for="svgCode">SVG markup</label><textarea id="svgCode" rows="18"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-        <rect width="512" height="512" rx="72" fill="#5b42e8"/>
-        <circle cx="256" cy="220" r="110" fill="#fff"/>
-        <path d="M120 390 Q256 300 392 390" fill="none" stroke="#fff" stroke-width="28" stroke-linecap="round"/>
-        </svg></textarea>
-                            <div class="actions">
-                                <button class="primary" id="svgUpdate">Update Preview</button><button id="svgSave">Download SVG</button>
-                            </div>
-                        </div>
-                        <div class="card">
-                            <h2>SVG Preview</h2>
-                            <div class="preview" id="editPreview"></div>
+                </div>
+            </section>
+
+            <section id="svgedit" class="tool">
+                <div class="grid">
+                    <div class="card">
+                        <h2>SVG Generator / Editor</h2>
+                        <label for="ew">Canvas width</label><input id="ew" type="number" value="512" min="1"><label for="eh">Canvas height</label><input id="eh" type="number" value="512" min="1"><label for="svgCode">SVG markup</label><textarea id="svgCode" rows="18"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+    <rect width="512" height="512" rx="72" fill="#5b42e8"/>
+    <circle cx="256" cy="220" r="110" fill="#fff"/>
+    <path d="M120 390 Q256 300 392 390" fill="none" stroke="#fff" stroke-width="28" stroke-linecap="round"/>
+    </svg></textarea>
+                        <div class="actions">
+                            <button class="primary" id="svgUpdate">Update Preview</button><button id="svgSave">Download SVG</button>
                         </div>
                     </div>
-                </section>
-            </main>
-            <script>
-                "use strict";
+                    <div class="card">
+                        <h2>SVG Preview</h2>
+                        <div class="preview" id="editPreview"></div>
+                    </div>
+                </div>
+            </section>
+        </section>
+    </main>
+
+    <script src="../../js/framework.js"></script>
+    <script src="../../js/jquery-3.2.1.min.js"></script>
+    <script src="../../js/github-fetch.js?v=25"></script>
+    <script>
+        "use strict";
         const $=s=>document.querySelector(s);
         const state={cropImage:null,cropBlob:null,icoImage:null,icoZip:null,svgText:null,svgBlob:null,extImage:null,extBlobs:[],extZip:null};
         document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));document.querySelectorAll(".tool").forEach(x=>x.classList.remove("active"));b.classList.add("active");document.getElementById(b.dataset.tool)?.classList.add("active")}));
@@ -410,14 +440,12 @@
         state.icoZip = createZip(files);
         $("#icoInfo").textContent = `Generated ${sizes.length} PNGs + 1 combined ICO. ZIP contains ${files.length} files.`;
         
-        // Auto-download the zip immediately:
         downloadBlob(state.icoZip, "icon-package.zip");
         } catch (err) {
         alert("Icon generation failed: " + err.message);
         }
         });
         
-        /* SVG → PNG: detect native SVG size, put it in the fields, and render at exactly that size. */
         function getSvgDimensions(text){const doc=new DOMParser().parseFromString(text,"image/svg+xml");if(doc.querySelector("parsererror")||!doc.documentElement||doc.documentElement.tagName.toLowerCase()!=="svg")return null;const svg=doc.documentElement;const parseLen=v=>{if(!v)return null;const m=String(v).trim().match(/^([0-9]+(?:\.[0-9]+)?)(?:px)?$/i);if(!m)return null;const n=Number(m[1]);return Number.isFinite(n)&&n>0?n:null};let w=parseLen(svg.getAttribute("width")),h=parseLen(svg.getAttribute("height"));const vb=svg.getAttribute("viewBox");if(vb){const p=vb.trim().split(/[\s,]+/).map(Number);if(p.length===4&&p.every(Number.isFinite)&&p[2]>0&&p[3]>0){if(!(w>0))w=p[2];if(!(h>0))h=p[3]}}if(!(w>0)||!(h>0))return null;return{width:Math.max(1,Math.round(w)),height:Math.max(1,Math.round(h))}}
         $("#svgFile").addEventListener("change",async e=>{const f=e.target.files[0];if(!f)return;try{state.svgText=await f.text();state.svgBlob=null;$("#svgDownload").disabled=true;const d=getSvgDimensions(state.svgText);if(d){$("#sw").value=d.width;$("#sh").value=d.height}const b=new Blob([state.svgText],{type:"image/svg+xml"}),u=URL.createObjectURL(b),i=new Image();i.onload=()=>{URL.revokeObjectURL(u);$("#svgPreview").innerHTML="";$("#svgPreview").appendChild(i)};i.onerror=()=>{URL.revokeObjectURL(u);alert("Unable to render SVG.")};i.src=u;$("#svgInfo").textContent=d?`SVG loaded • Native size: ${d.width} × ${d.height}px • PNG will use the same size`:"SVG loaded. Native dimensions could not be detected."}catch(err){alert(err.message)}});
         $("#svgRun").addEventListener("click",async()=>{if(!state.svgText)return alert("Choose an SVG first.");const w=Number($("#sw").value),h=Number($("#sh").value);if(!Number.isInteger(w)||w<1||!Number.isInteger(h)||h<1)return alert("Enter valid dimensions.");const c=document.createElement("canvas");c.width=w;c.height=h;const x=c.getContext("2d");x.clearRect(0,0,w,h);const b=new Blob([state.svgText],{type:"image/svg+xml"}),u=URL.createObjectURL(b),i=new Image();i.onload=async()=>{try{x.clearRect(0,0,w,h);x.drawImage(i,0,0,w,h);URL.revokeObjectURL(u);state.svgBlob=await canvasBlob(c,"image/png");$("#svgPreview").innerHTML="";const p=document.createElement("img"),pu=URL.createObjectURL(state.svgBlob);p.src=pu;p.onload=()=>URL.revokeObjectURL(pu);$("#svgPreview").appendChild(p);$("#svgDownload").disabled=false;$("#svgInfo").textContent=`PNG: ${w} × ${h}px • Same dimensions as SVG • Transparent background`}catch(err){URL.revokeObjectURL(u);alert(err.message)}};i.onerror=()=>{URL.revokeObjectURL(u);alert("Unable to render SVG.")};i.src=u});$("#svgDownload").addEventListener("click",()=>state.svgBlob&&downloadBlob(state.svgBlob,"converted.png"));
@@ -428,15 +456,6 @@
         function validateSvg(s){const d=new DOMParser().parseFromString(s,"image/svg+xml");if(d.querySelector("parsererror")||!d.documentElement||d.documentElement.tagName.toLowerCase()!=="svg")throw new Error("Invalid SVG.");return new XMLSerializer().serializeToString(d.documentElement)}
         function updateSvgPreview(){try{const s=validateSvg($("#svgCode").value),b=new Blob([s],{type:"image/svg+xml"}),u=URL.createObjectURL(b),i=document.createElement("img");i.src=u;i.onload=()=>URL.revokeObjectURL(u);i.onerror=()=>{URL.revokeObjectURL(u);alert("Unable to render SVG.")};$("#editPreview").innerHTML="";$("#editPreview").appendChild(i)}catch(err){alert(err.message)}}
         $("#svgUpdate").addEventListener("click",updateSvgPreview);$("#svgSave").addEventListener("click",()=>{try{downloadBlob(new Blob([validateSvg($("#svgCode").value)],{type:"image/svg+xml"}),"graphic.svg")}catch(err){alert(err.message)}});updateSvgPreview();
-            </script>
-        </body>
-
-    </main>
-
-    <!-- Framework & Scripts -->
-    <script src="../../js/framework.js"></script>
-    <script src="../../js/jquery-3.2.1.min.js"></script>
-    <script src="../../js/github-fetch.js?v=25"></script>
+    </script>
 </body>
-
 </html>

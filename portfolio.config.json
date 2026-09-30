@@ -7,7 +7,7 @@
     "themeColor": "#0b0d10",
     "favicon": "favicon.ico",
     "canonicalBase": "https://xconflictionx.cc",
-    "ogImage": "android-chrome-256x256.png"
+    "ogImage": "assets/og-image.png"
   },
   "github": {
     "username": "xCONFLiCTiONx",
@@ -124,7 +124,7 @@
     {
       "id": "seo-generator",
       "name": "SEO Generator",
-      "description": "Instantly generate a clean robots.txt and sitemap.xml for your static site root.",
+      "description": "Crawl static websites, audit page metadata, preview social cards, and generate SEO files.",
       "path": "tools/seo-generator/",
       "icon": "im im-shield",
       "category": "Developer Utility",
@@ -138,7 +138,7 @@
     {
       "id": "image-tool",
       "name": "Image Tool",
-      "description": "Manipulates images for websites and programs.",
+      "description": "Crop, resize, convert formats, generate ICO/ZIP packages, and edit SVG graphics entirely in browser memory.",
       "path": "tools/image-tool/",
       "icon": "im im-shield",
       "category": "Developer Utility",
