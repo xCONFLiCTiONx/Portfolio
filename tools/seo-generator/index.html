@@ -1,3 +1,5 @@
+<!DOCTYPE html>
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -15,13 +17,13 @@
 <meta property="og:description" content="Crawl a static website, audit its pages, and generate SEO files.">
 <meta property="og:url" content="https://xconflictionx.cc/tools/seo-generator/">
 <meta property="og:site_name" content="xCONFLiCTiONx">
-<meta property="og:image" content="https://xconflictionx.cc/android-chrome-256x256.png">
+<meta property="og:image" content="https://xconflictionx.cc/assets/og-image.png">
 
 <!-- X / Twitter -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Static Website SEO Generator | xCONFLiCTiONx">
 <meta name="twitter:description" content="Crawl a static website, audit its pages, and generate SEO files.">
-<meta name="twitter:image" content="https://xconflictionx.cc/android-chrome-256x256.png">
+<meta name="twitter:image" content="https://xconflictionx.cc/assets/og-image.png">
 <style>
 :root{color-scheme:dark;--bg:#0b0d10;--panel:#12161b;--panel2:#171c22;--line:#29313a;--text:#e8edf2;--muted:#9ca8b4;--blue:#6ea8fe;--green:#49d17d;--yellow:#f2c94c;--red:#ff7777}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}header{background:#0e1115;border-bottom:1px solid var(--line);padding:20px 24px}.wrap{max-width:1600px;margin:auto;padding:20px}header .wrap{padding:0;display:flex;align-items:center;justify-content:space-between;gap:20px}h1{font-size:24px;margin:0}h2{font-size:17px;margin:0 0 14px}p{color:var(--muted);margin:5px 0 0}.back{color:#a9cbff;text-decoration:none;border:1px solid var(--line);border-radius:7px;padding:8px 12px;white-space:nowrap}.back:hover{background:var(--panel2)}
@@ -53,6 +55,10 @@
 .social-card.card-summary{display:flex;flex-direction:row;align-items:stretch;height:110px}
 .social-card.card-summary .social-card-img-wrap{width:110px;height:110px;aspect-ratio:1 / 1;flex-shrink:0;border-right:1px solid #2f3336}
 .social-card.card-summary .social-card-body{flex:1;border-top:none;justify-content:center}
+.preview-layout-toggle{display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:12px;color:var(--muted)}
+.btn-sm{padding:4px 8px;font-size:12px;border-radius:5px;border:1px solid var(--line);background:var(--panel2);color:var(--text);cursor:pointer}
+.btn-sm.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.img-badge{font-size:11px;color:var(--muted);margin-top:4px}
 @media(max-width:1000px){.grid{grid-template-columns:1fr}}@media(max-width:650px){.wrap{padding:12px}header{padding:16px}.row,.row3{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}header .wrap{align-items:flex-start;flex-direction:column}}
 </style>
 </head>
@@ -73,21 +79,28 @@
 <div class="note">The crawler reads HTML directly into browser memory using fetch(); it does not require downloading pages. Run this tool from your own site for same-origin access, or let the crawler fallback to CORS proxies for cross-origin URLs. Link crawling cannot discover orphan pages that are not linked; sitemap URLs are also used as discovery seeds when available.</div>
 </div>
 <div class="card">
-<h2>SEO Defaults</h2>
-<label for="title">Homepage / default title</label><input id="title" placeholder="Website Title">
-<label for="description" style="margin-top:10px">Default meta description</label><textarea id="description" placeholder="Website meta description..."></textarea>
+<h2>SEO Defaults & Page Metadata</h2>
+<label for="pageSelect" style="color:var(--blue);font-weight:600">Active Page Selection (Page-Specific Override)</label>
+<select id="pageSelect" style="margin-bottom:12px"><option value="/">Homepage (/)</option></select>
+
+<label for="title">Page title</label><input id="title" placeholder="Website Title">
+<label for="description" style="margin-top:10px">Meta description</label><textarea id="description" placeholder="Website meta description..."></textarea>
 <div class="row" style="margin-top:10px"><div><label for="author">Author</label><input id="author" placeholder="Author Name"></div><div><label for="publisher">Publisher</label><input id="publisher" placeholder="Publisher Name"></div></div>
-<div class="row" style="margin-top:10px"><div><label for="canonical">Default canonical URL</label><input id="canonical" placeholder="https://example.com/"></div><div><label for="favicon">Favicon URL</label><input id="favicon" placeholder="/favicon.ico"></div></div>
-<div class="row" style="margin-top:10px"><div><label for="ogImage">Open Graph image URL</label><input id="ogImage" placeholder="https://example.com/og-image.png"></div><div><label for="theme">Theme color</label><input id="theme" placeholder="#0b0d10"></div></div>
-<label for="robots" style="margin-top:10px">Robots meta policy</label><input id="robots" placeholder="index, follow">
+<div class="row" style="margin-top:10px"><div><label for="canonical">Canonical URL</label><input id="canonical" placeholder="https://example.com/"></div><div><label for="favicon">Favicon URL</label><input id="favicon" placeholder="/favicon.ico"></div></div>
+<div class="row" style="margin-top:10px"><div><label for="ogImage">Open Graph image URL (Recommended: 1200x630)</label><input id="ogImage" placeholder="https://example.com/og-image.png"></div><div><label for="twitterImage">X / Twitter image URL (optional)</label><input id="twitterImage" placeholder="https://example.com/twitter-image.png"></div></div>
+<div class="row" style="margin-top:10px"><div><label for="theme">Theme color</label><input id="theme" placeholder="#0b0d10"></div><div><label for="robots">Robots meta policy</label><input id="robots" placeholder="index, follow"></div></div>
 </div>
 <div class="card">
-<h2>Structured Data</h2><div class="row"><div><label for="schemaType">Schema type</label><select id="schemaType"><option>WebSite</option><option>WebPage</option><option>Organization</option><option>Person</option></select></div><div><label for="schemaDescription">Schema description (optional)</label><input id="schemaDescription"></div></div>
-<div class="check"><input id="searchAction" type="checkbox"><label for="searchAction">Include WebSite SearchAction</label></div><label for="searchUrl">Search URL template (use {search_term_string})</label><input id="searchUrl" placeholder="https://example.com/search?q={search_term_string}">
+<h2>Structured Data</h2>
+<div class="row"><div><label for="schemaType">Schema type</label><select id="schemaType"><option>WebSite</option><option>WebPage</option><option>Organization</option><option>Person</option></select></div><div><label for="inLanguage">Site Language</label><input id="inLanguage" value="en" placeholder="en"></div></div>
+<label for="schemaDescription" style="margin-top:10px">Schema description (optional)</label><input id="schemaDescription" placeholder="Optional Schema description">
+<div class="row" style="margin-top:10px"><div><label for="logoUrl">Organization Logo URL</label><input id="logoUrl" placeholder="https://example.com/logo.png"></div><div><label for="sameAs">Social Profiles (sameAs URLs, one per line)</label><textarea id="sameAs" placeholder="https://x.com/username&#10;https://github.com/username" style="min-height:50px"></textarea></div></div>
+<div class="check" style="margin-top:10px"><input id="searchAction" type="checkbox"><label for="searchAction">Include WebSite SearchAction</label></div>
+<label for="searchUrl">Search URL template (use {search_term_string})</label><input id="searchUrl" placeholder="https://example.com/search?q={search_term_string}">
 </div>
 <div class="card">
 <h2>Social Metadata</h2><div class="row"><div><label for="ogTitle">Open Graph title</label><input id="ogTitle" placeholder="Open Graph Title"></div><div><label for="ogDescription">Open Graph description</label><input id="ogDescription" placeholder="Open Graph Description"></div></div>
-<div class="row" style="margin-top:10px"><div><label for="twitterCard">X / Twitter card</label><select id="twitterCard"><option value="summary_large_image">summary_large_image</option><option value="summary">summary</option></select></div><div><label for="twitterSite">X / Twitter username</label><input id="twitterSite" placeholder="@username"></div></div>
+<div class="row" style="margin-top:10px"><div><label for="twitterCard">X / Twitter card style</label><select id="twitterCard"><option value="summary_large_image">summary_large_image (Large Card)</option><option value="summary">summary (Compact Card)</option></select></div><div><label for="twitterSite">X / Twitter handle</label><input id="twitterSite" placeholder="@username"></div></div>
 </div>
 </section><section>
 <div class="card"><h2>Crawl Results</h2><div id="validation"></div><div class="tablebox"><table><thead><tr><th>URL</th><th>HTTP</th><th>Depth</th><th>Title</th><th>Description</th><th>Canonical</th><th>Index</th><th>H1</th><th>Links</th></tr></thead><tbody id="crawlRows"></tbody></table></div></div>
@@ -102,7 +115,11 @@
 </div>
 <div class="preview-container">
 <div id="pane-og" class="preview-pane active">
-<label style="margin-bottom:6px;font-weight:600;color:var(--text);">Open Graph / Facebook / LinkedIn Post Preview</label>
+<div class="preview-layout-toggle">
+<label style="font-weight:600;color:var(--text);">Open Graph Preview Layout:</label>
+<button type="button" id="ogLayoutLargeBtn" class="btn-sm active">Large Image Card</button>
+<button type="button" id="ogLayoutStandardBtn" class="btn-sm">Standard (Compact)</button>
+</div>
 <div class="social-post">
 <div class="social-header">
 <div class="social-avatar" id="ogAvatar">X</div>
@@ -127,6 +144,7 @@
 </div>
 </div>
 </div>
+<div id="ogImgBadge" class="img-badge"></div>
 </div>
 <div id="pane-twitter" class="preview-pane active">
 <label style="margin-bottom:6px;font-weight:600;color:var(--text);">X / Twitter Card Post Preview</label>
@@ -154,6 +172,7 @@
 </div>
 </div>
 </div>
+<div id="twImgBadge" class="img-badge"></div>
 </div>
 <div id="pane-google" class="preview-pane active">
 <label style="margin-bottom:6px;font-weight:600;color:var(--text);">Google Search Snippet Preview</label>
