@@ -82,7 +82,6 @@
 
         body {
             margin: 0;
-            padding: 30px;
             background: var(--bg);
             color: var(--text);
             font-family:
@@ -95,6 +94,7 @@
         .container {
             max-width: 1100px;
             margin: 0 auto;
+            padding: 0 30px 30px 30px;
         }
 
         h1 {
@@ -379,8 +379,8 @@
         }
 
         @media (max-width: 700px) {
-            body {
-                padding: 18px;
+            .container {
+                padding: 0 18px 18px 18px;
             }
 
             .speed-grid {
@@ -394,7 +394,28 @@
     </style>
 </head>
 
-<body>
+<body id="top">
+
+    <header class="site-header">
+        <nav class="nav-content">
+            <div class="nav-brand">
+                <a href="../../index.html">
+                    <span id="header-avatar" class="nav-logo"></span>
+                    <span class="user-name-js">Loading...</span>
+                </a>
+            </div>
+            <button class="menu-toggle" id="menuToggle">
+                <i class="im im-menu"></i>
+            </button>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="../../index.html"><i class="im im-home"></i> Overview</a></li>
+                <li><a href="../../about/"><i class="im im-user-male"></i> About</a></li>
+                <li><a href="../index.html" class="active"><i class="im im-tools"></i> Tools</a></li>
+                <li><a href="../../privacy/"><i class="im im-shield"></i> Privacy</a></li>
+                <li><a href="../../contact/"><i class="im im-paperplane"></i> Contact</a></li>
+            </ul>
+        </nav>
+    </header>
 
     <div class="container">
 
