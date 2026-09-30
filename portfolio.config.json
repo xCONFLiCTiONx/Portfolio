@@ -88,71 +88,72 @@
       "category": "Developer Utility",
       "enabled": true,
       "githubUrl": "",
-      "header": true,
-      "sidebar": false,
-      "footer": true
+      "layout": {
+        "header": true,
+        "sidebar": false,
+        "footer": true
+      }
+    },
+    {
+      "id": "warp-test",
+      "name": "WARP Split Tunnel Test",
+      "description": "Inspect your browser's network connectivity and public IP addresses. This page can identify public IP addresses and Cloudflare trace details.",
+      "path": "tools/warp-test/",
+      "icon": "im im-shield",
+      "category": "Developer Utility",
+      "enabled": true,
+      "githubUrl": "",
+      "layout": {
+        "header": true,
+        "sidebar": false,
+        "footer": true
+      }
+    },
+    {
+      "id": "site-grade",
+      "name": "Website Grading Tool",
+      "description": "Audit a public website from the outside. SiteGrade checks HTTP response, security headers, privacy signals, performance, SEO, configuration, DNS, and accessibility.",
+      "path": "tools/site-grade/",
+      "icon": "im im-shield",
+      "category": "Developer Utility",
+      "enabled": true,
+      "githubUrl": "",
+      "workerUrl": "https://scanner.xconflictionx.cc/scan",
+      "layout": {
+        "header": true,
+        "sidebar": false,
+        "footer": true
+      }
+    },
+    {
+      "id": "seo-generator",
+      "name": "SEO Generator",
+      "description": "Crawl static websites, audit page metadata, preview social cards, and generate SEO files.",
+      "path": "tools/seo-generator/",
+      "icon": "im im-shield",
+      "category": "Developer Utility",
+      "enabled": true,
+      "githubUrl": "",
+      "layout": {
+        "header": true,
+        "sidebar": false,
+        "footer": true
+      }
+    },
+    {
+      "id": "image-tool",
+      "name": "Image Tool",
+      "description": "Crop, resize, convert formats, generate ICO/ZIP packages, and edit SVG graphics entirely in browser memory.",
+      "path": "tools/image-tool/",
+      "icon": "im im-shield",
+      "category": "Developer Utility",
+      "enabled": true,
+      "githubUrl": "",
+      "layout": {
+        "header": true,
+        "sidebar": false,
+        "footer": true
+      }
     }
-  },
-  {
-    "id": "warp-test",
-    "name": "WARP Split Tunnel Test",
-    "description": "Inspect your browser's network connectivity and public IP addresses. This page can identify public IP addresses and Cloudflare trace details.",
-    "path": "tools/warp-test/",
-    "icon": "im im-shield",
-    "category": "Developer Utility",
-    "enabled": true,
-    "githubUrl": "",
-    "layout": {
-      "header": true,
-      "sidebar": false,
-      "footer": true
-    }
-  },
-  {
-    "id": "site-grade",
-    "name": "Website Grading Tool",
-    "description": "Audit a public website from the outside. SiteGrade checks HTTP response, security headers, privacy signals, performance, SEO, configuration, DNS, and accessibility.",
-    "path": "tools/site-grade/",
-    "icon": "im im-shield",
-    "category": "Developer Utility",
-    "enabled": true,
-    "githubUrl": "",
-    "workerUrl": "https://scanner.xconflictionx.cc/scan",
-    "layout": {
-      "header": true,
-      "sidebar": false,
-      "footer": true
-    }
-  },
-  {
-    "id": "seo-generator",
-    "name": "SEO Generator",
-    "description": "Crawl static websites, audit page metadata, preview social cards, and generate SEO files.",
-    "path": "tools/seo-generator/",
-    "icon": "im im-shield",
-    "category": "Developer Utility",
-    "enabled": true,
-    "githubUrl": "",
-    "layout": {
-      "header": true,
-      "sidebar": false,
-      "footer": true
-    }
-  },
-  {
-    "id": "image-tool",
-    "name": "Image Tool",
-    "description": "Crop, resize, convert formats, generate ICO/ZIP packages, and edit SVG graphics entirely in browser memory.",
-    "path": "tools/image-tool/",
-    "icon": "im im-shield",
-    "category": "Developer Utility",
-    "enabled": true,
-    "githubUrl": "",
-    "layout": {
-      "header": true,
-      "sidebar": false,
-      "footer": true
-    }
-  }
-]
+  ]
 }
