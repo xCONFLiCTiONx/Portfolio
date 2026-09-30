@@ -213,8 +213,8 @@ function updateAll(){
   updatePreview();
 }
 
-function download(name, text, mime = "text/plain;charset=utf-8"){
-  let blob = new Blob([text], { type: mime });
+function download(name, content, mime = "text/plain;charset=utf-8"){
+  let blob = (content instanceof Blob) ? content : new Blob([content], { type: mime });
   let u = URL.createObjectURL(blob);
   let a = document.createElement("a");
   a.href = u;
@@ -225,18 +225,73 @@ function download(name, text, mime = "text/plain;charset=utf-8"){
   setTimeout(() => URL.revokeObjectURL(u), 1200);
 }
 
+function crc32(data){
+  let c = 0xffffffff;
+  for(const b of data){
+    c ^= b;
+    for(let i = 0; i < 8; i++) c = c & 1 ? (c >>> 1) ^ 0xedb88320 : c >>> 1;
+  }
+  return (c ^ 0xffffffff) >>> 0;
+}
+
+function w16(a, o, v){ new DataView(a.buffer, a.byteOffset + o, 2).setUint16(0, v, true); }
+function w32(a, o, v){ new DataView(a.buffer, a.byteOffset + o, 4).setUint32(0, v, true); }
+
+function createZip(files){
+  const enc = new TextEncoder();
+  const locals = [], centrals = [];
+  let off = 0;
+  for(const f of files){
+    const n = enc.encode(f.name);
+    const d = f.data;
+    const c = crc32(d);
+    const l = new Uint8Array(30 + n.length);
+    w32(l, 0, 0x04034b50);
+    w16(l, 4, 20);
+    w32(l, 14, c);
+    w32(l, 18, d.length);
+    w32(l, 22, d.length);
+    w16(l, 26, n.length);
+    l.set(n, 30);
+    locals.push(l, d);
+
+    const z = new Uint8Array(46 + n.length);
+    w32(z, 0, 0x02014b50);
+    w16(z, 4, 20);
+    w16(z, 6, 20);
+    w32(z, 16, c);
+    w32(z, 20, d.length);
+    w32(z, 24, d.length);
+    w16(z, 28, n.length);
+    w32(z, 42, off);
+    z.set(n, 46);
+    centrals.push(z);
+    off += l.length + d.length;
+  }
+  const end = new Uint8Array(22);
+  w32(end, 0, 0x06054b50);
+  w16(end, 8, files.length);
+  w16(end, 10, files.length);
+  const cs = centrals.reduce((n, x) => n + x.length, 0);
+  w32(end, 12, cs);
+  w32(end, 16, off);
+  return new Blob([...locals, ...centrals, end], { type: "application/zip" });
+}
+
 function downloadAll(){
+  const enc = new TextEncoder();
   let files = [
-    ["robots.txt", robotsTxt(), "text/plain"],
-    ["sitemap.xml", sitemap(), "application/xml"],
-    ["seo-head.html", head(currentSelectedPath), "text/html"],
-    ["structured-data.json", jsonLd(currentSelectedPath) + "\n", "application/ld+json"],
-    ["site.webmanifest", manifest(), "application/manifest+json"],
-    ["llms.txt", llms(), "text/plain"],
-    ["seo-report.txt", report(), "text/plain"]
+    { name: "robots.txt", data: enc.encode(robotsTxt()) },
+    { name: "sitemap.xml", data: enc.encode(sitemap()) },
+    { name: "seo-head.html", data: enc.encode(head(currentSelectedPath)) },
+    { name: "structured-data.json", data: enc.encode(jsonLd(currentSelectedPath) + "\n") },
+    { name: "site.webmanifest", data: enc.encode(manifest()) },
+    { name: "llms.txt", data: enc.encode(llms()) },
+    { name: "seo-report.txt", data: enc.encode(report()) }
   ];
-  files.forEach((f, i) => setTimeout(() => download(f[0], f[1], f[2]), i * 300));
-  status("Generated all seven SEO files. Your browser may ask to allow multiple downloads.", "good");
+  let zipBlob = createZip(files);
+  download("seo-files.zip", zipBlob, "application/zip");
+  status("Downloaded all SEO files in a single ZIP package (seo-files.zip).", "good");
 }
 
 function validate(){
