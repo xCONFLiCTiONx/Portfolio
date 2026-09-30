@@ -3,6 +3,8 @@
 function normPath(p){
   p = String(p || "").trim();
   if(!p.startsWith("/")) p = "/" + p;
+  p = p.replace(/\/(?:index\.html?|index\.htm)$/i, "/");
+  if(p.toLowerCase() === "/index.html" || p.toLowerCase() === "/index.htm") p = "/";
   if(p.length > 1 && p.endsWith("/")) p = p.slice(0, -1);
   return p || "/";
 }

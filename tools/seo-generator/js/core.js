@@ -35,7 +35,10 @@ function urlKey(raw,base){
     if(!/^https?:$/.test(u.protocol))return null;
     u.hash="";
     if(!checked("queryUrls"))u.search="";
-    if(u.pathname.length>1 && u.pathname.endsWith("/")) u.pathname=u.pathname.slice(0,-1);
+    let p = u.pathname || "/";
+    p = p.replace(/\/(?:index\.html?|index\.htm)$/i, "/");
+    if(p.length>1 && p.endsWith("/")) p=p.slice(0,-1);
+    u.pathname = p || "/";
     return u.href;
   }catch{return null}
 }
@@ -54,8 +57,9 @@ function htmlUrl(u){try{return !assetExt.test(new URL(u).pathname)}catch{return 
 function pathOf(u){
   try{
     let x=new URL(u), p=x.pathname||"/";
+    p = p.replace(/\/(?:index\.html?|index\.htm)$/i, "/");
     if(p.length>1 && p.endsWith("/")) p=p.slice(0,-1);
-    return p+(checked("queryUrls")?x.search:"");
+    return p+(checked("queryUrls")?x.search:"") || "/";
   }catch{return "/"}
 }
 

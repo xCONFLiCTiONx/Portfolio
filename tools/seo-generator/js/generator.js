@@ -6,7 +6,7 @@ function parseSameAs(str){
 }
 
 function cfg(targetPath){
-  const path = targetPath || currentSelectedPath || "/";
+  const path = normPath(targetPath || currentSelectedPath || "/");
   const s = site();
   let host = "";
   try { if(s) host = new URL(s).hostname.replace(/^www\./i,""); } catch{}
@@ -21,8 +21,8 @@ function cfg(targetPath){
 
   const overrides = pageOverrides[path] || {};
 
-  const normP = (path === "/" ? "/" : (path.startsWith("/") ? path : "/" + path));
-  const defaultCanonical = s ? (s + normP) : "";
+  const normP = normPath(path);
+  const defaultCanonical = s ? (s + (normP === "/" ? "/" : normP)) : "";
 
   return {
     site: s,
