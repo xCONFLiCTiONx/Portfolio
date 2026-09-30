@@ -76,7 +76,15 @@ function init(){
     status("Sitemap populated from successful crawled HTML pages.", "good");
   };
 
-  $("validateBtn").onclick = validate;
+  $("validateBtn").onclick = () => {
+    const passed = validate();
+    status(passed ? "Validation complete: All SEO & metadata checks passed!" : "Validation complete: Issues found. Please see the validation report below.", passed ? "good" : "warn");
+    const vEl = $("validation");
+    if(vEl){
+      vEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  };
+
   $("all").onclick = downloadAll;
 
   $("dlRobots").onclick = () => download("robots.txt", robotsTxt());

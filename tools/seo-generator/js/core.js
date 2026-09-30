@@ -8,8 +8,7 @@ let pages = [{ path: "/", lastmod: "", changefreq: "weekly", priority: "1.0" }],
     stopRequested = false,
     robotsRules = null,
     pageOverrides = {},
-    currentSelectedPath = "/",
-    ogLayoutMode = "large";
+    currentSelectedPath = "/";
 
 const val=(id,def="")=>($(id)?.value?.trim() || def);
 const checked=id=>!!$(id)?.checked;

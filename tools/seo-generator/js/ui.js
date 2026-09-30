@@ -106,15 +106,6 @@ function updatePreview(){
   if($("ogPreviewTitle")) $("ogPreviewTitle").textContent = title;
   if($("ogPreviewDesc")) $("ogPreviewDesc").textContent = desc;
 
-  const ogCardBox = $("ogCardBox");
-  if(ogCardBox){
-    if(ogLayoutMode === "standard"){
-      ogCardBox.classList.add("card-summary");
-    } else {
-      ogCardBox.classList.remove("card-summary");
-    }
-  }
-
   const ogImg = $("ogPreviewImg");
   const ogFallback = $("ogImgFallback");
   const ogBadge = $("ogImgBadge");
@@ -134,8 +125,8 @@ function updatePreview(){
           const w = ogImg.naturalWidth;
           const h = ogImg.naturalHeight;
           const ratio = (w / h).toFixed(2);
-          let note = (ratio >= 1.7 && ratio <= 2.1) ? " (Ideal 1.91:1 ratio for large cards)" :
-                     (Math.abs(ratio - 1.0) < 0.1 ? " (Square icon aspect ratio)" : "");
+          let note = (ratio >= 1.7 && ratio <= 2.1) ? " (Ideal 1.91:1 ratio for social cards)" :
+                     (Math.abs(ratio - 1.0) < 0.1 ? " (Square image aspect ratio)" : "");
           ogBadge.textContent = "Dimensions: " + w + " × " + h + " px" + note;
         }
       };
@@ -211,24 +202,6 @@ function initPreviewTabs(){
       });
     });
   });
-
-  const lgBtn = $("ogLayoutLargeBtn");
-  const stdBtn = $("ogLayoutStandardBtn");
-
-  if(lgBtn && stdBtn){
-    lgBtn.onclick = () => {
-      ogLayoutMode = "large";
-      lgBtn.classList.add("active");
-      stdBtn.classList.remove("active");
-      updatePreview();
-    };
-    stdBtn.onclick = () => {
-      ogLayoutMode = "standard";
-      stdBtn.classList.add("active");
-      lgBtn.classList.remove("active");
-      updatePreview();
-    };
-  }
 }
 
 function updateAll(){
@@ -272,7 +245,7 @@ function validate(){
   const warnings = [];
 
   if(!c.site){
-    $("validation").innerHTML = '<div class="validation vinfo" style="background:#172332;border:1px solid #34577b;color:#a9cbff;">Enter a website URL above and click <b>Crawl Site</b> to analyze pages and populate SEO metadata.</div>';
+    $("validation").innerHTML = '<div class="validation vinfo" style="background:#172332;border:1px solid #34577b;color:#a9cbff;">Enter a website URL above and click <b>Crawl Site</b> or <b>Validate</b> to analyze pages and populate SEO metadata.</div>';
     return false;
   }
 
@@ -313,10 +286,10 @@ function validate(){
 
   let html = "";
   if(errors.length){
-    html += '<div class="validation vbad"><b>Errors</b><ul>' + errors.map(x => "<li>" + esc(x) + "</li>").join("") + '</ul></div>';
+    html += '<div class="validation vbad"><b>Validation Errors (' + errors.length + ')</b><ul>' + errors.map(x => "<li>" + esc(x) + "</li>").join("") + '</ul></div>';
   }
   if(warnings.length){
-    html += '<div class="validation vwarn"><b>Warnings & Recommendations</b><ul>' + warnings.map(x => "<li>" + esc(x) + "</li>").join("") + '</ul></div>';
+    html += '<div class="validation vwarn"><b>Validation Warnings & Recommendations (' + warnings.length + ')</b><ul>' + warnings.map(x => "<li>" + esc(x) + "</li>").join("") + '</ul></div>';
   }
   if(!errors.length && !warnings.length){
     html = '<div class="validation vgood"><b>Audit Passed:</b> All SEO, social metadata, and structured data checks passed.</div>';

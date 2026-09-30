@@ -55,9 +55,6 @@
 .social-card.card-summary{display:flex;flex-direction:row;align-items:stretch;height:110px}
 .social-card.card-summary .social-card-img-wrap{width:110px;height:110px;aspect-ratio:1 / 1;flex-shrink:0;border-right:1px solid #2f3336}
 .social-card.card-summary .social-card-body{flex:1;border-top:none;justify-content:center}
-.preview-layout-toggle{display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:12px;color:var(--muted)}
-.btn-sm{padding:4px 8px;font-size:12px;border-radius:5px;border:1px solid var(--line);background:var(--panel2);color:var(--text);cursor:pointer}
-.btn-sm.active{background:var(--blue);color:#fff;border-color:var(--blue)}
 .img-badge{font-size:11px;color:var(--muted);margin-top:4px}
 @media(max-width:1000px){.grid{grid-template-columns:1fr}}@media(max-width:650px){.wrap{padding:12px}header{padding:16px}.row,.row3{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}header .wrap{align-items:flex-start;flex-direction:column}}
 </style>
@@ -115,11 +112,7 @@
 </div>
 <div class="preview-container">
 <div id="pane-og" class="preview-pane active">
-<div class="preview-layout-toggle">
-<label style="font-weight:600;color:var(--text);">Open Graph Preview Layout:</label>
-<button type="button" id="ogLayoutLargeBtn" class="btn-sm active">Large Image Card</button>
-<button type="button" id="ogLayoutStandardBtn" class="btn-sm">Standard (Compact)</button>
-</div>
+<label style="margin-bottom:6px;font-weight:600;color:var(--text);">Open Graph / Facebook / LinkedIn Post Preview</label>
 <div class="social-post">
 <div class="social-header">
 <div class="social-avatar" id="ogAvatar">X</div>
