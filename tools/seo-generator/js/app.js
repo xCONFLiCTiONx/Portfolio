@@ -53,6 +53,7 @@ function init(){
     results = [];
     queue = [];
     seen.clear();
+    sitemapSeeds.clear();
     pages = [];
     pageOverrides = {};
     currentSelectedPath = "/";

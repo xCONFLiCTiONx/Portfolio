@@ -124,9 +124,11 @@ async function addSitemapSeeds(){
       }
       for(const loc of doc.querySelectorAll("url > loc")){
         const u = urlKey(loc.textContent.trim(), origin);
-        if(u && sameSite(u) && htmlUrl(u) && !seen.has(u)){
-          seen.set(u, { url: u, depth: 0, from: "sitemap" });
-          queue.push({ url: u, depth: 0, from: "sitemap" });
+        if(u && sameSite(u) && htmlUrl(u)){
+          sitemapSeeds.add(u);
+          if(!seen.has(u)){
+            seen.set(u, { url: u, depth: Infinity, from: "sitemap" });
+          }
         }
       }
       stats();
@@ -283,14 +285,37 @@ async function crawlOne(item){
   const links = [...doc.querySelectorAll("a[href]")];
   let internal = 0, external = 0;
 
+  const maxDepthVal = Number(val("maxDepth", "0")) || 0;
+  const maxDepthLimit = maxDepthVal > 0 ? maxDepthVal : Infinity;
+
   for(const a of links){
     let u = urlKey(a.getAttribute("href"), item.url);
     if(!u) continue;
     if(sameSite(u)){
       internal++;
-      if(!soft404 && htmlUrl(u) && !seen.has(u)){
-        seen.set(u, { url: u, depth: item.depth + 1, from: item.url });
-        queue.push({ url: u, depth: item.depth + 1, from: item.url });
+      if(!soft404 && htmlUrl(u)){
+        const newDepth = item.depth + 1;
+        if(newDepth <= maxDepthLimit){
+          const existing = seen.get(u);
+          if(!existing){
+            seen.set(u, { url: u, depth: newDepth, from: item.url });
+            queue.push({ url: u, depth: newDepth, from: item.url });
+          } else if(existing.depth === undefined || existing.depth === null || existing.depth === Infinity || newDepth < existing.depth){
+            existing.depth = newDepth;
+            existing.from = item.url;
+            const qItem = queue.find(x => x.url === u);
+            if(qItem){
+              qItem.depth = newDepth;
+            } else if(!results.some(x => x.url === u)){
+              queue.push({ url: u, depth: newDepth, from: item.url });
+            } else {
+              const rItem = results.find(x => x.url === u);
+              if(rItem && newDepth < rItem.depth){
+                rItem.depth = newDepth;
+              }
+            }
+          }
+        }
       }
     } else {
       external++;
@@ -312,6 +337,31 @@ async function crawlOne(item){
   });
 }
 
+function checkSitemapSeeds(){
+  for(const u of sitemapSeeds){
+    if(!results.some(r => r.url === u) && !queue.some(q => q.url === u)){
+      return true;
+    }
+  }
+  return false;
+}
+
+function flushSitemapSeeds(){
+  const maxDepthVal = Number(val("maxDepth", "0")) || 0;
+  const maxDepthLimit = maxDepthVal > 0 ? maxDepthVal : Infinity;
+
+  for(const u of sitemapSeeds){
+    if(!results.some(r => r.url === u) && !queue.some(q => q.url === u)){
+      const segments = pathOf(u).split("/").filter(Boolean);
+      const orphanDepth = Math.max(1, segments.length);
+      if(orphanDepth <= maxDepthLimit){
+        seen.set(u, { url: u, depth: orphanDepth, from: "sitemap" });
+        queue.push({ url: u, depth: orphanDepth, from: "sitemap" });
+      }
+    }
+  }
+}
+
 async function crawlSite(){
   if(running) return;
   let s = site();
@@ -328,6 +378,7 @@ async function crawlSite(){
   results = [];
   queue = [];
   seen.clear();
+  sitemapSeeds.clear();
   robotsRules = null;
 
   let start = urlKey(s, s);
@@ -348,7 +399,12 @@ async function crawlSite(){
   const limit = Math.max(1, Math.min(100000, Number(val("maxPages", "10000")) || 10000));
   const delay = Math.max(0, Math.min(10000, Number(val("delay", "0")) || 0));
 
-  while(queue.length && !stopRequested && results.length < limit){
+  while((queue.length || checkSitemapSeeds()) && !stopRequested && results.length < limit){
+    if(!queue.length){
+      flushSitemapSeeds();
+    }
+    if(!queue.length) break;
+
     const item = queue.shift();
     if(!allowed(item.url)){
       results.push({
@@ -369,9 +425,9 @@ async function crawlSite(){
 
   running = false;
   status(stopRequested ? ("Crawl stopped. " + results.length + " page(s) analyzed.") :
-         (results.length >= limit && queue.length ? ("Safety limit reached (" + limit + " pages).") :
+         (results.length >= limit && (queue.length || checkSitemapSeeds()) ? ("Safety limit reached (" + limit + " pages).") :
          ("Crawl complete. " + results.length + " page(s) analyzed.")),
-         stopRequested || queue.length ? "warn" : "good");
+         stopRequested || queue.length || checkSitemapSeeds() ? "warn" : "good");
 
   useCrawledPages();
   if(typeof updatePageSelectOptions === "function") updatePageSelectOptions();
