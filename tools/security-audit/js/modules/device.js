@@ -1,33 +1,31 @@
 export async function deviceScan() {
-  return {
-    Platform: navigator.platform || "UNKNOWN",
+  const ua = navigator.userAgent;
+  const isAndroid = /Android/i.test(ua);
+  const isWindows = /Windows/i.test(ua);
+  const isMac = /Macintosh|MacIntel/i.test(ua);
+  const isLinux = /Linux/i.test(ua) && !isAndroid;
+  const isIOS = /iPhone|iPad|iPod/i.test(ua);
 
-    "User Agent": navigator.userAgent,
+  const isPC = isWindows || isMac || isLinux;
+  const isSupported = isAndroid || isPC;
 
-    "Mobile Device": /Android/i.test(navigator.userAgent)
-      ? "ANDROID"
-      : "DESKTOP",
+  let platformName = "Unknown";
+  if (isAndroid) platformName = "Android (Mobile Gold Standard)";
+  else if (isWindows) platformName = "PC (Windows)";
+  else if (isMac) platformName = "PC (macOS)";
+  else if (isLinux) platformName = "PC (Linux)";
+  else if (isIOS) platformName = "iOS (Apple Mobile)";
 
-    "CPU Cores": navigator.hardwareConcurrency
-      ? navigator.hardwareConcurrency
-      : "UNKNOWN",
-
-    "Memory Estimate": navigator.deviceMemory
-      ? navigator.deviceMemory + " GB"
-      : "UNKNOWN",
-
-    "Screen Resolution": `${screen.width}x${screen.height}`,
-
-    "Pixel Ratio": window.devicePixelRatio
-      ? window.devicePixelRatio
-      : "UNKNOWN",
-
-    "Touch Support": "ontouchstart" in window ? "SUPPORTED" : "UNKNOWN",
-
-    Language: navigator.language || "UNKNOWN",
-
-    Timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UNKNOWN",
-
-    Online: navigator.onLine ? "PASS" : "FAIL",
+  let results = {
+    "Target Platform": isSupported ? "PASS" : "FAIL",
+    "Detected OS": platformName,
+    "Secure Context": window.isSecureContext ? "PASS" : "FAIL",
+    "Online Status": navigator.onLine ? "PASS" : "FAIL"
   };
+
+  if (!isSupported) {
+    results["How to Fix Platform"] = "This security audit tool is designed exclusively for Android devices and PC (Windows/macOS/Linux). Please open on a supported device.";
+  }
+
+  return results;
 }
