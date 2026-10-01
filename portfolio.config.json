@@ -169,6 +169,21 @@
         "sidebar": false,
         "footer": true
       }
+    },
+    {
+      "id": "ai-workspace",
+      "name": "AI Workspace",
+      "description": "Develop smarter with AI directly in your browser — simply engage the Chat or AI tool to examine your project and get instant insights.",
+      "path": "tools/ai-workspace/",
+      "icon": "im im-shield",
+      "category": "AI Workspace",
+      "enabled": true,
+      "githubUrl": "https://github.com/xCONFLiCTiONx/Portfolio/blob/main/tools/ai-workspace/index.html",
+      "layout": {
+        "header": true,
+        "sidebar": false,
+        "footer": true
+      }
     }
   ]
 }
