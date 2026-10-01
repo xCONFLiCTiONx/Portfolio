@@ -62,7 +62,7 @@ header p {
   color: #888;
 }
 
-button {
+#scanButton, #reportButton {
   width: 100%;
   padding: 16px;
   margin-top: 12px;
@@ -75,7 +75,7 @@ button {
   cursor: pointer;
 }
 
-button:disabled {
+#scanButton:disabled, #reportButton:disabled {
   opacity: 0.4;
   cursor: not-allowed;
 }
