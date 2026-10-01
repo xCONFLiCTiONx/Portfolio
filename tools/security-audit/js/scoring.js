@@ -24,12 +24,12 @@ export function calculateScore(sections) {
     }
   }
 
-  // 3. DNS & Cloudflare VPN / Secure DNS (25 pts)
+  // 3. Cloudflare VPN / WARP & Secure DNS (25 pts)
   const dns = sections["DNS / CLOUDFLARE"];
   if (dns) {
-    if (dns["Secure DNS & VPN Audit"] && dns["Secure DNS & VPN Audit"].includes("FAIL")) {
+    if (dns["Cloudflare WARP / VPN"] && dns["Cloudflare WARP / VPN"].includes("INACTIVE")) {
       score -= 25;
-      deductions.push({ category: "Secure DNS / VPN", points: -25, reason: "Cloudflare VPN (WARP) or Secure DNS (DoH/DoT) not detected.", fix: "Android: Enable Cloudflare 1.1.1.1 WARP app or Private DNS. PC: Enable Secure DNS (Cloudflare) in browser settings." });
+      deductions.push({ category: "Cloudflare VPN", points: -25, reason: "Cloudflare WARP VPN is inactive (disabled).", fix: "Enable Cloudflare WARP VPN / Cloudflare One on your device." });
     }
   }
 
@@ -43,9 +43,6 @@ export function calculateScore(sections) {
       }
     }
   }
-
-  // Note: Browser fingerprinting is kept as an informational advisory (WARN) in PRIVACY
-  // but does not deduct from your Cloudflare VPN / Secure DNS gold standard security score.
 
   return {
     score: Math.max(0, Math.min(100, score)),
