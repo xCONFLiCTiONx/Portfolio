@@ -9,7 +9,7 @@ export async function permissionScan() {
   let results = {};
 
   if (!navigator.permissions) {
-    return { "Permissions API": "UNSUPPORTED" };
+    return { "Permissions API": "[ UNKNOWN ] Unsupported" };
   }
 
   for (const p of permissionsToCheck) {
@@ -18,13 +18,15 @@ export async function permissionScan() {
       const state = status.state; // 'granted', 'prompt', 'denied'
 
       if (state === "granted") {
-        results[p.label] = "GRANTED (FAIL)";
-        results[`How to Fix ${p.label}`] = `Permission is GRANTED. Click the lock/site settings icon in your browser address bar, revoke '${p.label}', and refresh the page to improve your score.`;
+        results[p.label] = "[ FAIL ] GRANTED (Lowers Security Score)";
+        results[`How to Fix ${p.label}`] = `Permission is GRANTED. Click the lock/site settings icon in your browser address bar, revoke '${p.label}', and refresh the page to regain full points.`;
+      } else if (state === "denied") {
+        results[p.label] = "[ PASS ] DENIED (Secure)";
       } else {
-        results[p.label] = `${state.toUpperCase()} (PASS)`;
+        results[p.label] = "[ PASS ] PROMPT (Secure)";
       }
     } catch (e) {
-      results[p.label] = "UNSUPPORTED (PASS)";
+      results[p.label] = "[ PASS ] UNSUPPORTED";
     }
   }
 

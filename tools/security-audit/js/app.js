@@ -17,7 +17,7 @@ scanButton.addEventListener("click", async () => {
     score.textContent = latestReport.score;
     renderResults(latestReport.sections);
     reportButton.disabled = false;
-    status.textContent = "Scan completed. Refresh page after making security adjustments to see updated score.";
+    status.textContent = "Scan completed. Follow the 'How to Fix' guides below, then refresh page to update score.";
   } catch (error) {
     console.error(error);
     status.textContent = "Scan failed: " + error.message;
@@ -45,15 +45,15 @@ function renderResults(sections) {
     for (const item in sections[section]) {
       const value = sections[section][item];
       let cls = "";
-      let isFix = String(item).startsWith("How to Fix") || String(item).startsWith("Fix for");
+      let isFix = String(item).startsWith("How to Fix") || String(item).startsWith("Why") || String(item).startsWith("Deduction");
 
       if (isFix) {
         cls = "fix-instruction";
-      } else if (String(value).includes("PASS") || String(value).includes("ACTIVE") || String(value).includes("CONNECTED") || String(value).includes("SUPPORTED") || String(value).includes("AVAILABLE")) {
+      } else if (String(value).includes("[ PASS ]") || String(value).includes("PASS")) {
         cls = "pass";
-      } else if (String(value).includes("WARN") || String(value).includes("UNKNOWN") || String(value).includes("INACTIVE")) {
+      } else if (String(value).includes("[ WARN ]") || String(value).includes("WARN")) {
         cls = "warn";
-      } else if (String(value).includes("FAIL") || String(value).includes("GRANTED") || String(value).includes("BLOCKED") || String(value).includes("UNREACHABLE")) {
+      } else if (String(value).includes("[ FAIL ]") || String(value).includes("FAIL") || String(value).includes("GRANTED")) {
         cls = "fail";
       }
 

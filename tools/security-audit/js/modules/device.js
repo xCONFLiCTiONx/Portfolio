@@ -14,17 +14,17 @@ export async function deviceScan() {
   else if (isWindows) platformName = "PC (Windows)";
   else if (isMac) platformName = "PC (macOS)";
   else if (isLinux) platformName = "PC (Linux)";
-  else if (isIOS) platformName = "iOS (Apple Mobile)";
+  else if (isIOS) platformName = "iOS (Apple Mobile - Unsupported)";
 
   let results = {
-    "Target Platform": isSupported ? "PASS" : "FAIL",
-    "Detected OS": platformName,
-    "Secure Context": window.isSecureContext ? "PASS" : "FAIL",
-    "Online Status": navigator.onLine ? "PASS" : "FAIL"
+    "Target Platform Check": isSupported ? "[ PASS ] Supported OS (Android / PC)" : "[ FAIL ] Unsupported OS",
+    "Detected Platform": platformName,
+    "Secure Context (HTTPS/Localhost)": window.isSecureContext ? "[ PASS ] Secure Context Enabled" : "[ FAIL ] Insecure Context",
+    "Online Status": navigator.onLine ? "[ PASS ] Online" : "[ FAIL ] Offline"
   };
 
   if (!isSupported) {
-    results["How to Fix Platform"] = "This security audit tool is designed exclusively for Android devices and PC (Windows/macOS/Linux). Please open on a supported device.";
+    results["How to Fix Platform"] = "Please open this tool on an Android device or PC (Windows/macOS/Linux).";
   }
 
   return results;
