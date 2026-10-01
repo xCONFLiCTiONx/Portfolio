@@ -154,6 +154,21 @@
         "sidebar": false,
         "footer": true
       }
+    },
+    {
+      "id": "security-audit",
+      "name": "Security Audit",
+      "description": "Audit your device...",
+      "path": "tools/security-audit/",
+      "icon": "im im-shield",
+      "category": "Developer Utility",
+      "enabled": true,
+      "githubUrl": "https://github.com/xCONFLiCTiONx/Portfolio/blob/main/tools/security-audit/index.html",
+      "layout": {
+        "header": true,
+        "sidebar": false,
+        "footer": false
+      }
     }
   ]
 }
