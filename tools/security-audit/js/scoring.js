@@ -2,21 +2,21 @@ export function calculateScore(sections) {
   let score = 100;
   let deductions = [];
 
-  // 1. Device / Platform check (25 pts)
+  // 1. Device / Platform check (20 pts)
   const device = sections["DEVICE"];
   if (device) {
     if (device["Target Platform Check"] && device["Target Platform Check"].includes("FAIL")) {
-      score -= 25;
-      deductions.push({ category: "Platform", points: -25, reason: "Unsupported operating system.", fix: "Open this audit on an Android device or PC (Windows/Mac/Linux)." });
+      score -= 20;
+      deductions.push({ category: "Platform", points: -20, reason: "Unsupported operating system.", fix: "Open this audit on an Android device or PC (Windows/Mac/Linux)." });
     }
   }
 
-  // 2. Browser Security & HTTPS (25 pts)
+  // 2. Browser Security & HTTPS (20 pts)
   const browser = sections["BROWSER SECURITY"];
   if (browser) {
     if (browser["HTTPS Protocol"] && browser["HTTPS Protocol"].includes("FAIL")) {
-      score -= 20;
-      deductions.push({ category: "HTTPS", points: -20, reason: "Connection is not encrypted via HTTPS.", fix: "Access this tool using HTTPS." });
+      score -= 15;
+      deductions.push({ category: "HTTPS", points: -15, reason: "Connection is not encrypted via HTTPS.", fix: "Access this tool using HTTPS." });
     }
     if (browser["Do Not Track / GPC"] && browser["Do Not Track / GPC"].includes("WARN")) {
       score -= 5;
@@ -33,7 +33,7 @@ export function calculateScore(sections) {
     }
   }
 
-  // 4. Permissions (25 pts max)
+  // 4. Permissions (20 pts max)
   const permissions = sections["PERMISSIONS"];
   if (permissions) {
     for (const key in permissions) {
@@ -41,6 +41,18 @@ export function calculateScore(sections) {
         score -= 10;
         deductions.push({ category: "Permissions", points: -10, reason: `${key} is currently GRANTED.`, fix: `Click the lock icon in the address bar, revoke '${key}', and refresh the page.` });
       }
+    }
+  }
+
+  // 5. Fingerprinting & Tracking Risk (15 pts)
+  const privacy = sections["PRIVACY"];
+  if (privacy) {
+    if (privacy["Fingerprint Risk"] && privacy["Fingerprint Risk"].includes("HIGH")) {
+      score -= 15;
+      deductions.push({ category: "Fingerprinting", points: -15, reason: "High browser fingerprinting exposure detected (Canvas/Audio APIs accessible).", fix: "Enable strict tracking protection in your browser (e.g. Firefox Strict mode, Brave Shields, or privacy extensions)." });
+    } else if (privacy && privacy["Fingerprint Risk"] && privacy["Fingerprint Risk"].includes("MEDIUM")) {
+      score -= 8;
+      deductions.push({ category: "Fingerprinting", points: -8, reason: "Moderate browser fingerprinting exposure.", fix: "Enable enhanced tracking protection." });
     }
   }
 
