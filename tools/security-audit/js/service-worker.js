@@ -1,25 +1,37 @@
-const CACHE_NAME = "security-audit-v4";
+const CACHE_NAME = "security-audit-v5";
 
 // Install service worker
 self.addEventListener("install", (event) => {
   console.log("Security Audit service worker installed");
-
-  // Activate immediately
   self.skipWaiting();
 });
 
 // Activate service worker
 self.addEventListener("activate", (event) => {
   console.log("Security Audit service worker activated");
-
   event.waitUntil(self.clients.claim());
 });
 
-// Network passthrough with robust error catching for blocked requests (e.g. ad blockers)
+// Fetch handler
 self.addEventListener("fetch", (event) => {
+  const request = event.request;
+
+  // Only handle GET requests
+  if (request.method !== "GET") {
+    return;
+  }
+
+  const url = new URL(request.url);
+
+  // Never intercept external requests (e.g. Cloudflare beacons, analytics, cross-origin APIs)
+  if (url.origin !== self.location.origin) {
+    return;
+  }
+
+  // Network passthrough with robust error catching
   event.respondWith(
-    fetch(event.request).catch((error) => {
-      console.warn("Service Worker fetch intercepted blocked/offline request:", event.request.url, error);
+    fetch(request).catch((error) => {
+      console.warn("Service Worker fetch intercepted blocked/offline request:", request.url, error);
       return new Response(
         "Network request blocked by client extension or unavailable offline.",
         {
