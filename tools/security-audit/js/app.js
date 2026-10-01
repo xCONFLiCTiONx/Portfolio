@@ -1,6 +1,8 @@
 import { runScanner } from "./scanner.js";
 import { generateReport } from "./report.js";
 
+console.log("xCONFLiCTiONx");
+
 let latestReport = null;
 
 const scanButton = document.getElementById("scanButton");
