@@ -14,7 +14,7 @@ export async function fingerprintScan() {
 
     ctx.fillStyle = "#00ff88";
 
-    ctx.fillText("xSECURITY AUDIT", 10, 10);
+    ctx.fillText("Security Audit", 10, 10);
 
     const hash = canvas.toDataURL();
 

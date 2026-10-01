@@ -11,7 +11,7 @@ export function generateReport(data) {
 <meta charset="UTF-8">
 
 <title>
-xSECURITY AUDIT REPORT
+SECURITY AUDIT REPORT REPORT
 </title>
 
 
@@ -73,7 +73,7 @@ border-bottom:1px solid #333;
 
 
 <h1>
-xSECURITY AUDIT
+Security Audit
 </h1>
 
 
