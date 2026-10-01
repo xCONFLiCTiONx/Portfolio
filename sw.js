@@ -1,4 +1,4 @@
-const CACHE_NAME = 'portfolio-v26';
+const CACHE_NAME = 'portfolio-v27';
 
 const ASSETS = [
   './',
@@ -161,6 +161,24 @@ self.addEventListener('fetch', event => {
     return;
   }
 
+
+  // --------------------------------------------------------
+  // Never cache config files (.json) - Always Network First
+  // --------------------------------------------------------
+  if (url.pathname.endsWith('.json') || url.pathname.includes('portfolio.config.json')) {
+    event.respondWith(
+      fetch(request)
+        .then(response => {
+          if (response && response.ok && response.type === 'basic') {
+            const copy = response.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put(request, copy));
+          }
+          return response;
+        })
+        .catch(() => caches.match(request))
+    );
+    return;
+  }
 
   // --------------------------------------------------------
   // Determine whether this is an HTML request
