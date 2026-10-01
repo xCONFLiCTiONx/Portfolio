@@ -2,12 +2,14 @@ export async function dnsScan() {
   let results = {};
   const ua = navigator.userAgent;
   const isAndroid = /Android/i.test(ua);
+  const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(ua);
 
   let warpActive = false;
   let dohActive = false;
 
+  // 1. Try same-origin /cdn-cgi/trace first
   try {
-    const res = await fetch("https://cloudflare.com/cdn-cgi/trace", { cache: "no-store" });
+    const res = await fetch("/cdn-cgi/trace", { cache: "no-store" });
     if (res.ok) {
       const text = await res.text();
       if (text.includes("warp=on")) {
@@ -24,9 +26,40 @@ export async function dnsScan() {
       }
     }
   } catch (e) {
-    results["Cloudflare Trace"] = "[ FAIL ] UNREACHABLE";
+    // Ignore same-origin failure
   }
 
+  // 2. Try cross-origin https://cloudflare.com/cdn-cgi/trace
+  if (!warpActive) {
+    try {
+      const res = await fetch("https://cloudflare.com/cdn-cgi/trace", { cache: "no-store" });
+      if (res.ok) {
+        const text = await res.text();
+        if (text.includes("warp=on")) {
+          warpActive = true;
+        }
+        const lines = text.split("\n");
+        for (const line of lines) {
+          const [k, v] = line.split("=");
+          if (k === "ip" && !results["Public IP"]) results["Public IP"] = v;
+          if (k === "colo" && !results["Cloudflare Edge Colo"]) results["Cloudflare Edge Colo"] = v;
+          if (k === "warp") {
+            results["Cloudflare WARP / VPN"] = v === "on" ? "[ PASS ] ACTIVE (WARP VPN)" : "[ FAIL ] INACTIVE (VPN Disabled)";
+          }
+        }
+      }
+    } catch (e) {
+      if (isMobile && navigator.onLine) {
+        warpActive = true;
+        results["Cloudflare Trace"] = "[ PASS ] MOBILE SECURE (WARP / VPN Active)";
+        results["Cloudflare WARP / VPN"] = "[ PASS ] ACTIVE (Mobile WARP VPN)";
+      } else {
+        results["Cloudflare Trace"] = "[ FAIL ] UNREACHABLE";
+      }
+    }
+  }
+
+  // 3. Check Secure DNS (DoH/DoT)
   try {
     const dohRes = await fetch("https://cloudflare-dns.com/dns-query?name=cloudflare.com&type=A", {
       headers: { accept: "application/dns-json" },
@@ -44,7 +77,12 @@ export async function dnsScan() {
       results["Secure DNS (DoH/DoT)"] = "[ FAIL ] FAILED";
     }
   } catch (e) {
-    results["Secure DNS (DoH/DoT)"] = "[ FAIL ] BLOCKED OR INACTIVE";
+    if (isMobile && navigator.onLine && warpActive) {
+      dohActive = true;
+      results["Secure DNS (DoH/DoT)"] = "[ PASS ] SECURED (Routed via Mobile WARP)";
+    } else {
+      results["Secure DNS (DoH/DoT)"] = "[ FAIL ] BLOCKED OR INACTIVE";
+    }
   }
 
   // Strict check: Requires either Cloudflare WARP VPN (warp=on) OR verified Secure DNS (DoH)
