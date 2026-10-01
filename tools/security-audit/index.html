@@ -1,75 +1,61 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="utf-8">
+    <title>Security Audit — Android Privacy & Security Diagnostic | Portfolio</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Android Privacy & Security Diagnostic tool to audit device security, browser features, permissions, and network settings.">
+    <meta name="portfolio-tool-id" content="security-audit">
+    <meta name="theme-color" content="#0b0d10">
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="../../css/main.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" id="favicon-js" href="../../assets/favicon.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
+</head>
+<body id="top" data-tool-id="security-audit">
 
-    <title>Security Audit</title>
+    <div class="container">
+        <header style="margin-bottom: 20px;">
+            <h1>Security Audit</h1>
+            <p style="color: var(--muted, #888); margin: 5px 0 0;">Android Privacy & Security Diagnostic</p>
+        </header>
 
-    <meta name="theme-color" content="#050505" />
+        <main>
+            <section class="card hero">
+                <div id="scoreCircle">
+                    <span id="score"> -- </span>
+                    <small> Security Score </small>
+                </div>
 
-    <link rel="manifest" href="manifest.json" />
+                <div style="margin-top: 15px;">
+                    <button id="scanButton">START SECURITY SCAN</button>
+                    <button id="reportButton" disabled>EXPORT REPORT</button>
+                </div>
+            </section>
 
-    <link rel="stylesheet" href="css/style.css" />
-  </head>
+            <section class="card">
+                <h2>Scan Status</h2>
+                <div id="status">Waiting for scan...</div>
+            </section>
 
-  <body>
-    <header>
-      <h1>Security Audit</h1>
+            <section id="results"></section>
+        </main>
+    </div>
 
-      <p>Android Privacy & Security Diagnostic</p>
-    </header>
-
-    <main>
-      <section class="card hero">
-        <div id="scoreCircle">
-          <span id="score"> -- </span>
-
-          <small> Security Score </small>
-        </div>
-
-        <button id="scanButton">START SECURITY SCAN</button>
-
-        <button id="reportButton" disabled>EXPORT REPORT</button>
-      </section>
-
-      <section class="card">
-        <h2>Scan Status</h2>
-
-        <div id="status">Waiting for scan...</div>
-      </section>
-
-      <section id="results"></section>
-    </main>
-
-    <footer>Security Tools</footer>
-
+    <!-- Framework & Scripts -->
+    <script src="../../js/framework.js"></script>
+    <script src="../../js/jquery-3.2.1.min.js"></script>
     <script type="module" src="js/app.js"></script>
 
     <script>
-      if(
-    "serviceWorker" in navigator
-    ){
-    
-    navigator.serviceWorker.register(
-    "service-worker.js"
-    )
-    
-    .then(()=>{
-    
-    console.log(
-    "Security Audit offline enabled"
-    );
-    
-    })
-    
-    .catch(
-    err=>
-    console.log(err)
-    );
-    
-    }
-    
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("service-worker.js")
+          .then(() => {
+            console.log("Security Audit offline enabled");
+          })
+          .catch(err => console.log(err));
+      }
     </script>
-  </body>
+</body>
 </html>

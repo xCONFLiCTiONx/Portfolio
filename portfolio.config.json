@@ -158,7 +158,7 @@
     {
       "id": "security-audit",
       "name": "Security Audit",
-      "description": "Audit your device...",
+      "description": "Android Privacy & Security Diagnostic",
       "path": "tools/security-audit/",
       "icon": "im im-shield",
       "category": "Developer Utility",
@@ -167,7 +167,7 @@
       "layout": {
         "header": true,
         "sidebar": false,
-        "footer": false
+        "footer": true
       }
     }
   ]
