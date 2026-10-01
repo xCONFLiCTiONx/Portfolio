@@ -49,10 +49,13 @@ export function calculateScore(sections) {
   if (privacy) {
     if (privacy["Fingerprint Risk"] && privacy["Fingerprint Risk"].includes("HIGH")) {
       score -= 15;
-      deductions.push({ category: "Fingerprinting", points: -15, reason: "High browser fingerprinting exposure detected (Canvas/Audio APIs accessible).", fix: "Enable strict tracking protection in your browser (e.g. Firefox Strict mode, Brave Shields, or privacy extensions)." });
+      deductions.push({ category: "Fingerprinting", points: -15, reason: "High browser fingerprinting exposure detected.", fix: "Enable strict tracking protection in your browser (e.g. Firefox Strict mode, Brave Shields, or privacy extensions)." });
     } else if (privacy && privacy["Fingerprint Risk"] && privacy["Fingerprint Risk"].includes("MEDIUM")) {
-      score -= 8;
-      deductions.push({ category: "Fingerprinting", points: -8, reason: "Moderate browser fingerprinting exposure.", fix: "Enable enhanced tracking protection." });
+      score -= 5;
+      deductions.push({ category: "Fingerprinting", points: -5, reason: "Standard browser fingerprinting APIs are accessible and deterministic.", fix: "Enable enhanced tracking protection if you require fingerprint randomization." });
+    } else if (privacy && privacy["Fingerprint Risk"] && privacy["Fingerprint Risk"].includes("LOW-MEDIUM")) {
+      score -= 2;
+      deductions.push({ category: "Fingerprinting", points: -2, reason: "Slight fingerprint exposure detected.", fix: "Consider enabling enhanced tracking protection in your browser." });
     }
   }
 
