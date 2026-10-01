@@ -70,7 +70,21 @@ export async function fingerprintScan() {
   if (results["WebGL Renderer"] && results["WebGL Renderer"] !== "PROTECTED")
     exposure++;
 
-  results["Fingerprint Risk"] = exposure >= 2 ? "HIGH" : "MEDIUM";
+  if (exposure >= 3) {
+
+    results["Fingerprint Risk"] = "HIGH";
+
+  }
+  else if (exposure >= 1) {
+
+    results["Fingerprint Risk"] = "MEDIUM";
+
+  }
+  else {
+
+    results["Fingerprint Risk"] = "LOW";
+
+  }
 
   return results;
 }

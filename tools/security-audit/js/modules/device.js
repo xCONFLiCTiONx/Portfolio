@@ -4,6 +4,10 @@ export async function deviceScan() {
 
     "User Agent": navigator.userAgent,
 
+    "Mobile Device": /Android/i.test(navigator.userAgent)
+      ? "ANDROID"
+      : "DESKTOP",
+
     "CPU Cores": navigator.hardwareConcurrency
       ? navigator.hardwareConcurrency
       : "UNKNOWN",
