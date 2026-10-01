@@ -276,18 +276,28 @@
 
         .crop-handle {
             position: absolute;
-            width: 12px;
-            height: 12px;
+            width: 16px;
+            height: 16px;
             background: #58a6ff;
             border: 2px solid #ffffff;
-            border-radius: 3px;
+            border-radius: 4px;
             box-sizing: border-box;
+            z-index: 10;
         }
 
-        .crop-handle.tl { top: -6px; left: -6px; cursor: nwse-resize; }
-        .crop-handle.tr { top: -6px; right: -6px; cursor: nesw-resize; }
-        .crop-handle.bl { bottom: -6px; left: -6px; cursor: nesw-resize; }
-        .crop-handle.br { bottom: -6px; right: -6px; cursor: nwse-resize; }
+        .crop-handle::after {
+            content: '';
+            position: absolute;
+            top: -6px;
+            left: -6px;
+            right: -6px;
+            bottom: -6px;
+        }
+
+        .crop-handle.tl { top: -8px; left: -8px; cursor: nwse-resize; }
+        .crop-handle.tr { top: -8px; right: -8px; cursor: nesw-resize; }
+        .crop-handle.bl { bottom: -8px; left: -8px; cursor: nesw-resize; }
+        .crop-handle.br { bottom: -8px; right: -8px; cursor: nwse-resize; }
 
         .icon-preview {
             display: flex;
@@ -957,20 +967,21 @@
             }
         }
 
-        // Reset Crop Box to Center with Target Aspect Ratio
+        // Reset Crop Box to Center (75% of Input Image Size)
         function initDefaultCropBox(){
             if(!state.cropImage) return;
             const nw = state.cropImage.naturalWidth || state.cropImage.width;
             const nh = state.cropImage.naturalHeight || state.cropImage.height;
             const targetRatio = getTargetAspectRatio();
 
-            let w = nw;
-            let h = nh;
+            let w = nw * 0.75;
+            let h = nh * 0.75;
+
             if(targetRatio){
-                h = w / targetRatio;
-                if(h > nh){
-                    h = nh;
+                if(w / h > targetRatio){
                     w = h * targetRatio;
+                } else {
+                    h = w / targetRatio;
                 }
             }
 
