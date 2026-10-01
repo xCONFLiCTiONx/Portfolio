@@ -2,7 +2,7 @@ import { deviceScan } from "./modules/device.js";
 import { browserScan } from "./modules/browser.js";
 import { permissionScan } from "./modules/permissions.js";
 import { storageScan } from "./modules/storage.js";
-import { fingerprintScan } from "./modules/fingerprint.js";
+import { fingerprintScan } from "./modules/privacy-check.js";
 import { networkScan } from "./modules/network.js";
 import { dnsScan } from "./modules/dns.js";
 import { webrtcScan } from "./modules/webrtc.js";
