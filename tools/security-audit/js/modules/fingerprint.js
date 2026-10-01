@@ -40,34 +40,48 @@ export async function fingerprintScan() {
       const debug = gl.getExtension("WEBGL_debug_renderer_info");
       const vendor = debug ? gl.getParameter(debug.UNMASKED_VENDOR_WEBGL) : "PROTECTED";
       const renderer = debug ? gl.getParameter(debug.UNMASKED_RENDERER_WEBGL) : "PROTECTED";
-      results["WebGL Vendor"] = vendor;
-      results["WebGL Renderer"] = renderer;
-      results["WebGL Hardware Fingerprint"] = (vendor !== "PROTECTED" && renderer !== "PROTECTED")
+      results["WebGL Vendor"] = vendor || "PROTECTED";
+      results["WebGL Renderer"] = renderer || "PROTECTED";
+
+      const vStr = String(vendor).toUpperCase();
+      const rStr = String(renderer).toUpperCase();
+
+      results["WebGL Hardware Fingerprint"] = (vStr !== "PROTECTED" && rStr !== "PROTECTED")
         ? "[ WARN ] EXPOSED (Hardware info accessible)"
         : "[ PASS ] PROTECTED";
     } else {
       results["WebGL"] = "[ PASS ] UNAVAILABLE";
+      results["WebGL Hardware Fingerprint"] = "[ PASS ] PROTECTED";
     }
   } catch {
     results["WebGL"] = "[ PASS ] BLOCKED";
+    results["WebGL Hardware Fingerprint"] = "[ PASS ] PROTECTED";
   }
 
   // Audio Context check
   try {
     const AudioCtx = window.OfflineAudioContext || window.webkitOfflineAudioContext;
     if (AudioCtx) {
-      const audio1 = new AudioCtx(1, 44100, 44100);
-      const audio2 = new AudioCtx(1, 44100, 44100);
+      let isProtected = false;
+      try {
+        const audio1 = new AudioCtx(1, 44100, 44100);
+        const audio2 = new AudioCtx(1, 44100, 44100);
+        if (audio1.constructor !== audio2.constructor) {
+          isProtected = true;
+        }
+      } catch {
+        isProtected = true;
+      }
 
-      results["Audio Context"] = "[ WARN ] AVAILABLE";
-      results["Audio Protection"] = (audio1.constructor === audio2.constructor)
-        ? "[ WARN ] STANDARD AUDIO API"
-        : "[ PASS ] MODIFIED / RANDOMIZED";
+      results["Audio Context"] = isProtected ? "[ PASS ] BLOCKED / RANDOMIZED" : "[ WARN ] AVAILABLE";
+      results["Audio Protection"] = isProtected ? "[ PASS ] MODIFIED / RANDOMIZED" : "[ WARN ] STANDARD AUDIO API";
     } else {
       results["Audio Context"] = "[ PASS ] BLOCKED";
+      results["Audio Protection"] = "[ PASS ] BLOCKED";
     }
   } catch {
     results["Audio Context"] = "[ PASS ] BLOCKED";
+    results["Audio Protection"] = "[ PASS ] BLOCKED";
   }
 
   // Fingerprint Risk Assessment
