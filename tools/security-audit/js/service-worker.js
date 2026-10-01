@@ -1,33 +1,24 @@
-const CACHE_NAME = "security-audit-v2";
+const CACHE_NAME = "security-audit-v3";
 
+// Install service worker
 self.addEventListener("install", (event) => {
   console.log("Security Audit service worker installed");
 
+  // Activate immediately
   self.skipWaiting();
 });
 
+// Activate service worker
 self.addEventListener("activate", (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) => {
-      return Promise.all(
-        keys.map((key) => {
-          if (key !== CACHE_NAME) {
-            return caches.delete(key);
-          }
-        })
-      );
-    })
-  );
+  console.log("Security Audit service worker activated");
 
-  self.clients.claim();
+  event.waitUntil(self.clients.claim());
 });
 
+// Network passthrough
+// No caching yet.
+// This prevents old cache failures while testing.
+
 self.addEventListener("fetch", (event) => {
-  event.respondWith(
-    fetch(event.request).catch(() => {
-      return new Response("Offline", {
-        status: 503,
-      });
-    })
-  );
+  event.respondWith(fetch(event.request));
 });
