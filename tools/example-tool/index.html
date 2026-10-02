@@ -2,14 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Example Tool — Text Inspector & Counter | Portfolio</title>
+    <title>Example Tool</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Example tool demonstrating the portfolio tool framework architecture.">
     <meta name="portfolio-tool-id" content="example-tool">
     <meta name="theme-color" content="#0b0d10">
     <link rel="manifest" href="../../site.webmanifest">
     <link rel="stylesheet" href="../../css/main.css">
-    <link rel="stylesheet" href="tool.css">
     <link rel="icon" id="favicon-js" href="../../assets/favicon.ico" type="image/x-icon">
     <link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
 </head>
@@ -17,242 +16,9 @@
 
     <main class="container">
 
-        <!-- Sidebar (Optional - dynamically rendered based on portfolio.config.json) -->
-        <aside class="sidebar profile-sidebar"></aside>
-
         <!-- Tool Main Content -->
         <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Image Manipulator</title>
-            <style>
-                * {
-                    box-sizing: border-box
-                }
-        
-                body {
-                    margin: 0;
-                    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-                    background: #111;
-                    color: #eee
-                }
-        
-                header {
-                    padding: 24px;
-                    text-align: center;
-                    border-bottom: 1px solid #333
-                }
-        
-                header h1 {
-                    margin: 0 0 8px
-                }
-        
-                header p {
-                    margin: 0;
-                    color: #aaa
-                }
-        
-                main {
-                    max-width: 1200px;
-                    margin: auto;
-                    padding: 24px
-                }
-        
-                .tabs {
-                    display: flex;
-                    flex-wrap: wrap;
-                    gap: 8px;
-                    margin-bottom: 24px
-                }
-        
-                .tabs button {
-                    padding: 10px 14px;
-                    border: 1px solid #444;
-                    border-radius: 6px;
-                    background: #1d1d1d;
-                    color: #eee;
-                    cursor: pointer
-                }
-        
-                .tabs button.active {
-                    background: #fff;
-                    color: #111
-                }
-        
-                .tool {
-                    display: none
-                }
-        
-                .tool.active {
-                    display: block
-                }
-        
-                .grid {
-                    display: grid;
-                    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-                    gap: 20px
-                }
-        
-                .card {
-                    padding: 20px;
-                    border: 1px solid #333;
-                    border-radius: 10px;
-                    background: #181818
-                }
-        
-                .card h2 {
-                    margin-top: 0
-                }
-        
-                label {
-                    display: block;
-                    margin: 14px 0 6px;
-                    color: #ccc
-                }
-        
-                input,
-                select,
-                textarea,
-                button {
-                    font: inherit
-                }
-        
-                input[type=file],
-                input[type=number],
-                input[type=text],
-                select,
-                textarea {
-                    width: 100%;
-                    padding: 10px;
-                    border: 1px solid #444;
-                    border-radius: 6px;
-                    background: #101010;
-                    color: #eee
-                }
-        
-                input[type=range] {
-                    width: 100%
-                }
-        
-                input[type=color] {
-                    width: 60px;
-                    height: 40px
-                }
-        
-                textarea {
-                    resize: vertical;
-                    font-family: Consolas, monospace
-                }
-        
-                .actions {
-                    display: flex;
-                    flex-wrap: wrap;
-                    gap: 10px;
-                    margin-top: 18px
-                }
-        
-                button {
-                    padding: 10px 14px;
-                    border: 1px solid #444;
-                    border-radius: 6px;
-                    background: #222;
-                    color: #eee;
-                    cursor: pointer
-                }
-        
-                button:hover:not(:disabled) {
-                    background: #333
-                }
-        
-                button.primary {
-                    background: #fff;
-                    color: #111
-                }
-        
-                button:disabled {
-                    opacity: .45;
-                    cursor: not-allowed
-                }
-        
-                .stat {
-                    margin-top: 14px;
-                    padding: 10px;
-                    border-radius: 6px;
-                    background: #101010;
-                    color: #aaa
-                }
-        
-                .notice {
-                    margin-top: 14px;
-                    color: #999;
-                    line-height: 1.5
-                }
-        
-                .preview {
-                    min-height: 300px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    padding: 16px;
-                    border: 1px dashed #444;
-                    border-radius: 8px;
-                    background: linear-gradient(45deg, #202020 25%, transparent 25%), linear-gradient(-45deg, #202020 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #202020 75%), linear-gradient(-45deg, transparent 75%, #202020 75%);
-                    background-size: 20px 20px;
-                    background-position: 0 0, 0 10px, 10px -10px, -10px 0
-                }
-        
-                .preview img,
-                .preview canvas {
-                    max-width: 100%;
-                    max-height: 500px
-                }
-        
-                .icon-preview {
-                    display: flex;
-                    flex-wrap: wrap;
-                    align-items: center;
-                    gap: 20px;
-                    min-height: 200px
-                }
-        
-                .icon-preview div {
-                    text-align: center
-                }
-        
-                .icon-preview img {
-                    display: block;
-                    margin: 0 auto 6px
-                }
-        
-                .code-box {
-                    margin-top: 24px;
-                    padding-top: 20px;
-                    border-top: 1px solid #333
-                }
-        
-                .code-box textarea {
-                    margin-top: 12px;
-                    min-height: 180px;
-                    line-height: 1.5
-                }
-        
-                .code-actions {
-                    display: flex;
-                    align-items: center;
-                    gap: 10px;
-                    margin-top: 10px
-                }
-        
-                .copy-status {
-                    color: #999
-                }
-        
-                @media(max-width:800px) {
-                    .grid {
-                        grid-template-columns: 1fr
-                    }
-                }
-            </style>
+            
         </head>
         
         <body>
@@ -265,6 +31,5 @@
     <script src="../../js/framework.js"></script>
     <script src="../../js/jquery-3.2.1.min.js"></script>
     <script src="../../js/github-fetch.js?v=25"></script>
-    <script src="tool.js"></script>
 </body>
 </html>
