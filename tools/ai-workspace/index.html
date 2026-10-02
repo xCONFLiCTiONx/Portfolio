@@ -8,6 +8,7 @@
     <style>
       :root {
         color-scheme: light dark;
+
         --bg: light-dark(#f4f6fa, #0b0e14);
         --panel: light-dark(#ffffff, #121722);
         --panel2: light-dark(#f8f9fc, #171d29);
@@ -16,6 +17,9 @@
         --line: light-dark(#e2e6ef, #283143);
         --accent: light-dark(#635bdb, #9b94ff);
         --accent2: light-dark(#eeedff, #29264e);
+
+        --green: #36b37e;
+        --red: #e35d6a;
       }
 
       * {
@@ -26,12 +30,15 @@
         margin: 0;
         background: var(--bg);
         color: var(--text);
-        font: 14px/1.5 Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+        font: 14px/1.5 Inter, ui-sans-serif, system-ui, -apple-system,
+          "Segoe UI", sans-serif;
       }
 
       #app {
         min-height: 100vh;
+        width: 100%;
         background: var(--bg);
+        border-radius: 0;
       }
 
       header {
@@ -50,6 +57,7 @@
         gap: 12px;
         font-weight: 750;
         font-size: 16px;
+        letter-spacing: -0.3px;
       }
 
       .logo {
@@ -61,13 +69,15 @@
         place-items: center;
         color: white;
         font-weight: 900;
+        box-shadow: 0 5px 16px #7168f533;
       }
 
       .brand small {
         display: block;
         color: var(--muted);
-        font-size: 11px;
         font-weight: 500;
+        font-size: 11px;
+        letter-spacing: 0.2px;
       }
 
       .header-right {
@@ -103,6 +113,7 @@
         margin: 0;
         font-size: 27px;
         letter-spacing: -0.8px;
+        line-height: 1.2;
       }
 
       .subtitle {
@@ -116,20 +127,20 @@
         flex-wrap: wrap;
       }
 
-      button {
+      button,
+      .button {
         border: 1px solid var(--line);
         background: var(--panel);
         color: var(--text);
         padding: 9px 13px;
         border-radius: 9px;
-        font: inherit;
-        font-size: 12px;
-        font-weight: 600;
+        font: 600 12px inherit;
         cursor: pointer;
         transition: 0.15s;
       }
 
-      button:hover {
+      button:hover,
+      .button:hover {
         border-color: var(--accent);
         transform: translateY(-1px);
       }
@@ -208,6 +219,7 @@
         font-size: 12px;
         white-space: nowrap;
         overflow: hidden;
+        text-overflow: ellipsis;
       }
 
       .file-row:hover {
@@ -228,6 +240,10 @@
       .folder {
         color: var(--muted);
         font-weight: 650;
+      }
+
+      .indent {
+        margin-left: 15px;
       }
 
       .empty-tree {
@@ -264,6 +280,7 @@
       .tab.active {
         color: var(--text);
         background: var(--panel);
+        box-shadow: 0 1px 3px #00000012;
       }
 
       .editor-head {
@@ -274,13 +291,11 @@
         border-bottom: 1px solid var(--line);
         font-size: 11px;
         color: var(--muted);
-        gap: 12px;
       }
 
       .editor-head strong {
         color: var(--text);
         font-weight: 650;
-        overflow-wrap: anywhere;
       }
 
       .code-wrap {
@@ -293,7 +308,8 @@
       .code {
         display: flex;
         min-width: max-content;
-        font: 12px/1.7 ui-monospace, SFMono-Regular, Consolas, monospace;
+        font: 12px/1.7 ui-monospace, SFMono-Regular, Consolas, "Liberation Mono",
+          monospace;
         white-space: pre;
       }
 
@@ -309,7 +325,6 @@
       .source {
         padding: 15px 22px 24px;
         white-space: pre;
-        tab-size: 4;
       }
 
       .welcome {
@@ -342,7 +357,7 @@
       }
 
       .drop {
-        border: 1px dashed #8994aa;
+        border: 1px dashed light-dark(#b9c0d1, #424d64);
         border-radius: 12px;
         padding: 18px;
         margin-top: 18px;
@@ -376,7 +391,8 @@
         margin-bottom: 12px;
       }
 
-      .ai-toolbar select {
+      .ai-toolbar select,
+      .search {
         border: 1px solid var(--line);
         background: var(--panel2);
         color: var(--text);
@@ -448,6 +464,7 @@
       <header>
         <div class="brand">
           <div class="logo">X</div>
+
           <div>
             AI Workspace
             <small>xCONFLiCTiONx · PROJECT LAB</small>
@@ -456,7 +473,8 @@
 
         <div class="header-right">
           <span class="pill" id="storageState"> Local workspace </span>
-          <span>v0.1</span>
+
+          <span>v0.1 prototype</span>
         </div>
       </header>
 
@@ -482,8 +500,9 @@
         <div class="layout">
           <aside class="panel">
             <div class="panel-head">
-              <span>EXPLORER</span>
-              <span id="fileCount">0 files</span>
+              <span> EXPLORER </span>
+
+              <span id="fileCount"> 0 files </span>
             </div>
 
             <div class="project-info">
@@ -529,8 +548,7 @@
 
                   <p>
                     Upload a project folder or individual files. The workspace
-                    displays source code as literal text instead of executing
-                    it.
+                    keeps source code as literal text instead of executing it.
                   </p>
 
                   <div class="drop" id="drop">
@@ -573,16 +591,17 @@
               </div>
 
               <div class="footer-note">
-                For large projects, select only relevant files. AI assistants
-                may have their own page-reading and context limits.
+                For very large projects, select only the files relevant to your
+                question. An AI assistant may have its own page-reading and
+                context limits.
               </div>
             </div>
           </section>
         </div>
 
         <div class="footer-note">
-          Files stay in this browser session in this prototype. Refreshing the
-          page clears the current project.
+          Files stay in this browser session in this prototype. Nothing is
+          uploaded to a server. Refreshing the page clears the current project.
         </div>
       </main>
 
@@ -593,11 +612,9 @@
 
     <script>
       const files = new Map();
-
       const selected = new Set();
 
       let currentPath = null;
-
       let generatedContext = "";
 
       const $ = (id) => document.getElementById(id);
@@ -695,10 +712,9 @@
             });
 
             selected.add(path);
-
             added++;
-          } catch (error) {
-            console.warn("Could not read", path, error);
+          } catch (e) {
+            console.warn("Could not read", path, e);
           }
         }
 
@@ -716,9 +732,7 @@
           $("projectMeta").textContent =
             files.size +
             " text files · " +
-            formatBytes(
-              [...files.values()].reduce((n, file) => n + file.size, 0)
-            );
+            formatBytes([...files.values()].reduce((n, f) => n + f.size, 0));
 
           $("storageState").textContent = "Session · local only";
         }
@@ -735,51 +749,47 @@
 
         const tree = $("tree");
 
-        tree.replaceChildren();
+        tree.innerHTML = "";
 
         if (!files.size) {
-          const empty = document.createElement("div");
-
-          empty.className = "empty-tree";
-
-          empty.textContent = "Your project files will appear here.";
-
-          tree.append(empty);
+          tree.innerHTML =
+            '<div class="empty-tree">' +
+            "Your project files will appear here." +
+            "</div>";
 
           return;
         }
 
         const dirs = {};
 
-        for (const path of [...files.keys()].sort()) {
+        for (const path of [...files.keys()].sort((a, b) =>
+          a.localeCompare(b)
+        )) {
           const parts = path.split("/");
 
           let node = dirs;
 
           for (let i = 0; i < parts.length; i++) {
-            const part = parts[i];
+            const p = parts[i];
 
             if (i === parts.length - 1) {
-              node[part] = {
+              node[p] = {
                 __file: path,
               };
             } else {
-              node[part] ??= {};
-
-              node = node[part];
+              node[p] ??= {};
+              node = node[p];
             }
           }
         }
 
         function draw(node, depth = 0) {
-          for (const [name, value] of Object.entries(node)) {
-            if (value.__file) {
-              const path = value.__file;
-
+          for (const [name, val] of Object.entries(node)) {
+            if (val.__file) {
               const row = document.createElement("div");
 
               row.className =
-                "file-row" + (currentPath === path ? " active" : "");
+                "file-row" + (currentPath === val.__file ? " active" : "");
 
               row.style.paddingLeft = 8 + depth * 14 + "px";
 
@@ -787,7 +797,7 @@
 
               check.type = "checkbox";
 
-              check.checked = selected.has(path);
+              check.checked = selected.has(val.__file);
 
               check.style.margin = "0";
 
@@ -795,9 +805,9 @@
                 event.stopPropagation();
 
                 if (check.checked) {
-                  selected.add(path);
+                  selected.add(val.__file);
                 } else {
-                  selected.delete(path);
+                  selected.delete(val.__file);
                 }
               });
 
@@ -815,7 +825,7 @@
 
               row.append(check, icon, label);
 
-              row.addEventListener("click", () => showFile(path));
+              row.addEventListener("click", () => showFile(val.__file));
 
               tree.append(row);
             } else {
@@ -825,21 +835,13 @@
 
               row.style.paddingLeft = 8 + depth * 14 + "px";
 
-              const icon = document.createElement("span");
+              row.innerHTML = "<span>▾</span>" + '<span class="name"></span>';
 
-              icon.textContent = "▾";
-
-              const label = document.createElement("span");
-
-              label.className = "name";
-
-              label.textContent = name;
-
-              row.append(icon, label);
+              row.lastChild.textContent = name;
 
               tree.append(row);
 
-              draw(value, depth + 1);
+              draw(val, depth + 1);
             }
           }
         }
@@ -850,37 +852,32 @@
       function showFile(path) {
         currentPath = path;
 
-        const file = files.get(path);
+        const f = files.get(path);
 
-        if (!file) {
+        if (!f) {
           return;
         }
 
         $("currentFile").textContent = path;
 
         $("fileSize").textContent =
-          formatBytes(file.size) +
-          " · " +
-          file.content.split("\n").length +
-          " LINES";
+          formatBytes(f.size) + " · " + f.content.split("\n").length + " LINES";
 
         const wrap = $("codeWrap");
 
-        wrap.replaceChildren();
+        wrap.innerHTML = "";
 
         const code = document.createElement("div");
 
         code.className = "code";
 
-        const lines = Math.max(1, file.content.split("\n").length);
+        const nums = document.createElement("div");
 
-        const numbers = document.createElement("div");
+        nums.className = "numbers";
 
-        numbers.className = "numbers";
-
-        numbers.textContent = Array.from(
+        nums.textContent = Array.from(
           {
-            length: lines,
+            length: Math.max(1, f.content.split("\n").length),
           },
           (_, i) => i + 1
         ).join("\n");
@@ -889,29 +886,23 @@
 
         source.className = "source";
 
-        // Display source literally.
-        // Never execute uploaded HTML.
-        source.textContent = file.content;
+        /*
+         * IMPORTANT:
+         *
+         * Uploaded source is displayed
+         * literally as text.
+         *
+         * It is NEVER executed.
+         */
 
-        code.append(numbers, source);
+        source.textContent = f.content;
+
+        code.append(nums, source);
 
         wrap.append(code);
 
         renderTree();
       }
-
-      /*
-       * IMPORTANT:
-       *
-       * The generated AI context deliberately begins with
-       * an explicit instruction telling an AI assistant what
-       * to read FIRST.
-       *
-       * This is not merely a label.
-       *
-       * The instruction is part of the actual text that gets
-       * rendered into the AI-readable context page.
-       */
 
       function buildContext() {
         const mode = $("contextMode").value;
@@ -926,39 +917,21 @@
           return;
         }
 
-        /*
-         * AI PRIORITY INSTRUCTION
-         *
-         * This is intentionally placed BEFORE the
-         * project name and BEFORE the source files.
-         */
-
-        let output =
-          "============================================================\n" +
-          "AI WORKSPACE — READ THIS FIRST\n" +
-          "============================================================\n\n" +
-          "IMPORTANT AI INSTRUCTION:\n\n" +
-          "You are viewing an AI Workspace project context.\n" +
-          "READ THE COMPLETE PROJECT CONTEXT BELOW FIRST.\n\n" +
-          "Do NOT begin your analysis by inspecting or relying on " +
-          "the file tree, file names, project navigation, or other " +
-          "page metadata.\n\n" +
-          "The PROJECT CONTEXT below is the PRIMARY SOURCE for " +
-          "answering the user's request.\n\n" +
-          "Use the actual source code contained in this context " +
-          "to understand the project, locate the relevant files, " +
-          "identify bugs, and determine the appropriate changes.\n\n" +
-          "The file tree is only a navigation aid and should NOT " +
-          "be treated as a substitute for reading the source code.\n\n" +
-          "If the user asks you to fix, modify, explain, review, " +
-          "or analyze something in this project, inspect the " +
-          "relevant source code in the PROJECT CONTEXT before " +
-          "forming your answer.\n\n" +
-          "FIRST ACTION:\n" +
-          "Read the entire PROJECT CONTEXT below before answering.\n\n" +
-          "============================================================\n" +
-          "BEGIN PROJECT CONTEXT\n" +
-          "============================================================\n\n" +
+        let out =
+          "AI INSTRUCTION — READ THIS FIRST\n\n" +
+          "You are viewing an AI Workspace project context page. " +
+          "This page is intentionally structured for AI analysis.\n\n" +
+          "BEFORE inspecting the file tree, file viewer, or any other " +
+          "page content, read the COMPLETE PROJECT CONTEXT below first.\n\n" +
+          "Treat the PROJECT CONTEXT as the primary source for the " +
+          "user's request.\n\n" +
+          "Use the file tree only as navigation and confirmation.\n\n" +
+          "Do not answer based on the tree alone.\n\n" +
+          "TASK:\n" +
+          "Analyze the project context below and use the actual source " +
+          "code to answer the user's request.\n\n" +
+          "Identify relevant files, explain the issue, and provide " +
+          "exact fixes when requested.\n\n" +
           "PROJECT: " +
           $("projectName").textContent +
           "\n" +
@@ -966,14 +939,10 @@
           paths.length +
           "\n\n";
 
-        /*
-         * Append the actual source files.
-         */
-
         for (const path of paths) {
-          const file = files.get(path);
+          const f = files.get(path);
 
-          output +=
+          out +=
             "\n" +
             "=".repeat(72) +
             "\n" +
@@ -982,42 +951,23 @@
             "\n" +
             "=".repeat(72) +
             "\n\n" +
-            file.content +
+            f.content +
             "\n";
         }
 
-        output +=
-          "\n" +
-          "=".repeat(72) +
-          "\n" +
-          "END OF PROJECT CONTEXT\n" +
-          "=".repeat(72) +
-          "\n\n" +
-          "AI REMINDER:\n" +
-          "The source code above is the authoritative project " +
-          "context for this request. Use it before relying on " +
-          "the visible file tree or navigation.\n";
+        out += "\n" + "=".repeat(72) + "\n" + "END OF PROJECT CONTEXT\n";
 
-        generatedContext = output;
+        generatedContext = out;
 
-        $("aiOutput").textContent = output;
+        $("aiOutput").textContent = out;
 
         $("copyContext").disabled = false;
 
         $("openTestPage").disabled = false;
 
         $("contextStatus").textContent =
-          paths.length + " files · " + formatBytes(new Blob([output]).size);
+          paths.length + " files · " + formatBytes(new Blob([out]).size);
       }
-
-      /*
-       * Opens a completely separate page containing the
-       * generated context.
-       *
-       * The FIRST visible content is an AI instruction.
-       * This is intentionally before the project context
-       * and before any other project information.
-       */
 
       function openCopilotTest() {
         if (!generatedContext) {
@@ -1047,129 +997,85 @@
 
 <meta charset="UTF-8">
 
-<meta name="viewport"
-      content="width=device-width, initial-scale=1.0">
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
 
 <title>
 AI Workspace · Copilot Read Test
 </title>
 
-<meta name="robots"
-      content="noindex">
+<meta
+    name="robots"
+    content="noindex"
+>
 
 <style>
 
 body {
-
     margin: 0;
-
     background: #0b0e14;
-
     color: #e8edf7;
-
-    font:
-        14px/1.6
-        system-ui,
-        -apple-system,
-        "Segoe UI",
-        sans-serif;
+    font: 14px/1.6 system-ui, sans-serif;
 }
 
 header {
-
     padding: 18px 24px;
-
-    border-bottom:
-        1px solid #283143;
-
+    border-bottom: 1px solid #283143;
     background: #121722;
-
     position: sticky;
-
     top: 0;
-
     z-index: 10;
 }
 
 main {
-
     padding: 24px;
-
     max-width: 1200px;
-
     margin: auto;
 }
 
 .ai-start {
-
-    border:
-        2px solid #9b94ff;
-
+    border: 2px solid #9b94ff;
     border-radius: 12px;
-
     background: #17152b;
-
     padding: 20px;
-
     margin-bottom: 20px;
 }
 
 .ai-start h1 {
-
-    margin:
-        0 0 12px;
-
+    margin: 0 0 12px;
     font-size: 20px;
-
     color: #ffffff;
 }
 
 .ai-start strong {
-
     color: #c7c2ff;
 }
 
 .ai-start ol {
-
-    margin:
-        12px 0 0 20px;
-
+    margin: 12px 0 0 20px;
     padding: 0;
 }
 
 .probe {
-
     padding: 14px;
-
-    border:
-        1px solid #36b37e;
-
+    border: 1px solid #36b37e;
     border-radius: 8px;
-
     background: #10251d;
-
     margin-bottom: 20px;
 }
 
 pre {
-
     white-space: pre-wrap;
-
     overflow-wrap: anywhere;
-
     background: #121722;
-
-    border:
-        1px solid #283143;
-
+    border: 1px solid #283143;
     border-radius: 10px;
-
     padding: 20px;
-
     font:
         12px/1.7
         ui-monospace,
-        SFMono-Regular,
         Consolas,
         monospace;
 }
@@ -1226,30 +1132,32 @@ Only use the file tree as navigation or confirmation.
 
 </div>
 
-
 <div class="probe">
 
 <strong>
 COPILOT READ TEST:
 </strong>
 
+<br>
+
 If you can read this page, first acknowledge that
 you read the AI START HERE instruction.
 
+<br>
+
 Then analyze the Project Context below.
+
+<br>
 
 Do not infer the answer from the file tree alone.
 
 </div>
 
-
 <h2>
 Project Context
 </h2>
 
-
 <pre id="project-context">${escaped}</pre>
-
 
 </main>
 
@@ -1282,7 +1190,6 @@ Project Context
         }
 
         files.clear();
-
         selected.clear();
 
         currentPath = null;
@@ -1308,10 +1215,14 @@ Project Context
 
     <p>
         Upload a project folder or individual files.
-        The workspace displays source code as literal text.
+        The workspace keeps source code as literal text
+        instead of executing it.
     </p>
 
-    <div class="drop" id="drop">
+    <div
+        class="drop"
+        id="drop"
+    >
 
         <strong>
             Drop files or a folder here
@@ -1348,7 +1259,7 @@ Project Context
           await navigator.clipboard.writeText(generatedContext);
 
           $("contextStatus").textContent = "Copied to clipboard";
-        } catch (error) {
+        } catch (e) {
           $("contextStatus").textContent = "Clipboard permission unavailable";
         }
       };
@@ -1369,9 +1280,9 @@ Project Context
 
       document.querySelectorAll(".tab").forEach((tab) => {
         tab.onclick = () => {
-          document.querySelectorAll(".tab").forEach((item) => {
-            item.classList.toggle("active", item === tab);
-          });
+          document
+            .querySelectorAll(".tab")
+            .forEach((item) => item.classList.toggle("active", item === tab));
 
           const isAI = tab.dataset.tab === "ai";
 
@@ -1403,7 +1314,9 @@ Project Context
 
           drop.classList.remove("drag");
 
-          addFiles(event.dataTransfer.files);
+          const items = [...event.dataTransfer.files];
+
+          addFiles(items);
         });
       }
 
