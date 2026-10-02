@@ -468,6 +468,78 @@
               padding: 0 17px;
             }
           }
+          /* AI Workspace - force dark theme override */
+          /* Keep existing header/layout. Only override theme colors. */
+
+          #ai-workspace,
+          #ai-workspace .workspace-shell {
+            --aw-bg: #0b0e14 !important;
+            --aw-panel: #121722 !important;
+            --aw-panel2: #171d29 !important;
+            --aw-text: #e8edf7 !important;
+            --aw-muted: #9aa6bb !important;
+            --aw-line: #283143 !important;
+            --aw-accent: #9b94ff !important;
+            --aw-accent2: #29264e !important;
+
+            background: #0b0e14 !important;
+            color: #e8edf7 !important;
+            color-scheme: dark !important;
+          }
+
+          #ai-workspace .workspace-header {
+            background: #121722 !important;
+            border-color: #283143 !important;
+          }
+
+          #ai-workspace .panel,
+          #ai-workspace .code-wrap {
+            background: #121722 !important;
+            border-color: #283143 !important;
+          }
+
+          #ai-workspace .tabs {
+            background: #171d29 !important;
+            border-color: #283143 !important;
+          }
+
+          #ai-workspace button,
+          #ai-workspace .button {
+            background: #121722 !important;
+            color: #e8edf7 !important;
+            border-color: #283143 !important;
+          }
+
+          #ai-workspace .pill {
+            background: #171d29 !important;
+            border-color: #283143 !important;
+          }
+
+          #ai-workspace .drop,
+          #ai-workspace .ai-output {
+            background: #171d29 !important;
+            border-color: #283143 !important;
+          }
+
+          #ai-workspace h1,
+          #ai-workspace h2,
+          #ai-workspace strong {
+            color: #e8edf7 !important;
+          }
+
+          #ai-workspace input,
+          #ai-workspace select {
+            background: #171d29 !important;
+            color: #e8edf7 !important;
+            border-color: #283143 !important;
+          }
+
+          /* Prevent browser/site light theme injection */
+          html:has(#ai-workspace),
+          html:has(#ai-workspace) body {
+            background: #0b0e14 !important;
+            color-scheme: dark !important;
+          }
         </style>
 
         <div class="workspace-shell">
