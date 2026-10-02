@@ -556,7 +556,7 @@
             <div class="header-right">
               <span class="pill" id="storageState"> Local workspace </span>
 
-              <span>v0.1 prototype</span>
+              <span>v1.0 prototype</span>
             </div>
           </header>
 
@@ -668,8 +668,6 @@
 
                     <button id="copyContext" disabled>Copy context</button>
 
-                    <button id="openTestPage" disabled>Open Copilot</button>
-
                     <span class="status" id="contextStatus">
                       No context generated
                     </span>
@@ -708,7 +706,6 @@
       const selected = new Set();
 
       let currentPath = null;
-      let generatedContext = "";
 
       const $ = (id) => document.getElementById(id);
 
@@ -1017,202 +1014,12 @@ FILE COUNT: ${paths.length}
 
         out += "\n" + "=".repeat(72) + "\nEND OF PROJECT CONTEXT\n";
 
-        generatedContext = out;
-
         $("aiOutput").textContent = out;
 
         $("copyContext").disabled = false;
 
-        $("openTestPage").disabled = false;
-
         $("contextStatus").textContent =
           paths.length + " files · " + formatBytes(new Blob([out]).size);
-      }
-
-      function openCopilotTest() {
-        if (!generatedContext) {
-          return;
-        }
-
-        const isEdge = /Edg\//i.test(navigator.userAgent);
-
-        const isChrome = /Chrome\//i.test(navigator.userAgent) && !isEdge;
-
-        const assistant = isEdge
-          ? "Copilot"
-          : isChrome
-          ? "Gemini"
-          : "AI assistant";
-
-        const test = window.open("", "_blank");
-
-        if (!test) {
-          $("contextStatus").textContent = "Popup blocked — allow popups";
-
-          return;
-        }
-
-        const escaped = generatedContext
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;");
-
-        test.document.write(`
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI Workspace · ${assistant} Read Test</title>
-<meta name="robots" content="noindex">
-
-<style>
-body {
-    margin: 0;
-    background: #0b0e14;
-    color: #e8edf7;
-    font: 14px/1.6 system-ui, sans-serif;
-}
-
-header {
-    padding: 18px 24px;
-    border-bottom: 1px solid #283143;
-    background: #121722;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-}
-
-main {
-    padding: 24px;
-    max-width: 1200px;
-    margin: auto;
-}
-
-.ai-start {
-    border: 2px solid #9b94ff;
-    border-radius: 12px;
-    background: #17152b;
-    padding: 20px;
-    margin-bottom: 20px;
-}
-
-.ai-start h1 {
-    margin: 0 0 12px;
-    font-size: 20px;
-    color: #fff;
-}
-
-.ai-start strong {
-    color: #c7c2ff;
-}
-
-.ai-start ol {
-    margin: 12px 0 0 20px;
-    padding: 0;
-}
-
-.probe {
-    padding: 14px;
-    border: 1px solid #36b37e;
-    border-radius: 8px;
-    background: #10251d;
-    margin-bottom: 20px;
-}
-
-pre {
-    white-space: pre-wrap;
-    overflow-wrap: anywhere;
-    background: #121722;
-    border: 1px solid #283143;
-    border-radius: 10px;
-    padding: 20px;
-    font: 12px/1.7 ui-monospace, Consolas, monospace;
-}
-</style>
-</head>
-
-<body>
-
-<header>
-<strong>
-AI Workspace · ${assistant} Read Test
-</strong>
-</header>
-
-<main>
-
-<div class="ai-start">
-
-<h1>
-AI START HERE
-</h1>
-
-<strong>
-READ THIS INSTRUCTION BEFORE ANYTHING ELSE ON THIS PAGE.
-</strong>
-
-<ol>
-
-<li>
-Read the complete Project Context below.
-</li>
-
-<li>
-Treat the Project Context as the primary source for the user's request.
-</li>
-
-<li>
-Do not answer from the file tree or filenames alone.
-</li>
-
-<li>
-Use the actual source code to determine the answer.
-</li>
-
-<li>
-Only use the file tree as navigation or confirmation.
-</li>
-
-</ol>
-
-</div>
-
-<div class="probe">
-
-<strong>
-${assistant.toUpperCase()} READ TEST:
-</strong>
-
-<br>
-
-If you can read this page, first acknowledge that you read the AI START HERE instruction.
-
-<br>
-
-Then analyze the Project Context below.
-
-<br>
-
-Do not infer the answer from the file tree alone.
-
-</div>
-
-<h2>
-Project Context
-</h2>
-
-<pre id="project-context">${escaped}</pre>
-
-</main>
-
-</body>
-</html>
-`);
-
-        test.document.close();
-
-        $("contextStatus").textContent = assistant + " test page opened";
       }
 
       $("openFiles").onclick = () => $("fileInput").click();
@@ -1236,7 +1043,6 @@ Project Context
         selected.clear();
 
         currentPath = null;
-        generatedContext = "";
 
         $("projectName").textContent = "No project loaded";
 
@@ -1280,8 +1086,6 @@ Or use Upload folder to select a project
 
         $("copyContext").disabled = true;
 
-        $("openTestPage").disabled = true;
-
         $("contextStatus").textContent = "No context generated";
 
         renderTree();
@@ -1300,8 +1104,6 @@ Or use Upload folder to select a project
           $("contextStatus").textContent = "Clipboard permission unavailable";
         }
       };
-
-      $("openTestPage").onclick = openCopilotTest;
 
       $("selectAll").onclick = () => {
         files.forEach((_, p) => selected.add(p));
