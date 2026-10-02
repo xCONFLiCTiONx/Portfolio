@@ -1,967 +1,1413 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AI Workspace</title>
+
     <style>
-        :root {
-            color-scheme: light dark;
-            --bg: light-dark(#f4f6fa, #0b0e14);
-            --panel: light-dark(#ffffff, #121722);
-            --panel2: light-dark(#f8f9fc, #171d29);
-            --text: light-dark(#202637, #e8edf7);
-            --muted: light-dark(#697386, #9aa6bb);
-            --line: light-dark(#e2e6ef, #283143);
-            --accent: light-dark(#635bdb, #9b94ff);
-            --accent2: light-dark(#eeedff, #29264e);
-        }
+      :root {
+        color-scheme: light dark;
+        --bg: light-dark(#f4f6fa, #0b0e14);
+        --panel: light-dark(#ffffff, #121722);
+        --panel2: light-dark(#f8f9fc, #171d29);
+        --text: light-dark(#202637, #e8edf7);
+        --muted: light-dark(#697386, #9aa6bb);
+        --line: light-dark(#e2e6ef, #283143);
+        --accent: light-dark(#635bdb, #9b94ff);
+        --accent2: light-dark(#eeedff, #29264e);
+      }
 
-        * {
-            box-sizing: border-box;
-        }
+      * {
+        box-sizing: border-box;
+      }
 
-        body {
-            margin: 0;
-            background: var(--bg);
-            color: var(--text);
-            font: 14px/1.5 Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
-        }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font: 14px/1.5 Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+      }
 
-        #app {
-            min-height: 100vh;
-            background: var(--bg);
-        }
+      #app {
+        min-height: 100vh;
+        background: var(--bg);
+      }
 
-        header {
-            height: 68px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 26px;
-            border-bottom: 1px solid var(--line);
-            background: var(--panel);
-        }
+      header {
+        height: 68px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 26px;
+        border-bottom: 1px solid var(--line);
+        background: var(--panel);
+      }
 
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-weight: 750;
-            font-size: 16px;
-        }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 750;
+        font-size: 16px;
+      }
 
-        .logo {
-            width: 34px;
-            height: 34px;
-            border-radius: 10px;
-            background: linear-gradient(135deg, #7168f5, #a38cff);
-            display: grid;
-            place-items: center;
-            color: white;
-            font-weight: 900;
-        }
+      .logo {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #7168f5, #a38cff);
+        display: grid;
+        place-items: center;
+        color: white;
+        font-weight: 900;
+      }
 
-        .brand small {
-            display: block;
-            color: var(--muted);
-            font-size: 11px;
-            font-weight: 500;
-        }
+      .brand small {
+        display: block;
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 500;
+      }
 
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: var(--muted);
-            font-size: 12px;
-        }
+      .header-right {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--muted);
+        font-size: 12px;
+      }
 
-        .pill {
-            border: 1px solid var(--line);
-            border-radius: 99px;
-            padding: 6px 10px;
-            background: var(--panel2);
-        }
+      .pill {
+        border: 1px solid var(--line);
+        border-radius: 99px;
+        padding: 6px 10px;
+        background: var(--panel2);
+      }
 
+      main {
+        max-width: 1440px;
+        margin: auto;
+        padding: 26px;
+      }
+
+      .top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        gap: 20px;
+        margin-bottom: 22px;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 27px;
+        letter-spacing: -0.8px;
+      }
+
+      .subtitle {
+        color: var(--muted);
+        margin-top: 6px;
+      }
+
+      .actions {
+        display: flex;
+        gap: 9px;
+        flex-wrap: wrap;
+      }
+
+      button {
+        border: 1px solid var(--line);
+        background: var(--panel);
+        color: var(--text);
+        padding: 9px 13px;
+        border-radius: 9px;
+        font: inherit;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.15s;
+      }
+
+      button:hover {
+        border-color: var(--accent);
+        transform: translateY(-1px);
+      }
+
+      button.primary {
+        background: var(--accent);
+        color: white;
+        border-color: var(--accent);
+      }
+
+      button:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: 290px minmax(0, 1fr);
+        gap: 16px;
+        min-height: 600px;
+      }
+
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 13px;
+        overflow: hidden;
+      }
+
+      .panel-head {
+        height: 51px;
+        padding: 0 15px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid var(--line);
+        font-weight: 700;
+        font-size: 12px;
+      }
+
+      .panel-head span:last-child {
+        color: var(--muted);
+        font-weight: 500;
+      }
+
+      .project-info {
+        padding: 14px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .project-name {
+        font-weight: 700;
+        font-size: 13px;
+      }
+
+      .project-meta {
+        color: var(--muted);
+        font-size: 11px;
+        margin-top: 3px;
+      }
+
+      .tree {
+        padding: 10px 8px;
+        max-height: 490px;
+        overflow: auto;
+      }
+
+      .file-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 8px;
+        border-radius: 7px;
+        cursor: pointer;
+        font-size: 12px;
+        white-space: nowrap;
+        overflow: hidden;
+      }
+
+      .file-row:hover {
+        background: var(--panel2);
+      }
+
+      .file-row.active {
+        background: var(--accent2);
+        color: var(--accent);
+        font-weight: 650;
+      }
+
+      .file-row .name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .folder {
+        color: var(--muted);
+        font-weight: 650;
+      }
+
+      .empty-tree {
+        padding: 24px 12px;
+        text-align: center;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .content {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+      }
+
+      .tabs {
+        display: flex;
+        align-items: center;
+        gap: 3px;
+        padding: 8px 10px;
+        border-bottom: 1px solid var(--line);
+        background: var(--panel2);
+      }
+
+      .tab {
+        padding: 7px 11px;
+        border-radius: 7px;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 650;
+        cursor: pointer;
+      }
+
+      .tab.active {
+        color: var(--text);
+        background: var(--panel);
+      }
+
+      .editor-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 11px 15px;
+        border-bottom: 1px solid var(--line);
+        font-size: 11px;
+        color: var(--muted);
+        gap: 12px;
+      }
+
+      .editor-head strong {
+        color: var(--text);
+        font-weight: 650;
+        overflow-wrap: anywhere;
+      }
+
+      .code-wrap {
+        flex: 1;
+        min-height: 450px;
+        overflow: auto;
+        background: var(--panel);
+      }
+
+      .code {
+        display: flex;
+        min-width: max-content;
+        font: 12px/1.7 ui-monospace, SFMono-Regular, Consolas, monospace;
+        white-space: pre;
+      }
+
+      .numbers {
+        padding: 15px 12px 24px 16px;
+        text-align: right;
+        color: var(--muted);
+        opacity: 0.55;
+        user-select: none;
+        border-right: 1px solid var(--line);
+      }
+
+      .source {
+        padding: 15px 22px 24px;
+        white-space: pre;
+        tab-size: 4;
+      }
+
+      .welcome {
+        max-width: 560px;
+        margin: 70px auto;
+        text-align: center;
+        padding: 20px;
+      }
+
+      .welcome-icon {
+        margin: auto auto 16px;
+        width: 54px;
+        height: 54px;
+        border-radius: 16px;
+        background: var(--accent2);
+        color: var(--accent);
+        display: grid;
+        place-items: center;
+        font-size: 24px;
+      }
+
+      .welcome h2 {
+        margin: 0 0 8px;
+        font-size: 20px;
+      }
+
+      .welcome p {
+        color: var(--muted);
+        line-height: 1.7;
+      }
+
+      .drop {
+        border: 1px dashed #8994aa;
+        border-radius: 12px;
+        padding: 18px;
+        margin-top: 18px;
+        background: var(--panel2);
+      }
+
+      .drop.drag {
+        border-color: var(--accent);
+        background: var(--accent2);
+      }
+
+      .drop strong {
+        display: block;
+        margin-bottom: 5px;
+      }
+
+      .drop small {
+        color: var(--muted);
+      }
+
+      .ai-view {
+        display: none;
+        padding: 20px;
+      }
+
+      .ai-toolbar {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-bottom: 12px;
+      }
+
+      .ai-toolbar select {
+        border: 1px solid var(--line);
+        background: var(--panel2);
+        color: var(--text);
+        border-radius: 8px;
+        padding: 9px 10px;
+        font: inherit;
+        font-size: 12px;
+      }
+
+      .ai-output {
+        border: 1px solid var(--line);
+        border-radius: 9px;
+        background: var(--panel2);
+        padding: 16px;
+        max-height: 560px;
+        overflow: auto;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        font: 11px/1.65 ui-monospace, SFMono-Regular, Consolas, monospace;
+      }
+
+      .status {
+        color: var(--muted);
+        font-size: 11px;
+        margin-left: auto;
+      }
+
+      .footer-note {
+        color: var(--muted);
+        font-size: 11px;
+        margin-top: 12px;
+      }
+
+      input[type="file"] {
+        display: none;
+      }
+
+      @media (max-width: 850px) {
         main {
-            max-width: 1440px;
-            margin: auto;
-            padding: 26px;
-        }
-
-        .top {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            gap: 20px;
-            margin-bottom: 22px;
-        }
-
-        h1 {
-            margin: 0;
-            font-size: 27px;
-            letter-spacing: -.8px;
-        }
-
-        .subtitle {
-            color: var(--muted);
-            margin-top: 6px;
-        }
-
-        .actions {
-            display: flex;
-            gap: 9px;
-            flex-wrap: wrap;
-        }
-
-        button {
-            border: 1px solid var(--line);
-            background: var(--panel);
-            color: var(--text);
-            padding: 9px 13px;
-            border-radius: 9px;
-            font: inherit;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: .15s;
-        }
-
-        button:hover {
-            border-color: var(--accent);
-            transform: translateY(-1px);
-        }
-
-        button.primary {
-            background: var(--accent);
-            color: white;
-            border-color: var(--accent);
-        }
-
-        button:disabled {
-            opacity: .4;
-            cursor: not-allowed;
-            transform: none;
+          padding: 17px;
         }
 
         .layout {
-            display: grid;
-            grid-template-columns: 290px minmax(0, 1fr);
-            gap: 16px;
-            min-height: 600px;
-        }
-
-        .panel {
-            background: var(--panel);
-            border: 1px solid var(--line);
-            border-radius: 13px;
-            overflow: hidden;
-        }
-
-        .panel-head {
-            height: 51px;
-            padding: 0 15px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-bottom: 1px solid var(--line);
-            font-weight: 700;
-            font-size: 12px;
-        }
-
-        .panel-head span:last-child {
-            color: var(--muted);
-            font-weight: 500;
-        }
-
-        .project-info {
-            padding: 14px;
-            border-bottom: 1px solid var(--line);
-        }
-
-        .project-name {
-            font-weight: 700;
-            font-size: 13px;
-        }
-
-        .project-meta {
-            color: var(--muted);
-            font-size: 11px;
-            margin-top: 3px;
+          grid-template-columns: 1fr;
         }
 
         .tree {
-            padding: 10px 8px;
-            max-height: 490px;
-            overflow: auto;
-        }
-
-        .file-row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 6px 8px;
-            border-radius: 7px;
-            cursor: pointer;
-            font-size: 12px;
-            white-space: nowrap;
-            overflow: hidden;
-        }
-
-        .file-row:hover {
-            background: var(--panel2);
-        }
-
-        .file-row.active {
-            background: var(--accent2);
-            color: var(--accent);
-            font-weight: 650;
-        }
-
-        .file-row .name {
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .folder {
-            color: var(--muted);
-            font-weight: 650;
-        }
-
-        .empty-tree {
-            padding: 24px 12px;
-            text-align: center;
-            color: var(--muted);
-            font-size: 12px;
-        }
-
-        .content {
-            display: flex;
-            flex-direction: column;
-            min-width: 0;
-        }
-
-        .tabs {
-            display: flex;
-            align-items: center;
-            gap: 3px;
-            padding: 8px 10px;
-            border-bottom: 1px solid var(--line);
-            background: var(--panel2);
-        }
-
-        .tab {
-            padding: 7px 11px;
-            border-radius: 7px;
-            color: var(--muted);
-            font-size: 12px;
-            font-weight: 650;
-            cursor: pointer;
-        }
-
-        .tab.active {
-            color: var(--text);
-            background: var(--panel);
-        }
-
-        .editor-head {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 11px 15px;
-            border-bottom: 1px solid var(--line);
-            font-size: 11px;
-            color: var(--muted);
-            gap: 12px;
-        }
-
-        .editor-head strong {
-            color: var(--text);
-            font-weight: 650;
-            overflow-wrap: anywhere;
+          max-height: 220px;
         }
 
         .code-wrap {
-            flex: 1;
-            min-height: 450px;
-            overflow: auto;
-            background: var(--panel);
+          min-height: 400px;
         }
 
-        .code {
-            display: flex;
-            min-width: max-content;
-            font: 12px/1.7 ui-monospace, SFMono-Regular, Consolas, monospace;
-            white-space: pre;
+        .top {
+          align-items: flex-start;
+          flex-direction: column;
         }
 
-        .numbers {
-            padding: 15px 12px 24px 16px;
-            text-align: right;
-            color: var(--muted);
-            opacity: .55;
-            user-select: none;
-            border-right: 1px solid var(--line);
+        header {
+          padding: 0 17px;
         }
-
-        .source {
-            padding: 15px 22px 24px;
-            white-space: pre;
-            tab-size: 4;
-        }
-
-        .welcome {
-            max-width: 560px;
-            margin: 70px auto;
-            text-align: center;
-            padding: 20px;
-        }
-
-        .welcome-icon {
-            margin: auto auto 16px;
-            width: 54px;
-            height: 54px;
-            border-radius: 16px;
-            background: var(--accent2);
-            color: var(--accent);
-            display: grid;
-            place-items: center;
-            font-size: 24px;
-        }
-
-        .welcome h2 {
-            margin: 0 0 8px;
-            font-size: 20px;
-        }
-
-        .welcome p {
-            color: var(--muted);
-            line-height: 1.7;
-        }
-
-        .drop {
-            border: 1px dashed #8994aa;
-            border-radius: 12px;
-            padding: 18px;
-            margin-top: 18px;
-            background: var(--panel2);
-        }
-
-        .drop.drag {
-            border-color: var(--accent);
-            background: var(--accent2);
-        }
-
-        .drop strong {
-            display: block;
-            margin-bottom: 5px;
-        }
-
-        .drop small {
-            color: var(--muted);
-        }
-
-        .ai-view {
-            display: none;
-            padding: 20px;
-        }
-
-        .ai-toolbar {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-            flex-wrap: wrap;
-            margin-bottom: 12px;
-        }
-
-        .ai-toolbar select {
-            border: 1px solid var(--line);
-            background: var(--panel2);
-            color: var(--text);
-            border-radius: 8px;
-            padding: 9px 10px;
-            font: inherit;
-            font-size: 12px;
-        }
-
-        .ai-output {
-            border: 1px solid var(--line);
-            border-radius: 9px;
-            background: var(--panel2);
-            padding: 16px;
-            max-height: 560px;
-            overflow: auto;
-            white-space: pre-wrap;
-            overflow-wrap: anywhere;
-            font: 11px/1.65 ui-monospace, SFMono-Regular, Consolas, monospace;
-        }
-
-        .status {
-            color: var(--muted);
-            font-size: 11px;
-            margin-left: auto;
-        }
-
-        .footer-note {
-            color: var(--muted);
-            font-size: 11px;
-            margin-top: 12px;
-        }
-
-        input[type=file] {
-            display: none;
-        }
-
-        @media(max-width:850px) {
-            main {
-                padding: 17px;
-            }
-
-            .layout {
-                grid-template-columns: 1fr;
-            }
-
-            .tree {
-                max-height: 220px;
-            }
-
-            .code-wrap {
-                min-height: 400px;
-            }
-
-            .top {
-                align-items: flex-start;
-                flex-direction: column;
-            }
-
-            header {
-                padding: 0 17px;
-            }
-        }
+      }
     </style>
-</head>
+  </head>
 
-<body>
+  <body>
     <div id="app">
+      <header>
+        <div class="brand">
+          <div class="logo">X</div>
+          <div>
+            AI Workspace
+            <small>xCONFLiCTiONx · PROJECT LAB</small>
+          </div>
+        </div>
 
-        <header>
-            <div class="brand">
-                <div class="logo">X</div>
-                <div>
-                    AI Workspace
-                    <small>xCONFLiCTiONx · PROJECT LAB</small>
+        <div class="header-right">
+          <span class="pill" id="storageState"> Local workspace </span>
+          <span>v0.1</span>
+        </div>
+      </header>
+
+      <main>
+        <div class="top">
+          <div>
+            <h1>Project workspace</h1>
+
+            <div class="subtitle">
+              Bring an entire codebase into a browser-readable workspace.
+            </div>
+          </div>
+
+          <div class="actions">
+            <button id="openFiles">＋ Add files</button>
+
+            <button id="openFolder" class="primary">＋ Upload folder</button>
+
+            <button id="clearProject">Clear project</button>
+          </div>
+        </div>
+
+        <div class="layout">
+          <aside class="panel">
+            <div class="panel-head">
+              <span>EXPLORER</span>
+              <span id="fileCount">0 files</span>
+            </div>
+
+            <div class="project-info">
+              <div class="project-name" id="projectName">No project loaded</div>
+
+              <div class="project-meta" id="projectMeta">
+                Upload a folder or select files to begin
+              </div>
+            </div>
+
+            <div class="tree" id="tree">
+              <div class="empty-tree">Your project files will appear here.</div>
+            </div>
+          </aside>
+
+          <section class="panel content">
+            <div class="tabs">
+              <div class="tab active" data-tab="file">File viewer</div>
+
+              <div class="tab" data-tab="ai">AI context</div>
+            </div>
+
+            <div
+              id="fileView"
+              style="
+                display: flex;
+                flex-direction: column;
+                flex: 1;
+                min-height: 0;
+              "
+            >
+              <div class="editor-head">
+                <strong id="currentFile"> No file selected </strong>
+
+                <span id="fileSize"> SOURCE VIEW · TEXT ONLY </span>
+              </div>
+
+              <div class="code-wrap" id="codeWrap">
+                <div class="welcome">
+                  <div class="welcome-icon">⌘</div>
+
+                  <h2>Your project, readable by AI</h2>
+
+                  <p>
+                    Upload a project folder or individual files. The workspace
+                    displays source code as literal text instead of executing
+                    it.
+                  </p>
+
+                  <div class="drop" id="drop">
+                    <strong> Drop files or a folder here </strong>
+
+                    <small> Or use Upload folder to select a project </small>
+                  </div>
                 </div>
-            </div>
-            <div class="header-right">
-                <span class="pill" id="storageState">Local workspace</span>
-                <span>v0.1</span>
-            </div>
-        </header>
-
-        <main>
-            <div class="top">
-                <div>
-                    <h1>Project workspace</h1>
-                    <div class="subtitle">
-                        Bring an entire codebase into a browser-readable workspace.
-                    </div>
-                </div>
-
-                <div class="actions">
-                    <button id="openFiles">＋ Add files</button>
-                    <button id="openFolder" class="primary">＋ Upload folder</button>
-                    <button id="clearProject">Clear project</button>
-                </div>
+              </div>
             </div>
 
-            <div class="layout">
+            <div class="ai-view" id="aiView">
+              <div class="ai-toolbar">
+                <button id="selectAll">Select all</button>
 
-                <aside class="panel">
-                    <div class="panel-head">
-                        <span>EXPLORER</span>
-                        <span id="fileCount">0 files</span>
-                    </div>
+                <button id="selectNone">Select none</button>
 
-                    <div class="project-info">
-                        <div class="project-name" id="projectName">
-                            No project loaded
-                        </div>
-                        <div class="project-meta" id="projectMeta">
-                            Upload a folder or select files to begin
-                        </div>
-                    </div>
+                <select id="contextMode">
+                  <option value="selected">Selected files</option>
 
-                    <div class="tree" id="tree">
-                        <div class="empty-tree">
-                            Your project files will appear here.
-                        </div>
-                    </div>
-                </aside>
+                  <option value="all">All text files</option>
+                </select>
 
-                <section class="panel content">
+                <button class="primary" id="buildContext">
+                  Build AI context
+                </button>
 
-                    <div class="tabs">
-                        <div class="tab active" data-tab="file">File viewer</div>
-                        <div class="tab" data-tab="ai">AI context</div>
-                    </div>
+                <button id="copyContext" disabled>Copy context</button>
 
-                    <div id="fileView" style="display:flex;flex-direction:column;flex:1;min-height:0">
+                <button id="openTestPage" disabled>Open Copilot Test</button>
 
-                        <div class="editor-head">
-                            <strong id="currentFile">No file selected</strong>
-                            <span id="fileSize">SOURCE VIEW · TEXT ONLY</span>
-                        </div>
+                <span class="status" id="contextStatus">
+                  No context generated
+                </span>
+              </div>
 
-                        <div class="code-wrap" id="codeWrap">
-                            <div class="welcome">
-                                <div class="welcome-icon">⌘</div>
-                                <h2>Your project, readable by AI</h2>
-                                <p>
-                                    Upload a project folder or individual files.
-                                    The workspace displays source code as literal
-                                    text instead of executing it.
-                                </p>
-                                <div class="drop" id="drop">
-                                    <strong>Drop files or a folder here</strong>
-                                    <small>
-                                Or use Upload folder to select a project
-                            </small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+              <div class="ai-output" id="aiOutput">
+                Choose files in the explorer, then build an AI context page. The
+                generated text includes file paths and source boundaries.
+              </div>
 
-                    <div class="ai-view" id="aiView">
-                        <div class="ai-toolbar">
-                            <button id="selectAll">Select all</button>
-                            <button id="selectNone">Select none</button>
-
-                            <select id="contextMode">
-                        <option value="selected">Selected files</option>
-                        <option value="all">All text files</option>
-                    </select>
-
-                            <button class="primary" id="buildContext">
-                        Build AI context
-                    </button>
-
-                            <button id="copyContext" disabled>
-                        Copy context
-                    </button>
-
-                            <span class="status" id="contextStatus">
-                        No context generated
-                    </span>
-                        </div>
-
-                        <div class="ai-output" id="aiOutput">
-                            Choose files in the explorer, then build an AI
-                            context page. The generated text includes file
-                            paths and source boundaries.
-                        </div>
-
-                        <div class="footer-note">
-                            For large projects, select only relevant files.
-                            AI assistants may have their own page-reading
-                            and context limits.
-                        </div>
-                    </div>
-                </section>
+              <div class="footer-note">
+                For large projects, select only relevant files. AI assistants
+                may have their own page-reading and context limits.
+              </div>
             </div>
+          </section>
+        </div>
 
-            <div class="footer-note">
-                Files stay in this browser session in this prototype.
-                Refreshing the page clears the current project.
-            </div>
-        </main>
+        <div class="footer-note">
+          Files stay in this browser session in this prototype. Refreshing the
+          page clears the current project.
+        </div>
+      </main>
 
-        <input id="fileInput" type="file" multiple>
-        <input id="folderInput" type="file" webkitdirectory multiple>
+      <input id="fileInput" type="file" multiple />
 
+      <input id="folderInput" type="file" webkitdirectory multiple />
     </div>
 
     <script>
-        const files = new Map();
-const selected = new Set();
+      const files = new Map();
 
-let currentPath = null;
-let generatedContext = "";
+      const selected = new Set();
 
-const $ = id => document.getElementById(id);
+      let currentPath = null;
 
-const textExtensions = new Set([
-    "html", "htm", "css", "scss", "sass",
-    "js", "mjs", "cjs", "jsx", "ts", "tsx",
-    "json", "md", "txt", "xml", "svg",
-    "yaml", "yml", "toml", "ini", "env",
-    "py", "rb", "php", "java", "cs",
-    "cpp", "c", "h", "hpp", "go", "rs",
-    "sh", "ps1", "sql", "vue", "svelte",
-    "astro", "gitignore", "dockerfile",
-    "bat", "cmd", "config", "properties",
-    "lock"
-]);
+      let generatedContext = "";
 
-function isText(file) {
-    const name = file.name.toLowerCase();
-    const ext = name.includes(".")
-        ? name.split(".").pop()
-        : name;
+      const $ = (id) => document.getElementById(id);
 
-    return textExtensions.has(ext) ||
-        ["readme", "license", "makefile", "dockerfile"].includes(name);
-}
+      const textExtensions = new Set([
+        "html",
+        "htm",
+        "css",
+        "scss",
+        "sass",
+        "js",
+        "mjs",
+        "cjs",
+        "jsx",
+        "ts",
+        "tsx",
+        "json",
+        "md",
+        "txt",
+        "xml",
+        "svg",
+        "yaml",
+        "yml",
+        "toml",
+        "ini",
+        "env",
+        "py",
+        "rb",
+        "php",
+        "java",
+        "cs",
+        "cpp",
+        "c",
+        "h",
+        "hpp",
+        "go",
+        "rs",
+        "sh",
+        "ps1",
+        "sql",
+        "vue",
+        "svelte",
+        "astro",
+        "gitignore",
+        "dockerfile",
+        "bat",
+        "cmd",
+        "config",
+        "properties",
+        "lock",
+      ]);
 
-function formatBytes(n) {
-    if (n < 1024) return n + " B";
-    if (n < 1048576) return (n / 1024).toFixed(1) + " KB";
-    return (n / 1048576).toFixed(2) + " MB";
-}
+      function isText(file) {
+        const name = file.name.toLowerCase();
 
-async function addFiles(list) {
-    let added = 0;
+        const ext = name.includes(".") ? name.split(".").pop() : name;
 
-    for (const file of list) {
-        const path = (
-            file.webkitRelativePath || file.name
-        ).replace(/^\/+/, "");
+        return (
+          textExtensions.has(ext) ||
+          ["readme", "license", "makefile", "dockerfile"].includes(name)
+        );
+      }
 
-        if (!isText(file)) continue;
+      function formatBytes(n) {
+        if (n < 1024) {
+          return n + " B";
+        }
 
-        try {
+        if (n < 1048576) {
+          return (n / 1024).toFixed(1) + " KB";
+        }
+
+        return (n / 1048576).toFixed(2) + " MB";
+      }
+
+      async function addFiles(list) {
+        let added = 0;
+
+        for (const file of list) {
+          const path = (file.webkitRelativePath || file.name).replace(
+            /^\/+/,
+            ""
+          );
+
+          if (!isText(file)) {
+            continue;
+          }
+
+          try {
             const content = await file.text();
 
             files.set(path, {
-                content,
-                size: file.size
+              content,
+              size: file.size,
             });
 
             selected.add(path);
+
             added++;
-        } catch (error) {
+          } catch (error) {
             console.warn("Could not read", path, error);
+          }
         }
-    }
 
-    renderTree();
+        renderTree();
 
-    if (added) {
-        const first = [...files.keys()][0];
+        if (added) {
+          const first = [...files.keys()][0];
 
-        if (!currentPath && first) {
+          if (!currentPath && first) {
             showFile(first);
-        }
+          }
 
-        $("projectName").textContent =
-            commonRoot([...files.keys()]);
+          $("projectName").textContent = commonRoot([...files.keys()]);
 
-        $("projectMeta").textContent =
-            files.size + " text files · " +
+          $("projectMeta").textContent =
+            files.size +
+            " text files · " +
             formatBytes(
-                [...files.values()].reduce(
-                    (n, file) => n + file.size, 0
-                )
+              [...files.values()].reduce((n, file) => n + file.size, 0)
             );
 
-        $("storageState").textContent = "Session · local only";
-    }
-}
+          $("storageState").textContent = "Session · local only";
+        }
+      }
 
-function commonRoot(paths) {
-    const first = paths[0] || "Project";
+      function commonRoot(paths) {
+        const first = paths[0] || "Project";
 
-    return first.includes("/")
-        ? first.split("/")[0]
-        : "Uploaded project";
-}
+        return first.includes("/") ? first.split("/")[0] : "Uploaded project";
+      }
 
-function renderTree() {
-    $("fileCount").textContent = files.size + " files";
+      function renderTree() {
+        $("fileCount").textContent = files.size + " files";
 
-    const tree = $("tree");
-    tree.replaceChildren();
+        const tree = $("tree");
 
-    if (!files.size) {
-        const empty = document.createElement("div");
-        empty.className = "empty-tree";
-        empty.textContent = "Your project files will appear here.";
-        tree.append(empty);
-        return;
-    }
+        tree.replaceChildren();
 
-    const dirs = {};
+        if (!files.size) {
+          const empty = document.createElement("div");
 
-    for (const path of [...files.keys()].sort()) {
-        const parts = path.split("/");
-        let node = dirs;
+          empty.className = "empty-tree";
 
-        for (let i = 0; i < parts.length; i++) {
+          empty.textContent = "Your project files will appear here.";
+
+          tree.append(empty);
+
+          return;
+        }
+
+        const dirs = {};
+
+        for (const path of [...files.keys()].sort()) {
+          const parts = path.split("/");
+
+          let node = dirs;
+
+          for (let i = 0; i < parts.length; i++) {
             const part = parts[i];
 
             if (i === parts.length - 1) {
-                node[part] = { __file: path };
+              node[part] = {
+                __file: path,
+              };
             } else {
-                node[part] ??= {};
-                node = node[part];
-            }
-        }
-    }
+              node[part] ??= {};
 
-    function draw(node, depth = 0) {
-        for (const [name, value] of Object.entries(node)) {
+              node = node[part];
+            }
+          }
+        }
+
+        function draw(node, depth = 0) {
+          for (const [name, value] of Object.entries(node)) {
             if (value.__file) {
-                const path = value.__file;
+              const path = value.__file;
 
-                const row = document.createElement("div");
-                row.className =
-                    "file-row" +
-                    (currentPath === path ? " active" : "");
+              const row = document.createElement("div");
 
-                row.style.paddingLeft = (8 + depth * 14) + "px";
+              row.className =
+                "file-row" + (currentPath === path ? " active" : "");
 
-                const check = document.createElement("input");
-                check.type = "checkbox";
-                check.checked = selected.has(path);
-                check.style.margin = "0";
+              row.style.paddingLeft = 8 + depth * 14 + "px";
 
-                check.addEventListener("click", event => {
-                    event.stopPropagation();
+              const check = document.createElement("input");
 
-                    if (check.checked) {
-                        selected.add(path);
-                    } else {
-                        selected.delete(path);
-                    }
-                });
+              check.type = "checkbox";
 
-                const icon = document.createElement("span");
-                icon.textContent = "▤";
-                icon.style.color = "var(--muted)";
+              check.checked = selected.has(path);
 
-                const label = document.createElement("span");
-                label.className = "name";
-                label.textContent = name;
+              check.style.margin = "0";
 
-                row.append(check, icon, label);
-                row.addEventListener("click", () => showFile(path));
+              check.addEventListener("click", (event) => {
+                event.stopPropagation();
 
-                tree.append(row);
+                if (check.checked) {
+                  selected.add(path);
+                } else {
+                  selected.delete(path);
+                }
+              });
+
+              const icon = document.createElement("span");
+
+              icon.textContent = "▤";
+
+              icon.style.color = "var(--muted)";
+
+              const label = document.createElement("span");
+
+              label.className = "name";
+
+              label.textContent = name;
+
+              row.append(check, icon, label);
+
+              row.addEventListener("click", () => showFile(path));
+
+              tree.append(row);
             } else {
-                const row = document.createElement("div");
-                row.className = "file-row folder";
-                row.style.paddingLeft = (8 + depth * 14) + "px";
+              const row = document.createElement("div");
 
-                const icon = document.createElement("span");
-                icon.textContent = "▾";
+              row.className = "file-row folder";
 
-                const label = document.createElement("span");
-                label.className = "name";
-                label.textContent = name;
+              row.style.paddingLeft = 8 + depth * 14 + "px";
 
-                row.append(icon, label);
-                tree.append(row);
+              const icon = document.createElement("span");
 
-                draw(value, depth + 1);
+              icon.textContent = "▾";
+
+              const label = document.createElement("span");
+
+              label.className = "name";
+
+              label.textContent = name;
+
+              row.append(icon, label);
+
+              tree.append(row);
+
+              draw(value, depth + 1);
             }
+          }
         }
-    }
 
-    draw(dirs);
-}
+        draw(dirs);
+      }
 
-function showFile(path) {
-    currentPath = path;
+      function showFile(path) {
+        currentPath = path;
 
-    const file = files.get(path);
-    if (!file) return;
-
-    $("currentFile").textContent = path;
-
-    $("fileSize").textContent =
-        formatBytes(file.size) + " · " +
-        file.content.split("\n").length + " LINES";
-
-    const wrap = $("codeWrap");
-    wrap.replaceChildren();
-
-    const code = document.createElement("div");
-    code.className = "code";
-
-    const lines = Math.max(
-        1,
-        file.content.split("\n").length
-    );
-
-    const numbers = document.createElement("div");
-    numbers.className = "numbers";
-    numbers.textContent = Array.from(
-        { length: lines },
-        (_, i) => i + 1
-    ).join("\n");
-
-    const source = document.createElement("div");
-    source.className = "source";
-
-    // Display source literally. Never execute uploaded HTML.
-    source.textContent = file.content;
-
-    code.append(numbers, source);
-    wrap.append(code);
-
-    renderTree();
-}
-
-function buildContext() {
-    const mode = $("contextMode").value;
-
-    const paths = [...files.keys()]
-        .filter(path =>
-            mode === "all" || selected.has(path)
-        )
-        .sort();
-
-    if (!paths.length) {
-        $("contextStatus").textContent =
-            "Select at least one file";
-        return;
-    }
-
-    let output =
-        "PROJECT: " + $("projectName").textContent + "\n" +
-        "FILE COUNT: " + paths.length + "\n\n";
-
-    for (const path of paths) {
         const file = files.get(path);
 
+        if (!file) {
+          return;
+        }
+
+        $("currentFile").textContent = path;
+
+        $("fileSize").textContent =
+          formatBytes(file.size) +
+          " · " +
+          file.content.split("\n").length +
+          " LINES";
+
+        const wrap = $("codeWrap");
+
+        wrap.replaceChildren();
+
+        const code = document.createElement("div");
+
+        code.className = "code";
+
+        const lines = Math.max(1, file.content.split("\n").length);
+
+        const numbers = document.createElement("div");
+
+        numbers.className = "numbers";
+
+        numbers.textContent = Array.from(
+          {
+            length: lines,
+          },
+          (_, i) => i + 1
+        ).join("\n");
+
+        const source = document.createElement("div");
+
+        source.className = "source";
+
+        // Display source literally.
+        // Never execute uploaded HTML.
+        source.textContent = file.content;
+
+        code.append(numbers, source);
+
+        wrap.append(code);
+
+        renderTree();
+      }
+
+      /*
+       * IMPORTANT:
+       *
+       * The generated AI context deliberately begins with
+       * an explicit instruction telling an AI assistant what
+       * to read FIRST.
+       *
+       * This is not merely a label.
+       *
+       * The instruction is part of the actual text that gets
+       * rendered into the AI-readable context page.
+       */
+
+      function buildContext() {
+        const mode = $("contextMode").value;
+
+        const paths = [...files.keys()]
+          .filter((path) => mode === "all" || selected.has(path))
+          .sort();
+
+        if (!paths.length) {
+          $("contextStatus").textContent = "Select at least one file";
+
+          return;
+        }
+
+        /*
+         * AI PRIORITY INSTRUCTION
+         *
+         * This is intentionally placed BEFORE the
+         * project name and BEFORE the source files.
+         */
+
+        let output =
+          "============================================================\n" +
+          "AI WORKSPACE — READ THIS FIRST\n" +
+          "============================================================\n\n" +
+          "IMPORTANT AI INSTRUCTION:\n\n" +
+          "You are viewing an AI Workspace project context.\n" +
+          "READ THE COMPLETE PROJECT CONTEXT BELOW FIRST.\n\n" +
+          "Do NOT begin your analysis by inspecting or relying on " +
+          "the file tree, file names, project navigation, or other " +
+          "page metadata.\n\n" +
+          "The PROJECT CONTEXT below is the PRIMARY SOURCE for " +
+          "answering the user's request.\n\n" +
+          "Use the actual source code contained in this context " +
+          "to understand the project, locate the relevant files, " +
+          "identify bugs, and determine the appropriate changes.\n\n" +
+          "The file tree is only a navigation aid and should NOT " +
+          "be treated as a substitute for reading the source code.\n\n" +
+          "If the user asks you to fix, modify, explain, review, " +
+          "or analyze something in this project, inspect the " +
+          "relevant source code in the PROJECT CONTEXT before " +
+          "forming your answer.\n\n" +
+          "FIRST ACTION:\n" +
+          "Read the entire PROJECT CONTEXT below before answering.\n\n" +
+          "============================================================\n" +
+          "BEGIN PROJECT CONTEXT\n" +
+          "============================================================\n\n" +
+          "PROJECT: " +
+          $("projectName").textContent +
+          "\n" +
+          "FILE COUNT: " +
+          paths.length +
+          "\n\n";
+
+        /*
+         * Append the actual source files.
+         */
+
+        for (const path of paths) {
+          const file = files.get(path);
+
+          output +=
+            "\n" +
+            "=".repeat(72) +
+            "\n" +
+            "FILE: " +
+            path +
+            "\n" +
+            "=".repeat(72) +
+            "\n\n" +
+            file.content +
+            "\n";
+        }
+
         output +=
-            "\n" + "=".repeat(72) + "\n" +
-            "FILE: " + path + "\n" +
-            "=".repeat(72) + "\n\n" +
-            file.content + "\n";
-    }
+          "\n" +
+          "=".repeat(72) +
+          "\n" +
+          "END OF PROJECT CONTEXT\n" +
+          "=".repeat(72) +
+          "\n\n" +
+          "AI REMINDER:\n" +
+          "The source code above is the authoritative project " +
+          "context for this request. Use it before relying on " +
+          "the visible file tree or navigation.\n";
 
-    output +=
-        "\n" + "=".repeat(72) +
-        "\nEND OF PROJECT CONTEXT\n";
+        generatedContext = output;
 
-    generatedContext = output;
-    $("aiOutput").textContent = output;
-    $("copyContext").disabled = false;
+        $("aiOutput").textContent = output;
 
-    $("contextStatus").textContent =
-        paths.length + " files · " +
-        formatBytes(new Blob([output]).size);
-}
+        $("copyContext").disabled = false;
 
-$("openFiles").onclick = () => $("fileInput").click();
-$("openFolder").onclick = () => $("folderInput").click();
+        $("openTestPage").disabled = false;
 
-$("fileInput").onchange = event =>
-    addFiles(event.target.files);
-
-$("folderInput").onchange = event =>
-    addFiles(event.target.files);
-
-$("clearProject").onclick = () => {
-    if (!files.size) return;
-
-    if (!confirm("Clear all files from this workspace?")) {
-        return;
-    }
-
-    files.clear();
-    selected.clear();
-    currentPath = null;
-    generatedContext = "";
-
-    $("projectName").textContent = "No project loaded";
-    $("projectMeta").textContent =
-        "Upload a folder or select files to begin";
-
-    $("codeWrap").innerHTML = `
-        <div class="welcome">
-            <div class="welcome-icon">⌘</div>
-            <h2>Your project, readable by AI</h2>
-            <p>
-                Upload a project folder or individual files.
-                The workspace displays source code as literal text.
-            </p>
-            <div class="drop" id="drop">
-                <strong>Drop files or a folder here</strong>
-                <small>Or use Upload folder to select a project</small>
-            </div>
-        </div>
-    `;
-
-    $("aiOutput").textContent =
-        "Choose files in the explorer, then build an AI context page.";
-
-    $("copyContext").disabled = true;
-    $("contextStatus").textContent = "No context generated";
-
-    renderTree();
-    bindDrop();
-};
-
-$("buildContext").onclick = buildContext;
-
-$("copyContext").onclick = async () => {
-    try {
-        await navigator.clipboard.writeText(generatedContext);
-        $("contextStatus").textContent = "Copied to clipboard";
-    } catch (error) {
         $("contextStatus").textContent =
-            "Clipboard permission unavailable";
-    }
-};
+          paths.length + " files · " + formatBytes(new Blob([output]).size);
+      }
 
-$("selectAll").onclick = () => {
-    files.forEach((_, path) => selected.add(path));
-    renderTree();
-};
+      /*
+       * Opens a completely separate page containing the
+       * generated context.
+       *
+       * The FIRST visible content is an AI instruction.
+       * This is intentionally before the project context
+       * and before any other project information.
+       */
 
-$("selectNone").onclick = () => {
-    selected.clear();
-    renderTree();
-};
+      function openCopilotTest() {
+        if (!generatedContext) {
+          return;
+        }
 
-document.querySelectorAll(".tab").forEach(tab => {
-    tab.onclick = () => {
-        document.querySelectorAll(".tab").forEach(item => {
-            item.classList.toggle("active", item === tab);
-        });
+        const test = window.open("", "_blank");
 
-        const isAI = tab.dataset.tab === "ai";
+        if (!test) {
+          $("contextStatus").textContent = "Popup blocked — allow popups";
 
-        $("fileView").style.display = isAI ? "none" : "flex";
-        $("aiView").style.display = isAI ? "block" : "none";
-    };
-});
+          return;
+        }
 
-function bindDrop() {
-    const drop = $("drop");
-    if (!drop) return;
+        const escaped = generatedContext
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
 
-    drop.addEventListener("dragover", event => {
-        event.preventDefault();
-        drop.classList.add("drag");
-    });
+        test.document.write(`
 
-    drop.addEventListener("dragleave", () => {
-        drop.classList.remove("drag");
-    });
+<!DOCTYPE html>
 
-    drop.addEventListener("drop", event => {
-        event.preventDefault();
-        drop.classList.remove("drag");
-        addFiles(event.dataTransfer.files);
-    });
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<title>
+AI Workspace · Copilot Read Test
+</title>
+
+<meta name="robots"
+      content="noindex">
+
+<style>
+
+body {
+
+    margin: 0;
+
+    background: #0b0e14;
+
+    color: #e8edf7;
+
+    font:
+        14px/1.6
+        system-ui,
+        -apple-system,
+        "Segoe UI",
+        sans-serif;
 }
 
-bindDrop();
-    </script>
+header {
+
+    padding: 18px 24px;
+
+    border-bottom:
+        1px solid #283143;
+
+    background: #121722;
+
+    position: sticky;
+
+    top: 0;
+
+    z-index: 10;
+}
+
+main {
+
+    padding: 24px;
+
+    max-width: 1200px;
+
+    margin: auto;
+}
+
+.ai-start {
+
+    border:
+        2px solid #9b94ff;
+
+    border-radius: 12px;
+
+    background: #17152b;
+
+    padding: 20px;
+
+    margin-bottom: 20px;
+}
+
+.ai-start h1 {
+
+    margin:
+        0 0 12px;
+
+    font-size: 20px;
+
+    color: #ffffff;
+}
+
+.ai-start strong {
+
+    color: #c7c2ff;
+}
+
+.ai-start ol {
+
+    margin:
+        12px 0 0 20px;
+
+    padding: 0;
+}
+
+.probe {
+
+    padding: 14px;
+
+    border:
+        1px solid #36b37e;
+
+    border-radius: 8px;
+
+    background: #10251d;
+
+    margin-bottom: 20px;
+}
+
+pre {
+
+    white-space: pre-wrap;
+
+    overflow-wrap: anywhere;
+
+    background: #121722;
+
+    border:
+        1px solid #283143;
+
+    border-radius: 10px;
+
+    padding: 20px;
+
+    font:
+        12px/1.7
+        ui-monospace,
+        SFMono-Regular,
+        Consolas,
+        monospace;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+
+<strong>
+AI Workspace · Copilot Read Test
+</strong>
+
+</header>
+
+<main>
+
+<div class="ai-start">
+
+<h1>
+AI START HERE
+</h1>
+
+<strong>
+READ THIS INSTRUCTION BEFORE ANYTHING ELSE ON THIS PAGE.
+</strong>
+
+<ol>
+
+<li>
+Read the complete Project Context below.
+</li>
+
+<li>
+Treat the Project Context as the primary source for the user's request.
+</li>
+
+<li>
+Do not answer from the file tree or filenames alone.
+</li>
+
+<li>
+Use the actual source code to determine the answer.
+</li>
+
+<li>
+Only use the file tree as navigation or confirmation.
+</li>
+
+</ol>
+
+</div>
+
+
+<div class="probe">
+
+<strong>
+COPILOT READ TEST:
+</strong>
+
+If you can read this page, first acknowledge that
+you read the AI START HERE instruction.
+
+Then analyze the Project Context below.
+
+Do not infer the answer from the file tree alone.
+
+</div>
+
+
+<h2>
+Project Context
+</h2>
+
+
+<pre id="project-context">${escaped}</pre>
+
+
+</main>
+
 </body>
 
+</html>
+
+`);
+
+        test.document.close();
+
+        $("contextStatus").textContent = "Test page opened";
+      }
+
+      $("openFiles").onclick = () => $("fileInput").click();
+
+      $("openFolder").onclick = () => $("folderInput").click();
+
+      $("fileInput").onchange = (event) => addFiles(event.target.files);
+
+      $("folderInput").onchange = (event) => addFiles(event.target.files);
+
+      $("clearProject").onclick = () => {
+        if (!files.size) {
+          return;
+        }
+
+        if (!confirm("Clear all files from this workspace?")) {
+          return;
+        }
+
+        files.clear();
+
+        selected.clear();
+
+        currentPath = null;
+
+        generatedContext = "";
+
+        $("projectName").textContent = "No project loaded";
+
+        $("projectMeta").textContent =
+          "Upload a folder or select files to begin";
+
+        $("codeWrap").innerHTML = `
+
+<div class="welcome">
+
+    <div class="welcome-icon">
+        ⌘
+    </div>
+
+    <h2>
+        Your project, readable by AI
+    </h2>
+
+    <p>
+        Upload a project folder or individual files.
+        The workspace displays source code as literal text.
+    </p>
+
+    <div class="drop" id="drop">
+
+        <strong>
+            Drop files or a folder here
+        </strong>
+
+        <small>
+            Or use Upload folder to select a project
+        </small>
+
+    </div>
+
+</div>
+
+`;
+
+        $("aiOutput").textContent =
+          "Choose files in the explorer, then build an AI context page.";
+
+        $("copyContext").disabled = true;
+
+        $("openTestPage").disabled = true;
+
+        $("contextStatus").textContent = "No context generated";
+
+        renderTree();
+
+        bindDrop();
+      };
+
+      $("buildContext").onclick = buildContext;
+
+      $("copyContext").onclick = async () => {
+        try {
+          await navigator.clipboard.writeText(generatedContext);
+
+          $("contextStatus").textContent = "Copied to clipboard";
+        } catch (error) {
+          $("contextStatus").textContent = "Clipboard permission unavailable";
+        }
+      };
+
+      $("openTestPage").onclick = openCopilotTest;
+
+      $("selectAll").onclick = () => {
+        files.forEach((_, path) => selected.add(path));
+
+        renderTree();
+      };
+
+      $("selectNone").onclick = () => {
+        selected.clear();
+
+        renderTree();
+      };
+
+      document.querySelectorAll(".tab").forEach((tab) => {
+        tab.onclick = () => {
+          document.querySelectorAll(".tab").forEach((item) => {
+            item.classList.toggle("active", item === tab);
+          });
+
+          const isAI = tab.dataset.tab === "ai";
+
+          $("fileView").style.display = isAI ? "none" : "flex";
+
+          $("aiView").style.display = isAI ? "block" : "none";
+        };
+      });
+
+      function bindDrop() {
+        const drop = $("drop");
+
+        if (!drop) {
+          return;
+        }
+
+        drop.addEventListener("dragover", (event) => {
+          event.preventDefault();
+
+          drop.classList.add("drag");
+        });
+
+        drop.addEventListener("dragleave", () => {
+          drop.classList.remove("drag");
+        });
+
+        drop.addEventListener("drop", (event) => {
+          event.preventDefault();
+
+          drop.classList.remove("drag");
+
+          addFiles(event.dataTransfer.files);
+        });
+      }
+
+      bindDrop();
+    </script>
+  </body>
 </html>
