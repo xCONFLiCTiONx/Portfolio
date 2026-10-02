@@ -4,11 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AI Workspace</title>
-
     <style>
       :root {
         color-scheme: light dark;
-
         --bg: light-dark(#f4f6fa, #0b0e14);
         --panel: light-dark(#ffffff, #121722);
         --panel2: light-dark(#f8f9fc, #171d29);
@@ -17,7 +15,6 @@
         --line: light-dark(#e2e6ef, #283143);
         --accent: light-dark(#635bdb, #9b94ff);
         --accent2: light-dark(#eeedff, #29264e);
-
         --green: #36b37e;
         --red: #e35d6a;
       }
@@ -464,17 +461,11 @@
       <header>
         <div class="brand">
           <div class="logo">X</div>
-
-          <div>
-            AI Workspace
-            <small>xCONFLiCTiONx · PROJECT LAB</small>
-          </div>
+          <div>AI Workspace<small>xCONFLiCTiONx · PROJECT LAB</small></div>
         </div>
-
         <div class="header-right">
-          <span class="pill" id="storageState"> Local workspace </span>
-
-          <span>v0.1 prototype</span>
+          <span class="pill" id="storageState">Local workspace</span
+          ><span>v0.1 prototype</span>
         </div>
       </header>
 
@@ -482,7 +473,6 @@
         <div class="top">
           <div>
             <h1>Project workspace</h1>
-
             <div class="subtitle">
               Bring an entire codebase into a browser-readable workspace.
             </div>
@@ -490,9 +480,7 @@
 
           <div class="actions">
             <button id="openFiles">＋ Add files</button>
-
             <button id="openFolder" class="primary">＋ Upload folder</button>
-
             <button id="clearProject">Clear project</button>
           </div>
         </div>
@@ -500,14 +488,12 @@
         <div class="layout">
           <aside class="panel">
             <div class="panel-head">
-              <span> EXPLORER </span>
-
-              <span id="fileCount"> 0 files </span>
+              <span>EXPLORER</span>
+              <span id="fileCount">0 files</span>
             </div>
 
             <div class="project-info">
               <div class="project-name" id="projectName">No project loaded</div>
-
               <div class="project-meta" id="projectMeta">
                 Upload a folder or select files to begin
               </div>
@@ -521,7 +507,6 @@
           <section class="panel content">
             <div class="tabs">
               <div class="tab active" data-tab="file">File viewer</div>
-
               <div class="tab" data-tab="ai">AI context</div>
             </div>
 
@@ -535,26 +520,22 @@
               "
             >
               <div class="editor-head">
-                <strong id="currentFile"> No file selected </strong>
-
-                <span id="fileSize"> SOURCE VIEW · TEXT ONLY </span>
+                <strong id="currentFile">No file selected</strong>
+                <span id="fileSize">SOURCE VIEW · TEXT ONLY</span>
               </div>
 
               <div class="code-wrap" id="codeWrap">
                 <div class="welcome">
                   <div class="welcome-icon">⌘</div>
-
                   <h2>Your project, readable by AI</h2>
-
                   <p>
                     Upload a project folder or individual files. The workspace
                     keeps source code as literal text instead of executing it.
                   </p>
 
                   <div class="drop" id="drop">
-                    <strong> Drop files or a folder here </strong>
-
-                    <small> Or use Upload folder to select a project </small>
+                    <strong>Drop files or a folder here</strong>
+                    <small>Or use Upload folder to select a project</small>
                   </div>
                 </div>
               </div>
@@ -563,12 +544,10 @@
             <div class="ai-view" id="aiView">
               <div class="ai-toolbar">
                 <button id="selectAll">Select all</button>
-
                 <button id="selectNone">Select none</button>
 
                 <select id="contextMode">
                   <option value="selected">Selected files</option>
-
                   <option value="all">All text files</option>
                 </select>
 
@@ -578,11 +557,11 @@
 
                 <button id="copyContext" disabled>Copy context</button>
 
-                <button id="openTestPage" disabled>Open Copilot Test</button>
+                <button id="openTestPage" disabled>Open Copilot</button>
 
-                <span class="status" id="contextStatus">
-                  No context generated
-                </span>
+                <span class="status" id="contextStatus"
+                  >No context generated</span
+                >
               </div>
 
               <div class="ai-output" id="aiOutput">
@@ -606,7 +585,6 @@
       </main>
 
       <input id="fileInput" type="file" multiple />
-
       <input id="folderInput" type="file" webkitdirectory multiple />
     </div>
 
@@ -679,15 +657,11 @@
       }
 
       function formatBytes(n) {
-        if (n < 1024) {
-          return n + " B";
-        }
-
-        if (n < 1048576) {
-          return (n / 1024).toFixed(1) + " KB";
-        }
-
-        return (n / 1048576).toFixed(2) + " MB";
+        return n < 1024
+          ? n + " B"
+          : n < 1048576
+          ? (n / 1024).toFixed(1) + " KB"
+          : (n / 1048576).toFixed(2) + " MB";
       }
 
       async function addFiles(list) {
@@ -699,9 +673,7 @@
             ""
           );
 
-          if (!isText(file)) {
-            continue;
-          }
+          if (!isText(file)) continue;
 
           try {
             const content = await file.text();
@@ -723,9 +695,7 @@
         if (added) {
           const first = [...files.keys()][0];
 
-          if (!currentPath && first) {
-            showFile(first);
-          }
+          if (!currentPath && first) showFile(first);
 
           $("projectName").textContent = commonRoot([...files.keys()]);
 
@@ -753,9 +723,7 @@
 
         if (!files.size) {
           tree.innerHTML =
-            '<div class="empty-tree">' +
-            "Your project files will appear here." +
-            "</div>";
+            '<div class="empty-tree">Your project files will appear here.</div>';
 
           return;
         }
@@ -772,14 +740,8 @@
           for (let i = 0; i < parts.length; i++) {
             const p = parts[i];
 
-            if (i === parts.length - 1) {
-              node[p] = {
-                __file: path,
-              };
-            } else {
-              node[p] ??= {};
-              node = node[p];
-            }
+            if (i === parts.length - 1) node[p] = { __file: path };
+            else node = node[p] ??= {};
           }
         }
 
@@ -796,31 +758,26 @@
               const check = document.createElement("input");
 
               check.type = "checkbox";
-
               check.checked = selected.has(val.__file);
 
               check.style.margin = "0";
 
-              check.addEventListener("click", (event) => {
-                event.stopPropagation();
+              check.addEventListener("click", (e) => {
+                e.stopPropagation();
 
-                if (check.checked) {
-                  selected.add(val.__file);
-                } else {
-                  selected.delete(val.__file);
-                }
+                check.checked
+                  ? selected.add(val.__file)
+                  : selected.delete(val.__file);
               });
 
               const icon = document.createElement("span");
 
               icon.textContent = "▤";
-
               icon.style.color = "var(--muted)";
 
               const label = document.createElement("span");
 
               label.className = "name";
-
               label.textContent = name;
 
               row.append(check, icon, label);
@@ -854,9 +811,7 @@
 
         const f = files.get(path);
 
-        if (!f) {
-          return;
-        }
+        if (!f) return;
 
         $("currentFile").textContent = path;
 
@@ -886,15 +841,6 @@
 
         source.className = "source";
 
-        /*
-         * IMPORTANT:
-         *
-         * Uploaded source is displayed
-         * literally as text.
-         *
-         * It is NEVER executed.
-         */
-
         source.textContent = f.content;
 
         code.append(nums, source);
@@ -908,7 +854,7 @@
         const mode = $("contextMode").value;
 
         const paths = [...files.keys()]
-          .filter((path) => mode === "all" || selected.has(path))
+          .filter((p) => mode === "all" || selected.has(p))
           .sort();
 
         if (!paths.length) {
@@ -917,27 +863,16 @@
           return;
         }
 
-        let out =
-          "AI INSTRUCTION — READ THIS FIRST\n\n" +
-          "You are viewing an AI Workspace project context page. " +
-          "This page is intentionally structured for AI analysis.\n\n" +
-          "BEFORE inspecting the file tree, file viewer, or any other " +
-          "page content, read the COMPLETE PROJECT CONTEXT below first.\n\n" +
-          "Treat the PROJECT CONTEXT as the primary source for the " +
-          "user's request.\n\n" +
-          "Use the file tree only as navigation and confirmation.\n\n" +
-          "Do not answer based on the tree alone.\n\n" +
-          "TASK:\n" +
-          "Analyze the project context below and use the actual source " +
-          "code to answer the user's request.\n\n" +
-          "Identify relevant files, explain the issue, and provide " +
-          "exact fixes when requested.\n\n" +
-          "PROJECT: " +
-          $("projectName").textContent +
-          "\n" +
-          "FILE COUNT: " +
-          paths.length +
-          "\n\n";
+        let out = `AI INSTRUCTION — READ THIS FIRST
+
+You are viewing an AI Workspace project context page. This page is intentionally structured for AI analysis. BEFORE inspecting the file tree, file viewer, or any other page content, read the COMPLETE PROJECT CONTEXT below first. Treat the PROJECT CONTEXT as the primary source for the user's request. Use the file tree only as navigation and confirmation. Do not answer based on the tree alone.
+
+TASK: Analyze the project context below and use the actual source code to answer the user's request. Identify relevant files, explain the issue, and provide exact fixes when requested.
+
+PROJECT: ${$("projectName").textContent}
+FILE COUNT: ${paths.length}
+
+`;
 
         for (const path of paths) {
           const f = files.get(path);
@@ -945,8 +880,7 @@
           out +=
             "\n" +
             "=".repeat(72) +
-            "\n" +
-            "FILE: " +
+            "\nFILE: " +
             path +
             "\n" +
             "=".repeat(72) +
@@ -955,7 +889,7 @@
             "\n";
         }
 
-        out += "\n" + "=".repeat(72) + "\n" + "END OF PROJECT CONTEXT\n";
+        out += "\n" + "=".repeat(72) + "\nEND OF PROJECT CONTEXT\n";
 
         generatedContext = out;
 
@@ -970,9 +904,17 @@
       }
 
       function openCopilotTest() {
-        if (!generatedContext) {
-          return;
-        }
+        if (!generatedContext) return;
+
+        const isEdge = /Edg\//i.test(navigator.userAgent);
+
+        const isChrome = /Chrome\//i.test(navigator.userAgent) && !isEdge;
+
+        const assistant = isEdge
+          ? "Copilot"
+          : isChrome
+          ? "Gemini"
+          : "AI assistant";
 
         const test = window.open("", "_blank");
 
@@ -987,120 +929,96 @@
           .replace(/</g, "&lt;")
           .replace(/>/g, "&gt;");
 
-        test.document.write(`
-
-<!DOCTYPE html>
-
+        test.document.write(
+          `<!DOCTYPE html>
 <html lang="en">
-
 <head>
-
 <meta charset="UTF-8">
-
-<meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
->
-
-<title>
-AI Workspace · Copilot Read Test
-</title>
-
-<meta
-    name="robots"
-    content="noindex"
->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Workspace · ${assistant} Read Test</title>
+<meta name="robots" content="noindex">
 
 <style>
 
 body {
-    margin: 0;
-    background: #0b0e14;
-    color: #e8edf7;
-    font: 14px/1.6 system-ui, sans-serif;
+    margin:0;
+    background:#0b0e14;
+    color:#e8edf7;
+    font:14px/1.6 system-ui,sans-serif;
 }
 
 header {
-    padding: 18px 24px;
-    border-bottom: 1px solid #283143;
-    background: #121722;
-    position: sticky;
-    top: 0;
-    z-index: 10;
+    padding:18px 24px;
+    border-bottom:1px solid #283143;
+    background:#121722;
+    position:sticky;
+    top:0;
+    z-index:10;
 }
 
 main {
-    padding: 24px;
-    max-width: 1200px;
-    margin: auto;
+    padding:24px;
+    max-width:1200px;
+    margin:auto;
 }
 
 .ai-start {
-    border: 2px solid #9b94ff;
-    border-radius: 12px;
-    background: #17152b;
-    padding: 20px;
-    margin-bottom: 20px;
+    border:2px solid #9b94ff;
+    border-radius:12px;
+    background:#17152b;
+    padding:20px;
+    margin-bottom:20px;
 }
 
 .ai-start h1 {
-    margin: 0 0 12px;
-    font-size: 20px;
-    color: #ffffff;
+    margin:0 0 12px;
+    font-size:20px;
+    color:#fff;
 }
 
 .ai-start strong {
-    color: #c7c2ff;
+    color:#c7c2ff;
 }
 
 .ai-start ol {
-    margin: 12px 0 0 20px;
-    padding: 0;
+    margin:12px 0 0 20px;
+    padding:0;
 }
 
 .probe {
-    padding: 14px;
-    border: 1px solid #36b37e;
-    border-radius: 8px;
-    background: #10251d;
-    margin-bottom: 20px;
+    padding:14px;
+    border:1px solid #36b37e;
+    border-radius:8px;
+    background:#10251d;
+    margin-bottom:20px;
 }
 
 pre {
-    white-space: pre-wrap;
-    overflow-wrap: anywhere;
-    background: #121722;
-    border: 1px solid #283143;
-    border-radius: 10px;
-    padding: 20px;
-    font:
-        12px/1.7
-        ui-monospace,
-        Consolas,
-        monospace;
+    white-space:pre-wrap;
+    overflow-wrap:anywhere;
+    background:#121722;
+    border:1px solid #283143;
+    border-radius:10px;
+    padding:20px;
+    font:12px/1.7 ui-monospace,Consolas,monospace;
 }
 
 </style>
-
 </head>
 
 <body>
 
 <header>
-
 <strong>
-AI Workspace · Copilot Read Test
+AI Workspace · ${assistant} Read Test
 </strong>
-
 </header>
 
 <main>
 
 <div class="ai-start">
 
-<h1>
-AI START HERE
-</h1>
+<h1>AI START HERE</h1>
 
 <strong>
 READ THIS INSTRUCTION BEFORE ANYTHING ELSE ON THIS PAGE.
@@ -1135,13 +1053,12 @@ Only use the file tree as navigation or confirmation.
 <div class="probe">
 
 <strong>
-COPILOT READ TEST:
+${assistant.toUpperCase()} READ TEST:
 </strong>
 
 <br>
 
-If you can read this page, first acknowledge that
-you read the AI START HERE instruction.
+If you can read this page, first acknowledge that you read the AI START HERE instruction.
 
 <br>
 
@@ -1162,38 +1079,31 @@ Project Context
 </main>
 
 </body>
-
-</html>
-
-`);
+</html>`
+        );
 
         test.document.close();
 
-        $("contextStatus").textContent = "Test page opened";
+        $("contextStatus").textContent = assistant + " test page opened";
       }
 
       $("openFiles").onclick = () => $("fileInput").click();
 
       $("openFolder").onclick = () => $("folderInput").click();
 
-      $("fileInput").onchange = (event) => addFiles(event.target.files);
+      $("fileInput").onchange = (e) => addFiles(e.target.files);
 
-      $("folderInput").onchange = (event) => addFiles(event.target.files);
+      $("folderInput").onchange = (e) => addFiles(e.target.files);
 
       $("clearProject").onclick = () => {
-        if (!files.size) {
-          return;
-        }
+        if (!files.size) return;
 
-        if (!confirm("Clear all files from this workspace?")) {
-          return;
-        }
+        if (!confirm("Clear all files from this workspace?")) return;
 
         files.clear();
         selected.clear();
 
         currentPath = null;
-
         generatedContext = "";
 
         $("projectName").textContent = "No project loaded";
@@ -1201,51 +1111,36 @@ Project Context
         $("projectMeta").textContent =
           "Upload a folder or select files to begin";
 
-        $("codeWrap").innerHTML = `
+        $("codeWrap").innerHTML = `<div class="welcome">
 
-<div class="welcome">
+<div class="welcome-icon">⌘</div>
 
-    <div class="welcome-icon">
-        ⌘
-    </div>
+<h2>Your project, readable by AI</h2>
 
-    <h2>
-        Your project, readable by AI
-    </h2>
+<p>
+Upload a project folder or individual files.
+The workspace keeps source code as literal text
+instead of executing it.
+</p>
 
-    <p>
-        Upload a project folder or individual files.
-        The workspace keeps source code as literal text
-        instead of executing it.
-    </p>
+<div class="drop" id="drop">
 
-    <div
-        class="drop"
-        id="drop"
-    >
+<strong>
+Drop files or a folder here
+</strong>
 
-        <strong>
-            Drop files or a folder here
-        </strong>
-
-        <small>
-            Or use Upload folder to select a project
-        </small>
-
-    </div>
+<small>
+Or use Upload folder to select a project
+</small>
 
 </div>
 
-`;
+</div>`;
 
         $("aiOutput").textContent =
           "Choose files in the explorer, then build an AI context page.";
 
         $("copyContext").disabled = true;
-
-        $("openTestPage").disabled = true;
-
-        $("contextStatus").textContent = "No context generated";
 
         renderTree();
 
@@ -1267,7 +1162,7 @@ Project Context
       $("openTestPage").onclick = openCopilotTest;
 
       $("selectAll").onclick = () => {
-        files.forEach((_, path) => selected.add(path));
+        files.forEach((_, p) => selected.add(p));
 
         renderTree();
       };
@@ -1278,43 +1173,40 @@ Project Context
         renderTree();
       };
 
-      document.querySelectorAll(".tab").forEach((tab) => {
-        tab.onclick = () => {
-          document
-            .querySelectorAll(".tab")
-            .forEach((item) => item.classList.toggle("active", item === tab));
+      document.querySelectorAll(".tab").forEach(
+        (tab) =>
+          (tab.onclick = () => {
+            document
+              .querySelectorAll(".tab")
+              .forEach((t) => t.classList.toggle("active", t === tab));
 
-          const isAI = tab.dataset.tab === "ai";
+            const ai = tab.dataset.tab === "ai";
 
-          $("fileView").style.display = isAI ? "none" : "flex";
+            $("fileView").style.display = ai ? "none" : "flex";
 
-          $("aiView").style.display = isAI ? "block" : "none";
-        };
-      });
+            $("aiView").style.display = ai ? "block" : "none";
+          })
+      );
 
       function bindDrop() {
         const drop = $("drop");
 
-        if (!drop) {
-          return;
-        }
+        if (!drop) return;
 
-        drop.addEventListener("dragover", (event) => {
-          event.preventDefault();
+        drop.addEventListener("dragover", (e) => {
+          e.preventDefault();
 
           drop.classList.add("drag");
         });
 
-        drop.addEventListener("dragleave", () => {
-          drop.classList.remove("drag");
-        });
+        drop.addEventListener("dragleave", () => drop.classList.remove("drag"));
 
-        drop.addEventListener("drop", (event) => {
-          event.preventDefault();
+        drop.addEventListener("drop", (e) => {
+          e.preventDefault();
 
           drop.classList.remove("drag");
 
-          const items = [...event.dataTransfer.files];
+          const items = [...e.dataTransfer.files];
 
           addFiles(items);
         });
