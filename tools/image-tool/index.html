@@ -1618,7 +1618,7 @@
 
         $("#extRun").addEventListener("click", async () => {
             if(!state.extImage) return alert("Choose an image first.");
-            const sizes = [16, 32, 48, 128], pad = Number($("#extPad").value) / 100, shape = $("#extShape").value;
+            const sizes = [128, 48, 32, 16], pad = Number($("#extPad").value) / 100, shape = $("#extShape").value;
             const p = $("#extPreview");
             p.innerHTML = "";
             state.extBlobs = []; state.extZip = null;
