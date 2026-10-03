@@ -1,671 +1,995 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="utf-8">
+  <head>
+    <meta charset="utf-8" />
     <title>Image Tool — Crop, Convert &amp; Icon Studio | xCONFLiCTiONx</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" id="meta-description-js" content="Crop, resize, convert formats (PNG, JPG, WebP, SVG, ICO), and generate Chrome extension icons locally in your browser.">
-    <meta name="portfolio-tool-id" content="image-tool">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      id="meta-description-js"
+      content="Crop, resize, convert formats (PNG, JPG, WebP, SVG, ICO), and generate Chrome extension icons locally in your browser."
+    />
+    <meta name="portfolio-tool-id" content="image-tool" />
     <link rel="canonical" href="https://xconflictionx.cc/tools/image-tool/" />
-    <meta name="theme-color" content="#0b0d10">
-    <link rel="manifest" href="../../site.webmanifest">
-    <link rel="stylesheet" href="../../css/main.css">
-    <link rel="icon" id="favicon-js" href="../../assets/favicon.ico" type="image/x-icon">
-    <link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
+    <meta name="theme-color" content="#0b0d10" />
+    <link rel="manifest" href="../../site.webmanifest" />
+    <link rel="stylesheet" href="../../css/main.css" />
+    <link
+      rel="icon"
+      id="favicon-js"
+      href="../../assets/favicon.ico"
+      type="image/x-icon"
+    />
+    <link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png" />
 
     <!-- Open Graph / Social Metadata -->
-    <meta property="og:type" content="website">
-    <meta property="og:title" content="Image Tool — Crop, Convert &amp; Icon Studio | xCONFLiCTiONx">
-    <meta property="og:description" content="Crop, resize, convert formats (PNG, JPG, WebP, SVG, ICO), and generate Chrome extension icons locally in your browser.">
-    <meta property="og:url" content="https://xconflictionx.cc/tools/image-tool/">
-    <meta property="og:site_name" content="xCONFLiCTiONx">
-    <meta property="og:image" content="https://xconflictionx.cc/assets/og-image.png">
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:title"
+      content="Image Tool — Crop, Convert &amp; Icon Studio | xCONFLiCTiONx"
+    />
+    <meta
+      property="og:description"
+      content="Crop, resize, convert formats (PNG, JPG, WebP, SVG, ICO), and generate Chrome extension icons locally in your browser."
+    />
+    <meta
+      property="og:url"
+      content="https://xconflictionx.cc/tools/image-tool/"
+    />
+    <meta property="og:site_name" content="xCONFLiCTiONx" />
+    <meta
+      property="og:image"
+      content="https://xconflictionx.cc/assets/og-image.png"
+    />
 
     <!-- X / Twitter -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Image Tool — Crop, Convert &amp; Icon Studio | xCONFLiCTiONx">
-    <meta name="twitter:description" content="Crop, resize, convert formats (PNG, JPG, WebP, SVG, ICO), and generate Chrome extension icons locally in your browser.">
-    <meta name="twitter:image" content="https://xconflictionx.cc/assets/og-image.png">
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="Image Tool — Crop, Convert &amp; Icon Studio | xCONFLiCTiONx"
+    />
+    <meta
+      name="twitter:description"
+      content="Crop, resize, convert formats (PNG, JPG, WebP, SVG, ICO), and generate Chrome extension icons locally in your browser."
+    />
+    <meta
+      name="twitter:image"
+      content="https://xconflictionx.cc/assets/og-image.png"
+    />
 
     <!-- Structured Data -->
     <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebPage",
-      "@id": "https://xconflictionx.cc/tools/image-tool/#webpage",
-      "url": "https://xconflictionx.cc/tools/image-tool/",
-      "name": "Image Tool — Crop, Convert & Icon Studio | xCONFLiCTiONx",
-      "inLanguage": "en",
-      "description": "Crop, resize, convert formats (PNG, JPG, WebP, SVG, ICO), and generate Chrome extension icons locally in your browser.",
-      "author": {
-        "@type": "Person",
-        "@id": "https://xconflictionx.cc/#person",
-        "name": "xCONFLiCTiONx"
-      },
-      "publisher": {
-        "@type": "Organization",
-        "@id": "https://xconflictionx.cc/#organization",
-        "name": "xCONFLiCTiONx",
-        "url": "https://xconflictionx.cc/",
-        "sameAs": [
-          "https://github.com/xCONFLiCTiONx"
-        ]
+      {
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        "@id": "https://xconflictionx.cc/tools/image-tool/#webpage",
+        "url": "https://xconflictionx.cc/tools/image-tool/",
+        "name": "Image Tool — Crop, Convert & Icon Studio | xCONFLiCTiONx",
+        "inLanguage": "en",
+        "description": "Crop, resize, convert formats (PNG, JPG, WebP, SVG, ICO), and generate Chrome extension icons locally in your browser.",
+        "author": {
+          "@type": "Person",
+          "@id": "https://xconflictionx.cc/#person",
+          "name": "xCONFLiCTiONx"
+        },
+        "publisher": {
+          "@type": "Organization",
+          "@id": "https://xconflictionx.cc/#organization",
+          "name": "xCONFLiCTiONx",
+          "url": "https://xconflictionx.cc/",
+          "sameAs": ["https://github.com/xCONFLiCTiONx"]
+        }
       }
-    }
     </script>
     <style>
-        * {
-            box-sizing: border-box;
-        }
+      * {
+        box-sizing: border-box;
+      }
 
-        body {
-            margin: 0;
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-            background: #111;
-            color: #eee;
-        }
+      body {
+        margin: 0;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+        background: #111;
+        color: #eee;
+      }
 
-        .img-header {
-            padding: 24px;
-            text-align: center;
-            border-bottom: 1px solid #333;
-        }
+      .img-header {
+        padding: 24px;
+        text-align: center;
+        border-bottom: 1px solid #333;
+      }
 
-        .img-header h1 {
-            margin: 0 0 8px;
-        }
+      .img-header h1 {
+        margin: 0 0 8px;
+      }
 
-        .img-header p {
-            margin: 0;
-            color: #aaa;
-        }
+      .img-header p {
+        margin: 0;
+        color: #aaa;
+      }
 
-        .tabs {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 24px;
-        }
+      .tabs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 24px;
+      }
 
-        .tabs button {
-            padding: 10px 14px;
-            border: 1px solid #444;
-            border-radius: 6px;
-            background: #1d1d1d;
-            color: #eee;
-            cursor: pointer;
-        }
+      .tabs button {
+        padding: 10px 14px;
+        border: 1px solid #444;
+        border-radius: 6px;
+        background: #1d1d1d;
+        color: #eee;
+        cursor: pointer;
+      }
 
-        .tabs button.active {
-            background: #fff;
-            color: #111;
-        }
+      .tabs button.active {
+        background: #fff;
+        color: #111;
+      }
 
-        .tool {
-            display: none;
-        }
+      .tool {
+        display: none;
+      }
 
-        .tool.active {
-            display: block;
-        }
+      .tool.active {
+        display: block;
+      }
 
+      .grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 20px;
+      }
+
+      .card {
+        padding: 20px;
+        border: 1px solid #333;
+        border-radius: 10px;
+        background: #181818;
+      }
+
+      .card h2 {
+        margin-top: 0;
+      }
+
+      .row {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      label {
+        display: block;
+        margin: 14px 0 6px;
+        color: #ccc;
+        font-size: 13px;
+      }
+
+      input,
+      select,
+      textarea,
+      button {
+        font: inherit;
+      }
+
+      input[type="file"],
+      input[type="number"],
+      input[type="text"],
+      select,
+      textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #444;
+        border-radius: 6px;
+        background: #101010;
+        color: #eee;
+      }
+
+      input[type="range"] {
+        width: 100%;
+      }
+
+      textarea {
+        resize: vertical;
+        font-family: Consolas, monospace;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 18px;
+      }
+
+      button {
+        padding: 10px 14px;
+        border: 1px solid #444;
+        border-radius: 6px;
+        background: #222;
+        color: #eee;
+        cursor: pointer;
+      }
+
+      button:hover:not(:disabled) {
+        background: #333;
+      }
+
+      button.primary {
+        background: #fff;
+        color: #111;
+      }
+
+      button:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+      }
+
+      .stat {
+        margin-top: 14px;
+        padding: 10px;
+        border-radius: 6px;
+        background: #101010;
+        color: #aaa;
+        font-size: 13px;
+      }
+
+      .notice {
+        margin-top: 14px;
+        color: #999;
+        line-height: 1.5;
+        font-size: 13px;
+      }
+
+      .preview {
+        min-height: 320px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+        border: 1px dashed #444;
+        border-radius: 8px;
+        background: linear-gradient(45deg, #202020 25%, transparent 25%),
+          linear-gradient(-45deg, #202020 25%, transparent 25%),
+          linear-gradient(45deg, transparent 75%, #202020 75%),
+          linear-gradient(-45deg, transparent 75%, #202020 75%);
+        background-size: 20px 20px;
+        background-position: 0 0, 0 10px, 10px -10px, -10px 0;
+        position: relative;
+      }
+
+      .preview img,
+      .preview canvas {
+        max-width: 100%;
+        max-height: 500px;
+      }
+
+      /* Interactive Crop Workspace Styles */
+      .crop-workspace {
+        position: relative;
+        display: inline-block;
+        max-width: 100%;
+        max-height: 500px;
+        user-select: none;
+        overflow: hidden;
+        background: #000;
+        border-radius: 6px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+      }
+
+      .crop-workspace img {
+        display: block;
+        max-width: 100%;
+        max-height: 500px;
+        pointer-events: none;
+      }
+
+      .crop-overlay-layer {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        cursor: crosshair;
+        touch-action: none;
+      }
+
+      .crop-selection-box {
+        position: absolute;
+        border: 2px solid #58a6ff;
+        box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.65);
+        cursor: move;
+        box-sizing: border-box;
+        touch-action: none;
+      }
+
+      .crop-handle {
+        position: absolute;
+        width: 16px;
+        height: 16px;
+        background: #58a6ff;
+        border: 2px solid #ffffff;
+        border-radius: 4px;
+        box-sizing: border-box;
+        z-index: 10;
+      }
+
+      .crop-handle::after {
+        content: "";
+        position: absolute;
+        top: -6px;
+        left: -6px;
+        right: -6px;
+        bottom: -6px;
+      }
+
+      .crop-handle.tl {
+        top: -8px;
+        left: -8px;
+        cursor: nwse-resize;
+      }
+      .crop-handle.tr {
+        top: -8px;
+        right: -8px;
+        cursor: nesw-resize;
+      }
+      .crop-handle.bl {
+        bottom: -8px;
+        left: -8px;
+        cursor: nesw-resize;
+      }
+      .crop-handle.br {
+        bottom: -8px;
+        right: -8px;
+        cursor: nwse-resize;
+      }
+
+      .icon-preview {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 20px;
+        min-height: 200px;
+      }
+
+      .icon-preview div {
+        text-align: center;
+      }
+
+      .icon-preview img {
+        display: block;
+        margin: 0 auto 6px;
+      }
+
+      .code-box {
+        margin-top: 24px;
+        padding-top: 20px;
+        border-top: 1px solid #333;
+      }
+
+      .code-box textarea {
+        margin-top: 12px;
+        min-height: 180px;
+        line-height: 1.5;
+      }
+
+      .code-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 10px;
+      }
+
+      .copy-status {
+        color: #999;
+      }
+
+      @media (max-width: 800px) {
         .grid {
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-            gap: 20px;
+          grid-template-columns: 1fr;
         }
-
-        .card {
-            padding: 20px;
-            border: 1px solid #333;
-            border-radius: 10px;
-            background: #181818;
-        }
-
-        .card h2 {
-            margin-top: 0;
-        }
-
-        .row {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 10px;
-        }
-
-        label {
-            display: block;
-            margin: 14px 0 6px;
-            color: #ccc;
-            font-size: 13px;
-        }
-
-        input,
-        select,
-        textarea,
-        button {
-            font: inherit;
-        }
-
-        input[type=file],
-        input[type=number],
-        input[type=text],
-        select,
-        textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #444;
-            border-radius: 6px;
-            background: #101010;
-            color: #eee;
-        }
-
-        input[type=range] {
-            width: 100%;
-        }
-
-        textarea {
-            resize: vertical;
-            font-family: Consolas, monospace;
-        }
-
-        .actions {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 18px;
-        }
-
-        button {
-            padding: 10px 14px;
-            border: 1px solid #444;
-            border-radius: 6px;
-            background: #222;
-            color: #eee;
-            cursor: pointer;
-        }
-
-        button:hover:not(:disabled) {
-            background: #333;
-        }
-
-        button.primary {
-            background: #fff;
-            color: #111;
-        }
-
-        button:disabled {
-            opacity: .45;
-            cursor: not-allowed;
-        }
-
-        .stat {
-            margin-top: 14px;
-            padding: 10px;
-            border-radius: 6px;
-            background: #101010;
-            color: #aaa;
-            font-size: 13px;
-        }
-
-        .notice {
-            margin-top: 14px;
-            color: #999;
-            line-height: 1.5;
-            font-size: 13px;
-        }
-
-        .preview {
-            min-height: 320px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 16px;
-            border: 1px dashed #444;
-            border-radius: 8px;
-            background: linear-gradient(45deg, #202020 25%, transparent 25%), linear-gradient(-45deg, #202020 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #202020 75%), linear-gradient(-45deg, transparent 75%, #202020 75%);
-            background-size: 20px 20px;
-            background-position: 0 0, 0 10px, 10px -10px, -10px 0;
-            position: relative;
-        }
-
-        .preview img,
-        .preview canvas {
-            max-width: 100%;
-            max-height: 500px;
-        }
-
-        /* Interactive Crop Workspace Styles */
-        .crop-workspace {
-            position: relative;
-            display: inline-block;
-            max-width: 100%;
-            max-height: 500px;
-            user-select: none;
-            overflow: hidden;
-            background: #000;
-            border-radius: 6px;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
-        }
-
-        .crop-workspace img {
-            display: block;
-            max-width: 100%;
-            max-height: 500px;
-            pointer-events: none;
-        }
-
-        .crop-overlay-layer {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            cursor: crosshair;
-            touch-action: none;
-        }
-
-        .crop-selection-box {
-            position: absolute;
-            border: 2px solid #58a6ff;
-            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.65);
-            cursor: move;
-            box-sizing: border-box;
-            touch-action: none;
-        }
-
-        .crop-handle {
-            position: absolute;
-            width: 16px;
-            height: 16px;
-            background: #58a6ff;
-            border: 2px solid #ffffff;
-            border-radius: 4px;
-            box-sizing: border-box;
-            z-index: 10;
-        }
-
-        .crop-handle::after {
-            content: '';
-            position: absolute;
-            top: -6px;
-            left: -6px;
-            right: -6px;
-            bottom: -6px;
-        }
-
-        .crop-handle.tl { top: -8px; left: -8px; cursor: nwse-resize; }
-        .crop-handle.tr { top: -8px; right: -8px; cursor: nesw-resize; }
-        .crop-handle.bl { bottom: -8px; left: -8px; cursor: nesw-resize; }
-        .crop-handle.br { bottom: -8px; right: -8px; cursor: nwse-resize; }
-
-        .icon-preview {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 20px;
-            min-height: 200px;
-        }
-
-        .icon-preview div {
-            text-align: center;
-        }
-
-        .icon-preview img {
-            display: block;
-            margin: 0 auto 6px;
-        }
-
-        .code-box {
-            margin-top: 24px;
-            padding-top: 20px;
-            border-top: 1px solid #333;
-        }
-
-        .code-box textarea {
-            margin-top: 12px;
-            min-height: 180px;
-            line-height: 1.5;
-        }
-
-        .code-actions {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        .copy-status {
-            color: #999;
-        }
-
-        @media(max-width:800px) {
-            .grid {
-                grid-template-columns: 1fr;
-            }
-        }
+      }
     </style>
-</head>
+  </head>
 
-<body id="top" data-tool-id="image-tool">
-
+  <body id="top" data-tool-id="image-tool">
     <main class="container">
-        <aside class="sidebar profile-sidebar"></aside>
+      <aside class="sidebar profile-sidebar"></aside>
 
-        <section class="main-content">
-            <div class="img-header">
-                <h1>Image Manipulator</h1>
-                <p>Crop, resize, convert, generate icons, and edit SVG graphics entirely in your browser.</p>
+      <section class="main-content">
+        <div class="img-header">
+          <h1>Image Manipulator</h1>
+          <p>
+            Crop, resize, convert, generate icons, and edit SVG graphics
+            entirely in your browser.
+          </p>
+        </div>
+
+        <nav class="tabs" style="margin-top: 20px">
+          <button class="tab active" data-tool="crop">Crop &amp; Resize</button>
+          <button class="tab" data-tool="ico">PNG → ICO</button>
+          <button class="tab" data-tool="svgpng">SVG → PNG</button>
+          <button class="tab" data-tool="exticon">
+            Chrome Extension Icons
+          </button>
+          <button class="tab" data-tool="androidicon">
+            Android Icon Generator
+          </button>
+          <button class="tab" data-tool="pwaicon">PWA Icons</button>
+          <button class="tab" data-tool="svgedit">
+            SVG Generator / Editor
+          </button>
+        </nav>
+
+        <section id="crop" class="tool active">
+          <div class="grid">
+            <div class="card">
+              <h2>Crop &amp; Resize Settings</h2>
+              <label for="cropFile">Image Source</label>
+              <input id="cropFile" type="file" accept="image/*" />
+
+              <div class="row">
+                <div>
+                  <label for="cw">Target Width (px)</label>
+                  <input
+                    id="cw"
+                    type="number"
+                    min="0"
+                    placeholder="Optional (e.g. 1200)"
+                  />
+                </div>
+                <div>
+                  <label for="ch">Target Height (px)</label>
+                  <input
+                    id="ch"
+                    type="number"
+                    min="0"
+                    placeholder="Optional (e.g. 630)"
+                  />
+                </div>
+              </div>
+
+              <div style="margin-top: 10px">
+                <label
+                  ><input id="lockAspect" type="checkbox" /> Lock Selection to
+                  Target Aspect Ratio</label
+                >
+                <label style="margin-top: 6px"
+                  ><input id="scaleOutput" type="checkbox" checked /> Scale
+                  Cropped Selection to Target Dimensions (Optional
+                  Resizing)</label
+                >
+              </div>
+
+              <label for="cropFormat">Output Format</label>
+              <select id="cropFormat">
+                <option value="image/png">PNG</option>
+                <option value="image/jpeg">JPEG</option>
+                <option value="image/webp">WebP</option>
+              </select>
+
+              <label for="quality">Quality: <span id="qv">92%</span></label>
+              <input id="quality" type="range" min="1" max="100" value="92" />
+
+              <h3
+                style="
+                  margin-top: 18px;
+                  margin-bottom: 6px;
+                  font-size: 14px;
+                  color: #58a6ff;
+                "
+              >
+                Selection Coordinates (Source Image Pixels)
+              </h3>
+              <div class="row">
+                <div>
+                  <label for="cropX">Left (X)</label>
+                  <input id="cropX" type="number" min="0" value="0" />
+                </div>
+                <div>
+                  <label for="cropY">Top (Y)</label>
+                  <input id="cropY" type="number" min="0" value="0" />
+                </div>
+              </div>
+              <div class="row">
+                <div>
+                  <label for="cropW">Width</label>
+                  <input id="cropW" type="number" min="0" value="0" />
+                </div>
+                <div>
+                  <label for="cropH">Height</label>
+                  <input id="cropH" type="number" min="0" value="0" />
+                </div>
+              </div>
+
+              <div class="actions">
+                <button class="primary" id="cropRun">Crop &amp; Resize</button>
+                <button id="resetCropBtn" type="button" disabled>
+                  Reset Selection
+                </button>
+                <button id="cropDownload" disabled>
+                  Download Cropped Image
+                </button>
+              </div>
+              <div id="cropInfo" class="stat">
+                Upload an image to start cropping.
+              </div>
             </div>
 
-            <nav class="tabs" style="margin-top: 20px;">
-                <button class="tab active" data-tool="crop">Crop &amp; Resize</button>
-                <button class="tab" data-tool="ico">PNG → ICO</button>
-                <button class="tab" data-tool="svgpng">SVG → PNG</button>
-                <button class="tab" data-tool="exticon">Chrome Extension Icons</button>
-                <button class="tab" data-tool="androidicon">Android Icon Generator</button>
-                <button class="tab" data-tool="pwaicon">PWA Icons</button>
-                <button class="tab" data-tool="svgedit">SVG Generator / Editor</button>
-            </nav>
+            <div class="card">
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                  margin-bottom: 12px;
+                "
+              >
+                <h2 style="margin: 0">Interactive Crop Preview</h2>
+                <button
+                  id="toggleResultBtn"
+                  type="button"
+                  style="display: none; padding: 4px 10px; font-size: 12px"
+                >
+                  Toggle Result / Crop Tool
+                </button>
+              </div>
+              <div class="preview" id="cropPreview">
+                Upload an image to preview and drag a crop selection.
+              </div>
+              <div class="notice">
+                <strong>Interactive Cropping:</strong> Click and drag inside the
+                blue selection frame to move it over any area (e.g. a logo on
+                the left). Drag the corner handles or drag across the image to
+                redraw the selection area.
+              </div>
+            </div>
+          </div>
+        </section>
 
-            <section id="crop" class="tool active">
-                <div class="grid">
-                    <div class="card">
-                        <h2>Crop &amp; Resize Settings</h2>
-                        <label for="cropFile">Image Source</label>
-                        <input id="cropFile" type="file" accept="image/*">
+        <section id="ico" class="tool">
+          <div class="grid">
+            <div class="card">
+              <h2>PNG → ICO</h2>
+              <label for="icoFile">Source image</label
+              ><input
+                id="icoFile"
+                type="file"
+                accept="image/png,image/*"
+              /><label for="icoSizes">Icon sizes</label
+              ><input
+                id="icoSizes"
+                type="text"
+                value="16, 32, 48, 64, 128, 256"
+              />
+              <div class="actions">
+                <button class="primary" id="icoRun">Generate All Icons</button>
+              </div>
+              <div id="icoInfo" class="stat">No package generated.</div>
+              <div class="notice">
+                Generates one PNG for every requested size and one combined ICO
+                containing every requested size. The ZIP contains all PNG files
+                plus the ICO.
+              </div>
+            </div>
+            <div class="card">
+              <h2>Preview</h2>
+              <div class="preview">
+                <img id="icoPreview" hidden alt="Icon preview" />
+              </div>
+            </div>
+          </div>
+        </section>
 
-                        <div class="row">
-                            <div>
-                                <label for="cw">Target Width (px)</label>
-                                <input id="cw" type="number" min="0" placeholder="Optional (e.g. 1200)">
-                            </div>
-                            <div>
-                                <label for="ch">Target Height (px)</label>
-                                <input id="ch" type="number" min="0" placeholder="Optional (e.g. 630)">
-                            </div>
-                        </div>
+        <section id="svgpng" class="tool">
+          <div class="grid">
+            <div class="card">
+              <h2>SVG → PNG</h2>
+              <label for="svgFile">SVG file</label
+              ><input
+                id="svgFile"
+                type="file"
+                accept=".svg,image/svg+xml"
+              /><label for="sw">Output width</label
+              ><input id="sw" type="number" value="1200" min="1" /><label
+                for="sh"
+                >Output height</label
+              ><input id="sh" type="number" value="630" min="1" />
+              <div class="actions">
+                <button class="primary" id="svgRun">Convert to PNG</button
+                ><button id="svgDownload" disabled>Download</button>
+              </div>
+              <div id="svgInfo" class="stat">No SVG loaded.</div>
+              <div class="notice">
+                The PNG uses the SVG's native dimensions and preserves its
+                original appearance and transparency.
+              </div>
+            </div>
+            <div class="card">
+              <h2>Preview</h2>
+              <div class="preview" id="svgPreview">Choose an SVG.</div>
+            </div>
+          </div>
+        </section>
 
-                        <div style="margin-top: 10px;">
-                            <label><input id="lockAspect" type="checkbox"> Lock Selection to Target Aspect Ratio</label>
-                            <label style="margin-top: 6px;"><input id="scaleOutput" type="checkbox" checked> Scale Cropped Selection to Target Dimensions (Optional Resizing)</label>
-                        </div>
-
-                        <label for="cropFormat">Output Format</label>
-                        <select id="cropFormat">
-                            <option value="image/png">PNG</option>
-                            <option value="image/jpeg">JPEG</option>
-                            <option value="image/webp">WebP</option>
-                        </select>
-
-                        <label for="quality">Quality: <span id="qv">92%</span></label>
-                        <input id="quality" type="range" min="1" max="100" value="92">
-
-                        <h3 style="margin-top: 18px; margin-bottom: 6px; font-size: 14px; color: #58a6ff;">Selection Coordinates (Source Image Pixels)</h3>
-                        <div class="row">
-                            <div>
-                                <label for="cropX">Left (X)</label>
-                                <input id="cropX" type="number" min="0" value="0">
-                            </div>
-                            <div>
-                                <label for="cropY">Top (Y)</label>
-                                <input id="cropY" type="number" min="0" value="0">
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div>
-                                <label for="cropW">Width</label>
-                                <input id="cropW" type="number" min="0" value="0">
-                            </div>
-                            <div>
-                                <label for="cropH">Height</label>
-                                <input id="cropH" type="number" min="0" value="0">
-                            </div>
-                        </div>
-
-                        <div class="actions">
-                            <button class="primary" id="cropRun">Crop &amp; Resize</button>
-                            <button id="resetCropBtn" type="button" disabled>Reset Selection</button>
-                            <button id="cropDownload" disabled>Download Cropped Image</button>
-                        </div>
-                        <div id="cropInfo" class="stat">Upload an image to start cropping.</div>
-                    </div>
-
-                    <div class="card">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                            <h2 style="margin: 0;">Interactive Crop Preview</h2>
-                            <button id="toggleResultBtn" type="button" style="display: none; padding: 4px 10px; font-size: 12px;">Toggle Result / Crop Tool</button>
-                        </div>
-                        <div class="preview" id="cropPreview">Upload an image to preview and drag a crop selection.</div>
-                        <div class="notice">
-                            <strong>Interactive Cropping:</strong> Click and drag inside the blue selection frame to move it over any area (e.g. a logo on the left). Drag the corner handles or drag across the image to redraw the selection area.
-                        </div>
-                    </div>
+        <section id="exticon" class="tool">
+          <div class="grid">
+            <div class="card">
+              <h2>Chrome Extension Icon Generator</h2>
+              <label for="extFile">Source image</label
+              ><input id="extFile" type="file" accept="image/*" /><label
+                for="extShape"
+                >Icon shape</label
+              ><select id="extShape">
+                <option value="square">Square</option>
+                <option value="rounded">Rounded square</option>
+                <option value="circle">Circle</option></select
+              ><label for="extPad">Padding: <span id="padVal">8%</span></label
+              ><input id="extPad" type="range" min="0" max="30" value="8" />
+              <div class="actions">
+                <button class="primary" id="extRun">Generate Icons</button
+                ><button id="extDownload" disabled>Download ZIP</button>
+              </div>
+              <div class="notice">
+                Creates icon128.png, icon16.png, icon32.png, and icon48.png. All
+                four icons are packaged into one ZIP file.
+              </div>
+            </div>
+            <div class="card">
+              <h2>Generated Icons</h2>
+              <div id="extPreview" class="icon-preview"></div>
+              <div class="code-box">
+                <div>Copy this code into your manifest.json file.</div>
+                <div class="notice">
+                  After putting the icons folder into your project.
                 </div>
-            </section>
-
-            <section id="ico" class="tool">
-                <div class="grid">
-                    <div class="card">
-                        <h2>PNG → ICO</h2>
-                        <label for="icoFile">Source image</label><input id="icoFile" type="file" accept="image/png,image/*"><label for="icoSizes">Icon sizes</label><input id="icoSizes" type="text" value="256, 128, 64, 48, 32, 16">
-                        <div class="actions">
-                            <button class="primary" id="icoRun">Generate All Icons</button>
-                        </div>
-                        <div id="icoInfo" class="stat">No package generated.</div>
-                        <div class="notice">Generates one PNG for every requested size and one combined ICO containing every requested size. The ZIP contains all PNG files plus the ICO.</div>
-                    </div>
-                    <div class="card">
-                        <h2>Preview</h2>
-                        <div class="preview"><img id="icoPreview" hidden alt="Icon preview"></div>
-                    </div>
-                </div>
-            </section>
-
-            <section id="svgpng" class="tool">
-                <div class="grid">
-                    <div class="card">
-                        <h2>SVG → PNG</h2>
-                        <label for="svgFile">SVG file</label><input id="svgFile" type="file" accept=".svg,image/svg+xml"><label for="sw">Output width</label><input id="sw" type="number" value="1200" min="1"><label for="sh">Output height</label><input id="sh" type="number" value="630" min="1">
-                        <div class="actions">
-                            <button class="primary" id="svgRun">Convert to PNG</button><button id="svgDownload" disabled>Download</button>
-                        </div>
-                        <div id="svgInfo" class="stat">No SVG loaded.</div>
-                        <div class="notice">The PNG uses the SVG's native dimensions and preserves its original appearance and transparency.</div>
-                    </div>
-                    <div class="card">
-                        <h2>Preview</h2>
-                        <div class="preview" id="svgPreview">Choose an SVG.</div>
-                    </div>
-                </div>
-            </section>
-
-            <section id="exticon" class="tool">
-                <div class="grid">
-                    <div class="card">
-                        <h2>Chrome Extension Icon Generator</h2>
-                        <label for="extFile">Source image</label><input id="extFile" type="file" accept="image/*"><label for="extShape">Icon shape</label><select id="extShape"><option value="square">Square</option><option value="rounded">Rounded square</option><option value="circle">Circle</option></select><label for="extPad">Padding: <span id="padVal">8%</span></label><input id="extPad" type="range" min="0" max="30" value="8">
-                        <div class="actions">
-                            <button class="primary" id="extRun">Generate Icons</button><button id="extDownload" disabled>Download ZIP</button>
-                        </div>
-                        <div class="notice">Creates icon128.png, icon16.png, icon32.png, and icon48.png. All four icons are packaged into one ZIP file.</div>
-                    </div>
-                    <div class="card">
-                        <h2>Generated Icons</h2>
-                        <div id="extPreview" class="icon-preview"></div>
-                        <div class="code-box">
-                            <div>Copy this code into your manifest.json file.</div>
-                            <div class="notice">After putting the icons folder into your project.</div><textarea id="manifestCode" rows="8" readonly spellcheck="false">        "icons": {
+                <textarea
+                  id="manifestCode"
+                  rows="8"
+                  readonly
+                  spellcheck="false"
+                >
+        "icons": {
               "16": "icons/icon16.png",
               "32": "icons/icon32.png",
               "48": "icons/icon48.png",
               "128": "icons/icon128.png"
-            },</textarea>
-                            <div class="code-actions">
-                                <button id="manifestCopy">Copy Code</button><span id="manifestCopyStatus" class="copy-status" aria-live="polite"></span>
-                            </div>
-                        </div>
-                    </div>
+            },</textarea
+                >
+                <div class="code-actions">
+                  <button id="manifestCopy">Copy Code</button
+                  ><span
+                    id="manifestCopyStatus"
+                    class="copy-status"
+                    aria-live="polite"
+                  ></span>
                 </div>
-            </section>
+              </div>
+            </div>
+          </div>
+        </section>
 
-            <section id="androidicon" class="tool">
-                <div class="grid">
-                    <div class="card">
-                        <h2>Android Icon Generator</h2>
-                        <label for="androidFile">Source Image</label>
-                        <input id="androidFile" type="file" accept="image/*,.svg">
+        <section id="androidicon" class="tool">
+          <div class="grid">
+            <div class="card">
+              <h2>Android Icon Generator</h2>
+              <label for="androidFile">Source Image</label>
+              <input id="androidFile" type="file" accept="image/*,.svg" />
 
-                        <label for="androidName">Resource Name</label>
-                        <input id="androidName" type="text" value="ic_launcher">
+              <label for="androidName">Resource Name</label>
+              <input id="androidName" type="text" value="ic_launcher" />
 
-                        <div style="margin-top: 14px;">
-                            <label><input id="androidGenStandard" type="checkbox" checked> Standard Launcher Icons (mdpi, hdpi, xhdpi, xxhdpi, xxxhdpi)</label>
-                            <label style="margin-top: 6px;"><input id="androidGenRound" type="checkbox" checked> Round Launcher Icons (`_round.png`)</label>
-                            <label style="margin-top: 6px;"><input id="androidGenAdaptive" type="checkbox" checked> Adaptive Icons (foreground + background layers)</label>
-                            <label style="margin-top: 6px;"><input id="androidGenMonochrome" type="checkbox" checked> Monochrome Themed Icon</label>
-                        </div>
+              <div style="margin-top: 14px">
+                <label
+                  ><input id="androidGenStandard" type="checkbox" checked />
+                  Standard Launcher Icons (mdpi, hdpi, xhdpi, xxhdpi,
+                  xxxhdpi)</label
+                >
+                <label style="margin-top: 6px"
+                  ><input id="androidGenRound" type="checkbox" checked /> Round
+                  Launcher Icons (`_round.png`)</label
+                >
+                <label style="margin-top: 6px"
+                  ><input id="androidGenAdaptive" type="checkbox" checked />
+                  Adaptive Icons (foreground + background layers)</label
+                >
+                <label style="margin-top: 6px"
+                  ><input id="androidGenMonochrome" type="checkbox" checked />
+                  Monochrome Themed Icon</label
+                >
+              </div>
 
-                        <div id="androidAdaptiveOptions" style="margin-top: 14px; padding: 12px; background: #121212; border: 1px solid #333; border-radius: 6px;">
-                            <h3 style="margin-top: 0; font-size: 14px; color: #58a6ff;">Adaptive Icon Settings</h3>
-                            <label for="androidBgType">Background Type</label>
-                            <select id="androidBgType">
-                                <option value="color">Solid Color</option>
-                                <option value="transparent">Transparent</option>
-                                <option value="image">Uploaded Image</option>
-                            </select>
+              <div
+                id="androidAdaptiveOptions"
+                style="
+                  margin-top: 14px;
+                  padding: 12px;
+                  background: #121212;
+                  border: 1px solid #333;
+                  border-radius: 6px;
+                "
+              >
+                <h3 style="margin-top: 0; font-size: 14px; color: #58a6ff">
+                  Adaptive Icon Settings
+                </h3>
+                <label for="androidBgType">Background Type</label>
+                <select id="androidBgType">
+                  <option value="color">Solid Color</option>
+                  <option value="transparent">Transparent</option>
+                  <option value="image">Uploaded Image</option>
+                </select>
 
-                            <div id="androidBgColorWrap" style="margin-top: 10px;">
-                                <label for="androidBgColor">Background Color</label>
-                                <input id="androidBgColor" type="color" value="#FFFFFF" style="height: 40px; padding: 2px;">
-                            </div>
-
-                            <div id="androidBgImageWrap" style="margin-top: 10px; display: none;">
-                                <label for="androidBgFile">Background Image</label>
-                                <input id="androidBgFile" type="file" accept="image/*">
-                            </div>
-
-                            <label for="androidScale" style="margin-top: 10px;">Foreground Scaling: <span id="androidScaleVal">72%</span></label>
-                            <input id="androidScale" type="range" min="40" max="100" value="72">
-                        </div>
-
-                        <div class="actions">
-                            <button class="primary" id="androidRun">Generate Android Icons</button>
-                            <button id="androidDownload" disabled>Download ZIP</button>
-                        </div>
-                        <div id="androidInfo" class="stat">Upload an image to generate Android project icon resources.</div>
-                        <div class="notice">Generates standard mipmap densities, adaptive foreground/background resources, xml descriptors, and manifest snippets.</div>
-                    </div>
-
-                    <div class="card">
-                        <h2>Generated Previews &amp; Configuration</h2>
-                        <div id="androidPreview" class="icon-preview" style="margin-bottom: 20px;">Upload an image to view icon previews.</div>
-
-                        <div class="code-box">
-                            <div>Adaptive Icon XML (`mipmap-anydpi-v26/{name}.xml`)</div>
-                            <textarea id="androidAdaptiveXmlCode" rows="4" readonly spellcheck="false"></textarea>
-                            <div class="code-actions">
-                                <button id="androidAdaptiveCopy">Copy XML</button><span id="androidAdaptiveCopyStatus" class="copy-status" aria-live="polite"></span>
-                            </div>
-                        </div>
-
-                        <div class="code-box">
-                            <div>Background Color Resource (`values/{name}_background.xml`)</div>
-                            <textarea id="androidColorXmlCode" rows="3" readonly spellcheck="false"></textarea>
-                            <div class="code-actions">
-                                <button id="androidColorCopy">Copy XML</button><span id="androidColorCopyStatus" class="copy-status" aria-live="polite"></span>
-                            </div>
-                        </div>
-
-                        <div class="code-box">
-                            <div>AndroidManifest.xml Integration Snippet</div>
-                            <textarea id="androidManifestCode" rows="3" readonly spellcheck="false"></textarea>
-                            <div class="code-actions">
-                                <button id="androidManifestCopy">Copy Snippet</button><span id="androidManifestCopyStatus" class="copy-status" aria-live="polite"></span>
-                            </div>
-                        </div>
-                    </div>
+                <div id="androidBgColorWrap" style="margin-top: 10px">
+                  <label for="androidBgColor">Background Color</label>
+                  <input
+                    id="androidBgColor"
+                    type="color"
+                    value="#FFFFFF"
+                    style="height: 40px; padding: 2px"
+                  />
                 </div>
-            </section>
 
-            <section id="pwaicon" class="tool">
-                <div class="grid">
-                    <div class="card">
-                        <h2>PWA Icon Generator</h2>
-                        <label for="pwaFile">Source Image</label>
-                        <input id="pwaFile" type="file" accept="image/*,.svg">
-
-                        <div class="row">
-                            <div>
-                                <label for="pwaDir">Icon Directory</label>
-                                <input id="pwaDir" type="text" value="/icons/">
-                            </div>
-                            <div>
-                                <label for="pwaPrefix">Filename Prefix</label>
-                                <input id="pwaPrefix" type="text" value="icon">
-                            </div>
-                        </div>
-
-                        <div style="margin-top: 14px;">
-                            <label><input id="pwaGenStandard" type="checkbox" checked> Standard PWA Icons (192px, 512px)</label>
-                            <label style="margin-top: 6px;"><input id="pwaGenMaskable" type="checkbox" checked> Maskable Android Icons (192px, 512px)</label>
-                            <label style="margin-top: 6px;"><input id="pwaGenApple" type="checkbox" checked> iOS Touch Icon (180px)</label>
-                            <label style="margin-top: 6px;"><input id="pwaGenFavicon" type="checkbox" checked> Favicons (32px, 16px)</label>
-                        </div>
-
-                        <div style="margin-top: 14px; padding: 12px; background: #121212; border: 1px solid #333; border-radius: 6px;">
-                            <h3 style="margin-top: 0; font-size: 14px; color: #58a6ff;">Background &amp; Padding Settings</h3>
-                            <label for="pwaBgType">Background Style</label>
-                            <select id="pwaBgType">
-                                <option value="transparent">Transparent (where supported)</option>
-                                <option value="color">Solid Color</option>
-                            </select>
-
-                            <div id="pwaBgColorWrap" style="margin-top: 10px; display: none;">
-                                <label for="pwaBgColor">Background Color</label>
-                                <input id="pwaBgColor" type="color" value="#ffffff" style="height: 40px; padding: 2px;">
-                            </div>
-
-                            <label for="pwaPad" style="margin-top: 10px;">Icon Padding / Safe Area: <span id="pwaPadVal">12%</span></label>
-                            <input id="pwaPad" type="range" min="0" max="35" value="12">
-                        </div>
-
-                        <div class="actions">
-                            <button class="primary" id="pwaRun">Generate PWA Icons</button>
-                            <button id="pwaDownload" disabled>Download ZIP</button>
-                        </div>
-                        <div id="pwaInfo" class="stat">Upload an image to generate PWA icons and manifest snippets.</div>
-                        <div class="notice">Generates standard icons, maskable icons with safe-zone padding, iOS icons, and favicons.</div>
-                    </div>
-
-                    <div class="card">
-                        <h2>Generated Previews &amp; Snippets</h2>
-                        <div id="pwaPreview" class="icon-preview" style="margin-bottom: 20px;">Upload an image to preview icons.</div>
-
-                        <div class="code-box">
-                            <div>Web App Manifest `icons` Array JSON</div>
-                            <textarea id="pwaManifestCode" rows="6" readonly spellcheck="false"></textarea>
-                            <div class="code-actions">
-                                <button id="pwaManifestCopy">Copy JSON</button><span id="pwaManifestCopyStatus" class="copy-status" aria-live="polite"></span>
-                            </div>
-                        </div>
-
-                        <div class="code-box" style="margin-top: 16px;">
-                            <div>HTML Head Favicon &amp; Touch Icon Links</div>
-                            <textarea id="pwaHtmlCode" rows="4" readonly spellcheck="false"></textarea>
-                            <div class="code-actions">
-                                <button id="pwaHtmlCopy">Copy HTML</button><span id="pwaHtmlCopyStatus" class="copy-status" aria-live="polite"></span>
-                            </div>
-                        </div>
-                    </div>
+                <div
+                  id="androidBgImageWrap"
+                  style="margin-top: 10px; display: none"
+                >
+                  <label for="androidBgFile">Background Image</label>
+                  <input id="androidBgFile" type="file" accept="image/*" />
                 </div>
-            </section>
 
-            <section id="svgedit" class="tool">
-                <div class="grid">
-                    <div class="card">
-                        <h2>SVG Generator / Editor</h2>
-                        <label for="ew">Canvas width</label><input id="ew" type="number" value="512" min="1"><label for="eh">Canvas height</label><input id="eh" type="number" value="512" min="1"><label for="svgCode">SVG markup</label><textarea id="svgCode" rows="18"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="100%" height="100%">
+                <label for="androidScale" style="margin-top: 10px"
+                  >Foreground Scaling:
+                  <span id="androidScaleVal">72%</span></label
+                >
+                <input
+                  id="androidScale"
+                  type="range"
+                  min="40"
+                  max="100"
+                  value="72"
+                />
+              </div>
+
+              <div class="actions">
+                <button class="primary" id="androidRun">
+                  Generate Android Icons
+                </button>
+                <button id="androidDownload" disabled>Download ZIP</button>
+              </div>
+              <div id="androidInfo" class="stat">
+                Upload an image to generate Android project icon resources.
+              </div>
+              <div class="notice">
+                Generates standard mipmap densities, adaptive
+                foreground/background resources, xml descriptors, and manifest
+                snippets.
+              </div>
+            </div>
+
+            <div class="card">
+              <h2>Generated Previews &amp; Configuration</h2>
+              <div
+                id="androidPreview"
+                class="icon-preview"
+                style="margin-bottom: 20px"
+              >
+                Upload an image to view icon previews.
+              </div>
+
+              <div class="code-box">
+                <div>Adaptive Icon XML (`mipmap-anydpi-v26/{name}.xml`)</div>
+                <textarea
+                  id="androidAdaptiveXmlCode"
+                  rows="4"
+                  readonly
+                  spellcheck="false"
+                ></textarea>
+                <div class="code-actions">
+                  <button id="androidAdaptiveCopy">Copy XML</button
+                  ><span
+                    id="androidAdaptiveCopyStatus"
+                    class="copy-status"
+                    aria-live="polite"
+                  ></span>
+                </div>
+              </div>
+
+              <div class="code-box">
+                <div>
+                  Background Color Resource (`values/{name}_background.xml`)
+                </div>
+                <textarea
+                  id="androidColorXmlCode"
+                  rows="3"
+                  readonly
+                  spellcheck="false"
+                ></textarea>
+                <div class="code-actions">
+                  <button id="androidColorCopy">Copy XML</button
+                  ><span
+                    id="androidColorCopyStatus"
+                    class="copy-status"
+                    aria-live="polite"
+                  ></span>
+                </div>
+              </div>
+
+              <div class="code-box">
+                <div>AndroidManifest.xml Integration Snippet</div>
+                <textarea
+                  id="androidManifestCode"
+                  rows="3"
+                  readonly
+                  spellcheck="false"
+                ></textarea>
+                <div class="code-actions">
+                  <button id="androidManifestCopy">Copy Snippet</button
+                  ><span
+                    id="androidManifestCopyStatus"
+                    class="copy-status"
+                    aria-live="polite"
+                  ></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="pwaicon" class="tool">
+          <div class="grid">
+            <div class="card">
+              <h2>PWA Icon Generator</h2>
+              <label for="pwaFile">Source Image</label>
+              <input id="pwaFile" type="file" accept="image/*,.svg" />
+
+              <div class="row">
+                <div>
+                  <label for="pwaDir">Icon Directory</label>
+                  <input id="pwaDir" type="text" value="/icons/" />
+                </div>
+                <div>
+                  <label for="pwaPrefix">Filename Prefix</label>
+                  <input id="pwaPrefix" type="text" value="icon" />
+                </div>
+              </div>
+
+              <div style="margin-top: 14px">
+                <label
+                  ><input id="pwaGenStandard" type="checkbox" checked />
+                  Standard PWA Icons (192px, 512px)</label
+                >
+                <label style="margin-top: 6px"
+                  ><input id="pwaGenMaskable" type="checkbox" checked />
+                  Maskable Android Icons (192px, 512px)</label
+                >
+                <label style="margin-top: 6px"
+                  ><input id="pwaGenApple" type="checkbox" checked /> iOS Touch
+                  Icon (180px)</label
+                >
+                <label style="margin-top: 6px"
+                  ><input id="pwaGenFavicon" type="checkbox" checked /> Favicons
+                  (32px, 16px)</label
+                >
+              </div>
+
+              <div
+                style="
+                  margin-top: 14px;
+                  padding: 12px;
+                  background: #121212;
+                  border: 1px solid #333;
+                  border-radius: 6px;
+                "
+              >
+                <h3 style="margin-top: 0; font-size: 14px; color: #58a6ff">
+                  Background &amp; Padding Settings
+                </h3>
+                <label for="pwaBgType">Background Style</label>
+                <select id="pwaBgType">
+                  <option value="transparent">
+                    Transparent (where supported)
+                  </option>
+                  <option value="color">Solid Color</option>
+                </select>
+
+                <div
+                  id="pwaBgColorWrap"
+                  style="margin-top: 10px; display: none"
+                >
+                  <label for="pwaBgColor">Background Color</label>
+                  <input
+                    id="pwaBgColor"
+                    type="color"
+                    value="#ffffff"
+                    style="height: 40px; padding: 2px"
+                  />
+                </div>
+
+                <label for="pwaPad" style="margin-top: 10px"
+                  >Icon Padding / Safe Area:
+                  <span id="pwaPadVal">12%</span></label
+                >
+                <input id="pwaPad" type="range" min="0" max="35" value="12" />
+              </div>
+
+              <div class="actions">
+                <button class="primary" id="pwaRun">Generate PWA Icons</button>
+                <button id="pwaDownload" disabled>Download ZIP</button>
+              </div>
+              <div id="pwaInfo" class="stat">
+                Upload an image to generate PWA icons and manifest snippets.
+              </div>
+              <div class="notice">
+                Generates standard icons, maskable icons with safe-zone padding,
+                iOS icons, and favicons.
+              </div>
+            </div>
+
+            <div class="card">
+              <h2>Generated Previews &amp; Snippets</h2>
+              <div
+                id="pwaPreview"
+                class="icon-preview"
+                style="margin-bottom: 20px"
+              >
+                Upload an image to preview icons.
+              </div>
+
+              <div class="code-box">
+                <div>Web App Manifest `icons` Array JSON</div>
+                <textarea
+                  id="pwaManifestCode"
+                  rows="6"
+                  readonly
+                  spellcheck="false"
+                ></textarea>
+                <div class="code-actions">
+                  <button id="pwaManifestCopy">Copy JSON</button
+                  ><span
+                    id="pwaManifestCopyStatus"
+                    class="copy-status"
+                    aria-live="polite"
+                  ></span>
+                </div>
+              </div>
+
+              <div class="code-box" style="margin-top: 16px">
+                <div>HTML Head Favicon &amp; Touch Icon Links</div>
+                <textarea
+                  id="pwaHtmlCode"
+                  rows="4"
+                  readonly
+                  spellcheck="false"
+                ></textarea>
+                <div class="code-actions">
+                  <button id="pwaHtmlCopy">Copy HTML</button
+                  ><span
+                    id="pwaHtmlCopyStatus"
+                    class="copy-status"
+                    aria-live="polite"
+                  ></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="svgedit" class="tool">
+          <div class="grid">
+            <div class="card">
+              <h2>SVG Generator / Editor</h2>
+              <label for="ew">Canvas width</label
+              ><input id="ew" type="number" value="512" min="1" /><label
+                for="eh"
+                >Canvas height</label
+              ><input id="eh" type="number" value="512" min="1" /><label
+                for="svgCode"
+                >SVG markup</label
+              ><textarea id="svgCode" rows="18">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="100%" height="100%">
   <defs>
     <!-- Background Radial Gradient -->
     <radialGradient id="bgGrad" cx="50%" cy="50%" r="75%" fx="50%" fy="50%">
@@ -846,1235 +1170,1591 @@
           stroke-linejoin="round" />
 
   </g>
-</svg></textarea>
-                        <div class="actions">
-                            <button class="primary" id="svgUpdate">Update Preview</button><button id="svgSave">Download SVG</button>
-                        </div>
-                    </div>
-                    <div class="card">
-                        <h2>SVG Preview</h2>
-                        <div class="preview" id="editPreview"></div>
-                    </div>
-                </div>
-            </section>
+</svg></textarea
+              >
+              <div class="actions">
+                <button class="primary" id="svgUpdate">Update Preview</button
+                ><button id="svgSave">Download SVG</button>
+              </div>
+            </div>
+            <div class="card">
+              <h2>SVG Preview</h2>
+              <div class="preview" id="editPreview"></div>
+            </div>
+          </div>
         </section>
+      </section>
     </main>
 
     <script src="../../js/framework.js"></script>
     <script src="../../js/jquery-3.2.1.min.js"></script>
     <script src="../../js/github-fetch.js?v=25"></script>
     <script>
-        "use strict";
-        const $=s=>document.querySelector(s);
-        const state={
-            cropImage:null,
-            cropBlob:null,
-            icoImage:null,
-            icoZip:null,
-            svgText:null,
-            svgBlob:null,
-            extImage:null,
-            extBlobs:[],
-            extZip:null,
-            cropRect: { x: 0, y: 0, w: 0, h: 0 },
-            isCroppingView: true
+      "use strict";
+      const $ = (s) => document.querySelector(s);
+      const state = {
+        cropImage: null,
+        cropBlob: null,
+        icoImage: null,
+        icoZip: null,
+        svgText: null,
+        svgBlob: null,
+        extImage: null,
+        extBlobs: [],
+        extZip: null,
+        cropRect: { x: 0, y: 0, w: 0, h: 0 },
+        isCroppingView: true,
+      };
+
+      // Tab switching
+      document.querySelectorAll(".tab").forEach((b) =>
+        b.addEventListener("click", () => {
+          document
+            .querySelectorAll(".tab")
+            .forEach((x) => x.classList.remove("active"));
+          document
+            .querySelectorAll(".tool")
+            .forEach((x) => x.classList.remove("active"));
+          b.classList.add("active");
+          document.getElementById(b.dataset.tool)?.classList.add("active");
+        })
+      );
+
+      function loadImage(file) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => resolve(img);
+            img.onerror = () => reject(new Error("Unable to load image."));
+            img.src = e.target.result;
+          };
+          reader.onerror = () => reject(new Error("Unable to read file."));
+          reader.readAsDataURL(file);
+        });
+      }
+
+      function canvasBlob(c, type, q) {
+        return new Promise((resolve, reject) =>
+          c.toBlob(
+            (b) =>
+              b ? resolve(b) : reject(new Error("Unable to create image.")),
+            type,
+            q
+          )
+        );
+      }
+
+      function downloadBlob(b, n) {
+        if (!b) return;
+        const u = URL.createObjectURL(b),
+          a = document.createElement("a");
+        a.href = u;
+        a.download = n;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(u), 1000);
+      }
+
+      // Target Aspect Ratio Helper
+      function getTargetAspectRatio() {
+        const w = Number($("#cw").value);
+        const h = Number($("#ch").value);
+        if (!w || !h || w <= 0 || h <= 0) return null;
+        return w / h;
+      }
+
+      // Clamp Crop Rect within Natural Image Dimensions
+      function clampCropRect(isFinal = false) {
+        if (!state.cropImage) return;
+        const nw = state.cropImage.naturalWidth || state.cropImage.width;
+        const nh = state.cropImage.naturalHeight || state.cropImage.height;
+
+        const minSize = isFinal ? 1 : 0;
+
+        state.cropRect.w = Math.max(minSize, Math.min(nw, state.cropRect.w));
+        state.cropRect.h = Math.max(minSize, Math.min(nh, state.cropRect.h));
+
+        if (state.cropRect.x < 0) state.cropRect.x = 0;
+        if (state.cropRect.y < 0) state.cropRect.y = 0;
+        if (state.cropRect.x + state.cropRect.w > nw) {
+          if (state.cropRect.w > nw) state.cropRect.w = nw;
+          state.cropRect.x = nw - state.cropRect.w;
+        }
+        if (state.cropRect.y + state.cropRect.h > nh) {
+          if (state.cropRect.h > nh) state.cropRect.h = nh;
+          state.cropRect.y = nh - state.cropRect.h;
+        }
+
+        updateNumericCropInputs();
+      }
+
+      function updateNumericCropInputs() {
+        $("#cropX").value = Math.round(state.cropRect.x);
+        $("#cropY").value = Math.round(state.cropRect.y);
+        $("#cropW").value = Math.round(state.cropRect.w);
+        $("#cropH").value = Math.round(state.cropRect.h);
+
+        const nw = state.cropImage
+          ? state.cropImage.naturalWidth || state.cropImage.width
+          : 0;
+        const nh = state.cropImage
+          ? state.cropImage.naturalHeight || state.cropImage.height
+          : 0;
+        const targetW = Number($("#cw").value);
+        const targetH = Number($("#ch").value);
+
+        if (state.cropImage) {
+          const targetStr =
+            targetW > 0 && targetH > 0
+              ? `${targetW} × ${targetH}px`
+              : "Original / Unconstrained";
+          $(
+            "#cropInfo"
+          ).textContent = `Original: ${nw} × ${nh}px • Crop Region: ${Math.round(
+            state.cropRect.w
+          )} × ${Math.round(state.cropRect.h)}px at (${Math.round(
+            state.cropRect.x
+          )}, ${Math.round(state.cropRect.y)}) → Target: ${targetStr}`;
+        }
+      }
+
+      // Reset Crop Box to Center (75% of Input Image Size)
+      function initDefaultCropBox() {
+        if (!state.cropImage) return;
+        const nw = state.cropImage.naturalWidth || state.cropImage.width;
+        const nh = state.cropImage.naturalHeight || state.cropImage.height;
+        const targetRatio = getTargetAspectRatio();
+
+        let w = nw * 0.75;
+        let h = nh * 0.75;
+
+        if (targetRatio) {
+          if (w / h > targetRatio) {
+            w = h * targetRatio;
+          } else {
+            h = w / targetRatio;
+          }
+        }
+
+        state.cropRect = {
+          x: Math.round((nw - w) / 2),
+          y: Math.round((nh - h) / 2),
+          w: Math.round(w),
+          h: Math.round(h),
         };
+        clampCropRect(true);
+      }
 
-        // Tab switching
-        document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>{
-            document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
-            document.querySelectorAll(".tool").forEach(x=>x.classList.remove("active"));
-            b.classList.add("active");
-            document.getElementById(b.dataset.tool)?.classList.add("active");
-        }));
+      // Setup Interactive Workspace
+      let workspaceEl = null;
+      let imgEl = null;
+      let overlayEl = null;
+      let selectionBoxEl = null;
 
-        function loadImage(file){
-            return new Promise((resolve,reject)=>{
-                const reader = new FileReader();
-                reader.onload = e => {
-                    const img = new Image();
-                    img.onload = () => resolve(img);
-                    img.onerror = () => reject(new Error("Unable to load image."));
-                    img.src = e.target.result;
-                };
-                reader.onerror = () => reject(new Error("Unable to read file."));
-                reader.readAsDataURL(file);
-            });
+      function buildInteractiveCropWorkspace() {
+        const p = $("#cropPreview");
+        p.innerHTML = "";
+
+        if (!state.cropImage) {
+          p.textContent =
+            "Upload an image to preview and drag a crop selection.";
+          return;
         }
 
-        function canvasBlob(c,type,q){
-            return new Promise((resolve,reject)=>c.toBlob(b=>b?resolve(b):reject(new Error("Unable to create image.")),type,q));
+        workspaceEl = document.createElement("div");
+        workspaceEl.className = "crop-workspace";
+
+        imgEl = document.createElement("img");
+        imgEl.onload = () => renderCropBoxUI();
+        imgEl.src = state.cropImage.src;
+        workspaceEl.appendChild(imgEl);
+
+        overlayEl = document.createElement("div");
+        overlayEl.className = "crop-overlay-layer";
+
+        selectionBoxEl = document.createElement("div");
+        selectionBoxEl.className = "crop-selection-box";
+
+        const handles = ["tl", "tr", "bl", "br"];
+        handles.forEach((pos) => {
+          const h = document.createElement("div");
+          h.className = `crop-handle ${pos}`;
+          h.dataset.handle = pos;
+          selectionBoxEl.appendChild(h);
+        });
+
+        overlayEl.appendChild(selectionBoxEl);
+        workspaceEl.appendChild(overlayEl);
+        p.appendChild(workspaceEl);
+
+        setupDragAndDrop();
+        if (imgEl.complete && imgEl.clientWidth > 0) {
+          renderCropBoxUI();
+        } else {
+          requestAnimationFrame(() => renderCropBoxUI());
+        }
+      }
+
+      function renderCropBoxUI() {
+        if (!workspaceEl || !imgEl || !selectionBoxEl || !state.cropImage)
+          return;
+
+        const nw = state.cropImage.naturalWidth || state.cropImage.width;
+        const nh = state.cropImage.naturalHeight || state.cropImage.height;
+
+        const dispW = imgEl.clientWidth || imgEl.offsetWidth;
+        const dispH = imgEl.clientHeight || imgEl.offsetHeight;
+
+        if (!dispW || !dispH) {
+          requestAnimationFrame(renderCropBoxUI);
+          return;
         }
 
-        function downloadBlob(b,n){
-            if(!b)return;
-            const u=URL.createObjectURL(b),a=document.createElement("a");
-            a.href=u;
-            a.download=n;
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-            setTimeout(()=>URL.revokeObjectURL(u),1000);
+        const scaleX = dispW / nw;
+        const scaleY = dispH / nh;
+
+        const boxL = state.cropRect.x * scaleX;
+        const boxT = state.cropRect.y * scaleY;
+        const boxW = state.cropRect.w * scaleX;
+        const boxH = state.cropRect.h * scaleY;
+
+        selectionBoxEl.style.left = boxL + "px";
+        selectionBoxEl.style.top = boxT + "px";
+        selectionBoxEl.style.width = boxW + "px";
+        selectionBoxEl.style.height = boxH + "px";
+      }
+
+      function setupDragAndDrop() {
+        let isDragging = false;
+        let dragType = null; // "move", "new", "tl", "tr", "bl", "br"
+        let startX = 0,
+          startY = 0;
+        let startRect = { ...state.cropRect };
+
+        function getMousePos(e) {
+          const rect = overlayEl.getBoundingClientRect();
+          const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+          const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+          return {
+            x: clientX - rect.left,
+            y: clientY - rect.top,
+          };
         }
 
-        // Target Aspect Ratio Helper
-        function getTargetAspectRatio(){
-            const w = Number($("#cw").value);
-            const h = Number($("#ch").value);
-            if(!w || !h || w <= 0 || h <= 0) return null;
-            return w / h;
-        }
+        function onPointerDown(e) {
+          if (!state.cropImage) return;
+          const pos = getMousePos(e);
+          const handle = e.target.dataset ? e.target.dataset.handle : null;
 
-        // Clamp Crop Rect within Natural Image Dimensions
-        function clampCropRect(isFinal = false){
-            if(!state.cropImage) return;
-            const nw = state.cropImage.naturalWidth || state.cropImage.width;
-            const nh = state.cropImage.naturalHeight || state.cropImage.height;
+          const nw = state.cropImage.naturalWidth || state.cropImage.width;
+          const nh = state.cropImage.naturalHeight || state.cropImage.height;
+          const dispW = imgEl.clientWidth;
+          const dispH = imgEl.clientHeight;
 
-            const minSize = isFinal ? 1 : 0;
+          if (!dispW || !dispH) return;
 
-            state.cropRect.w = Math.max(minSize, Math.min(nw, state.cropRect.w));
-            state.cropRect.h = Math.max(minSize, Math.min(nh, state.cropRect.h));
+          const scaleX = nw / dispW;
+          const scaleY = nh / dispH;
 
-            if(state.cropRect.x < 0) state.cropRect.x = 0;
-            if(state.cropRect.y < 0) state.cropRect.y = 0;
-            if(state.cropRect.x + state.cropRect.w > nw){
-                if(state.cropRect.w > nw) state.cropRect.w = nw;
-                state.cropRect.x = nw - state.cropRect.w;
-            }
-            if(state.cropRect.y + state.cropRect.h > nh){
-                if(state.cropRect.h > nh) state.cropRect.h = nh;
-                state.cropRect.y = nh - state.cropRect.h;
-            }
+          startX = pos.x * scaleX;
+          startY = pos.y * scaleY;
+          startRect = { ...state.cropRect };
 
-            updateNumericCropInputs();
-        }
-
-        function updateNumericCropInputs(){
-            $("#cropX").value = Math.round(state.cropRect.x);
-            $("#cropY").value = Math.round(state.cropRect.y);
-            $("#cropW").value = Math.round(state.cropRect.w);
-            $("#cropH").value = Math.round(state.cropRect.h);
-
-            const nw = state.cropImage ? (state.cropImage.naturalWidth || state.cropImage.width) : 0;
-            const nh = state.cropImage ? (state.cropImage.naturalHeight || state.cropImage.height) : 0;
-            const targetW = Number($("#cw").value);
-            const targetH = Number($("#ch").value);
-
-            if(state.cropImage){
-                const targetStr = (targetW > 0 && targetH > 0) ? `${targetW} × ${targetH}px` : "Original / Unconstrained";
-                $("#cropInfo").textContent = `Original: ${nw} × ${nh}px • Crop Region: ${Math.round(state.cropRect.w)} × ${Math.round(state.cropRect.h)}px at (${Math.round(state.cropRect.x)}, ${Math.round(state.cropRect.y)}) → Target: ${targetStr}`;
-            }
-        }
-
-        // Reset Crop Box to Center (75% of Input Image Size)
-        function initDefaultCropBox(){
-            if(!state.cropImage) return;
-            const nw = state.cropImage.naturalWidth || state.cropImage.width;
-            const nh = state.cropImage.naturalHeight || state.cropImage.height;
-            const targetRatio = getTargetAspectRatio();
-
-            let w = nw * 0.75;
-            let h = nh * 0.75;
-
-            if(targetRatio){
-                if(w / h > targetRatio){
-                    w = h * targetRatio;
-                } else {
-                    h = w / targetRatio;
-                }
-            }
-
+          if (handle) {
+            isDragging = true;
+            dragType = handle;
+          } else if (
+            e.target === selectionBoxEl ||
+            selectionBoxEl.contains(e.target)
+          ) {
+            isDragging = true;
+            dragType = "move";
+          } else if (e.target === overlayEl) {
+            isDragging = true;
+            dragType = "new";
             state.cropRect = {
-                x: Math.round((nw - w) / 2),
-                y: Math.round((nh - h) / 2),
-                w: Math.round(w),
-                h: Math.round(h)
+              x: startX,
+              y: startY,
+              w: 0,
+              h: 0,
             };
+          }
+
+          if (isDragging) {
+            e.preventDefault();
+            window.addEventListener("pointermove", onPointerMove);
+            window.addEventListener("pointerup", onPointerUp);
+          }
+        }
+
+        function onPointerMove(e) {
+          if (!isDragging || !state.cropImage) return;
+          const pos = getMousePos(e);
+
+          const nw = state.cropImage.naturalWidth || state.cropImage.width;
+          const nh = state.cropImage.naturalHeight || state.cropImage.height;
+          const dispW = imgEl.clientWidth;
+          const dispH = imgEl.clientHeight;
+
+          if (!dispW || !dispH) return;
+
+          const scaleX = nw / dispW;
+          const scaleY = nh / dispH;
+
+          const curX = pos.x * scaleX;
+          const curY = pos.y * scaleY;
+
+          const dx = curX - startX;
+          const dy = curY - startY;
+
+          const lockAspect = $("#lockAspect").checked;
+          const targetRatio = getTargetAspectRatio();
+
+          if (dragType === "move") {
+            state.cropRect.x = Math.max(
+              0,
+              Math.min(nw - startRect.w, startRect.x + dx)
+            );
+            state.cropRect.y = Math.max(
+              0,
+              Math.min(nh - startRect.h, startRect.y + dy)
+            );
+          } else if (dragType === "new") {
+            let w = Math.abs(curX - startX);
+            let h = Math.abs(curY - startY);
+            let left = Math.min(startX, curX);
+            let top = Math.min(startY, curY);
+
+            if (lockAspect && targetRatio) {
+              if (w / h > targetRatio) {
+                h = w / targetRatio;
+              } else {
+                w = h * targetRatio;
+              }
+              if (curX < startX) left = startX - w;
+              if (curY < startY) top = startY - h;
+            }
+
+            state.cropRect = { x: left, y: top, w, h };
+          } else if (
+            dragType === "br" ||
+            dragType === "tr" ||
+            dragType === "tl" ||
+            dragType === "bl"
+          ) {
+            let newW = startRect.w;
+            let newH = startRect.h;
+            let newX = startRect.x;
+            let newY = startRect.y;
+
+            if (dragType === "br") {
+              newW = startRect.w + dx;
+              newH = startRect.h + dy;
+            } else if (dragType === "tr") {
+              newW = startRect.w + dx;
+              newH = startRect.h - dy;
+              newY = startRect.y + dy;
+            } else if (dragType === "bl") {
+              newW = startRect.w - dx;
+              newX = startRect.x + dx;
+              newH = startRect.h + dy;
+            } else if (dragType === "tl") {
+              newW = startRect.w - dx;
+              newX = startRect.x + dx;
+              newH = startRect.h - dy;
+              newY = startRect.y + dy;
+            }
+
+            if (lockAspect && targetRatio) {
+              if (Math.abs(dx) > Math.abs(dy)) {
+                newH = newW / targetRatio;
+              } else {
+                newW = newH * targetRatio;
+              }
+            }
+
+            state.cropRect.x = newX;
+            state.cropRect.y = newY;
+            state.cropRect.w = Math.max(1, newW);
+            state.cropRect.h = Math.max(1, newH);
+          }
+
+          clampCropRect(false);
+          renderCropBoxUI();
+        }
+
+        function onPointerUp() {
+          if (isDragging && dragType === "new") {
+            if (state.cropRect.w < 5 && state.cropRect.h < 5) {
+              const nw = state.cropImage
+                ? state.cropImage.naturalWidth || state.cropImage.width
+                : 50;
+              const nh = state.cropImage
+                ? state.cropImage.naturalHeight || state.cropImage.height
+                : 50;
+              state.cropRect.w = Math.min(nw, 50);
+              state.cropRect.h = Math.min(nh, 50);
+              state.cropRect.x = Math.max(
+                0,
+                Math.min(nw - state.cropRect.w, startX - state.cropRect.w / 2)
+              );
+              state.cropRect.y = Math.max(
+                0,
+                Math.min(nh - state.cropRect.h, startY - state.cropRect.h / 2)
+              );
+            }
+          }
+          isDragging = false;
+          dragType = null;
+          clampCropRect(true);
+          renderCropBoxUI();
+          window.removeEventListener("pointermove", onPointerMove);
+          window.removeEventListener("pointerup", onPointerUp);
+        }
+
+        overlayEl.addEventListener("pointerdown", onPointerDown);
+      }
+
+      window.addEventListener("resize", () => {
+        if (state.isCroppingView) renderCropBoxUI();
+      });
+
+      // Numeric Input Bindings
+      ["cropX", "cropY", "cropW", "cropH"].forEach((id) => {
+        $(`#${id}`).addEventListener("input", () => {
+          if (!state.cropImage) return;
+          state.cropRect.x = Number($("#cropX").value) || 0;
+          state.cropRect.y = Number($("#cropY").value) || 0;
+          state.cropRect.w = Number($("#cropW").value) || 0;
+          state.cropRect.h = Number($("#cropH").value) || 0;
+          clampCropRect(true);
+          renderCropBoxUI();
+        });
+      });
+
+      // Target Dimensions Input Bindings
+      ["cw", "ch"].forEach((id) => {
+        $(`#${id}`).addEventListener("input", () => {
+          if (!state.cropImage) return;
+          const lockAspect = $("#lockAspect").checked;
+          const targetRatio = getTargetAspectRatio();
+          if (lockAspect && targetRatio) {
+            state.cropRect.h = state.cropRect.w / targetRatio;
             clampCropRect(true);
-        }
-
-        // Setup Interactive Workspace
-        let workspaceEl = null;
-        let imgEl = null;
-        let overlayEl = null;
-        let selectionBoxEl = null;
-
-        function buildInteractiveCropWorkspace(){
-            const p = $("#cropPreview");
-            p.innerHTML = "";
-
-            if(!state.cropImage){
-                p.textContent = "Upload an image to preview and drag a crop selection.";
-                return;
-            }
-
-            workspaceEl = document.createElement("div");
-            workspaceEl.className = "crop-workspace";
-
-            imgEl = document.createElement("img");
-            imgEl.onload = () => renderCropBoxUI();
-            imgEl.src = state.cropImage.src;
-            workspaceEl.appendChild(imgEl);
-
-            overlayEl = document.createElement("div");
-            overlayEl.className = "crop-overlay-layer";
-
-            selectionBoxEl = document.createElement("div");
-            selectionBoxEl.className = "crop-selection-box";
-
-            const handles = ["tl", "tr", "bl", "br"];
-            handles.forEach(pos => {
-                const h = document.createElement("div");
-                h.className = `crop-handle ${pos}`;
-                h.dataset.handle = pos;
-                selectionBoxEl.appendChild(h);
-            });
-
-            overlayEl.appendChild(selectionBoxEl);
-            workspaceEl.appendChild(overlayEl);
-            p.appendChild(workspaceEl);
-
-            setupDragAndDrop();
-            if (imgEl.complete && imgEl.clientWidth > 0) {
-                renderCropBoxUI();
-            } else {
-                requestAnimationFrame(() => renderCropBoxUI());
-            }
-        }
-
-        function renderCropBoxUI(){
-            if(!workspaceEl || !imgEl || !selectionBoxEl || !state.cropImage) return;
-
-            const nw = state.cropImage.naturalWidth || state.cropImage.width;
-            const nh = state.cropImage.naturalHeight || state.cropImage.height;
-
-            const dispW = imgEl.clientWidth || imgEl.offsetWidth;
-            const dispH = imgEl.clientHeight || imgEl.offsetHeight;
-
-            if(!dispW || !dispH){
-                requestAnimationFrame(renderCropBoxUI);
-                return;
-            }
-
-            const scaleX = dispW / nw;
-            const scaleY = dispH / nh;
-
-            const boxL = state.cropRect.x * scaleX;
-            const boxT = state.cropRect.y * scaleY;
-            const boxW = state.cropRect.w * scaleX;
-            const boxH = state.cropRect.h * scaleY;
-
-            selectionBoxEl.style.left = boxL + "px";
-            selectionBoxEl.style.top = boxT + "px";
-            selectionBoxEl.style.width = boxW + "px";
-            selectionBoxEl.style.height = boxH + "px";
-        }
-
-        function setupDragAndDrop(){
-            let isDragging = false;
-            let dragType = null; // "move", "new", "tl", "tr", "bl", "br"
-            let startX = 0, startY = 0;
-            let startRect = { ...state.cropRect };
-
-            function getMousePos(e){
-                const rect = overlayEl.getBoundingClientRect();
-                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-                return {
-                    x: clientX - rect.left,
-                    y: clientY - rect.top
-                };
-            }
-
-            function onPointerDown(e){
-                if(!state.cropImage) return;
-                const pos = getMousePos(e);
-                const handle = e.target.dataset ? e.target.dataset.handle : null;
-
-                const nw = state.cropImage.naturalWidth || state.cropImage.width;
-                const nh = state.cropImage.naturalHeight || state.cropImage.height;
-                const dispW = imgEl.clientWidth;
-                const dispH = imgEl.clientHeight;
-
-                if(!dispW || !dispH) return;
-
-                const scaleX = nw / dispW;
-                const scaleY = nh / dispH;
-
-                startX = pos.x * scaleX;
-                startY = pos.y * scaleY;
-                startRect = { ...state.cropRect };
-
-                if(handle){
-                    isDragging = true;
-                    dragType = handle;
-                } else if(e.target === selectionBoxEl || selectionBoxEl.contains(e.target)){
-                    isDragging = true;
-                    dragType = "move";
-                } else if(e.target === overlayEl){
-                    isDragging = true;
-                    dragType = "new";
-                    state.cropRect = {
-                        x: startX,
-                        y: startY,
-                        w: 0,
-                        h: 0
-                    };
-                }
-
-                if(isDragging){
-                    e.preventDefault();
-                    window.addEventListener("pointermove", onPointerMove);
-                    window.addEventListener("pointerup", onPointerUp);
-                }
-            }
-
-            function onPointerMove(e){
-                if(!isDragging || !state.cropImage) return;
-                const pos = getMousePos(e);
-
-                const nw = state.cropImage.naturalWidth || state.cropImage.width;
-                const nh = state.cropImage.naturalHeight || state.cropImage.height;
-                const dispW = imgEl.clientWidth;
-                const dispH = imgEl.clientHeight;
-
-                if(!dispW || !dispH) return;
-
-                const scaleX = nw / dispW;
-                const scaleY = nh / dispH;
-
-                const curX = pos.x * scaleX;
-                const curY = pos.y * scaleY;
-
-                const dx = curX - startX;
-                const dy = curY - startY;
-
-                const lockAspect = $("#lockAspect").checked;
-                const targetRatio = getTargetAspectRatio();
-
-                if(dragType === "move"){
-                    state.cropRect.x = Math.max(0, Math.min(nw - startRect.w, startRect.x + dx));
-                    state.cropRect.y = Math.max(0, Math.min(nh - startRect.h, startRect.y + dy));
-                } else if(dragType === "new"){
-                    let w = Math.abs(curX - startX);
-                    let h = Math.abs(curY - startY);
-                    let left = Math.min(startX, curX);
-                    let top = Math.min(startY, curY);
-
-                    if(lockAspect && targetRatio){
-                        if(w / h > targetRatio){
-                            h = w / targetRatio;
-                        } else {
-                            w = h * targetRatio;
-                        }
-                        if(curX < startX) left = startX - w;
-                        if(curY < startY) top = startY - h;
-                    }
-
-                    state.cropRect = { x: left, y: top, w, h };
-                } else if(dragType === "br" || dragType === "tr" || dragType === "tl" || dragType === "bl"){
-                    let newW = startRect.w;
-                    let newH = startRect.h;
-                    let newX = startRect.x;
-                    let newY = startRect.y;
-
-                    if(dragType === "br"){
-                        newW = startRect.w + dx;
-                        newH = startRect.h + dy;
-                    } else if(dragType === "tr"){
-                        newW = startRect.w + dx;
-                        newH = startRect.h - dy;
-                        newY = startRect.y + dy;
-                    } else if(dragType === "bl"){
-                        newW = startRect.w - dx;
-                        newX = startRect.x + dx;
-                        newH = startRect.h + dy;
-                    } else if(dragType === "tl"){
-                        newW = startRect.w - dx;
-                        newX = startRect.x + dx;
-                        newH = startRect.h - dy;
-                        newY = startRect.y + dy;
-                    }
-
-                    if(lockAspect && targetRatio){
-                        if(Math.abs(dx) > Math.abs(dy)){
-                            newH = newW / targetRatio;
-                        } else {
-                            newW = newH * targetRatio;
-                        }
-                    }
-
-                    state.cropRect.x = newX;
-                    state.cropRect.y = newY;
-                    state.cropRect.w = Math.max(1, newW);
-                    state.cropRect.h = Math.max(1, newH);
-                }
-
-                clampCropRect(false);
-                renderCropBoxUI();
-            }
-
-            function onPointerUp(){
-                if(isDragging && dragType === "new"){
-                    if(state.cropRect.w < 5 && state.cropRect.h < 5){
-                        const nw = state.cropImage ? (state.cropImage.naturalWidth || state.cropImage.width) : 50;
-                        const nh = state.cropImage ? (state.cropImage.naturalHeight || state.cropImage.height) : 50;
-                        state.cropRect.w = Math.min(nw, 50);
-                        state.cropRect.h = Math.min(nh, 50);
-                        state.cropRect.x = Math.max(0, Math.min(nw - state.cropRect.w, startX - state.cropRect.w / 2));
-                        state.cropRect.y = Math.max(0, Math.min(nh - state.cropRect.h, startY - state.cropRect.h / 2));
-                    }
-                }
-                isDragging = false;
-                dragType = null;
-                clampCropRect(true);
-                renderCropBoxUI();
-                window.removeEventListener("pointermove", onPointerMove);
-                window.removeEventListener("pointerup", onPointerUp);
-            }
-
-            overlayEl.addEventListener("pointerdown", onPointerDown);
-        }
-
-        window.addEventListener("resize", () => {
-            if(state.isCroppingView) renderCropBoxUI();
-        });
-
-        // Numeric Input Bindings
-        ["cropX", "cropY", "cropW", "cropH"].forEach(id => {
-            $(`#${id}`).addEventListener("input", () => {
-                if(!state.cropImage) return;
-                state.cropRect.x = Number($("#cropX").value) || 0;
-                state.cropRect.y = Number($("#cropY").value) || 0;
-                state.cropRect.w = Number($("#cropW").value) || 0;
-                state.cropRect.h = Number($("#cropH").value) || 0;
-                clampCropRect(true);
-                renderCropBoxUI();
-            });
-        });
-
-        // Target Dimensions Input Bindings
-        ["cw", "ch"].forEach(id => {
-            $(`#${id}`).addEventListener("input", () => {
-                if(!state.cropImage) return;
-                const lockAspect = $("#lockAspect").checked;
-                const targetRatio = getTargetAspectRatio();
-                if(lockAspect && targetRatio){
-                    state.cropRect.h = state.cropRect.w / targetRatio;
-                    clampCropRect(true);
-                    renderCropBoxUI();
-                } else {
-                    updateNumericCropInputs();
-                }
-            });
-        });
-
-        $("#lockAspect").addEventListener("change", () => {
-            if($("#lockAspect").checked && state.cropImage){
-                const targetRatio = getTargetAspectRatio();
-                if(targetRatio){
-                    state.cropRect.h = state.cropRect.w / targetRatio;
-                    clampCropRect(true);
-                    renderCropBoxUI();
-                }
-            }
-        });
-
-        $("#resetCropBtn").addEventListener("click", () => {
-            initDefaultCropBox();
             renderCropBoxUI();
+          } else {
+            updateNumericCropInputs();
+          }
         });
+      });
 
-        $("#quality").addEventListener("input", () => $("#qv").textContent = $("#quality").value + "%");
+      $("#lockAspect").addEventListener("change", () => {
+        if ($("#lockAspect").checked && state.cropImage) {
+          const targetRatio = getTargetAspectRatio();
+          if (targetRatio) {
+            state.cropRect.h = state.cropRect.w / targetRatio;
+            clampCropRect(true);
+            renderCropBoxUI();
+          }
+        }
+      });
 
-        // Image File Load
-        $("#cropFile").addEventListener("change", async e => {
-            const f = e.target.files[0];
-            if(!f) return;
-            try{
-                state.cropImage = await loadImage(f);
-                state.isCroppingView = true;
-                $("#toggleResultBtn").style.display = "none";
-                $("#resetCropBtn").disabled = false;
-                initDefaultCropBox();
-                buildInteractiveCropWorkspace();
-            }catch(err){
-                alert(err.message);
-            }
-        });
+      $("#resetCropBtn").addEventListener("click", () => {
+        initDefaultCropBox();
+        renderCropBoxUI();
+      });
 
-        // Crop & Resize Execution
-        $("#cropRun").addEventListener("click", async () => {
-            if(!state.cropImage) return alert("Choose an image first.");
+      $("#quality").addEventListener(
+        "input",
+        () => ($("#qv").textContent = $("#quality").value + "%")
+      );
 
-            const scaleOutput = $("#scaleOutput") ? $("#scaleOutput").checked : false;
-            const targetW = Number($("#cw").value);
-            const targetH = Number($("#ch").value);
-            const format = $("#cropFormat").value;
-            const quality = Number($("#quality").value) / 100;
+      // Image File Load
+      $("#cropFile").addEventListener("change", async (e) => {
+        const f = e.target.files[0];
+        if (!f) return;
+        try {
+          state.cropImage = await loadImage(f);
+          state.isCroppingView = true;
+          $("#toggleResultBtn").style.display = "none";
+          $("#resetCropBtn").disabled = false;
+          initDefaultCropBox();
+          buildInteractiveCropWorkspace();
+        } catch (err) {
+          alert(err.message);
+        }
+      });
 
-            const cropW = Math.round(state.cropRect.w);
-            const cropH = Math.round(state.cropRect.h);
+      // Crop & Resize Execution
+      $("#cropRun").addEventListener("click", async () => {
+        if (!state.cropImage) return alert("Choose an image first.");
 
-            if(cropW <= 0 || cropH <= 0){
-                return alert("Please select a valid crop region on the image.");
-            }
+        const scaleOutput = $("#scaleOutput")
+          ? $("#scaleOutput").checked
+          : false;
+        const targetW = Number($("#cw").value);
+        const targetH = Number($("#ch").value);
+        const format = $("#cropFormat").value;
+        const quality = Number($("#quality").value) / 100;
 
-            const outputW = (scaleOutput && targetW > 0) ? targetW : cropW;
-            const outputH = (scaleOutput && targetH > 0) ? targetH : cropH;
+        const cropW = Math.round(state.cropRect.w);
+        const cropH = Math.round(state.cropRect.h);
 
-            try{
-                const canvas = document.createElement("canvas");
-                canvas.width = outputW;
-                canvas.height = outputH;
-                const ctx = canvas.getContext("2d");
-
-                ctx.imageSmoothingEnabled = true;
-                ctx.imageSmoothingQuality = "high";
-
-                // Draw exact selected sub-rectangle from source image at 1:1 scale (or scaled if scaleOutput is checked)
-                ctx.drawImage(
-                    state.cropImage,
-                    state.cropRect.x,
-                    state.cropRect.y,
-                    state.cropRect.w,
-                    state.cropRect.h,
-                    0,
-                    0,
-                    outputW,
-                    outputH
-                );
-
-                state.cropBlob = await canvasBlob(canvas, format, quality);
-
-                // Display Cropped Result Preview
-                const p = $("#cropPreview");
-                p.innerHTML = "";
-                const resultImg = document.createElement("img");
-                const blobUrl = URL.createObjectURL(state.cropBlob);
-                resultImg.src = blobUrl;
-                p.appendChild(resultImg);
-
-                state.isCroppingView = false;
-                const toggleBtn = $("#toggleResultBtn");
-                toggleBtn.style.display = "inline-block";
-                toggleBtn.textContent = "Adjust Crop Selection";
-
-                const ext = format === "image/jpeg" ? "jpg" : format.split("/")[1];
-                const modeNote = scaleOutput ? " (Rescaled)" : " (1:1 Exact Crop)";
-                $("#cropInfo").textContent = `Successfully Cropped! Output: ${outputW} × ${outputH}px${modeNote} • ${ext.toUpperCase()}`;
-                $("#cropDownload").disabled = false;
-            }catch(err){
-                alert(err.message);
-            }
-        });
-
-        // Toggle between Cropped Result & Interactive Workspace
-        $("#toggleResultBtn").addEventListener("click", () => {
-            state.isCroppingView = !state.isCroppingView;
-            const toggleBtn = $("#toggleResultBtn");
-            if(state.isCroppingView){
-                toggleBtn.textContent = "View Cropped Result";
-                buildInteractiveCropWorkspace();
-            } else if(state.cropBlob) {
-                toggleBtn.textContent = "Adjust Crop Selection";
-                const p = $("#cropPreview");
-                p.innerHTML = "";
-                const resultImg = document.createElement("img");
-                resultImg.src = URL.createObjectURL(state.cropBlob);
-                p.appendChild(resultImg);
-            }
-        });
-
-        $("#cropDownload").addEventListener("click", () => {
-            const format = $("#cropFormat").value;
-            if(state.cropBlob){
-                const ext = format === "image/jpeg" ? "jpg" : format.split("/")[1];
-                downloadBlob(state.cropBlob, `cropped-image.${ext}`);
-            }
-        });
-
-        // PNG -> ICO Tool
-        $("#icoFile").addEventListener("change", async e => {
-            const f = e.target.files[0];
-            if(!f) return;
-            try{
-                state.icoImage = await loadImage(f);
-                const p = $("#icoPreview");
-                const old = p.dataset.url;
-                if(old) URL.revokeObjectURL(old);
-                const u = URL.createObjectURL(f);
-                p.dataset.url = u;
-                p.hidden = false;
-                p.src = u;
-            }catch(err){
-                alert(err.message);
-            }
-        });
-
-        function parseIconSizes(v){
-            return [...new Set(v.split(",").map(Number).filter(x => Number.isInteger(x) && x >= 16 && x <= 256))];
+        if (cropW <= 0 || cropH <= 0) {
+          return alert("Please select a valid crop region on the image.");
         }
 
-        async function createPngForSize(i, s){
-            const c = document.createElement("canvas");
-            c.width = s; c.height = s;
-            const ctx = c.getContext("2d");
-            ctx.drawImage(i, 0, 0, s, s);
-            return canvasBlob(c, "image/png");
+        const outputW = scaleOutput && targetW > 0 ? targetW : cropW;
+        const outputH = scaleOutput && targetH > 0 ? targetH : cropH;
+
+        try {
+          const canvas = document.createElement("canvas");
+          canvas.width = outputW;
+          canvas.height = outputH;
+          const ctx = canvas.getContext("2d");
+
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = "high";
+
+          // Draw exact selected sub-rectangle from source image at 1:1 scale (or scaled if scaleOutput is checked)
+          ctx.drawImage(
+            state.cropImage,
+            state.cropRect.x,
+            state.cropRect.y,
+            state.cropRect.w,
+            state.cropRect.h,
+            0,
+            0,
+            outputW,
+            outputH
+          );
+
+          state.cropBlob = await canvasBlob(canvas, format, quality);
+
+          // Display Cropped Result Preview
+          const p = $("#cropPreview");
+          p.innerHTML = "";
+          const resultImg = document.createElement("img");
+          const blobUrl = URL.createObjectURL(state.cropBlob);
+          resultImg.src = blobUrl;
+          p.appendChild(resultImg);
+
+          state.isCroppingView = false;
+          const toggleBtn = $("#toggleResultBtn");
+          toggleBtn.style.display = "inline-block";
+          toggleBtn.textContent = "Adjust Crop Selection";
+
+          const ext = format === "image/jpeg" ? "jpg" : format.split("/")[1];
+          const modeNote = scaleOutput ? " (Rescaled)" : " (1:1 Exact Crop)";
+          $(
+            "#cropInfo"
+          ).textContent = `Successfully Cropped! Output: ${outputW} × ${outputH}px${modeNote} • ${ext.toUpperCase()}`;
+          $("#cropDownload").disabled = false;
+        } catch (err) {
+          alert(err.message);
+        }
+      });
+
+      // Toggle between Cropped Result & Interactive Workspace
+      $("#toggleResultBtn").addEventListener("click", () => {
+        state.isCroppingView = !state.isCroppingView;
+        const toggleBtn = $("#toggleResultBtn");
+        if (state.isCroppingView) {
+          toggleBtn.textContent = "View Cropped Result";
+          buildInteractiveCropWorkspace();
+        } else if (state.cropBlob) {
+          toggleBtn.textContent = "Adjust Crop Selection";
+          const p = $("#cropPreview");
+          p.innerHTML = "";
+          const resultImg = document.createElement("img");
+          resultImg.src = URL.createObjectURL(state.cropBlob);
+          p.appendChild(resultImg);
+        }
+      });
+
+      $("#cropDownload").addEventListener("click", () => {
+        const format = $("#cropFormat").value;
+        if (state.cropBlob) {
+          const ext = format === "image/jpeg" ? "jpg" : format.split("/")[1];
+          downloadBlob(state.cropBlob, `cropped-image.${ext}`);
+        }
+      });
+
+      // PNG -> ICO Tool
+      $("#icoFile").addEventListener("change", async (e) => {
+        const f = e.target.files[0];
+        if (!f) return;
+        try {
+          state.icoImage = await loadImage(f);
+          const p = $("#icoPreview");
+          const old = p.dataset.url;
+          if (old) URL.revokeObjectURL(old);
+          const u = URL.createObjectURL(f);
+          p.dataset.url = u;
+          p.hidden = false;
+          p.src = u;
+        } catch (err) {
+          alert(err.message);
+        }
+      });
+
+      function parseIconSizes(v) {
+        return [
+          ...new Set(
+            v
+              .split(",")
+              .map(Number)
+              .filter((x) => Number.isInteger(x) && x >= 16 && x <= 256)
+          ),
+        ];
+      }
+
+      async function createPngForSize(i, s) {
+        const c = document.createElement("canvas");
+        c.width = s;
+        c.height = s;
+        const ctx = c.getContext("2d");
+        ctx.drawImage(i, 0, 0, s, s);
+        return canvasBlob(c, "image/png");
+      }
+
+      async function createIco(i, sizes) {
+        const es = [];
+
+        // Sort ICO layers from smallest to largest.
+        const sortedSizes = [...sizes].sort((a, b) => a - b);
+
+        for (const s of sortedSizes) {
+          const p = await createPngForSize(i, s);
+          es.push({
+            size: s,
+            data: new Uint8Array(await p.arrayBuffer()),
+          });
         }
 
-        async function createIco(i, sizes){
-            const es = [];
-            for(const s of sizes){
-                const p = await createPngForSize(i, s);
-                es.push({ size: s, data: new Uint8Array(await p.arrayBuffer()) });
-            }
-            const bytes = new Uint8Array(6 + 16 * es.length + es.reduce((n, e) => n + e.data.length, 0));
-            const v = new DataView(bytes.buffer);
-            v.setUint16(2, 1, true);
-            v.setUint16(4, es.length, true);
-            let d = 6, o = 6 + 16 * es.length;
-            for(const e of es){
-                const z = e.size === 256 ? 0 : e.size;
-                bytes[d] = z; bytes[d + 1] = z;
-                v.setUint16(d + 4, 1, true);
-                v.setUint16(d + 6, 32, true);
-                v.setUint32(d + 8, e.data.length, true);
-                v.setUint32(d + 12, o, true);
-                bytes.set(e.data, o);
-                d += 16; o += e.data.length;
-            }
-            return new Blob([bytes], { type: "image/x-icon" });
+        const bytes = new Uint8Array(
+          6 + 16 * es.length + es.reduce((n, e) => n + e.data.length, 0)
+        );
+
+        const v = new DataView(bytes.buffer);
+
+        v.setUint16(2, 1, true);
+        v.setUint16(4, es.length, true);
+
+        let d = 6;
+        let o = 6 + 16 * es.length;
+
+        for (const e of es) {
+          const z = e.size === 256 ? 0 : e.size;
+
+          bytes[d] = z;
+          bytes[d + 1] = z;
+
+          v.setUint16(d + 4, 1, true);
+          v.setUint16(d + 6, 32, true);
+          v.setUint32(d + 8, e.data.length, true);
+          v.setUint32(d + 12, o, true);
+
+          bytes.set(e.data, o);
+
+          d += 16;
+          o += e.data.length;
         }
 
-        function crc32(data){
-            let c = 0xffffffff;
-            for(const b of data){
-                c ^= b;
-                for(let i = 0; i < 8; i++) c = c & 1 ? (c >>> 1) ^ 0xedb88320 : c >>> 1;
-            }
-            return (c ^ 0xffffffff) >>> 0;
+        return new Blob([bytes], { type: "image/x-icon" });
+      }
+
+      function crc32(data) {
+        let c = 0xffffffff;
+        for (const b of data) {
+          c ^= b;
+          for (let i = 0; i < 8; i++)
+            c = c & 1 ? (c >>> 1) ^ 0xedb88320 : c >>> 1;
         }
+        return (c ^ 0xffffffff) >>> 0;
+      }
 
-        function w16(a, o, v){ new DataView(a.buffer, a.byteOffset + o, 2).setUint16(0, v, true); }
-        function w32(a, o, v){ new DataView(a.buffer, a.byteOffset + o, 4).setUint32(0, v, true); }
+      function w16(a, o, v) {
+        new DataView(a.buffer, a.byteOffset + o, 2).setUint16(0, v, true);
+      }
+      function w32(a, o, v) {
+        new DataView(a.buffer, a.byteOffset + o, 4).setUint32(0, v, true);
+      }
 
-        function createZip(files){
-            const enc = new TextEncoder();
-            const locals = [], centrals = [];
-            let off = 0;
-            for(const f of files){
-                const n = enc.encode(f.name);
-                const d = f.data;
-                const c = crc32(d);
-                const l = new Uint8Array(30 + n.length);
-                w32(l, 0, 0x04034b50);
-                w16(l, 4, 20);
-                w32(l, 14, c);
-                w32(l, 18, d.length);
-                w32(l, 22, d.length);
-                w16(l, 26, n.length);
-                l.set(n, 30);
-                locals.push(l, d);
+      function createZip(files) {
+        const enc = new TextEncoder();
+        const locals = [],
+          centrals = [];
+        let off = 0;
+        for (const f of files) {
+          const n = enc.encode(f.name);
+          const d = f.data;
+          const c = crc32(d);
+          const l = new Uint8Array(30 + n.length);
+          w32(l, 0, 0x04034b50);
+          w16(l, 4, 20);
+          w32(l, 14, c);
+          w32(l, 18, d.length);
+          w32(l, 22, d.length);
+          w16(l, 26, n.length);
+          l.set(n, 30);
+          locals.push(l, d);
 
-                const z = new Uint8Array(46 + n.length);
-                w32(z, 0, 0x02014b50);
-                w16(z, 4, 20);
-                w16(z, 6, 20);
-                w32(z, 16, c);
-                w32(z, 20, d.length);
-                w32(z, 24, d.length);
-                w16(z, 28, n.length);
-                w32(z, 42, off);
-                z.set(n, 46);
-                centrals.push(z);
-                off += l.length + d.length;
-            }
-            const end = new Uint8Array(22);
-            w32(end, 0, 0x06054b50);
-            w16(end, 8, files.length);
-            w16(end, 10, files.length);
-            const cs = centrals.reduce((n, x) => n + x.length, 0);
-            w32(end, 12, cs);
-            w32(end, 16, off);
-            return new Blob([...locals, ...centrals, end], { type: "application/zip" });
+          const z = new Uint8Array(46 + n.length);
+          w32(z, 0, 0x02014b50);
+          w16(z, 4, 20);
+          w16(z, 6, 20);
+          w32(z, 16, c);
+          w32(z, 20, d.length);
+          w32(z, 24, d.length);
+          w16(z, 28, n.length);
+          w32(z, 42, off);
+          z.set(n, 46);
+          centrals.push(z);
+          off += l.length + d.length;
         }
-
-        $("#icoRun").addEventListener("click", async () => {
-            if(!state.icoImage) return alert("Choose an image first.");
-            const sizes = parseIconSizes($("#icoSizes").value);
-            if(!sizes.length) return alert("Enter valid icon sizes between 16 and 256.");
-            try{
-                const files = [];
-                for(const s of sizes){
-                    const p = await createPngForSize(state.icoImage, s);
-                    files.push({ name: `icon-${s}x${s}.png`, data: new Uint8Array(await p.arrayBuffer()) });
-                }
-                const ico = await createIco(state.icoImage, sizes);
-                files.push({ name: "icon.ico", data: new Uint8Array(await ico.arrayBuffer()) });
-                state.icoZip = createZip(files);
-                $("#icoInfo").textContent = `Generated ${sizes.length} PNGs + 1 combined ICO. ZIP contains ${files.length} files.`;
-                downloadBlob(state.icoZip, "icon-package.zip");
-            }catch(err){
-                alert("Icon generation failed: " + err.message);
-            }
+        const end = new Uint8Array(22);
+        w32(end, 0, 0x06054b50);
+        w16(end, 8, files.length);
+        w16(end, 10, files.length);
+        const cs = centrals.reduce((n, x) => n + x.length, 0);
+        w32(end, 12, cs);
+        w32(end, 16, off);
+        return new Blob([...locals, ...centrals, end], {
+          type: "application/zip",
         });
+      }
 
-        // SVG -> PNG
-        function getSvgDimensions(text){
-            const doc = new DOMParser().parseFromString(text, "image/svg+xml");
-            if(doc.querySelector("parsererror") || !doc.documentElement || doc.documentElement.tagName.toLowerCase() !== "svg") return null;
-            const svg = doc.documentElement;
-            const parseLen = v => {
-                if(!v) return null;
-                const m = String(v).trim().match(/^([0-9]+(?:\.[0-9]+)?)(?:px)?$/i);
-                if(!m) return null;
-                const n = Number(m[1]);
-                return Number.isFinite(n) && n > 0 ? n : null;
-            };
-            let w = parseLen(svg.getAttribute("width"));
-            let h = parseLen(svg.getAttribute("height"));
-            const vb = svg.getAttribute("viewBox");
-            if(vb){
-                const p = vb.trim().split(/[\s,]+/).map(Number);
-                if(p.length === 4 && p.every(Number.isFinite) && p[2] > 0 && p[3] > 0){
-                    if(!(w > 0)) w = p[2];
-                    if(!(h > 0)) h = p[3];
-                }
-            }
-            if(!(w > 0) || !(h > 0)) return null;
-            return { width: Math.max(1, Math.round(w)), height: Math.max(1, Math.round(h)) };
+      $("#icoRun").addEventListener("click", async () => {
+        if (!state.icoImage) return alert("Choose an image first.");
+        const sizes = parseIconSizes($("#icoSizes").value);
+        if (!sizes.length)
+          return alert("Enter valid icon sizes between 16 and 256.");
+        try {
+          const files = [];
+          for (const s of sizes) {
+            const p = await createPngForSize(state.icoImage, s);
+            files.push({
+              name: `icon-${s}x${s}.png`,
+              data: new Uint8Array(await p.arrayBuffer()),
+            });
+          }
+          const ico = await createIco(state.icoImage, sizes);
+          files.push({
+            name: "icon.ico",
+            data: new Uint8Array(await ico.arrayBuffer()),
+          });
+          state.icoZip = createZip(files);
+          $(
+            "#icoInfo"
+          ).textContent = `Generated ${sizes.length} PNGs + 1 combined ICO. ZIP contains ${files.length} files.`;
+          downloadBlob(state.icoZip, "icon-package.zip");
+        } catch (err) {
+          alert("Icon generation failed: " + err.message);
         }
+      });
 
-        $("#svgFile").addEventListener("change", async e => {
-            const f = e.target.files[0];
-            if(!f) return;
-            try{
-                state.svgText = await f.text();
-                state.svgBlob = null;
-                $("#svgDownload").disabled = true;
-                const d = getSvgDimensions(state.svgText);
-                if(d){ $("#sw").value = d.width; $("#sh").value = d.height; }
-                const b = new Blob([state.svgText], { type: "image/svg+xml" });
-                const u = URL.createObjectURL(b);
-                const i = new Image();
-                i.onload = () => {
-                    URL.revokeObjectURL(u);
-                    $("#svgPreview").innerHTML = "";
-                    $("#svgPreview").appendChild(i);
-                };
-                i.onerror = () => { URL.revokeObjectURL(u); alert("Unable to render SVG."); };
-                i.src = u;
-                $("#svgInfo").textContent = d ? `SVG loaded • Native size: ${d.width} × ${d.height}px • PNG will use the same size` : "SVG loaded. Native dimensions could not be detected.";
-            }catch(err){ alert(err.message); }
-        });
+      // SVG -> PNG
+      function getSvgDimensions(text) {
+        const doc = new DOMParser().parseFromString(text, "image/svg+xml");
+        if (
+          doc.querySelector("parsererror") ||
+          !doc.documentElement ||
+          doc.documentElement.tagName.toLowerCase() !== "svg"
+        )
+          return null;
+        const svg = doc.documentElement;
+        const parseLen = (v) => {
+          if (!v) return null;
+          const m = String(v)
+            .trim()
+            .match(/^([0-9]+(?:\.[0-9]+)?)(?:px)?$/i);
+          if (!m) return null;
+          const n = Number(m[1]);
+          return Number.isFinite(n) && n > 0 ? n : null;
+        };
+        let w = parseLen(svg.getAttribute("width"));
+        let h = parseLen(svg.getAttribute("height"));
+        const vb = svg.getAttribute("viewBox");
+        if (vb) {
+          const p = vb
+            .trim()
+            .split(/[\s,]+/)
+            .map(Number);
+          if (
+            p.length === 4 &&
+            p.every(Number.isFinite) &&
+            p[2] > 0 &&
+            p[3] > 0
+          ) {
+            if (!(w > 0)) w = p[2];
+            if (!(h > 0)) h = p[3];
+          }
+        }
+        if (!(w > 0) || !(h > 0)) return null;
+        return {
+          width: Math.max(1, Math.round(w)),
+          height: Math.max(1, Math.round(h)),
+        };
+      }
 
-        $("#svgRun").addEventListener("click", async () => {
-            if(!state.svgText) return alert("Choose an SVG first.");
-            const w = Number($("#sw").value), h = Number($("#sh").value);
-            if(!Number.isInteger(w) || w < 1 || !Number.isInteger(h) || h < 1) return alert("Enter valid dimensions.");
-            const c = document.createElement("canvas");
-            c.width = w; c.height = h;
-            const x = c.getContext("2d");
+      $("#svgFile").addEventListener("change", async (e) => {
+        const f = e.target.files[0];
+        if (!f) return;
+        try {
+          state.svgText = await f.text();
+          state.svgBlob = null;
+          $("#svgDownload").disabled = true;
+          const d = getSvgDimensions(state.svgText);
+          if (d) {
+            $("#sw").value = d.width;
+            $("#sh").value = d.height;
+          }
+          const b = new Blob([state.svgText], { type: "image/svg+xml" });
+          const u = URL.createObjectURL(b);
+          const i = new Image();
+          i.onload = () => {
+            URL.revokeObjectURL(u);
+            $("#svgPreview").innerHTML = "";
+            $("#svgPreview").appendChild(i);
+          };
+          i.onerror = () => {
+            URL.revokeObjectURL(u);
+            alert("Unable to render SVG.");
+          };
+          i.src = u;
+          $("#svgInfo").textContent = d
+            ? `SVG loaded • Native size: ${d.width} × ${d.height}px • PNG will use the same size`
+            : "SVG loaded. Native dimensions could not be detected.";
+        } catch (err) {
+          alert(err.message);
+        }
+      });
+
+      $("#svgRun").addEventListener("click", async () => {
+        if (!state.svgText) return alert("Choose an SVG first.");
+        const w = Number($("#sw").value),
+          h = Number($("#sh").value);
+        if (!Number.isInteger(w) || w < 1 || !Number.isInteger(h) || h < 1)
+          return alert("Enter valid dimensions.");
+        const c = document.createElement("canvas");
+        c.width = w;
+        c.height = h;
+        const x = c.getContext("2d");
+        x.clearRect(0, 0, w, h);
+        const b = new Blob([state.svgText], { type: "image/svg+xml" });
+        const u = URL.createObjectURL(b);
+        const i = new Image();
+        i.onload = async () => {
+          try {
             x.clearRect(0, 0, w, h);
-            const b = new Blob([state.svgText], { type: "image/svg+xml" });
-            const u = URL.createObjectURL(b);
-            const i = new Image();
-            i.onload = async () => {
-                try{
-                    x.clearRect(0, 0, w, h);
-                    x.drawImage(i, 0, 0, w, h);
-                    URL.revokeObjectURL(u);
-                    state.svgBlob = await canvasBlob(c, "image/png");
-                    $("#svgPreview").innerHTML = "";
-                    const p = document.createElement("img");
-                    const pu = URL.createObjectURL(state.svgBlob);
-                    p.src = pu;
-                    p.onload = () => URL.revokeObjectURL(pu);
-                    $("#svgPreview").appendChild(p);
-                    $("#svgDownload").disabled = false;
-                    $("#svgInfo").textContent = `PNG: ${w} × ${h}px • Same dimensions as SVG • Transparent background`;
-                }catch(err){ URL.revokeObjectURL(u); alert(err.message); }
-            };
-            i.onerror = () => { URL.revokeObjectURL(u); alert("Unable to render SVG."); };
-            i.src = u;
-        });
+            x.drawImage(i, 0, 0, w, h);
+            URL.revokeObjectURL(u);
+            state.svgBlob = await canvasBlob(c, "image/png");
+            $("#svgPreview").innerHTML = "";
+            const p = document.createElement("img");
+            const pu = URL.createObjectURL(state.svgBlob);
+            p.src = pu;
+            p.onload = () => URL.revokeObjectURL(pu);
+            $("#svgPreview").appendChild(p);
+            $("#svgDownload").disabled = false;
+            $(
+              "#svgInfo"
+            ).textContent = `PNG: ${w} × ${h}px • Same dimensions as SVG • Transparent background`;
+          } catch (err) {
+            URL.revokeObjectURL(u);
+            alert(err.message);
+          }
+        };
+        i.onerror = () => {
+          URL.revokeObjectURL(u);
+          alert("Unable to render SVG.");
+        };
+        i.src = u;
+      });
 
-        $("#svgDownload").addEventListener("click", () => state.svgBlob && downloadBlob(state.svgBlob, "converted.png"));
+      $("#svgDownload").addEventListener(
+        "click",
+        () => state.svgBlob && downloadBlob(state.svgBlob, "converted.png")
+      );
 
-        // Chrome Extension Icons Tool
-        $("#extPad").addEventListener("input", () => $("#padVal").textContent = $("#extPad").value + "%");
-        $("#extFile").addEventListener("change", async e => {
-            const f = e.target.files[0];
-            if(!f) return;
-            try{
-                state.extImage = await loadImage(f);
-                state.extZip = null;
-                $("#extDownload").disabled = true;
-            }catch(err){ alert(err.message); }
-        });
-
-        $("#extRun").addEventListener("click", async () => {
-            if(!state.extImage) return alert("Choose an image first.");
-            const sizes = [128, 48, 32, 16], pad = Number($("#extPad").value) / 100, shape = $("#extShape").value;
-            const p = $("#extPreview");
-            p.innerHTML = "";
-            state.extBlobs = []; state.extZip = null;
-            $("#extDownload").disabled = true;
-            try{
-                for(const s of sizes){
-                    const c = document.createElement("canvas");
-                    c.width = s; c.height = s;
-                    const x = c.getContext("2d"), d = s * pad;
-                    x.clearRect(0, 0, s, s);
-                    if(shape === "circle"){
-                        x.beginPath(); x.arc(s / 2, s / 2, s / 2, 0, Math.PI * 2); x.clip();
-                    } else if(shape === "rounded"){
-                        x.beginPath(); x.roundRect(0, 0, s, s, s * .18); x.clip();
-                    }
-                    x.drawImage(state.extImage, d, d, s - d * 2, s - d * 2);
-                    const b = await canvasBlob(c, "image/png");
-                    state.extBlobs.push({ size: s, blob: b, filename: `icon${s}.png` });
-                    const wrap = document.createElement("div"), im = document.createElement("img"), lab = document.createElement("div");
-                    im.src = URL.createObjectURL(b);
-                    im.width = s; im.height = s;
-                    lab.textContent = `${s} × ${s}`;
-                    wrap.append(im, lab);
-                    p.appendChild(wrap);
-                }
-                const files = [];
-                for(const s of [128, 16, 32, 48]){
-                    const it = state.extBlobs.find(x => x.size === s);
-                    files.push({ name: `icon${s}.png`, data: new Uint8Array(await it.blob.arrayBuffer()) });
-                }
-                state.extZip = createZip(files);
-                $("#extDownload").disabled = false;
-            }catch(err){ alert("Icon generation failed: " + err.message); }
-        });
-
-        $("#extDownload").addEventListener("click", () => state.extZip && downloadBlob(state.extZip, "chrome-extension-icons.zip"));
-
-        $("#manifestCopy").addEventListener("click", async () => {
-            const code = $("#manifestCode").value;
-            try{
-                if(navigator.clipboard && window.isSecureContext) await navigator.clipboard.writeText(code);
-                else { $("#manifestCode").focus(); $("#manifestCode").select(); document.execCommand("copy"); }
-                $("#manifestCopyStatus").textContent = "Copied!";
-            }catch{ $("#manifestCopyStatus").textContent = "Copy failed."; }
-            setTimeout(() => $("#manifestCopyStatus").textContent = "", 1500);
-        });
-
-        // SVG Editor Tool
-        function validateSvg(s){
-            const d = new DOMParser().parseFromString(s, "image/svg+xml");
-            if(d.querySelector("parsererror") || !d.documentElement || d.documentElement.tagName.toLowerCase() !== "svg") throw new Error("Invalid SVG.");
-            return new XMLSerializer().serializeToString(d.documentElement);
+      // Chrome Extension Icons Tool
+      $("#extPad").addEventListener(
+        "input",
+        () => ($("#padVal").textContent = $("#extPad").value + "%")
+      );
+      $("#extFile").addEventListener("change", async (e) => {
+        const f = e.target.files[0];
+        if (!f) return;
+        try {
+          state.extImage = await loadImage(f);
+          state.extZip = null;
+          $("#extDownload").disabled = true;
+        } catch (err) {
+          alert(err.message);
         }
+      });
 
-        function updateSvgPreview(){
-            try{
-                const s = validateSvg($("#svgCode").value);
-                const b = new Blob([s], { type: "image/svg+xml" });
-                const u = URL.createObjectURL(b);
-                const i = document.createElement("img");
-                i.src = u;
-                i.onload = () => URL.revokeObjectURL(u);
-                i.onerror = () => { URL.revokeObjectURL(u); alert("Unable to render SVG."); };
-                $("#editPreview").innerHTML = "";
-                $("#editPreview").appendChild(i);
-            }catch(err){ alert(err.message); }
+      $("#extRun").addEventListener("click", async () => {
+        if (!state.extImage) return alert("Choose an image first.");
+        const sizes = [128, 48, 32, 16],
+          pad = Number($("#extPad").value) / 100,
+          shape = $("#extShape").value;
+        const p = $("#extPreview");
+        p.innerHTML = "";
+        state.extBlobs = [];
+        state.extZip = null;
+        $("#extDownload").disabled = true;
+        try {
+          for (const s of sizes) {
+            const c = document.createElement("canvas");
+            c.width = s;
+            c.height = s;
+            const x = c.getContext("2d"),
+              d = s * pad;
+            x.clearRect(0, 0, s, s);
+            if (shape === "circle") {
+              x.beginPath();
+              x.arc(s / 2, s / 2, s / 2, 0, Math.PI * 2);
+              x.clip();
+            } else if (shape === "rounded") {
+              x.beginPath();
+              x.roundRect(0, 0, s, s, s * 0.18);
+              x.clip();
+            }
+            x.drawImage(state.extImage, d, d, s - d * 2, s - d * 2);
+            const b = await canvasBlob(c, "image/png");
+            state.extBlobs.push({ size: s, blob: b, filename: `icon${s}.png` });
+            const wrap = document.createElement("div"),
+              im = document.createElement("img"),
+              lab = document.createElement("div");
+            im.src = URL.createObjectURL(b);
+            im.width = s;
+            im.height = s;
+            lab.textContent = `${s} × ${s}`;
+            wrap.append(im, lab);
+            p.appendChild(wrap);
+          }
+          const files = [];
+          for (const s of [128, 16, 32, 48]) {
+            const it = state.extBlobs.find((x) => x.size === s);
+            files.push({
+              name: `icon${s}.png`,
+              data: new Uint8Array(await it.blob.arrayBuffer()),
+            });
+          }
+          state.extZip = createZip(files);
+          $("#extDownload").disabled = false;
+        } catch (err) {
+          alert("Icon generation failed: " + err.message);
         }
+      });
 
-        $("#svgUpdate").addEventListener("click", updateSvgPreview);
-        $("#svgSave").addEventListener("click", () => {
-            try{ downloadBlob(new Blob([validateSvg($("#svgCode").value)], { type: "image/svg+xml" }), "graphic.svg"); }
-            catch(err){ alert(err.message); }
-        });
+      $("#extDownload").addEventListener(
+        "click",
+        () =>
+          state.extZip &&
+          downloadBlob(state.extZip, "chrome-extension-icons.zip")
+      );
 
-        // Android Icon Generator Tool State & Logic
-        state.androidImage = null;
-        state.androidBgImage = null;
-        state.androidZip = null;
+      $("#manifestCopy").addEventListener("click", async () => {
+        const code = $("#manifestCode").value;
+        try {
+          if (navigator.clipboard && window.isSecureContext)
+            await navigator.clipboard.writeText(code);
+          else {
+            $("#manifestCode").focus();
+            $("#manifestCode").select();
+            document.execCommand("copy");
+          }
+          $("#manifestCopyStatus").textContent = "Copied!";
+        } catch {
+          $("#manifestCopyStatus").textContent = "Copy failed.";
+        }
+        setTimeout(() => ($("#manifestCopyStatus").textContent = ""), 1500);
+      });
+
+      // SVG Editor Tool
+      function validateSvg(s) {
+        const d = new DOMParser().parseFromString(s, "image/svg+xml");
+        if (
+          d.querySelector("parsererror") ||
+          !d.documentElement ||
+          d.documentElement.tagName.toLowerCase() !== "svg"
+        )
+          throw new Error("Invalid SVG.");
+        return new XMLSerializer().serializeToString(d.documentElement);
+      }
+
+      function updateSvgPreview() {
+        try {
+          const s = validateSvg($("#svgCode").value);
+          const b = new Blob([s], { type: "image/svg+xml" });
+          const u = URL.createObjectURL(b);
+          const i = document.createElement("img");
+          i.src = u;
+          i.onload = () => URL.revokeObjectURL(u);
+          i.onerror = () => {
+            URL.revokeObjectURL(u);
+            alert("Unable to render SVG.");
+          };
+          $("#editPreview").innerHTML = "";
+          $("#editPreview").appendChild(i);
+        } catch (err) {
+          alert(err.message);
+        }
+      }
+
+      $("#svgUpdate").addEventListener("click", updateSvgPreview);
+      $("#svgSave").addEventListener("click", () => {
+        try {
+          downloadBlob(
+            new Blob([validateSvg($("#svgCode").value)], {
+              type: "image/svg+xml",
+            }),
+            "graphic.svg"
+          );
+        } catch (err) {
+          alert(err.message);
+        }
+      });
+
+      // Android Icon Generator Tool State & Logic
+      state.androidImage = null;
+      state.androidBgImage = null;
+      state.androidZip = null;
+      state.androidBlobs = [];
+
+      $("#androidScale").addEventListener(
+        "input",
+        () =>
+          ($("#androidScaleVal").textContent = $("#androidScale").value + "%")
+      );
+      $("#androidBgType").addEventListener("change", () => {
+        const t = $("#androidBgType").value;
+        $("#androidBgColorWrap").style.display =
+          t === "color" ? "block" : "none";
+        $("#androidBgImageWrap").style.display =
+          t === "image" ? "block" : "none";
+      });
+
+      $("#androidFile").addEventListener("change", async (e) => {
+        const f = e.target.files[0];
+        if (!f) return;
+        try {
+          state.androidImage = await loadImage(f);
+          state.androidZip = null;
+          $("#androidDownload").disabled = true;
+        } catch (err) {
+          alert(err.message);
+        }
+      });
+
+      $("#androidBgFile").addEventListener("change", async (e) => {
+        const f = e.target.files[0];
+        if (!f) return;
+        try {
+          state.androidBgImage = await loadImage(f);
+        } catch (err) {
+          alert(err.message);
+        }
+      });
+
+      $("#androidRun").addEventListener("click", async () => {
+        if (!state.androidImage) return alert("Choose a source image first.");
+        const name = $("#androidName").value.trim() || "ic_launcher";
+        const genStandard = $("#androidGenStandard").checked;
+        const genRound = $("#androidGenRound").checked;
+        const genAdaptive = $("#androidGenAdaptive").checked;
+        const genMonochrome = $("#androidGenMonochrome").checked;
+        const bgType = $("#androidBgType").value;
+        const bgColor = $("#androidBgColor").value;
+        const scale = Number($("#androidScale").value) / 100;
+
+        const files = [];
+        const previewContainer = $("#androidPreview");
+        previewContainer.innerHTML = "";
         state.androidBlobs = [];
 
-        $("#androidScale").addEventListener("input", () => $("#androidScaleVal").textContent = $("#androidScale").value + "%");
-        $("#androidBgType").addEventListener("change", () => {
-            const t = $("#androidBgType").value;
-            $("#androidBgColorWrap").style.display = t === "color" ? "block" : "none";
-            $("#androidBgImageWrap").style.display = t === "image" ? "block" : "none";
-        });
-
-        $("#androidFile").addEventListener("change", async e => {
-            const f = e.target.files[0];
-            if(!f) return;
-            try{
-                state.androidImage = await loadImage(f);
-                state.androidZip = null;
-                $("#androidDownload").disabled = true;
-            }catch(err){ alert(err.message); }
-        });
-
-        $("#androidBgFile").addEventListener("change", async e => {
-            const f = e.target.files[0];
-            if(!f) return;
-            try{
-                state.androidBgImage = await loadImage(f);
-            }catch(err){ alert(err.message); }
-        });
-
-        $("#androidRun").addEventListener("click", async () => {
-            if(!state.androidImage) return alert("Choose a source image first.");
-            const name = $("#androidName").value.trim() || "ic_launcher";
-            const genStandard = $("#androidGenStandard").checked;
-            const genRound = $("#androidGenRound").checked;
-            const genAdaptive = $("#androidGenAdaptive").checked;
-            const genMonochrome = $("#androidGenMonochrome").checked;
-            const bgType = $("#androidBgType").value;
-            const bgColor = $("#androidBgColor").value;
-            const scale = Number($("#androidScale").value) / 100;
-
-            const files = [];
-            const previewContainer = $("#androidPreview");
-            previewContainer.innerHTML = "";
-            state.androidBlobs = [];
-
-            try {
-                // 1. Standard Launcher Icons
-                if (genStandard) {
-                    const densities = [
-                        { dir: "mipmap-mdpi", size: 48 },
-                        { dir: "mipmap-hdpi", size: 72 },
-                        { dir: "mipmap-xhdpi", size: 96 },
-                        { dir: "mipmap-xxhdpi", size: 144 },
-                        { dir: "mipmap-xxxhdpi", size: 192 }
-                    ];
-                    for (const d of densities) {
-                        const c = document.createElement("canvas");
-                        c.width = d.size; c.height = d.size;
-                        const ctx = c.getContext("2d");
-                        ctx.clearRect(0, 0, d.size, d.size);
-                        ctx.drawImage(state.androidImage, 0, 0, d.size, d.size);
-                        const blob = await canvasBlob(c, "image/png");
-                        const u8 = new Uint8Array(await blob.arrayBuffer());
-                        files.push({ name: `res/${d.dir}/${name}.png`, data: u8 });
-                        state.androidBlobs.push({ label: `${d.dir}/${name}.png`, blob, size: d.size });
-                    }
-                }
-
-                // 2. Round Launcher Icons
-                if (genRound) {
-                    const densities = [
-                        { dir: "mipmap-mdpi", size: 48 },
-                        { dir: "mipmap-hdpi", size: 72 },
-                        { dir: "mipmap-xhdpi", size: 96 },
-                        { dir: "mipmap-xxhdpi", size: 144 },
-                        { dir: "mipmap-xxxhdpi", size: 192 }
-                    ];
-                    for (const d of densities) {
-                        const c = document.createElement("canvas");
-                        c.width = d.size; c.height = d.size;
-                        const ctx = c.getContext("2d");
-                        ctx.clearRect(0, 0, d.size, d.size);
-                        ctx.beginPath();
-                        ctx.arc(d.size / 2, d.size / 2, d.size / 2, 0, Math.PI * 2);
-                        ctx.clip();
-                        ctx.drawImage(state.androidImage, 0, 0, d.size, d.size);
-                        const blob = await canvasBlob(c, "image/png");
-                        const u8 = new Uint8Array(await blob.arrayBuffer());
-                        files.push({ name: `res/${d.dir}/${name}_round.png`, data: u8 });
-                        state.androidBlobs.push({ label: `${d.dir}/${name}_round.png`, blob, size: d.size });
-                    }
-                }
-
-                // 3. Adaptive Icons
-                let hasBackground = false;
-                if (genAdaptive) {
-                    const adaptiveSize = 432;
-                    // Foreground
-                    const fgCanvas = document.createElement("canvas");
-                    fgCanvas.width = adaptiveSize; fgCanvas.height = adaptiveSize;
-                    const fgCtx = fgCanvas.getContext("2d");
-                    fgCtx.clearRect(0, 0, adaptiveSize, adaptiveSize);
-                    const drawSize = adaptiveSize * scale;
-                    const offset = (adaptiveSize - drawSize) / 2;
-                    fgCtx.drawImage(state.androidImage, offset, offset, drawSize, drawSize);
-                    const fgBlob = await canvasBlob(fgCanvas, "image/png");
-                    files.push({ name: `res/drawable/${name}_foreground.png`, data: new Uint8Array(await fgBlob.arrayBuffer()) });
-                    state.androidBlobs.push({ label: `drawable/${name}_foreground.png`, blob: fgBlob, size: 108 });
-
-                    // Background
-                    if (bgType === "color") {
-                        hasBackground = true;
-                        const bgXml = `<resources>\n    <color name="${name}_background">${bgColor}</color>\n</resources>`;
-                        files.push({ name: `res/values/${name}_background.xml`, data: new TextEncoder().encode(bgXml) });
-                        $("#androidColorXmlCode").value = bgXml;
-                    } else if (bgType === "image" && state.androidBgImage) {
-                        hasBackground = true;
-                        const bgCanvas = document.createElement("canvas");
-                        bgCanvas.width = adaptiveSize; bgCanvas.height = adaptiveSize;
-                        const bgCtx = bgCanvas.getContext("2d");
-                        bgCtx.drawImage(state.androidBgImage, 0, 0, adaptiveSize, adaptiveSize);
-                        const bgBlob = await canvasBlob(bgCanvas, "image/png");
-                        files.push({ name: `res/drawable/${name}_background.png`, data: new Uint8Array(await bgBlob.arrayBuffer()) });
-                        state.androidBlobs.push({ label: `drawable/${name}_background.png`, blob: bgBlob, size: 108 });
-                        $("#androidColorXmlCode").value = `<!-- Using background image: res/drawable/${name}_background.png -->`;
-                    } else {
-                        $("#androidColorXmlCode").value = `<!-- Transparent background selected -->`;
-                    }
-
-                    // Adaptive Icon XML descriptor
-                    const adaptiveXml = `<?xml version="1.0" encoding="utf-8"?>
-<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
-    ${hasBackground && bgType === "color" ? `<background android:drawable="@color/${name}_background"/>` : (hasBackground ? `<background android:drawable="@drawable/${name}_background"/>` : ``)}
-    <foreground android:drawable="@drawable/${name}_foreground"/>
-    ${genMonochrome ? `<monochrome android:drawable="@drawable/${name}_monochrome"/>` : ``}
-</adaptive-icon>`;
-                    files.push({ name: `res/mipmap-anydpi-v26/${name}.xml`, data: new TextEncoder().encode(adaptiveXml) });
-                    $("#androidAdaptiveXmlCode").value = adaptiveXml;
-                } else {
-                    $("#androidAdaptiveXmlCode").value = "<!-- Adaptive icons disabled -->";
-                    $("#androidColorXmlCode").value = "<!-- Adaptive icons disabled -->";
-                }
-
-                // 4. Monochrome Icon
-                if (genMonochrome) {
-                    const monoSize = 432;
-                    const monoCanvas = document.createElement("canvas");
-                    monoCanvas.width = monoSize; monoCanvas.height = monoSize;
-                    const mCtx = monoCanvas.getContext("2d");
-                    mCtx.clearRect(0, 0, monoSize, monoSize);
-                    const drawSize = monoSize * scale;
-                    const offset = (monoSize - drawSize) / 2;
-                    mCtx.drawImage(state.androidImage, offset, offset, drawSize, drawSize);
-
-                    const imgData = mCtx.getImageData(0, 0, monoSize, monoSize);
-                    const d = imgData.data;
-                    for (let i = 0; i < d.length; i += 4) {
-                        const alpha = d[i + 3];
-                        if (alpha > 10) {
-                            d[i] = 255;
-                            d[i + 1] = 255;
-                            d[i + 2] = 255;
-                            d[i + 3] = 255;
-                        }
-                    }
-                    mCtx.putImageData(imgData, 0, 0);
-                    const monoBlob = await canvasBlob(monoCanvas, "image/png");
-                    files.push({ name: `res/drawable/${name}_monochrome.png`, data: new Uint8Array(await monoBlob.arrayBuffer()) });
-                    state.androidBlobs.push({ label: `drawable/${name}_monochrome.png`, blob: monoBlob, size: 108 });
-                }
-
-                // 5. Manifest Snippet
-                const iconRef = `@mipmap/${name}`;
-                const roundIconRef = genRound ? `\n    android:roundIcon="@mipmap/${name}_round"` : ``;
-                const manifestSnippet = `<application\n    android:icon="${iconRef}"${roundIconRef}>`;
-                files.push({ name: `manifest-snippet.txt`, data: new TextEncoder().encode(manifestSnippet) });
-                $("#androidManifestCode").value = manifestSnippet;
-
-                state.androidZip = createZip(files);
-                $("#androidDownload").disabled = false;
-                $("#androidInfo").textContent = `Generated successfully! Total ${files.length} files prepared for download.`;
-
-                state.androidBlobs.slice(0, 8).forEach(item => {
-                    const wrap = document.createElement("div");
-                    const img = document.createElement("img");
-                    img.src = URL.createObjectURL(item.blob);
-                    img.width = 64; img.height = 64;
-                    const label = document.createElement("div");
-                    label.style.fontSize = "11px";
-                    label.style.marginTop = "4px";
-                    label.textContent = item.label.split("/").pop();
-                    wrap.append(img, label);
-                    previewContainer.appendChild(wrap);
-                });
-
-            } catch (err) {
-                alert("Android icon generation failed: " + err.message);
+        try {
+          // 1. Standard Launcher Icons
+          if (genStandard) {
+            const densities = [
+              { dir: "mipmap-mdpi", size: 48 },
+              { dir: "mipmap-hdpi", size: 72 },
+              { dir: "mipmap-xhdpi", size: 96 },
+              { dir: "mipmap-xxhdpi", size: 144 },
+              { dir: "mipmap-xxxhdpi", size: 192 },
+            ];
+            for (const d of densities) {
+              const c = document.createElement("canvas");
+              c.width = d.size;
+              c.height = d.size;
+              const ctx = c.getContext("2d");
+              ctx.clearRect(0, 0, d.size, d.size);
+              ctx.drawImage(state.androidImage, 0, 0, d.size, d.size);
+              const blob = await canvasBlob(c, "image/png");
+              const u8 = new Uint8Array(await blob.arrayBuffer());
+              files.push({ name: `res/${d.dir}/${name}.png`, data: u8 });
+              state.androidBlobs.push({
+                label: `${d.dir}/${name}.png`,
+                blob,
+                size: d.size,
+              });
             }
-        });
+          }
 
-        $("#androidDownload").addEventListener("click", () => state.androidZip && downloadBlob(state.androidZip, "android-icons.zip"));
+          // 2. Round Launcher Icons
+          if (genRound) {
+            const densities = [
+              { dir: "mipmap-mdpi", size: 48 },
+              { dir: "mipmap-hdpi", size: 72 },
+              { dir: "mipmap-xhdpi", size: 96 },
+              { dir: "mipmap-xxhdpi", size: 144 },
+              { dir: "mipmap-xxxhdpi", size: 192 },
+            ];
+            for (const d of densities) {
+              const c = document.createElement("canvas");
+              c.width = d.size;
+              c.height = d.size;
+              const ctx = c.getContext("2d");
+              ctx.clearRect(0, 0, d.size, d.size);
+              ctx.beginPath();
+              ctx.arc(d.size / 2, d.size / 2, d.size / 2, 0, Math.PI * 2);
+              ctx.clip();
+              ctx.drawImage(state.androidImage, 0, 0, d.size, d.size);
+              const blob = await canvasBlob(c, "image/png");
+              const u8 = new Uint8Array(await blob.arrayBuffer());
+              files.push({ name: `res/${d.dir}/${name}_round.png`, data: u8 });
+              state.androidBlobs.push({
+                label: `${d.dir}/${name}_round.png`,
+                blob,
+                size: d.size,
+              });
+            }
+          }
 
-        [["androidAdaptiveCopy", "androidAdaptiveXmlCode", "androidAdaptiveCopyStatus"],
-         ["androidColorCopy", "androidColorXmlCode", "androidColorCopyStatus"],
-         ["androidManifestCopy", "androidManifestCode", "androidManifestCopyStatus"]].forEach(([btnId, textId, statusId]) => {
-            $(`#${btnId}`).addEventListener("click", async () => {
-                const code = $(`#${textId}`).value;
-                try {
-                    if(navigator.clipboard && window.isSecureContext) await navigator.clipboard.writeText(code);
-                    else { $(`#${textId}`).focus(); $(`#${textId}`).select(); document.execCommand("copy"); }
-                    $(`#${statusId}`).textContent = "Copied!";
-                } catch {
-                    $(`#${statusId}`).textContent = "Copy failed.";
-                }
-                setTimeout(() => $(`#${statusId}`).textContent = "", 1500);
+          // 3. Adaptive Icons
+          let hasBackground = false;
+          if (genAdaptive) {
+            const adaptiveSize = 432;
+            // Foreground
+            const fgCanvas = document.createElement("canvas");
+            fgCanvas.width = adaptiveSize;
+            fgCanvas.height = adaptiveSize;
+            const fgCtx = fgCanvas.getContext("2d");
+            fgCtx.clearRect(0, 0, adaptiveSize, adaptiveSize);
+            const drawSize = adaptiveSize * scale;
+            const offset = (adaptiveSize - drawSize) / 2;
+            fgCtx.drawImage(
+              state.androidImage,
+              offset,
+              offset,
+              drawSize,
+              drawSize
+            );
+            const fgBlob = await canvasBlob(fgCanvas, "image/png");
+            files.push({
+              name: `res/drawable/${name}_foreground.png`,
+              data: new Uint8Array(await fgBlob.arrayBuffer()),
             });
-        });
+            state.androidBlobs.push({
+              label: `drawable/${name}_foreground.png`,
+              blob: fgBlob,
+              size: 108,
+            });
 
-        // PWA Icon Generator Tool State & Logic
-        state.pwaImage = null;
-        state.pwaZip = null;
+            // Background
+            if (bgType === "color") {
+              hasBackground = true;
+              const bgXml = `<resources>\n    <color name="${name}_background">${bgColor}</color>\n</resources>`;
+              files.push({
+                name: `res/values/${name}_background.xml`,
+                data: new TextEncoder().encode(bgXml),
+              });
+              $("#androidColorXmlCode").value = bgXml;
+            } else if (bgType === "image" && state.androidBgImage) {
+              hasBackground = true;
+              const bgCanvas = document.createElement("canvas");
+              bgCanvas.width = adaptiveSize;
+              bgCanvas.height = adaptiveSize;
+              const bgCtx = bgCanvas.getContext("2d");
+              bgCtx.drawImage(
+                state.androidBgImage,
+                0,
+                0,
+                adaptiveSize,
+                adaptiveSize
+              );
+              const bgBlob = await canvasBlob(bgCanvas, "image/png");
+              files.push({
+                name: `res/drawable/${name}_background.png`,
+                data: new Uint8Array(await bgBlob.arrayBuffer()),
+              });
+              state.androidBlobs.push({
+                label: `drawable/${name}_background.png`,
+                blob: bgBlob,
+                size: 108,
+              });
+              $(
+                "#androidColorXmlCode"
+              ).value = `<!-- Using background image: res/drawable/${name}_background.png -->`;
+            } else {
+              $(
+                "#androidColorXmlCode"
+              ).value = `<!-- Transparent background selected -->`;
+            }
+
+            // Adaptive Icon XML descriptor
+            const adaptiveXml = `<?xml version="1.0" encoding="utf-8"?>
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    ${
+      hasBackground && bgType === "color"
+        ? `<background android:drawable="@color/${name}_background"/>`
+        : hasBackground
+        ? `<background android:drawable="@drawable/${name}_background"/>`
+        : ``
+    }
+    <foreground android:drawable="@drawable/${name}_foreground"/>
+    ${
+      genMonochrome
+        ? `<monochrome android:drawable="@drawable/${name}_monochrome"/>`
+        : ``
+    }
+</adaptive-icon>`;
+            files.push({
+              name: `res/mipmap-anydpi-v26/${name}.xml`,
+              data: new TextEncoder().encode(adaptiveXml),
+            });
+            $("#androidAdaptiveXmlCode").value = adaptiveXml;
+          } else {
+            $("#androidAdaptiveXmlCode").value =
+              "<!-- Adaptive icons disabled -->";
+            $("#androidColorXmlCode").value =
+              "<!-- Adaptive icons disabled -->";
+          }
+
+          // 4. Monochrome Icon
+          if (genMonochrome) {
+            const monoSize = 432;
+            const monoCanvas = document.createElement("canvas");
+            monoCanvas.width = monoSize;
+            monoCanvas.height = monoSize;
+            const mCtx = monoCanvas.getContext("2d");
+            mCtx.clearRect(0, 0, monoSize, monoSize);
+            const drawSize = monoSize * scale;
+            const offset = (monoSize - drawSize) / 2;
+            mCtx.drawImage(
+              state.androidImage,
+              offset,
+              offset,
+              drawSize,
+              drawSize
+            );
+
+            const imgData = mCtx.getImageData(0, 0, monoSize, monoSize);
+            const d = imgData.data;
+            for (let i = 0; i < d.length; i += 4) {
+              const alpha = d[i + 3];
+              if (alpha > 10) {
+                d[i] = 255;
+                d[i + 1] = 255;
+                d[i + 2] = 255;
+                d[i + 3] = 255;
+              }
+            }
+            mCtx.putImageData(imgData, 0, 0);
+            const monoBlob = await canvasBlob(monoCanvas, "image/png");
+            files.push({
+              name: `res/drawable/${name}_monochrome.png`,
+              data: new Uint8Array(await monoBlob.arrayBuffer()),
+            });
+            state.androidBlobs.push({
+              label: `drawable/${name}_monochrome.png`,
+              blob: monoBlob,
+              size: 108,
+            });
+          }
+
+          // 5. Manifest Snippet
+          const iconRef = `@mipmap/${name}`;
+          const roundIconRef = genRound
+            ? `\n    android:roundIcon="@mipmap/${name}_round"`
+            : ``;
+          const manifestSnippet = `<application\n    android:icon="${iconRef}"${roundIconRef}>`;
+          files.push({
+            name: `manifest-snippet.txt`,
+            data: new TextEncoder().encode(manifestSnippet),
+          });
+          $("#androidManifestCode").value = manifestSnippet;
+
+          state.androidZip = createZip(files);
+          $("#androidDownload").disabled = false;
+          $(
+            "#androidInfo"
+          ).textContent = `Generated successfully! Total ${files.length} files prepared for download.`;
+
+          state.androidBlobs.slice(0, 8).forEach((item) => {
+            const wrap = document.createElement("div");
+            const img = document.createElement("img");
+            img.src = URL.createObjectURL(item.blob);
+            img.width = 64;
+            img.height = 64;
+            const label = document.createElement("div");
+            label.style.fontSize = "11px";
+            label.style.marginTop = "4px";
+            label.textContent = item.label.split("/").pop();
+            wrap.append(img, label);
+            previewContainer.appendChild(wrap);
+          });
+        } catch (err) {
+          alert("Android icon generation failed: " + err.message);
+        }
+      });
+
+      $("#androidDownload").addEventListener(
+        "click",
+        () =>
+          state.androidZip &&
+          downloadBlob(state.androidZip, "android-icons.zip")
+      );
+
+      [
+        [
+          "androidAdaptiveCopy",
+          "androidAdaptiveXmlCode",
+          "androidAdaptiveCopyStatus",
+        ],
+        ["androidColorCopy", "androidColorXmlCode", "androidColorCopyStatus"],
+        [
+          "androidManifestCopy",
+          "androidManifestCode",
+          "androidManifestCopyStatus",
+        ],
+      ].forEach(([btnId, textId, statusId]) => {
+        $(`#${btnId}`).addEventListener("click", async () => {
+          const code = $(`#${textId}`).value;
+          try {
+            if (navigator.clipboard && window.isSecureContext)
+              await navigator.clipboard.writeText(code);
+            else {
+              $(`#${textId}`).focus();
+              $(`#${textId}`).select();
+              document.execCommand("copy");
+            }
+            $(`#${statusId}`).textContent = "Copied!";
+          } catch {
+            $(`#${statusId}`).textContent = "Copy failed.";
+          }
+          setTimeout(() => ($(`#${statusId}`).textContent = ""), 1500);
+        });
+      });
+
+      // PWA Icon Generator Tool State & Logic
+      state.pwaImage = null;
+      state.pwaZip = null;
+      state.pwaBlobs = [];
+
+      $("#pwaPad").addEventListener(
+        "input",
+        () => ($("#pwaPadVal").textContent = $("#pwaPad").value + "%")
+      );
+      $("#pwaBgType").addEventListener("change", () => {
+        const t = $("#pwaBgType").value;
+        $("#pwaBgColorWrap").style.display = t === "color" ? "block" : "none";
+      });
+
+      $("#pwaFile").addEventListener("change", async (e) => {
+        const f = e.target.files[0];
+        if (!f) return;
+        try {
+          state.pwaImage = await loadImage(f);
+          state.pwaZip = null;
+          $("#pwaDownload").disabled = true;
+        } catch (err) {
+          alert(err.message);
+        }
+      });
+
+      $("#pwaRun").addEventListener("click", async () => {
+        if (!state.pwaImage) return alert("Choose a source image first.");
+        const dir = $("#pwaDir").value.trim() || "/icons/";
+        const prefix = $("#pwaPrefix").value.trim() || "icon";
+        const genStandard = $("#pwaGenStandard").checked;
+        const genMaskable = $("#pwaGenMaskable").checked;
+        const genApple = $("#pwaGenApple").checked;
+        const genFavicon = $("#pwaGenFavicon").checked;
+        const bgType = $("#pwaBgType").value;
+        const bgColor = $("#pwaBgColor").value;
+        const padPercent = Number($("#pwaPad").value) / 100;
+
+        const files = [];
+        const manifestIcons = [];
+        const htmlLinks = [];
+        const previewContainer = $("#pwaPreview");
+        previewContainer.innerHTML = "";
         state.pwaBlobs = [];
 
-        $("#pwaPad").addEventListener("input", () => $("#pwaPadVal").textContent = $("#pwaPad").value + "%");
-        $("#pwaBgType").addEventListener("change", () => {
-            const t = $("#pwaBgType").value;
-            $("#pwaBgColorWrap").style.display = t === "color" ? "block" : "none";
-        });
+        const cleanDir = dir.endsWith("/") ? dir : dir + "/";
+        const normalizedDir = cleanDir.startsWith("/")
+          ? cleanDir
+          : "/" + cleanDir;
 
-        $("#pwaFile").addEventListener("change", async e => {
-            const f = e.target.files[0];
-            if(!f) return;
-            try{
-                state.pwaImage = await loadImage(f);
-                state.pwaZip = null;
-                $("#pwaDownload").disabled = true;
-            }catch(err){ alert(err.message); }
-        });
+        try {
+          async function renderIcon(
+            size,
+            isMaskable = false,
+            customPadding = null
+          ) {
+            const c = document.createElement("canvas");
+            c.width = size;
+            c.height = size;
+            const ctx = c.getContext("2d");
+            ctx.clearRect(0, 0, size, size);
 
-        $("#pwaRun").addEventListener("click", async () => {
-            if(!state.pwaImage) return alert("Choose a source image first.");
-            const dir = $("#pwaDir").value.trim() || "/icons/";
-            const prefix = $("#pwaPrefix").value.trim() || "icon";
-            const genStandard = $("#pwaGenStandard").checked;
-            const genMaskable = $("#pwaGenMaskable").checked;
-            const genApple = $("#pwaGenApple").checked;
-            const genFavicon = $("#pwaGenFavicon").checked;
-            const bgType = $("#pwaBgType").value;
-            const bgColor = $("#pwaBgColor").value;
-            const padPercent = Number($("#pwaPad").value) / 100;
-
-            const files = [];
-            const manifestIcons = [];
-            const htmlLinks = [];
-            const previewContainer = $("#pwaPreview");
-            previewContainer.innerHTML = "";
-            state.pwaBlobs = [];
-
-            const cleanDir = dir.endsWith("/") ? dir : dir + "/";
-            const normalizedDir = cleanDir.startsWith("/") ? cleanDir : "/" + cleanDir;
-
-            try {
-                async function renderIcon(size, isMaskable = false, customPadding = null){
-                    const c = document.createElement("canvas");
-                    c.width = size; c.height = size;
-                    const ctx = c.getContext("2d");
-                    ctx.clearRect(0, 0, size, size);
-
-                    if (bgType === "color" || isMaskable) {
-                        ctx.fillStyle = bgColor;
-                        ctx.fillRect(0, 0, size, size);
-                    }
-
-                    const pad = customPadding !== null ? customPadding : padPercent;
-                    const drawSize = size * (1 - pad * 2);
-                    const offset = size * pad;
-                    ctx.drawImage(state.pwaImage, offset, offset, drawSize, drawSize);
-
-                    return await canvasBlob(c, "image/png");
-                }
-
-                if (genStandard) {
-                    for (const s of [192, 512]) {
-                        const blob = await renderIcon(s, false);
-                        const filename = `${prefix}-${s}.png`;
-                        files.push({ name: filename, data: new Uint8Array(await blob.arrayBuffer()) });
-                        state.pwaBlobs.push({ label: filename, blob, size: s });
-                        manifestIcons.push({
-                            src: normalizedDir + filename,
-                            sizes: `${s}x${s}`,
-                            type: "image/png",
-                            purpose: "any"
-                        });
-                    }
-                }
-
-                if (genMaskable) {
-                    for (const s of [192, 512]) {
-                        const maskablePad = Math.max(padPercent, 0.18);
-                        const blob = await renderIcon(s, true, maskablePad);
-                        const filename = `${prefix}-maskable-${s}.png`;
-                        files.push({ name: filename, data: new Uint8Array(await blob.arrayBuffer()) });
-                        state.pwaBlobs.push({ label: filename, blob, size: s });
-                        manifestIcons.push({
-                            src: normalizedDir + filename,
-                            sizes: `${s}x${s}`,
-                            type: "image/png",
-                            purpose: "maskable"
-                        });
-                    }
-                }
-
-                if (genApple) {
-                    const blob = await renderIcon(180, true);
-                    const filename = `apple-touch-icon.png`;
-                    files.push({ name: filename, data: new Uint8Array(await blob.arrayBuffer()) });
-                    state.pwaBlobs.push({ label: filename, blob, size: 180 });
-                    htmlLinks.push(`<link rel="apple-touch-icon" sizes="180x180" href="${normalizedDir}${filename}">`);
-                }
-
-                if (genFavicon) {
-                    for (const s of [32, 16]) {
-                        const blob = await renderIcon(s, false, 0.05);
-                        const filename = `favicon-${s}.png`;
-                        files.push({ name: filename, data: new Uint8Array(await blob.arrayBuffer()) });
-                        state.pwaBlobs.push({ label: filename, blob, size: s });
-                        htmlLinks.push(`<link rel="icon" type="image/png" sizes="${s}x${s}" href="${normalizedDir}${filename}">`);
-                    }
-                }
-
-                state.pwaZip = createZip(files);
-                $("#pwaDownload").disabled = false;
-                $("#pwaInfo").textContent = `Generated successfully! Total ${files.length} PWA icon files prepared.`;
-
-                if (manifestIcons.length > 0) {
-                    const iconsArraySnippet = `"icons": ` + JSON.stringify(manifestIcons, null, 2);
-                    $("#pwaManifestCode").value = iconsArraySnippet;
-                } else {
-                    $("#pwaManifestCode").value = "/* No standard or maskable icons selected */";
-                }
-
-                $("#pwaHtmlCode").value = htmlLinks.join("\n");
-
-                state.pwaBlobs.forEach(item => {
-                    const wrap = document.createElement("div");
-                    const img = document.createElement("img");
-                    img.src = URL.createObjectURL(item.blob);
-                    img.width = item.size >= 128 ? 64 : item.size;
-                    img.height = item.size >= 128 ? 64 : item.size;
-                    const label = document.createElement("div");
-                    label.style.fontSize = "11px";
-                    label.style.marginTop = "4px";
-                    label.textContent = `${item.label} (${item.size}px)`;
-                    wrap.append(img, label);
-                    previewContainer.appendChild(wrap);
-                });
-
-            } catch (err) {
-                alert("PWA icon generation failed: " + err.message);
+            if (bgType === "color" || isMaskable) {
+              ctx.fillStyle = bgColor;
+              ctx.fillRect(0, 0, size, size);
             }
-        });
 
-        $("#pwaDownload").addEventListener("click", () => state.pwaZip && downloadBlob(state.pwaZip, "pwa-icons.zip"));
+            const pad = customPadding !== null ? customPadding : padPercent;
+            const drawSize = size * (1 - pad * 2);
+            const offset = size * pad;
+            ctx.drawImage(state.pwaImage, offset, offset, drawSize, drawSize);
 
-        [["pwaManifestCopy", "pwaManifestCode", "pwaManifestCopyStatus"],
-         ["pwaHtmlCopy", "pwaHtmlCode", "pwaHtmlCopyStatus"]].forEach(([btnId, textId, statusId]) => {
-            $(`#${btnId}`).addEventListener("click", async () => {
-                const code = $(`#${textId}`).value;
-                try {
-                    if(navigator.clipboard && window.isSecureContext) await navigator.clipboard.writeText(code);
-                    else { $(`#${textId}`).focus(); $(`#${textId}`).select(); document.execCommand("copy"); }
-                    $(`#${statusId}`).textContent = "Copied!";
-                } catch {
-                    $(`#${statusId}`).textContent = "Copy failed.";
-                }
-                setTimeout(() => $(`#${statusId}`).textContent = "", 1500);
+            return await canvasBlob(c, "image/png");
+          }
+
+          if (genStandard) {
+            for (const s of [192, 512]) {
+              const blob = await renderIcon(s, false);
+              const filename = `${prefix}-${s}.png`;
+              files.push({
+                name: filename,
+                data: new Uint8Array(await blob.arrayBuffer()),
+              });
+              state.pwaBlobs.push({ label: filename, blob, size: s });
+              manifestIcons.push({
+                src: normalizedDir + filename,
+                sizes: `${s}x${s}`,
+                type: "image/png",
+                purpose: "any",
+              });
+            }
+          }
+
+          if (genMaskable) {
+            for (const s of [192, 512]) {
+              const maskablePad = Math.max(padPercent, 0.18);
+              const blob = await renderIcon(s, true, maskablePad);
+              const filename = `${prefix}-maskable-${s}.png`;
+              files.push({
+                name: filename,
+                data: new Uint8Array(await blob.arrayBuffer()),
+              });
+              state.pwaBlobs.push({ label: filename, blob, size: s });
+              manifestIcons.push({
+                src: normalizedDir + filename,
+                sizes: `${s}x${s}`,
+                type: "image/png",
+                purpose: "maskable",
+              });
+            }
+          }
+
+          if (genApple) {
+            const blob = await renderIcon(180, true);
+            const filename = `apple-touch-icon.png`;
+            files.push({
+              name: filename,
+              data: new Uint8Array(await blob.arrayBuffer()),
             });
-        });
+            state.pwaBlobs.push({ label: filename, blob, size: 180 });
+            htmlLinks.push(
+              `<link rel="apple-touch-icon" sizes="180x180" href="${normalizedDir}${filename}">`
+            );
+          }
 
-        updateSvgPreview();
+          if (genFavicon) {
+            for (const s of [32, 16]) {
+              const blob = await renderIcon(s, false, 0.05);
+              const filename = `favicon-${s}.png`;
+              files.push({
+                name: filename,
+                data: new Uint8Array(await blob.arrayBuffer()),
+              });
+              state.pwaBlobs.push({ label: filename, blob, size: s });
+              htmlLinks.push(
+                `<link rel="icon" type="image/png" sizes="${s}x${s}" href="${normalizedDir}${filename}">`
+              );
+            }
+          }
+
+          state.pwaZip = createZip(files);
+          $("#pwaDownload").disabled = false;
+          $(
+            "#pwaInfo"
+          ).textContent = `Generated successfully! Total ${files.length} PWA icon files prepared.`;
+
+          if (manifestIcons.length > 0) {
+            const iconsArraySnippet =
+              `"icons": ` + JSON.stringify(manifestIcons, null, 2);
+            $("#pwaManifestCode").value = iconsArraySnippet;
+          } else {
+            $("#pwaManifestCode").value =
+              "/* No standard or maskable icons selected */";
+          }
+
+          $("#pwaHtmlCode").value = htmlLinks.join("\n");
+
+          state.pwaBlobs.forEach((item) => {
+            const wrap = document.createElement("div");
+            const img = document.createElement("img");
+            img.src = URL.createObjectURL(item.blob);
+            img.width = item.size >= 128 ? 64 : item.size;
+            img.height = item.size >= 128 ? 64 : item.size;
+            const label = document.createElement("div");
+            label.style.fontSize = "11px";
+            label.style.marginTop = "4px";
+            label.textContent = `${item.label} (${item.size}px)`;
+            wrap.append(img, label);
+            previewContainer.appendChild(wrap);
+          });
+        } catch (err) {
+          alert("PWA icon generation failed: " + err.message);
+        }
+      });
+
+      $("#pwaDownload").addEventListener(
+        "click",
+        () => state.pwaZip && downloadBlob(state.pwaZip, "pwa-icons.zip")
+      );
+
+      [
+        ["pwaManifestCopy", "pwaManifestCode", "pwaManifestCopyStatus"],
+        ["pwaHtmlCopy", "pwaHtmlCode", "pwaHtmlCopyStatus"],
+      ].forEach(([btnId, textId, statusId]) => {
+        $(`#${btnId}`).addEventListener("click", async () => {
+          const code = $(`#${textId}`).value;
+          try {
+            if (navigator.clipboard && window.isSecureContext)
+              await navigator.clipboard.writeText(code);
+            else {
+              $(`#${textId}`).focus();
+              $(`#${textId}`).select();
+              document.execCommand("copy");
+            }
+            $(`#${statusId}`).textContent = "Copied!";
+          } catch {
+            $(`#${statusId}`).textContent = "Copy failed.";
+          }
+          setTimeout(() => ($(`#${statusId}`).textContent = ""), 1500);
+        });
+      });
+
+      updateSvgPreview();
     </script>
-</body>
+  </body>
 </html>
