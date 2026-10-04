@@ -184,6 +184,21 @@
         "sidebar": false,
         "footer": true
       }
+    },
+    {
+      "id": "privacy-test",
+      "name": "Privacy Test",
+      "description": "Privacy test for xPrivacyGuard.",
+      "path": "tools/privacy-test/",
+      "icon": "im im-shield",
+      "category": "Privacy Test",
+      "enabled": true,
+      "githubUrl": "https://github.com/xCONFLiCTiONx/Portfolio/blob/main/tools/privacy-test/index.html",
+      "layout": {
+        "header": true,
+        "sidebar": false,
+        "footer": true
+      }
     }
   ]
 }
