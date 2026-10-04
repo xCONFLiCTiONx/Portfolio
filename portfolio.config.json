@@ -184,36 +184,6 @@
         "sidebar": false,
         "footer": true
       }
-    },
-    {
-      "id": "privacy-test",
-      "name": "Privacy Test",
-      "description": "Interactive privacy test benchmark suite designed to evaluate and verify content blocking, script isolation, and data leak protection for xPrivacyGuard.",
-      "path": "tools/privacy-test/",
-      "icon": "im im-shield",
-      "category": "Privacy Test",
-      "enabled": true,
-      "githubUrl": "https://github.com/xCONFLiCTiONx/Portfolio/blob/main/tools/privacy-test/index.html",
-      "layout": {
-        "header": true,
-        "sidebar": false,
-        "footer": true
-      }
-    },
-    {
-      "id": "zero-hour",
-      "name": "Project Zero Hour",
-      "description": "Browser-based procedural cybersecurity escape room and incident simulator. Investigate suspicious logs, scan 3D isometric networks, crack hashes, and contain live breaches.",
-      "path": "tools/zero-hour/",
-      "icon": "im im-terminal",
-      "category": "Cybersecurity Game",
-      "enabled": true,
-      "githubUrl": "https://github.com/xCONFLiCTiONx/Portfolio/blob/main/tools/zero-hour/index.html",
-      "layout": {
-        "header": true,
-        "sidebar": false,
-        "footer": false
-      }
     }
   ]
 }
