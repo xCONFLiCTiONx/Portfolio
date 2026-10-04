@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>xPrivacy Guard — Adblock & Tracker Test</title>
+
+    <style>
+      :root {
+        --bg: #0f172a;
+        --surface: #1e293b;
+        --surface-2: #263449;
+        --text: #e2e8f0;
+        --muted: #94a3b8;
+        --blue: #2563eb;
+        --green: #22c55e;
+        --red: #ef4444;
+        --amber: #f59e0b;
+        --border: #334155;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+      }
+
+      .container {
+        width: min(1100px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 32px 0 60px;
+      }
+
+      header {
+        margin-bottom: 28px;
+      }
+
+      h1 {
+        margin: 0 0 8px;
+        font-size: clamp(28px, 5vw, 42px);
+      }
+
+      h2 {
+        margin: 0 0 8px;
+      }
+
+      h3 {
+        margin: 0;
+      }
+
+      p {
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      .subtitle {
+        margin: 0;
+        font-size: 16px;
+      }
+
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 20px;
+        margin-bottom: 18px;
+      }
+
+      .status-card {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 18px;
+        align-items: center;
+      }
+
+      .shield {
+        width: 70px;
+        height: 70px;
+        display: grid;
+        place-items: center;
+        border-radius: 18px;
+        background: var(--surface-2);
+        font-size: 34px;
+      }
+
+      .status {
+        font-size: 20px;
+        font-weight: 700;
+      }
+
+      .status small {
+        display: block;
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 400;
+        margin-top: 4px;
+      }
+
+      .summary {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        margin-top: 20px;
+      }
+
+      .stat {
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 15px;
+      }
+
+      .stat-number {
+        font-size: 28px;
+        font-weight: 800;
+      }
+
+      .stat-label {
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 3px;
+      }
+
+      .test-list {
+        display: grid;
+        gap: 10px;
+      }
+
+      .test {
+        display: grid;
+        grid-template-columns: 42px 1fr auto;
+        gap: 12px;
+        align-items: center;
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 13px;
+      }
+
+      .icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        font-weight: 800;
+        background: #334155;
+      }
+
+      .test-name {
+        font-weight: 650;
+      }
+
+      .test-detail {
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 3px;
+        word-break: break-word;
+      }
+
+      .badge {
+        border-radius: 999px;
+        padding: 5px 10px;
+        font-size: 11px;
+        font-weight: 800;
+        white-space: nowrap;
+      }
+
+      .blocked {
+        color: #bbf7d0;
+        background: #14532d;
+      }
+
+      .allowed {
+        color: #fecaca;
+        background: #7f1d1d;
+      }
+
+      .pending {
+        color: #fde68a;
+        background: #78350f;
+      }
+
+      .neutral {
+        color: #cbd5e1;
+        background: #334155;
+      }
+
+      button {
+        border: 0;
+        border-radius: 9px;
+        padding: 10px 15px;
+        background: var(--blue);
+        color: white;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      button:hover {
+        filter: brightness(1.1);
+      }
+
+      .button-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 15px;
+      }
+
+      code {
+        color: #bfdbfe;
+        background: #172033;
+        padding: 2px 5px;
+        border-radius: 4px;
+        font-size: 12px;
+      }
+
+      .log {
+        max-height: 280px;
+        overflow: auto;
+        background: #0b1120;
+        border: 1px solid var(--border);
+        border-radius: 9px;
+        padding: 12px;
+        font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+        font-size: 12px;
+      }
+
+      .log-entry {
+        padding: 5px 0;
+        border-bottom: 1px solid #1e293b;
+      }
+
+      .log-entry:last-child {
+        border-bottom: 0;
+      }
+
+      .pass {
+        color: #86efac;
+      }
+
+      .fail {
+        color: #fca5a5;
+      }
+
+      .info {
+        color: #93c5fd;
+      }
+
+      .warning {
+        color: #fde68a;
+      }
+
+      @media (max-width: 700px) {
+        .summary {
+          grid-template-columns: repeat(2, 1fr);
+        }
+
+        .test {
+          grid-template-columns: 34px 1fr;
+        }
+
+        .test .badge {
+          grid-column: 2;
+          justify-self: start;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      ```
+      <header>
+        <h1>🛡️ xPrivacy Guard</h1>
+        <p class="subtitle">Adblock & Tracker Protection Test</p>
+      </header>
+
+      <section class="card status-card">
+        <div class="shield">🛡️</div>
+
+        <div>
+          <div class="status" id="overallStatus">
+            Running tests...
+            <small>Testing your current network protection</small>
+          </div>
+
+          <div class="summary">
+            <div class="stat">
+              <div class="stat-number" id="blockedCount">0</div>
+              <div class="stat-label">BLOCKED</div>
+            </div>
+
+            <div class="stat">
+              <div class="stat-number" id="allowedCount">0</div>
+              <div class="stat-label">NOT BLOCKED</div>
+            </div>
+
+            <div class="stat">
+              <div class="stat-number" id="totalCount">0</div>
+              <div class="stat-label">TESTS</div>
+            </div>
+
+            <div class="stat">
+              <div class="stat-number" id="score">0%</div>
+              <div class="stat-label">BLOCK RATE</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- DNS / NETWORK TESTS -->
+
+      <section class="card">
+        <h2>DNS / Network Blocking</h2>
+        <p>
+          These tests attempt to contact domains commonly associated with
+          advertising, analytics, tracking, telemetry, and other unwanted
+          network activity.
+        </p>
+
+        <div class="test-list" id="networkTests"></div>
+
+        <div class="button-row">
+          <button onclick="runNetworkTests()">Run Network Tests Again</button>
+        </div>
+      </section>
+
+      <!-- RESOURCE TESTS -->
+
+      <section class="card">
+        <h2>Resource Blocking</h2>
+        <p>
+          These tests create actual browser resources. A blocked request should
+          fail to load when your network filter is working.
+        </p>
+
+        <div class="test-list" id="resourceTests"></div>
+
+        <div class="button-row">
+          <button onclick="runResourceTests()">Run Resource Tests Again</button>
+        </div>
+      </section>
+
+      <!-- BEACON TEST -->
+
+      <section class="card">
+        <h2>Beacon / Analytics Test</h2>
+
+        <p>
+          Attempts to send a browser beacon to a known analytics-style endpoint.
+          A network-level blocker may prevent this from leaving the device.
+        </p>
+
+        <div id="beaconResult" class="test">
+          <div class="icon">?</div>
+
+          <div>
+            <div class="test-name">Navigator Beacon</div>
+            <div class="test-detail">Waiting for test...</div>
+          </div>
+
+          <span class="badge pending">PENDING</span>
+        </div>
+
+        <div class="button-row">
+          <button onclick="runBeaconTest()">Run Beacon Test</button>
+        </div>
+      </section>
+
+      <!-- IFRAME TEST -->
+
+      <section class="card">
+        <h2>Third-Party Frame Test</h2>
+
+        <p>
+          The following iframe attempts to load a third-party tracking-style
+          resource.
+        </p>
+
+        <div id="iframeResult" class="test">
+          <div class="icon">?</div>
+
+          <div>
+            <div class="test-name">Third-Party Iframe</div>
+            <div class="test-detail">Waiting for test...</div>
+          </div>
+
+          <span class="badge pending">PENDING</span>
+        </div>
+
+        <iframe
+          id="trackerFrame"
+          title="Tracker Test Frame"
+          style="
+            width: 1px;
+            height: 1px;
+            border: 0;
+            position: absolute;
+            left: -9999px;
+          "
+        ></iframe>
+      </section>
+
+      <!-- INFORMATION -->
+
+      <section class="card">
+        <h2>What This Test Does</h2>
+
+        <p>
+          This page intentionally generates requests that resemble common
+          advertising, analytics, telemetry, and tracking traffic.
+        </p>
+
+        <p>
+          A successful xPrivacy Guard network implementation should block the
+          configured test domains at the DNS/network layer.
+        </p>
+
+        <p>
+          <strong>Important:</strong> a request shown as "NOT BLOCKED" does not
+          automatically mean your protection is broken. Your blocklist
+          determines which domains are blocked, and different blocklists contain
+          different rules.
+        </p>
+      </section>
+
+      <!-- LOG -->
+
+      <section class="card">
+        <h2>Test Log</h2>
+        <div class="log" id="log"></div>
+      </section>
+      ```
+    </div>
+
+    <script>
+      "use strict";
+
+      /*
+       * ============================================================
+       * TEST DEFINITIONS
+       * ============================================================
+       *
+       * These are intentionally common tracker/ad/analytics domains.
+       *
+       * Do NOT treat the specific domains below as proof that an entire
+       * blocklist is working. They are test targets.
+       */
+
+      const NETWORK_TESTS = [
+        {
+          name: "DoubleClick",
+          domain: "doubleclick.net",
+          url: "https://doubleclick.net/",
+        },
+
+        {
+          name: "Google Analytics",
+          domain: "google-analytics.com",
+          url: "https://google-analytics.com/",
+        },
+
+        {
+          name: "Google Ad Services",
+          domain: "googleadservices.com",
+          url: "https://googleadservices.com/",
+        },
+
+        {
+          name: "Facebook Tracking",
+          domain: "facebook.com",
+          url: "https://facebook.com/",
+        },
+
+        {
+          name: "Facebook CDN / Tracking",
+          domain: "connect.facebook.net",
+          url: "https://connect.facebook.net/",
+        },
+
+        {
+          name: "Amazon Advertising",
+          domain: "amazon-adsystem.com",
+          url: "https://amazon-adsystem.com/",
+        },
+
+        {
+          name: "Criteo",
+          domain: "criteo.com",
+          url: "https://criteo.com/",
+        },
+
+        {
+          name: "Hotjar",
+          domain: "hotjar.com",
+          url: "https://hotjar.com/",
+        },
+
+        {
+          name: "Mixpanel",
+          domain: "mixpanel.com",
+          url: "https://mixpanel.com/",
+        },
+
+        {
+          name: "Segment",
+          domain: "segment.io",
+          url: "https://segment.io/",
+        },
+      ];
+
+      const RESOURCE_TESTS = [
+        {
+          name: "Tracking Image",
+          type: "image",
+          url: "https://doubleclick.net/favicon.ico",
+        },
+
+        {
+          name: "Analytics Image",
+          type: "image",
+          url: "https://google-analytics.com/favicon.ico",
+        },
+
+        {
+          name: "Advertising Image",
+          type: "image",
+          url: "https://amazon-adsystem.com/favicon.ico",
+        },
+      ];
+
+      let results = [];
+
+      /*
+       * ============================================================
+       * LOGGING
+       * ============================================================
+       */
+
+      function log(message, type = "info") {
+        const container = document.getElementById("log");
+
+        const entry = document.createElement("div");
+
+        entry.className = "log-entry " + type;
+
+        entry.textContent =
+          "[" + new Date().toLocaleTimeString() + "] " + message;
+
+        container.prepend(entry);
+      }
+
+      /*
+       * ============================================================
+       * UI
+       * ============================================================
+       */
+
+      function createTestElement(test) {
+        const element = document.createElement("div");
+
+        element.className = "test";
+
+        element.innerHTML = `
+        <div class="icon">?</div>
+
+        <div>
+            <div class="test-name"></div>
+            <div class="test-detail"></div>
+        </div>
+
+        <span class="badge pending">TESTING</span>
+    `;
+
+        element.querySelector(".test-name").textContent = test.name;
+
+        element.querySelector(".test-detail").textContent =
+          test.domain || test.url;
+
+        return element;
+      }
+
+      function updateTestElement(element, blocked, detail) {
+        const icon = element.querySelector(".icon");
+        const badge = element.querySelector(".badge");
+        const detailElement = element.querySelector(".test-detail");
+
+        if (blocked) {
+          icon.textContent = "✓";
+
+          badge.textContent = "BLOCKED";
+          badge.className = "badge blocked";
+        } else {
+          icon.textContent = "✕";
+
+          badge.textContent = "NOT BLOCKED";
+          badge.className = "badge allowed";
+        }
+
+        detailElement.textContent = detail;
+      }
+
+      function updateSummary() {
+        const blocked = results.filter((x) => x.blocked).length;
+
+        const allowed = results.filter((x) => !x.blocked).length;
+
+        const total = results.length;
+
+        const rate = total === 0 ? 0 : Math.round((blocked / total) * 100);
+
+        document.getElementById("blockedCount").textContent = blocked;
+
+        document.getElementById("allowedCount").textContent = allowed;
+
+        document.getElementById("totalCount").textContent = total;
+
+        document.getElementById("score").textContent = rate + "%";
+
+        const status = document.getElementById("overallStatus");
+
+        if (total === 0) {
+          status.innerHTML =
+            "No tests completed" + "<small>Run the tests above.</small>";
+
+          return;
+        }
+
+        if (rate >= 80) {
+          status.innerHTML =
+            "🛡️ Strong blocking detected" +
+            "<small>" +
+            blocked +
+            " of " +
+            total +
+            " test requests were blocked." +
+            "</small>";
+        } else if (rate >= 40) {
+          status.innerHTML =
+            "⚠️ Partial blocking detected" +
+            "<small>" +
+            blocked +
+            " of " +
+            total +
+            " test requests were blocked." +
+            "</small>";
+        } else {
+          status.innerHTML =
+            "❌ Little or no blocking detected" +
+            "<small>" +
+            blocked +
+            " of " +
+            total +
+            " test requests were blocked." +
+            "</small>";
+        }
+      }
+
+      /*
+       * ============================================================
+       * NETWORK TESTS
+       * ============================================================
+       *
+       * fetch() intentionally uses no-cors.
+       *
+       * We cannot read the response because of CORS, but we can
+       * determine whether the browser reports a network failure.
+       *
+       * DNS blocking generally causes fetch() to fail.
+       *
+       * IMPORTANT:
+       * A successful fetch does NOT necessarily mean the request
+       * reached the server in a useful way. This is a behavioral test,
+       * not packet capture.
+       */
+
+      async function testNetwork(test, element) {
+        const started = performance.now();
+
+        try {
+          await fetch(test.url + "?xprivacyguard=" + Date.now(), {
+            mode: "no-cors",
+            cache: "no-store",
+          });
+
+          const elapsed = Math.round(performance.now() - started);
+
+          updateTestElement(
+            element,
+            false,
+            "Request completed in " + elapsed + " ms"
+          );
+
+          results.push({
+            name: test.name,
+            blocked: false,
+          });
+
+          log(test.name + " → request completed", "fail");
+        } catch (error) {
+          const elapsed = Math.round(performance.now() - started);
+
+          updateTestElement(
+            element,
+            true,
+            "Network request failed in " + elapsed + " ms"
+          );
+
+          results.push({
+            name: test.name,
+            blocked: true,
+          });
+
+          log(test.name + " → request blocked/failed", "pass");
+        }
+
+        updateSummary();
+      }
+
+      async function runNetworkTests() {
+        const container = document.getElementById("networkTests");
+
+        container.innerHTML = "";
+
+        results = [];
+
+        updateSummary();
+
+        log("Starting DNS/network tests...", "info");
+
+        for (const test of NETWORK_TESTS) {
+          const element = createTestElement(test);
+
+          container.appendChild(element);
+
+          await testNetwork(test, element);
+        }
+
+        log("Network tests complete.", "info");
+      }
+
+      /*
+       * ============================================================
+       * RESOURCE TESTS
+       * ============================================================
+       */
+
+      function runResourceTests() {
+        const container = document.getElementById("resourceTests");
+
+        container.innerHTML = "";
+
+        log("Starting resource tests...", "info");
+
+        for (const test of RESOURCE_TESTS) {
+          const element = createTestElement(test);
+
+          container.appendChild(element);
+
+          const image = new Image();
+
+          let completed = false;
+
+          const timeout = setTimeout(() => {
+            if (completed) return;
+
+            completed = true;
+
+            updateTestElement(element, true, "Timed out / failed to load");
+
+            results.push({
+              name: test.name,
+              blocked: true,
+            });
+
+            updateSummary();
+
+            log(test.name + " → resource blocked or timed out", "pass");
+          }, 5000);
+
+          image.onload = () => {
+            if (completed) return;
+
+            completed = true;
+
+            clearTimeout(timeout);
+
+            updateTestElement(element, false, "Resource loaded successfully");
+
+            results.push({
+              name: test.name,
+              blocked: false,
+            });
+
+            updateSummary();
+
+            log(test.name + " → resource loaded", "fail");
+          };
+
+          image.onerror = () => {
+            if (completed) return;
+
+            completed = true;
+
+            clearTimeout(timeout);
+
+            updateTestElement(element, true, "Resource failed to load");
+
+            results.push({
+              name: test.name,
+              blocked: true,
+            });
+
+            updateSummary();
+
+            log(test.name + " → resource blocked/failed", "pass");
+          };
+
+          image.src = test.url + "?xprivacyguard=" + Date.now();
+        }
+      }
+
+      /*
+       * ============================================================
+       * BEACON TEST
+       * ============================================================
+       */
+
+      function runBeaconTest() {
+        const element = document.getElementById("beaconResult");
+
+        const target =
+          "https://google-analytics.com/collect?v=1&tid=UA-000000-2";
+
+        let result = false;
+
+        try {
+          if ("sendBeacon" in navigator) {
+            result = navigator.sendBeacon(target, "xprivacyguard=test");
+          } else {
+            throw new Error("Beacon API unavailable");
+          }
+
+          if (result) {
+            element.querySelector(".icon").textContent = "✕";
+
+            element.querySelector(".badge").textContent = "NOT BLOCKED";
+
+            element.querySelector(".badge").className = "badge allowed";
+
+            element.querySelector(".test-detail").textContent =
+              "Browser accepted the beacon";
+
+            log("Beacon accepted by browser", "fail");
+          } else {
+            element.querySelector(".icon").textContent = "✓";
+
+            element.querySelector(".badge").textContent = "BLOCKED";
+
+            element.querySelector(".badge").className = "badge blocked";
+
+            element.querySelector(".test-detail").textContent =
+              "Browser rejected the beacon";
+
+            log("Beacon rejected by browser/network", "pass");
+          }
+        } catch (error) {
+          element.querySelector(".icon").textContent = "✓";
+
+          element.querySelector(".badge").textContent = "BLOCKED";
+
+          element.querySelector(".badge").className = "badge blocked";
+
+          element.querySelector(".test-detail").textContent = error.message;
+
+          log("Beacon failed: " + error.message, "pass");
+        }
+      }
+
+      /*
+       * ============================================================
+       * IFRAME TEST
+       * ============================================================
+       */
+
+      function runIframeTest() {
+        const frame = document.getElementById("trackerFrame");
+
+        const element = document.getElementById("iframeResult");
+
+        let loaded = false;
+
+        frame.onload = () => {
+          loaded = true;
+
+          element.querySelector(".icon").textContent = "✕";
+
+          element.querySelector(".badge").textContent = "NOT BLOCKED";
+
+          element.querySelector(".badge").className = "badge allowed";
+
+          element.querySelector(".test-detail").textContent =
+            "Third-party frame loaded";
+
+          log("Third-party iframe loaded", "fail");
+        };
+
+        frame.onerror = () => {
+          if (loaded) return;
+
+          element.querySelector(".icon").textContent = "✓";
+
+          element.querySelector(".badge").textContent = "BLOCKED";
+
+          element.querySelector(".badge").className = "badge blocked";
+
+          element.querySelector(".test-detail").textContent =
+            "Third-party frame failed";
+
+          log("Third-party iframe failed/blocked", "pass");
+        };
+
+        frame.src =
+          "https://connect.facebook.net/en_US/sdk.js?" +
+          "xprivacyguard=" +
+          Date.now();
+      }
+
+      /*
+       * ============================================================
+       * INITIALIZE
+       * ============================================================
+       */
+
+      window.addEventListener("DOMContentLoaded", () => {
+        log("xPrivacy Guard privacy test initialized.", "info");
+
+        runNetworkTests();
+
+        setTimeout(runResourceTests, 1000);
+
+        setTimeout(runBeaconTest, 1500);
+
+        setTimeout(runIframeTest, 2000);
+      });
+    </script>
+  </body>
+</html>
