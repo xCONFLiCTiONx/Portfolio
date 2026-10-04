@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Project Zero Hour — Cyber Incident Simulator | xCONFLiCTiONx</title>
+  <meta
+    name="description"
+    content="Browser-based procedural cybersecurity escape room and incident simulator. Investigate server logs, scan 3D isometric networks, crack hashes, and contain live breaches."
+  />
+  <meta name="portfolio-tool-id" content="zero-hour" />
+  <link rel="canonical" href="https://xconflictionx.cc/tools/zero-hour/" />
+  <meta name="theme-color" content="#02060d" />
+  <link rel="manifest" href="../../site.webmanifest" />
+  <link rel="stylesheet" href="../../css/main.css" />
+  <link rel="stylesheet" href="./zero-hour.css" />
+  <link rel="icon" id="favicon-js" href="../../assets/favicon.ico" type="image/x-icon" />
+  <link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png" />
+
+  <!-- Open Graph / Social Metadata -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Project Zero Hour — Cyber Incident Simulator | xCONFLiCTiONx" />
+  <meta
+    property="og:description"
+    content="Interactive procedural cybersecurity escape room and command center. Every session generates a unique attack chain, rogue service, lateral movement path, and forensic puzzle."
+  />
+  <meta property="og:url" content="https://xconflictionx.cc/tools/zero-hour/" />
+  <meta property="og:site_name" content="xCONFLiCTiONx" />
+  <meta property="og:image" content="https://xconflictionx.cc/assets/og-image.png" />
+
+  <!-- X / Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Project Zero Hour — Cyber Incident Simulator | xCONFLiCTiONx" />
+  <meta
+    name="twitter:description"
+    content="Interactive procedural cybersecurity escape room and command center. Every session generates a unique attack chain, rogue service, lateral movement path, and forensic puzzle."
+  />
+  <meta name="twitter:image" content="https://xconflictionx.cc/assets/og-image.png" />
+</head>
+<body id="top" data-tool-id="zero-hour">
+  <main class="container">
+    <div id="zero-hour-app" class="zh-scanlines">
+      <!-- ================================================================
+           LEFT SIDEBAR NAVIGATION
+           ================================================================ -->
+      <aside class="zh-sidebar" aria-label="Project Zero Hour Command Menu">
+        <div>
+          <div class="zh-brand">
+            <div class="zh-logo-mark" aria-hidden="true">
+              <svg width="42" height="42" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <polygon points="6,8 42,8 36,16 20,16" fill="#00e5ff" />
+                <polygon points="38,10 18,36 8,36 28,10" fill="#0284c7" />
+                <polygon points="12,32 42,32 38,40 6,40" fill="#00e5ff" />
+                <line x1="4" y1="24" x2="44" y2="24" stroke="#5ceeff" stroke-width="1.5" stroke-dasharray="4 3" />
+              </svg>
+            </div>
+            <div class="zh-brand-text">
+              <span class="zh-brand-title">PROJECT<br />ZERO HOUR</span>
+              <span class="zh-brand-sub">THINK // ANALYZE // SOLVE</span>
+            </div>
+          </div>
+
+          <nav>
+            <ul class="zh-nav">
+              <li>
+                <button class="zh-nav-btn active" data-nav="OVERVIEW">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M3 10.5L12 3l9 7.5V21a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1v-10.5z"/></svg>
+                  <span>OVERVIEW</span>
+                </button>
+              </li>
+              <li>
+                <button class="zh-nav-btn" data-nav="INTEL">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="3" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="21"/></svg>
+                  <span>INTEL</span>
+                </button>
+              </li>
+              <li>
+                <button class="zh-nav-btn" data-nav="OVERVIEW">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="9" y="2" width="6" height="6" rx="1"/><rect x="2" y="16" width="6" height="6" rx="1"/><rect x="16" y="16" width="6" height="6" rx="1"/><path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3"/><line x1="12" y1="8" x2="12" y2="12"/></svg>
+                  <span>NETWORK</span>
+                </button>
+              </li>
+              <li>
+                <button class="zh-nav-btn" data-nav="LOGS">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="7" y1="9" x2="17" y2="9"/><line x1="7" y1="13" x2="17" y2="13"/><line x1="7" y1="17" x2="13" y2="17"/></svg>
+                  <span>LOGS</span>
+                  <span class="zh-nav-badge alert">LIVE</span>
+                </button>
+              </li>
+              <li>
+                <button class="zh-nav-btn" data-nav="OVERVIEW">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+                  <span>TERMINAL</span>
+                </button>
+              </li>
+              <li>
+                <button class="zh-nav-btn" data-nav="CHALLENGES">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                  <span>CHALLENGES</span>
+                  <span class="zh-nav-badge" id="zh-badge-challenges">8</span>
+                </button>
+              </li>
+              <li>
+                <button class="zh-nav-btn" data-nav="ACHIEVEMENTS">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+                  <span>ACHIEVEMENTS</span>
+                </button>
+              </li>
+              <li>
+                <button class="zh-nav-btn" data-nav="SETTINGS">
+                  <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                  <span>SETTINGS</span>
+                </button>
+              </li>
+            </ul>
+          </nav>
+        </div>
+
+        <div class="zh-sidebar-footer">
+          <div class="zh-motto">
+            REAL THREATS.<br />
+            REAL SKILLS.<br />
+            ZERO HOUR.
+          </div>
+          <div class="zh-sidebar-decor"></div>
+        </div>
+      </aside>
+
+      <!-- ================================================================
+           MAIN COMMAND CENTER WORKSPACE
+           ================================================================ -->
+      <div class="zh-workspace">
+        <!-- TOP MISSION HEADER BAR -->
+        <section class="zh-panel zh-mission-bar" aria-label="Current Mission Status">
+          <div>
+            <div class="zh-mission-tag">
+              <span>&gt;_</span>
+              <span id="zh-op-code">MISSION 01</span>
+            </div>
+            <h1 class="zh-mission-title" id="zh-op-title">The Breach</h1>
+            <p class="zh-mission-desc" id="zh-op-desc">
+              A suspicious activity has been detected in the corporate network. Your job is to investigate, find the source, and determine what was compromised.
+            </p>
+          </div>
+
+          <div class="zh-stat-block">
+            <span class="zh-stat-label">DIFFICULTY</span>
+            <div class="zh-difficulty-val">
+              <span id="zh-difficulty-label">Beginner</span>
+            </div>
+          </div>
+
+          <div class="zh-stat-block">
+            <span class="zh-stat-label">PROGRESS</span>
+            <div class="zh-progress-wrap">
+              <div class="zh-progress-segments" id="zh-progress-segs"></div>
+              <span class="zh-progress-text" id="zh-progress-text">0 / 8</span>
+            </div>
+          </div>
+
+          <div class="zh-top-actions">
+            <div class="zh-xp-pill" title="Earned Experience Points">
+              <span>★</span>
+              <span id="zh-xp-val">0 XP</span>
+            </div>
+            <button class="zh-icon-btn" id="zh-btn-new-op" title="Generate a brand-new procedural cyber breach with randomized attacker, exploit, port, and lateral movement">
+              ↻ New Breach
+            </button>
+            <button class="zh-icon-btn" id="zh-btn-fullscreen" title="Toggle Fullscreen Command Center">
+              ⛶ Fullscreen
+            </button>
+          </div>
+        </section>
+
+        <!-- DEDICATED SUB-VIEW CONTAINER (INTEL / LOGS / CHALLENGES / SETTINGS) -->
+        <section class="zh-view-section" id="zh-view-SUBVIEW">
+          <div id="zh-subview-content"></div>
+        </section>
+
+        <!-- ==============================================================
+             OVERVIEW COMMAND CENTER GRID (DEFAULT VIEW)
+             ============================================================== -->
+        <div class="zh-overview-grid" id="zh-view-OVERVIEW">
+          <!-- CENTER 3D ISOMETRIC NETWORK TOPOLOGY STAGE -->
+          <section class="zh-panel zh-map-stage" aria-label="Interactive Isometric Network Topology">
+            <!-- Top-Left Network Overview HUD -->
+            <div class="zh-net-hud">
+              <div class="zh-net-hud-title">NETWORK OVERVIEW</div>
+              <div class="zh-net-stat-row">
+                <span>⚙ Subnets</span>
+                <span class="val">4</span>
+              </div>
+              <div class="zh-net-stat-row">
+                <span>▣ Hosts</span>
+                <span class="val">12</span>
+              </div>
+              <div class="zh-net-stat-row">
+                <span>☍ Open Ports</span>
+                <span class="val">28</span>
+              </div>
+              <div class="zh-net-stat-row alert">
+                <span>▲ Alerts</span>
+                <span class="val" id="zh-net-stat-alerts">3</span>
+              </div>
+            </div>
+
+            <!-- Top-Right Quick Map View Buttons -->
+            <div class="zh-map-controls">
+              <button class="zh-icon-btn" onclick="document.querySelector('[data-nav=LOGS]').click()">Inspect SIEM Logs</button>
+              <button class="zh-icon-btn" onclick="document.querySelector('[data-nav=INTEL]').click()">Threat Intel Dossier</button>
+            </div>
+
+            <!-- Interactive SVG Isometric City & Network Nodes -->
+            <div class="zh-iso-viewport" id="zh-iso-map-Mount"></div>
+
+            <!-- Bottom-Left Global View Radar Overlay -->
+            <div class="zh-global-hud">
+              <div class="zh-radar-globe" aria-hidden="true">
+                <svg width="110" height="70" viewBox="0 0 110 70" fill="none">
+                  <ellipse cx="55" cy="35" rx="50" ry="30" stroke="rgba(0,229,255,0.25)" stroke-width="1"/>
+                  <line x1="5" y1="35" x2="105" y2="35" stroke="rgba(0,229,255,0.2)" stroke-width="1"/>
+                  <line x1="55" y1="5" x2="55" y2="65" stroke="rgba(0,229,255,0.2)" stroke-width="1"/>
+                  <!-- Simplified world continents dots -->
+                  <path d="M22,22 Q28,18 34,24 T28,36 M48,18 Q58,15 64,24 T56,34 M72,22 Q84,20 88,30 T78,44" stroke="rgba(0,229,255,0.45)" stroke-width="2" stroke-linecap="round"/>
+                  <circle cx="28" cy="26" r="3" fill="#00e5ff" />
+                  <circle cx="62" cy="24" r="3.5" fill="#ff2a5f" />
+                  <circle cx="78" cy="32" r="2.5" fill="#ff2a5f" />
+                  <path d="M62,24 Q45,12 28,26" stroke="#ff2a5f" stroke-width="1.2" stroke-dasharray="3 2"/>
+                </svg>
+              </div>
+              <div class="zh-global-legend">
+                <div class="zh-global-title">GLOBAL VIEW</div>
+                <div class="zh-legend-item"><span class="zh-dot cyan"></span> Your Location</div>
+                <div class="zh-legend-item"><span class="zh-dot green"></span> Connected</div>
+                <div class="zh-legend-item"><span class="zh-dot red"></span> Suspicious C2</div>
+              </div>
+            </div>
+
+            <!-- Bottom-Right Interactive Node Inspector -->
+            <div class="zh-node-inspector" id="zh-node-inspector"></div>
+          </section>
+
+          <!-- RIGHT COLUMN: BRIEFING + TERMINAL -->
+          <div class="zh-right-col">
+            <!-- BRIEFING PANEL -->
+            <section class="zh-panel" aria-label="Mission Briefing">
+              <div class="zh-panel-header">
+                <div class="zh-panel-title">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                  <span>BRIEFING</span>
+                </div>
+                <button class="zh-chip" id="zh-btn-open-report">File Incident Report</button>
+              </div>
+              <div class="zh-briefing-body">
+                <div>
+                  <p class="zh-briefing-lead">
+                    The security team has detected unusual activity on the web server. Initial logs suggest a possible compromise. You need to:
+                  </p>
+                  <ul class="zh-obj-list" id="zh-briefing-objectives"></ul>
+                </div>
+                <div class="zh-briefing-footer">
+                  <span>Good luck, analyst. The clock is ticking.</span>
+                  <span style="color:var(--zh-cyan);">- Security Team</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- INTERACTIVE TERMINAL PANEL -->
+            <section class="zh-panel zh-terminal-panel" aria-label="Interactive Cyber Terminal">
+              <div class="zh-panel-header">
+                <div class="zh-panel-title">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+                  <span>TERMINAL</span>
+                </div>
+                <span style="font-family:var(--zh-font-mono);font-size:10px;color:var(--zh-text-Sub);">bash — root@zerohour</span>
+              </div>
+
+              <div class="zh-term-output" id="zh-term-output"></div>
+
+              <div class="zh-term-input-row">
+                <span class="zh-term-prompt-user">root@zerohour:~#</span>
+                <input
+                  type="text"
+                  class="zh-term-input"
+                  id="zh-term-input"
+                  placeholder="Type a command (nmap, grep, netstat, john, wireshark, isolate, help)..."
+                  autocomplete="off"
+                  spellcheck="false"
+                />
+              </div>
+
+              <div class="zh-term-chips">
+                <button class="zh-chip" data-quick-cmd="nmap -sV 10.10.1.0/24">nmap 10.10.1.0/24</button>
+                <button class="zh-chip" data-quick-cmd="grep suspicious access.log">grep access.log</button>
+                <button class="zh-chip" data-quick-cmd="netstat -tulnp">netstat -tulnp</button>
+                <button class="zh-chip" data-quick-cmd="john /var/backups/creds.dump">john creds.dump</button>
+                <button class="zh-chip" data-quick-cmd="wireshark">wireshark pcap</button>
+                <button class="zh-chip" data-quick-cmd="DYNAMIC_ISOLATE">isolate pivot</button>
+              </div>
+            </section>
+          </div>
+
+          <!-- BOTTOM ROW: ACTIVE CHALLENGES | YOUR TOOLS | ACHIEVEMENTS -->
+          <div class="zh-bottom-row">
+            <!-- ACTIVE CHALLENGES PANEL -->
+            <section class="zh-panel" aria-label="Active Challenges">
+              <div class="zh-panel-header">
+                <div class="zh-panel-title">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                  <span>ACTIVE CHALLENGES</span>
+                </div>
+                <div style="display:flex;gap:6px;">
+                  <button class="zh-chip" id="zh-btn-cycle-challenges">Next Objectives &rarr;</button>
+                  <button class="zh-chip" onclick="document.querySelector('[data-nav=CHALLENGES]').click()">View All (8)</button>
+                </div>
+              </div>
+              <div class="zh-challenges-grid" id="zh-overview-challenges"></div>
+            </section>
+
+            <!-- YOUR TOOLS PANEL -->
+            <section class="zh-panel" aria-label="Your Forensic Tools">
+              <div class="zh-panel-header">
+                <div class="zh-panel-title">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2"/></svg>
+                  <span>YOUR TOOLS</span>
+                </div>
+              </div>
+              <div class="zh-tools-grid">
+                <button class="zh-tool-btn" data-tool-launch="nmap" title="Scan open ports and rogue services on selected subnet">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                  <span>Nmap</span>
+                </button>
+                <button class="zh-tool-btn" data-tool-launch="wireshark" title="Analyze packet capture & DNS TXT exfiltration">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 18h18"/><path d="M6 18c1-6 4-11 9-13-1 5 0 9 3 13"/></svg>
+                  <span>Wireshark</span>
+                </button>
+                <button class="zh-tool-btn" data-tool-launch="burp" title="Inspect HTTP requests, headers & web exploit payloads">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="13 7 9 12 15 12 11 17"/></svg>
+                  <span>Burp Suite</span>
+                </button>
+                <button class="zh-tool-btn" data-tool-launch="john" title="Crack dumped credential hashes using wordlist rules">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/><circle cx="12" cy="16" r="1"/></svg>
+                  <span>John the Ripper</span>
+                </button>
+                <button class="zh-tool-btn" data-tool-launch="hashcat" title="GPU-accelerated hash recovery">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 9V5l4 3h4l4-3v4"/><rect x="4" y="9" width="16" height="11" rx="2"/><line x1="9" y1="14" x2="9.01" y2="14"/><line x1="15" y1="14" x2="15.01" y2="14"/></svg>
+                  <span>Hashcat</span>
+                </button>
+                <button class="zh-tool-btn" data-tool-launch="openssl" title="Inspect remote C2 TLS certificate and threat attribution">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                  <span>OpenSSL</span>
+                </button>
+              </div>
+            </section>
+
+            <!-- ACHIEVEMENTS PANEL -->
+            <section class="zh-panel" aria-label="Achievements">
+              <div class="zh-panel-header">
+                <div class="zh-panel-title">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+                  <span>ACHIEVEMENTS</span>
+                </div>
+              </div>
+              <div class="zh-achievements-list" id="zh-achievements-mount"></div>
+            </section>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- MODAL FOR CHALLENGE SOLVER & FINAL INCIDENT REPORT -->
+  <div class="zh-modal-backdrop" id="zh-modal-backdrop" role="dialog" aria-modal="true">
+    <div class="zh-modal" id="zh-modal-box"></div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="../../js/framework.js"></script>
+  <script src="../../js/jquery-3.2.1.min.js"></script>
+  <script src="../../js/github-fetch.js?v=25"></script>
+  <script src="./zero-hour.js"></script>
+</body>
+</html>
+

@@ -18,3 +18,4 @@ Website: https://xconflictionx.cc
 - [/tools/seo-generator](https://xconflictionx.cc/tools/seo-generator)
 - [/tools/site-grade](https://xconflictionx.cc/tools/site-grade)
 - [/tools/warp-test](https://xconflictionx.cc/tools/warp-test)
+- [/tools/zero-hour](https://xconflictionx.cc/tools/zero-hour)
