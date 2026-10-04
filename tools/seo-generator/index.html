@@ -1,271 +1,1194 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Static Website SEO Generator</title>
-<meta name="description" content="Crawl a static website, audit its pages, and generate SEO files.">
-<meta name="portfolio-tool-id" content="seo-generator">
-<link rel="canonical" href="https://xconflictionx.cc/tools/seo-generator/" />
-<meta name="theme-color" content="#0b0d10">
-<link rel="manifest" href="../../site.webmanifest">
-<link rel="stylesheet" href="../../css/main.css">
-<link rel="icon" id="favicon-js" href="../../assets/favicon.ico" type="image/x-icon">
-<link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Static Website SEO Generator</title>
+    <meta
+      name="description"
+      content="Crawl a static website, audit its pages, and generate SEO files."
+    />
+    <meta name="portfolio-tool-id" content="seo-generator" />
+    <link
+      rel="canonical"
+      href="https://xconflictionx.cc/tools/seo-generator/"
+    />
+    <meta name="theme-color" content="#0b0d10" />
+    <link rel="manifest" href="../../site.webmanifest" />
+    <link rel="stylesheet" href="../../css/main.css" />
+    <link
+      rel="icon"
+      id="favicon-js"
+      href="../../assets/favicon.ico"
+      type="image/x-icon"
+    />
+    <link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png" />
 
-<!-- Open Graph / Social Metadata -->
-<meta property="og:type" content="website">
-<meta property="og:title" content="Static Website SEO Generator | xCONFLiCTiONx">
-<meta property="og:description" content="Crawl a static website, audit its pages, and generate SEO files.">
-<meta property="og:url" content="https://xconflictionx.cc/tools/seo-generator/">
-<meta property="og:site_name" content="xCONFLiCTiONx">
-<meta property="og:image" content="https://xconflictionx.cc/assets/og-image.png">
+    <!-- Open Graph / Social Metadata -->
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:title"
+      content="Static Website SEO Generator | xCONFLiCTiONx"
+    />
+    <meta
+      property="og:description"
+      content="Crawl a static website, audit its pages, and generate SEO files."
+    />
+    <meta
+      property="og:url"
+      content="https://xconflictionx.cc/tools/seo-generator/"
+    />
+    <meta property="og:site_name" content="xCONFLiCTiONx" />
+    <meta
+      property="og:image"
+      content="https://xconflictionx.cc/assets/og-image.png"
+    />
 
-<!-- X / Twitter -->
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Static Website SEO Generator | xCONFLiCTiONx">
-<meta name="twitter:description" content="Crawl a static website, audit its pages, and generate SEO files.">
-<meta name="twitter:image" content="https://xconflictionx.cc/assets/og-image.png">
-<style>
-:root{color-scheme:dark;--bg:#0b0d10;--panel:#12161b;--panel2:#171c22;--line:#29313a;--text:#e8edf2;--muted:#9ca8b4;--blue:#6ea8fe;--green:#49d17d;--yellow:#f2c94c;--red:#ff7777}
-*{box-sizing:border-box}
-html{font-size:10px;max-width:100%;scroll-behavior:smooth}
-body{max-width:100%;margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-size:1.4rem;line-height:1.5}
-.wrap{max-width:1600px;margin:auto;padding:20px;box-sizing:border-box;overflow-x:hidden}
-h1{font-size:2.4rem;margin:0}h2{font-size:1.7rem;margin:0 0 14px}p{color:var(--muted);margin:5px 0 0}
-.back{color:#a9cbff;text-decoration:none;border:1px solid var(--line);border-radius:7px;padding:8px 12px;white-space:nowrap}.back:hover{background:var(--panel2)}
-.grid,section,.card,.row,.row3,.stats,.tablebox,details,pre{min-width:0;max-width:100%}
-.grid{display:flex;flex-direction:column;gap:18px;width:100%}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:17px;margin-bottom:18px}
-.row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-.row3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
-label{display:block;font-size:1.2rem;color:var(--muted);margin:0 0 5px}
-input,textarea,select{width:100%;max-width:100%;background:#0b0e12;color:var(--text);border:1px solid var(--line);border-radius:7px;padding:9px;font:inherit;box-sizing:border-box;font-size:1.4rem}
-textarea{min-height:76px;resize:vertical}input:focus,textarea:focus,select:focus{outline:1px solid var(--blue)}
-button{background:#1b2733;color:var(--text);border:1px solid #354555;border-radius:7px;padding:8px 12px;font:inherit;cursor:pointer;max-width:100%;white-space:normal;word-break:break-word;font-size:1.4rem}
-button:hover{background:#263748}button.primary{background:#245f9f;border-color:#397fc6}button.danger{background:#321c20;border-color:#633039;color:#ffaaaa}
-.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;max-width:100%}
-.check{display:flex;gap:8px;align-items:center;margin:9px 0}.check input{width:auto}.check label{margin:0;color:var(--text);font-size:1.4rem}
-.note{margin-top:12px;padding:10px;border:1px solid var(--line);border-radius:7px;color:var(--muted);font-size:1.2rem;background:#101419;word-break:break-word}
-.status{display:none;padding:9px 11px;margin-top:12px;border-radius:7px;word-break:break-word;font-size:1.4rem}
-.status.info{display:block;background:#172332;border:1px solid #34577b}.status.good{display:block;background:#11271b;border:1px solid #245e3b;color:#8ce5ab}.status.warn{display:block;background:#302912;border:1px solid #665322;color:#f6d979}.status.error{display:block;background:#30171a;border:1px solid #71343b;color:#ffaaaa}
-.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:12px}
-.stat{background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:9px;min-width:0}
-.stat strong{display:block;font-size:1.9rem}.stat span{font-size:1.1rem;color:var(--muted)}
-.progress{height:8px;background:#080a0d;border:1px solid var(--line);border-radius:20px;overflow:hidden;margin-top:10px}
-.progress div{height:100%;width:0;background:var(--blue)}
-.tablebox{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:8px;max-width:100%}
-table{border-collapse:collapse;width:100%;min-width:650px}
-th,td{text-align:left;vertical-align:top;padding:8px;border-bottom:1px solid var(--line);font-size:1.2rem}
-th{background:var(--panel2);color:#c4ced8;position:sticky;top:0}
-tr:last-child td{border-bottom:0}
-.url{max-width:200px;overflow-wrap:anywhere;word-break:break-word;font-family:ui-monospace,Consolas,monospace}
-.ok{color:var(--green)}.bad{color:var(--red)}.warntext{color:var(--yellow)}
-pre{white-space:pre-wrap;word-break:break-word;overflow-x:auto;max-height:420px;background:#090c0f;border:1px solid var(--line);border-radius:7px;padding:11px;font:12px/1.5 ui-monospace,Consolas,monospace;max-width:100%;font-size:1.2rem}
-details{margin-top:9px;padding:10px;border:1px solid var(--line);border-radius:8px;background:#0f1317;max-width:100%}
-summary{cursor:pointer;color:#cbd5df;font-size:1.4rem}
-.validation{padding:9px 11px;border-radius:7px;margin-bottom:8px;word-break:break-word;font-size:1.4rem}
-.vbad{background:#30171a;border:1px solid #71343b;color:#ffaaaa}.vwarn{background:#302912;border:1px solid #665322;color:#f6d979}.vgood{background:#11271b;border:1px solid #245e3b;color:#8ce5ab}
-.preview-tabs{display:flex;gap:8px;margin-bottom:14px;border-bottom:1px solid var(--line);padding-bottom:10px;flex-wrap:wrap;max-width:100%}
-.preview-tab{background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:6px 12px;font-size:1.2rem;color:var(--muted);cursor:pointer;transition:all .2s}
-.preview-tab:hover{color:var(--text);background:#1f2630}
-.preview-tab.active{background:#245f9f;color:#fff;border-color:#397fc6;font-weight:600}
-.preview-container{display:flex;flex-direction:column;gap:16px;max-width:100%}
-.preview-pane{display:none;max-width:100%}
-.preview-pane.active{display:block}
-.social-post{background:#15181c;border:1px solid var(--line);border-radius:12px;padding:14px;color:#e7e9ea;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:1.4rem;max-width:100%}
-.social-header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
-.social-avatar{width:38px;height:38px;border-radius:50%;background:#2f3336;display:flex;align-items:center;justify-content:center;font-weight:bold;color:var(--blue);font-size:1.6rem;flex-shrink:0}
-.social-author-info{display:flex;flex-direction:column;line-height:1.3}
-.social-author-name{font-weight:700;color:#f7f9f9;font-size:1.4rem}
-.social-author-handle{color:#71767b;font-size:1.3rem}
-.social-post-text{margin-bottom:12px;color:#e7e9ea;font-size:1.4rem;line-height:1.4;word-break:break-word}
-.social-card{border:1px solid #2f3336;border-radius:12px;overflow:hidden;background:#000;transition:border-color .2s;cursor:pointer;max-width:100%}
-.social-card:hover{border-color:#4a4e51}
-.social-card-img-wrap{width:100%;aspect-ratio:1.91 / 1;background:#16181c;overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center;color:#71767b}
-.social-card-img{width:100%;height:100%;object-fit:cover;display:block}
-.social-card-fallback{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:1.2rem;color:#71767b}
-.social-card-fallback svg{width:32px;height:32px;fill:currentColor}
-.social-card-body{padding:12px;display:flex;flex-direction:column;gap:4px;background:#080a0c;border-top:1px solid #2f3336}
-.social-card-domain{font-size:1.2rem;color:#71767b;text-transform:lowercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.social-card-title{font-weight:700;font-size:1.4rem;color:#f7f9f9;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word}
-.social-card-desc{font-size:1.3rem;color:#71767b;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-top:2px;word-break:break-word}
-.social-card.card-summary{display:flex;flex-direction:row;align-items:stretch;height:110px}
-.social-card.card-summary .social-card-img-wrap{width:110px;height:110px;aspect-ratio:1 / 1;flex-shrink:0;border-right:1px solid #2f3336}
-.social-card.card-summary .social-card-body{flex:1;border-top:none;justify-content:center}
-.img-badge{font-size:1.1rem;color:var(--muted);margin-top:4px}
-@media(max-width:960px){
-  .wrap{padding:16px;max-width:100%}
-  .grid{grid-template-columns:1fr;gap:16px;width:100%}
-  .row,.row3{grid-template-columns:1fr;gap:10px}
-  .stats{grid-template-columns:repeat(2,1fr)}
-  section{width:100%;min-width:0}
-  .card{width:100%;min-width:0}
-}
-@media(max-width:600px){
-  .wrap{padding:10px 8px;max-width:100%}
-  .card{padding:12px 10px;margin-bottom:14px}
-  .stats{grid-template-columns:1fr}
-  .actions{flex-direction:column;width:100%}
-  .actions button{width:100%;text-align:center}
-  .preview-tabs{flex-direction:column;width:100%}
-  .preview-tab{width:100%;text-align:center}
-  .social-card.card-summary{flex-direction:column;height:auto}
-  .social-card.card-summary .social-card-img-wrap{width:100%;height:auto;aspect-ratio:16/9;border-right:none;border-bottom:1px solid #2f3336}
-}
-</style>
-</head>
-<body>
-<main class="wrap">
-<div class="grid"><section>
-<div class="card">
-<h1>Website Crawler</h1>
-<div class="row"><div><label for="siteUrl">Website URL</label><input id="siteUrl" value="https://xconflictionx.cc" placeholder="https://example.com"></div><div><label for="siteName">Site Name</label><input id="siteName" placeholder="My Website"></div></div>
-<div class="row3" style="margin-top:12px"><div><label for="maxPages">Maximum pages (safety limit)</label><input id="maxPages" type="number" min="1" max="100000" value="10000"></div><div><label for="maxDepth">Maximum depth (0 = unlimited)</label><input id="maxDepth" type="number" min="0" max="100" value="0" placeholder="0"></div><div><label for="delay">Delay between requests (ms)</label><input id="delay" type="number" min="0" max="10000" value="0"></div></div>
-
-<div class="check"><input id="queryUrls" type="checkbox"><label for="queryUrls">Treat query-string URLs as separate pages</label></div>
-<div class="check"><input id="nonHtml" type="checkbox"><label for="nonHtml">Include linked non-HTML resources in results</label></div>
-<div class="check"><input id="respectRobots" type="checkbox" checked><label for="respectRobots">Respect robots.txt rules when accessible</label></div>
-<div class="actions"><button class="primary" id="crawlBtn">Crawl Site</button><button id="stopBtn">Stop</button><button id="clearBtn" class="danger">Clear Results</button></div>
-<div id="status" class="status"></div><div class="progress"><div id="progress"></div></div>
-<div class="stats"><div class="stat"><strong id="discovered">0</strong><span>Discovered</span></div><div class="stat"><strong id="crawled">0</strong><span>Analyzed</span></div><div class="stat"><strong id="queued">0</strong><span>Queued</span></div><div class="stat"><strong id="failed">0</strong><span>Failed</span></div><div class="stat"><strong id="depth">0</strong><span>Max depth</span></div></div>
-<div class="note">The crawler reads HTML directly into browser memory using fetch(); it does not require downloading pages. Run this tool from your own site for same-origin access, or let the crawler fallback to CORS proxies for cross-origin URLs. Link crawling cannot discover orphan pages that are not linked; sitemap URLs are also used as discovery seeds when available.</div>
-</div>
-<div class="card">
-<h2>SEO Defaults & Page Metadata</h2>
-<label for="pageSelect" style="color:var(--blue);font-weight:600">Active Page Selection (Page-Specific Override)</label>
-<select id="pageSelect" style="margin-bottom:12px"><option value="/">Homepage (/)</option></select>
-
-<label for="title">Page title</label><input id="title" placeholder="Website Title">
-<label for="description" style="margin-top:10px">Meta description</label><textarea id="description" placeholder="Website meta description..."></textarea>
-<div class="row" style="margin-top:10px"><div><label for="author">Author</label><input id="author" placeholder="Author Name"></div><div><label for="publisher">Publisher</label><input id="publisher" placeholder="Publisher Name"></div></div>
-<div class="row" style="margin-top:10px"><div><label for="canonical">Canonical URL</label><input id="canonical" placeholder="https://example.com/"></div><div><label for="favicon">Favicon URL</label><input id="favicon" placeholder="/favicon.ico"></div></div>
-<div class="row" style="margin-top:10px"><div><label for="ogImage">Open Graph image URL (Recommended: 1200x630)</label><input id="ogImage" placeholder="https://example.com/og-image.png"></div><div><label for="twitterImage">X / Twitter image URL (optional)</label><input id="twitterImage" placeholder="https://example.com/twitter-image.png"></div></div>
-<div class="row" style="margin-top:10px"><div><label for="theme">Theme color</label><input id="theme" placeholder="#0b0d10"></div><div><label for="robots">Robots meta policy</label><input id="robots" placeholder="index, follow"></div></div>
-</div>
-<div class="card">
-<h2>Structured Data</h2>
-<div class="row"><div><label for="schemaType">Schema type</label><select id="schemaType"><option>WebSite</option><option>WebPage</option><option>Organization</option><option>Person</option></select></div><div><label for="inLanguage">Site Language</label><input id="inLanguage" value="en" placeholder="en"></div></div>
-<label for="schemaDescription" style="margin-top:10px">Schema description (optional)</label><input id="schemaDescription" placeholder="Optional Schema description">
-<div class="row" style="margin-top:10px"><div><label for="logoUrl">Organization Logo URL</label><input id="logoUrl" placeholder="https://example.com/logo.png"></div><div><label for="sameAs">Social Profiles (sameAs URLs, one per line)</label><textarea id="sameAs" placeholder="https://x.com/username&#10;https://github.com/username" style="min-height:50px"></textarea></div></div>
-<div class="check" style="margin-top:10px"><input id="searchAction" type="checkbox"><label for="searchAction">Include WebSite SearchAction</label></div>
-<label for="searchUrl">Search URL template (use {search_term_string})</label><input id="searchUrl" placeholder="https://example.com/search?q={search_term_string}">
-</div>
-<div class="card">
-<h2>Social Metadata</h2><div class="row"><div><label for="ogTitle">Open Graph title</label><input id="ogTitle" placeholder="Open Graph Title"></div><div><label for="ogDescription">Open Graph description</label><input id="ogDescription" placeholder="Open Graph Description"></div></div>
-<div class="row" style="margin-top:10px"><div><label for="twitterCard">X / Twitter card style</label><select id="twitterCard"><option value="summary_large_image">summary_large_image (Large Card)</option><option value="summary">summary (Compact Card)</option></select></div><div><label for="twitterSite">X / Twitter handle</label><input id="twitterSite" placeholder="@username"></div></div>
-</div>
-</section><section>
-<div class="card"><h2>Crawl Results</h2><div id="validation"></div><div class="tablebox"><table><thead><tr><th>URL</th><th>HTTP</th><th>Depth</th><th>Title</th><th>Description</th><th>Canonical</th><th>Index</th><th>H1</th><th>Links</th></tr></thead><tbody id="crawlRows"></tbody></table></div></div>
-<div class="card"><h2>Sitemap Pages</h2><div class="actions"><button id="addPage">Add Page</button><button id="addCommon">Add Common Pages</button><button id="useCrawl" class="primary">Use Crawled Pages</button><button id="validateBtn">Validate</button></div><div class="tablebox" style="margin-top:12px"><table><thead><tr><th>Path</th><th>Last modified</th><th>Change frequency</th><th>Priority</th><th></th></tr></thead><tbody id="pageRows"></tbody></table></div></div>
-<div class="card">
-<h2>Previews</h2>
-<div class="preview-tabs">
-<button type="button" class="preview-tab active" data-tab="all">All Previews</button>
-<button type="button" class="preview-tab" data-tab="og">Open Graph / Facebook</button>
-<button type="button" class="preview-tab" data-tab="twitter">X / Twitter Post</button>
-<button type="button" class="preview-tab" data-tab="google">Google Search</button>
-</div>
-<div class="preview-container">
-<div id="pane-og" class="preview-pane active">
-<label style="margin-bottom:6px;font-weight:600;color:var(--text);">Open Graph / Facebook / LinkedIn Post Preview</label>
-<div class="social-post">
-<div class="social-header">
-<div class="social-avatar" id="ogAvatar">X</div>
-<div class="social-author-info">
-<span class="social-author-name" id="ogAuthorName">xCONFLiCTiONx</span>
-<span class="social-author-handle">Shared a link · Just now · 🌐</span>
-</div>
-</div>
-<div class="social-post-text">Check out this webpage metadata preview:</div>
-<div class="social-card" id="ogCardBox">
-<div class="social-card-img-wrap" id="ogImgWrap">
-<img id="ogPreviewImg" class="social-card-img" src="" alt="Open Graph Preview Image" style="display:none;">
-<div id="ogImgFallback" class="social-card-fallback">
-<svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
-<span>No image provided or loading error</span>
-</div>
-</div>
-<div class="social-card-body">
-<div class="social-card-domain" id="ogPreviewDomain">xconflictionx.cc</div>
-<div class="social-card-title" id="ogPreviewTitle">Title</div>
-<div class="social-card-desc" id="ogPreviewDesc">Description...</div>
-</div>
-</div>
-</div>
-<div id="ogImgBadge" class="img-badge"></div>
-</div>
-<div id="pane-twitter" class="preview-pane active">
-<label style="margin-bottom:6px;font-weight:600;color:var(--text);">X / Twitter Card Post Preview</label>
-<div class="social-post">
-<div class="social-header">
-<div class="social-avatar" id="twAvatar">X</div>
-<div class="social-author-info">
-<span class="social-author-name" id="twAuthorName">xCONFLiCTiONx</span>
-<span class="social-author-handle" id="twAuthorHandle">@username · 1m</span>
-</div>
-</div>
-<div class="social-post-text">Check out our latest update:</div>
-<div class="social-card" id="twCardBox">
-<div class="social-card-img-wrap" id="twImgWrap">
-<img id="twPreviewImg" class="social-card-img" src="" alt="X / Twitter Preview Image" style="display:none;">
-<div id="twImgFallback" class="social-card-fallback">
-<svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
-<span>No image provided or loading error</span>
-</div>
-</div>
-<div class="social-card-body">
-<div class="social-card-domain" id="twPreviewDomain">xconflictionx.cc</div>
-<div class="social-card-title" id="twPreviewTitle">Title</div>
-<div class="social-card-desc" id="twPreviewDesc">Description...</div>
-</div>
-</div>
-</div>
-<div id="twImgBadge" class="img-badge"></div>
-</div>
-<div id="pane-google" class="preview-pane active">
-<label style="margin-bottom:6px;font-weight:600;color:var(--text);">Google Search Snippet Preview</label>
-<div style="background:white;color:#202124;padding:15px;border-radius:8px">
-<div id="previewUrl" style="color:#188038;font-size:12px"></div>
-<div id="previewTitle" style="color:#1a0dab;font-size:20px"></div>
-<div id="previewDesc" style="color:#4d5156"></div>
-</div>
-</div>
-</div>
-</div>
-<div class="card"><h2>Generated Files</h2><div class="actions"><button class="primary" id="all">Download All SEO Files (ZIP)</button><button id="dlRobots">robots.txt</button><button id="dlSitemap">sitemap.xml</button><button id="dlHead">seo-head.html</button><button id="dlJson">structured-data.json</button><button id="dlManifest">site.webmanifest</button><button id="dlLlms">llms.txt</button><button id="dlReport">seo-report.txt</button></div>
-<details><summary>robots.txt</summary><pre id="outRobots"></pre><button id="copyRobots">Copy</button></details><details><summary>sitemap.xml</summary><pre id="outSitemap"></pre><button id="copySitemap">Copy</button></details><details><summary>seo-head.html</summary><pre id="outHead"></pre><button id="copyHead">Copy</button></details><details><summary>structured-data.json</summary><pre id="outJson"></pre><button id="copyJson">Copy</button></details>
-</div>
-</section></div></main>
-
-<script src="../../js/framework.js?v=27"></script>
-<script src="./js/core.js?v=27"></script>
-<script src="./js/crawler.js?v=27"></script>
-<script src="./js/pages.js?v=27"></script>
-<script src="./js/generator.js?v=27"></script>
-<script src="./js/ui.js?v=27"></script>
-<script src="./js/app.js?v=27"></script>
-<script>
-if (window.PortfolioFramework) {
-    window.PortfolioFramework.getConfig().then(cfg => {
-        if (cfg.site) {
-            if (cfg.site.canonicalBase && document.getElementById('siteUrl')) {
-                document.getElementById('siteUrl').value = cfg.site.canonicalBase;
-            }
-            if (cfg.site.name && document.getElementById('siteName')) {
-                document.getElementById('siteName').value = cfg.site.name;
-            }
-            if (cfg.site.name && document.getElementById('publisher')) {
-                document.getElementById('publisher').value = cfg.site.name;
-            }
-            if (cfg.site.author && document.getElementById('author')) {
-                document.getElementById('author').value = cfg.site.author;
-            }
+    <!-- X / Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="Static Website SEO Generator | xCONFLiCTiONx"
+    />
+    <meta
+      name="twitter:description"
+      content="Crawl a static website, audit its pages, and generate SEO files."
+    />
+    <meta
+      name="twitter:image"
+      content="https://xconflictionx.cc/assets/og-image.png"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #0b0d10;
+        --panel: #12161b;
+        --panel2: #171c22;
+        --line: #29313a;
+        --text: #e8edf2;
+        --muted: #9ca8b4;
+        --blue: #6ea8fe;
+        --green: #49d17d;
+        --yellow: #f2c94c;
+        --red: #ff7777;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        font-size: 10px;
+        max-width: 100%;
+        scroll-behavior: smooth;
+      }
+      body {
+        max-width: 100%;
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+        font-size: 1.4rem;
+        line-height: 1.5;
+      }
+      .wrap {
+        max-width: 1600px;
+        margin: auto;
+        padding: 20px;
+        box-sizing: border-box;
+        overflow-x: hidden;
+      }
+      h1 {
+        font-size: 2.4rem;
+        margin: 0;
+      }
+      h2 {
+        font-size: 1.7rem;
+        margin: 0 0 14px;
+      }
+      p {
+        color: var(--muted);
+        margin: 5px 0 0;
+      }
+      .back {
+        color: #a9cbff;
+        text-decoration: none;
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        padding: 8px 12px;
+        white-space: nowrap;
+      }
+      .back:hover {
+        background: var(--panel2);
+      }
+      .grid,
+      section,
+      .card,
+      .row,
+      .row3,
+      .stats,
+      .tablebox,
+      details,
+      pre {
+        min-width: 0;
+        max-width: 100%;
+      }
+      .grid {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        width: 100%;
+      }
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 11px;
+        padding: 17px;
+        margin-bottom: 18px;
+      }
+      .row {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+      .row3 {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+      }
+      label {
+        display: block;
+        font-size: 1.2rem;
+        color: var(--muted);
+        margin: 0 0 5px;
+      }
+      input,
+      textarea,
+      select {
+        width: 100%;
+        max-width: 100%;
+        background: #0b0e12;
+        color: var(--text);
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        padding: 9px;
+        font: inherit;
+        box-sizing: border-box;
+        font-size: 1.4rem;
+      }
+      textarea {
+        min-height: 76px;
+        resize: vertical;
+      }
+      input:focus,
+      textarea:focus,
+      select:focus {
+        outline: 1px solid var(--blue);
+      }
+      button {
+        background: #1b2733;
+        color: var(--text);
+        border: 1px solid #354555;
+        border-radius: 7px;
+        padding: 8px 12px;
+        font: inherit;
+        cursor: pointer;
+        max-width: 100%;
+        white-space: normal;
+        word-break: break-word;
+        font-size: 1.4rem;
+      }
+      button:hover {
+        background: #263748;
+      }
+      button.primary {
+        background: #245f9f;
+        border-color: #397fc6;
+      }
+      button.danger {
+        background: #321c20;
+        border-color: #633039;
+        color: #ffaaaa;
+      }
+      .actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 12px;
+        max-width: 100%;
+      }
+      .check {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        margin: 9px 0;
+      }
+      .check input {
+        width: auto;
+      }
+      .check label {
+        margin: 0;
+        color: var(--text);
+        font-size: 1.4rem;
+      }
+      .note {
+        margin-top: 12px;
+        padding: 10px;
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        color: var(--muted);
+        font-size: 1.2rem;
+        background: #101419;
+        word-break: break-word;
+      }
+      .status {
+        display: none;
+        padding: 9px 11px;
+        margin-top: 12px;
+        border-radius: 7px;
+        word-break: break-word;
+        font-size: 1.4rem;
+      }
+      .status.info {
+        display: block;
+        background: #172332;
+        border: 1px solid #34577b;
+      }
+      .status.good {
+        display: block;
+        background: #11271b;
+        border: 1px solid #245e3b;
+        color: #8ce5ab;
+      }
+      .status.warn {
+        display: block;
+        background: #302912;
+        border: 1px solid #665322;
+        color: #f6d979;
+      }
+      .status.error {
+        display: block;
+        background: #30171a;
+        border: 1px solid #71343b;
+        color: #ffaaaa;
+      }
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 8px;
+        margin-top: 12px;
+      }
+      .stat {
+        background: var(--panel2);
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        padding: 9px;
+        min-width: 0;
+      }
+      .stat strong {
+        display: block;
+        font-size: 1.9rem;
+      }
+      .stat span {
+        font-size: 1.1rem;
+        color: var(--muted);
+      }
+      .progress {
+        height: 8px;
+        background: #080a0d;
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        overflow: hidden;
+        margin-top: 10px;
+      }
+      .progress div {
+        height: 100%;
+        width: 0;
+        background: var(--blue);
+      }
+      .tablebox {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        max-width: 100%;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        min-width: 650px;
+      }
+      th,
+      td {
+        text-align: left;
+        vertical-align: top;
+        padding: 8px;
+        border-bottom: 1px solid var(--line);
+        font-size: 1.2rem;
+      }
+      th {
+        background: var(--panel2);
+        color: #c4ced8;
+        position: sticky;
+        top: 0;
+      }
+      tr:last-child td {
+        border-bottom: 0;
+      }
+      .url {
+        max-width: 200px;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+        font-family: ui-monospace, Consolas, monospace;
+      }
+      .ok {
+        color: var(--green);
+      }
+      .bad {
+        color: var(--red);
+      }
+      .warntext {
+        color: var(--yellow);
+      }
+      pre {
+        white-space: pre-wrap;
+        word-break: break-word;
+        overflow-x: auto;
+        max-height: 420px;
+        background: #090c0f;
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        padding: 11px;
+        font: 12px/1.5 ui-monospace, Consolas, monospace;
+        max-width: 100%;
+        font-size: 1.2rem;
+      }
+      details {
+        margin-top: 9px;
+        padding: 10px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #0f1317;
+        max-width: 100%;
+      }
+      summary {
+        cursor: pointer;
+        color: #cbd5df;
+        font-size: 1.4rem;
+      }
+      .validation {
+        padding: 9px 11px;
+        border-radius: 7px;
+        margin-bottom: 8px;
+        word-break: break-word;
+        font-size: 1.4rem;
+      }
+      .vbad {
+        background: #30171a;
+        border: 1px solid #71343b;
+        color: #ffaaaa;
+      }
+      .vwarn {
+        background: #302912;
+        border: 1px solid #665322;
+        color: #f6d979;
+      }
+      .vgood {
+        background: #11271b;
+        border: 1px solid #245e3b;
+        color: #8ce5ab;
+      }
+      .preview-tabs {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 14px;
+        border-bottom: 1px solid var(--line);
+        padding-bottom: 10px;
+        flex-wrap: wrap;
+        max-width: 100%;
+      }
+      .preview-tab {
+        background: var(--panel2);
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 6px 12px;
+        font-size: 1.2rem;
+        color: var(--muted);
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .preview-tab:hover {
+        color: var(--text);
+        background: #1f2630;
+      }
+      .preview-tab.active {
+        background: #245f9f;
+        color: #fff;
+        border-color: #397fc6;
+        font-weight: 600;
+      }
+      .preview-container {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        max-width: 100%;
+      }
+      .preview-pane {
+        display: none;
+        max-width: 100%;
+      }
+      .preview-pane.active {
+        display: block;
+      }
+      .social-post {
+        background: #15181c;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 14px;
+        color: #e7e9ea;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Helvetica, Arial, sans-serif;
+        font-size: 1.4rem;
+        max-width: 100%;
+      }
+      .social-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+      .social-avatar {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: #2f3336;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        color: var(--blue);
+        font-size: 1.6rem;
+        flex-shrink: 0;
+      }
+      .social-author-info {
+        display: flex;
+        flex-direction: column;
+        line-height: 1.3;
+      }
+      .social-author-name {
+        font-weight: 700;
+        color: #f7f9f9;
+        font-size: 1.4rem;
+      }
+      .social-author-handle {
+        color: #71767b;
+        font-size: 1.3rem;
+      }
+      .social-post-text {
+        margin-bottom: 12px;
+        color: #e7e9ea;
+        font-size: 1.4rem;
+        line-height: 1.4;
+        word-break: break-word;
+      }
+      .social-card {
+        border: 1px solid #2f3336;
+        border-radius: 12px;
+        overflow: hidden;
+        background: #000;
+        transition: border-color 0.2s;
+        cursor: pointer;
+        max-width: 100%;
+      }
+      .social-card:hover {
+        border-color: #4a4e51;
+      }
+      .social-card-img-wrap {
+        width: 100%;
+        aspect-ratio: 1.91 / 1;
+        background: #16181c;
+        overflow: hidden;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #71767b;
+      }
+      .social-card-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+      .social-card-fallback {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        font-size: 1.2rem;
+        color: #71767b;
+      }
+      .social-card-fallback svg {
+        width: 32px;
+        height: 32px;
+        fill: currentColor;
+      }
+      .social-card-body {
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        background: #080a0c;
+        border-top: 1px solid #2f3336;
+      }
+      .social-card-domain {
+        font-size: 1.2rem;
+        color: #71767b;
+        text-transform: lowercase;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .social-card-title {
+        font-weight: 700;
+        font-size: 1.4rem;
+        color: #f7f9f9;
+        line-height: 1.3;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        word-break: break-word;
+      }
+      .social-card-desc {
+        font-size: 1.3rem;
+        color: #71767b;
+        line-height: 1.35;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        margin-top: 2px;
+        word-break: break-word;
+      }
+      .social-card.card-summary {
+        display: flex;
+        flex-direction: row;
+        align-items: stretch;
+        height: 110px;
+      }
+      .social-card.card-summary .social-card-img-wrap {
+        width: 110px;
+        height: 110px;
+        aspect-ratio: 1 / 1;
+        flex-shrink: 0;
+        border-right: 1px solid #2f3336;
+      }
+      .social-card.card-summary .social-card-body {
+        flex: 1;
+        border-top: none;
+        justify-content: center;
+      }
+      .img-badge {
+        font-size: 1.1rem;
+        color: var(--muted);
+        margin-top: 4px;
+      }
+      @media (max-width: 960px) {
+        .wrap {
+          padding: 16px;
+          max-width: 100%;
         }
-    });
-}
-</script>
-<script src="../../js/jquery-3.2.1.min.js"></script>
-<script src="../../js/github-fetch.js?v=25"></script>
-</body>
+        .grid {
+          grid-template-columns: 1fr;
+          gap: 16px;
+          width: 100%;
+        }
+        .row,
+        .row3 {
+          grid-template-columns: 1fr;
+          gap: 10px;
+        }
+        .stats {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        section {
+          width: 100%;
+          min-width: 0;
+        }
+        .card {
+          width: 100%;
+          min-width: 0;
+        }
+      }
+      @media (max-width: 600px) {
+        .wrap {
+          padding: 10px 8px;
+          max-width: 100%;
+        }
+        .card {
+          padding: 12px 10px;
+          margin-bottom: 14px;
+        }
+        .stats {
+          grid-template-columns: 1fr;
+        }
+        .actions {
+          flex-direction: column;
+          width: 100%;
+        }
+        .actions button {
+          width: 100%;
+          text-align: center;
+        }
+        .preview-tabs {
+          flex-direction: column;
+          width: 100%;
+        }
+        .preview-tab {
+          width: 100%;
+          text-align: center;
+        }
+        .social-card.card-summary {
+          flex-direction: column;
+          height: auto;
+        }
+        .social-card.card-summary .social-card-img-wrap {
+          width: 100%;
+          height: auto;
+          aspect-ratio: 16/9;
+          border-right: none;
+          border-bottom: 1px solid #2f3336;
+        }
+      }
+    </style>
+  </head>
+  <body id="top" data-tool-id="seo-generator">
+    <main class="wrap">
+      <div class="grid">
+        <section>
+          <div class="card">
+            <h1>Website Crawler</h1>
+            <div class="row">
+              <div>
+                <label for="siteUrl">Website URL</label
+                ><input
+                  id="siteUrl"
+                  value="https://xconflictionx.cc"
+                  placeholder="https://example.com"
+                />
+              </div>
+              <div>
+                <label for="siteName">Site Name</label
+                ><input id="siteName" placeholder="My Website" />
+              </div>
+            </div>
+            <div class="row3" style="margin-top: 12px">
+              <div>
+                <label for="maxPages">Maximum pages (safety limit)</label
+                ><input
+                  id="maxPages"
+                  type="number"
+                  min="1"
+                  max="100000"
+                  value="10000"
+                />
+              </div>
+              <div>
+                <label for="maxDepth">Maximum depth (0 = unlimited)</label
+                ><input
+                  id="maxDepth"
+                  type="number"
+                  min="0"
+                  max="100"
+                  value="0"
+                  placeholder="0"
+                />
+              </div>
+              <div>
+                <label for="delay">Delay between requests (ms)</label
+                ><input
+                  id="delay"
+                  type="number"
+                  min="0"
+                  max="10000"
+                  value="0"
+                />
+              </div>
+            </div>
+
+            <div class="check">
+              <input id="queryUrls" type="checkbox" /><label for="queryUrls"
+                >Treat query-string URLs as separate pages</label
+              >
+            </div>
+            <div class="check">
+              <input id="nonHtml" type="checkbox" /><label for="nonHtml"
+                >Include linked non-HTML resources in results</label
+              >
+            </div>
+            <div class="check">
+              <input id="respectRobots" type="checkbox" checked /><label
+                for="respectRobots"
+                >Respect robots.txt rules when accessible</label
+              >
+            </div>
+            <div class="actions">
+              <button class="primary" id="crawlBtn">Crawl Site</button
+              ><button id="stopBtn">Stop</button
+              ><button id="clearBtn" class="danger">Clear Results</button>
+            </div>
+            <div id="status" class="status"></div>
+            <div class="progress"><div id="progress"></div></div>
+            <div class="stats">
+              <div class="stat">
+                <strong id="discovered">0</strong><span>Discovered</span>
+              </div>
+              <div class="stat">
+                <strong id="crawled">0</strong><span>Analyzed</span>
+              </div>
+              <div class="stat">
+                <strong id="queued">0</strong><span>Queued</span>
+              </div>
+              <div class="stat">
+                <strong id="failed">0</strong><span>Failed</span>
+              </div>
+              <div class="stat">
+                <strong id="depth">0</strong><span>Max depth</span>
+              </div>
+            </div>
+            <div class="note">
+              The crawler reads HTML directly into browser memory using fetch();
+              it does not require downloading pages. Run this tool from your own
+              site for same-origin access, or let the crawler fallback to CORS
+              proxies for cross-origin URLs. Link crawling cannot discover
+              orphan pages that are not linked; sitemap URLs are also used as
+              discovery seeds when available.
+            </div>
+          </div>
+          <div class="card">
+            <h2>SEO Defaults & Page Metadata</h2>
+            <label for="pageSelect" style="color: var(--blue); font-weight: 600"
+              >Active Page Selection (Page-Specific Override)</label
+            >
+            <select id="pageSelect" style="margin-bottom: 12px">
+              <option value="/">Homepage (/)</option>
+            </select>
+
+            <label for="title">Page title</label
+            ><input id="title" placeholder="Website Title" />
+            <label for="description" style="margin-top: 10px"
+              >Meta description</label
+            ><textarea
+              id="description"
+              placeholder="Website meta description..."
+            ></textarea>
+            <div class="row" style="margin-top: 10px">
+              <div>
+                <label for="author">Author</label
+                ><input id="author" placeholder="Author Name" />
+              </div>
+              <div>
+                <label for="publisher">Publisher</label
+                ><input id="publisher" placeholder="Publisher Name" />
+              </div>
+            </div>
+            <div class="row" style="margin-top: 10px">
+              <div>
+                <label for="canonical">Canonical URL</label
+                ><input id="canonical" placeholder="https://example.com/" />
+              </div>
+              <div>
+                <label for="favicon">Favicon URL</label
+                ><input id="favicon" placeholder="/favicon.ico" />
+              </div>
+            </div>
+            <div class="row" style="margin-top: 10px">
+              <div>
+                <label for="ogImage"
+                  >Open Graph image URL (Recommended: 1200x630)</label
+                ><input
+                  id="ogImage"
+                  placeholder="https://example.com/og-image.png"
+                />
+              </div>
+              <div>
+                <label for="twitterImage"
+                  >X / Twitter image URL (optional)</label
+                ><input
+                  id="twitterImage"
+                  placeholder="https://example.com/twitter-image.png"
+                />
+              </div>
+            </div>
+            <div class="row" style="margin-top: 10px">
+              <div>
+                <label for="theme">Theme color</label
+                ><input id="theme" placeholder="#0b0d10" />
+              </div>
+              <div>
+                <label for="robots">Robots meta policy</label
+                ><input id="robots" placeholder="index, follow" />
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <h2>Structured Data</h2>
+            <div class="row">
+              <div>
+                <label for="schemaType">Schema type</label
+                ><select id="schemaType">
+                  <option>WebSite</option>
+                  <option>WebPage</option>
+                  <option>Organization</option>
+                  <option>Person</option>
+                </select>
+              </div>
+              <div>
+                <label for="inLanguage">Site Language</label
+                ><input id="inLanguage" value="en" placeholder="en" />
+              </div>
+            </div>
+            <label for="schemaDescription" style="margin-top: 10px"
+              >Schema description (optional)</label
+            ><input
+              id="schemaDescription"
+              placeholder="Optional Schema description"
+            />
+            <div class="row" style="margin-top: 10px">
+              <div>
+                <label for="logoUrl">Organization Logo URL</label
+                ><input
+                  id="logoUrl"
+                  placeholder="https://example.com/logo.png"
+                />
+              </div>
+              <div>
+                <label for="sameAs"
+                  >Social Profiles (sameAs URLs, one per line)</label
+                ><textarea
+                  id="sameAs"
+                  placeholder="https://x.com/username&#10;https://github.com/username"
+                  style="min-height: 50px"
+                ></textarea>
+              </div>
+            </div>
+            <div class="check" style="margin-top: 10px">
+              <input id="searchAction" type="checkbox" /><label
+                for="searchAction"
+                >Include WebSite SearchAction</label
+              >
+            </div>
+            <label for="searchUrl"
+              >Search URL template (use {search_term_string})</label
+            ><input
+              id="searchUrl"
+              placeholder="https://example.com/search?q={search_term_string}"
+            />
+          </div>
+          <div class="card">
+            <h2>Social Metadata</h2>
+            <div class="row">
+              <div>
+                <label for="ogTitle">Open Graph title</label
+                ><input id="ogTitle" placeholder="Open Graph Title" />
+              </div>
+              <div>
+                <label for="ogDescription">Open Graph description</label
+                ><input
+                  id="ogDescription"
+                  placeholder="Open Graph Description"
+                />
+              </div>
+            </div>
+            <div class="row" style="margin-top: 10px">
+              <div>
+                <label for="twitterCard">X / Twitter card style</label
+                ><select id="twitterCard">
+                  <option value="summary_large_image">
+                    summary_large_image (Large Card)
+                  </option>
+                  <option value="summary">summary (Compact Card)</option>
+                </select>
+              </div>
+              <div>
+                <label for="twitterSite">X / Twitter handle</label
+                ><input id="twitterSite" placeholder="@username" />
+              </div>
+            </div>
+          </div>
+        </section>
+        <section>
+          <div class="card">
+            <h2>Crawl Results</h2>
+            <div id="validation"></div>
+            <div class="tablebox">
+              <table>
+                <thead>
+                  <tr>
+                    <th>URL</th>
+                    <th>HTTP</th>
+                    <th>Depth</th>
+                    <th>Title</th>
+                    <th>Description</th>
+                    <th>Canonical</th>
+                    <th>Index</th>
+                    <th>H1</th>
+                    <th>Links</th>
+                  </tr>
+                </thead>
+                <tbody id="crawlRows"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="card">
+            <h2>Sitemap Pages</h2>
+            <div class="actions">
+              <button id="addPage">Add Page</button
+              ><button id="addCommon">Add Common Pages</button
+              ><button id="useCrawl" class="primary">Use Crawled Pages</button
+              ><button id="validateBtn">Validate</button>
+            </div>
+            <div class="tablebox" style="margin-top: 12px">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Path</th>
+                    <th>Last modified</th>
+                    <th>Change frequency</th>
+                    <th>Priority</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="pageRows"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="card">
+            <h2>Previews</h2>
+            <div class="preview-tabs">
+              <button type="button" class="preview-tab active" data-tab="all">
+                All Previews
+              </button>
+              <button type="button" class="preview-tab" data-tab="og">
+                Open Graph / Facebook
+              </button>
+              <button type="button" class="preview-tab" data-tab="twitter">
+                X / Twitter Post
+              </button>
+              <button type="button" class="preview-tab" data-tab="google">
+                Google Search
+              </button>
+            </div>
+            <div class="preview-container">
+              <div id="pane-og" class="preview-pane active">
+                <label
+                  style="
+                    margin-bottom: 6px;
+                    font-weight: 600;
+                    color: var(--text);
+                  "
+                  >Open Graph / Facebook / LinkedIn Post Preview</label
+                >
+                <div class="social-post">
+                  <div class="social-header">
+                    <div class="social-avatar" id="ogAvatar">X</div>
+                    <div class="social-author-info">
+                      <span class="social-author-name" id="ogAuthorName"
+                        >xCONFLiCTiONx</span
+                      >
+                      <span class="social-author-handle"
+                        >Shared a link · Just now · 🌐</span
+                      >
+                    </div>
+                  </div>
+                  <div class="social-post-text">
+                    Check out this webpage metadata preview:
+                  </div>
+                  <div class="social-card" id="ogCardBox">
+                    <div class="social-card-img-wrap" id="ogImgWrap">
+                      <img
+                        id="ogPreviewImg"
+                        class="social-card-img"
+                        src=""
+                        alt="Open Graph Preview Image"
+                        style="display: none"
+                      />
+                      <div id="ogImgFallback" class="social-card-fallback">
+                        <svg viewBox="0 0 24 24">
+                          <path
+                            d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"
+                          />
+                        </svg>
+                        <span>No image provided or loading error</span>
+                      </div>
+                    </div>
+                    <div class="social-card-body">
+                      <div class="social-card-domain" id="ogPreviewDomain">
+                        xconflictionx.cc
+                      </div>
+                      <div class="social-card-title" id="ogPreviewTitle">
+                        Title
+                      </div>
+                      <div class="social-card-desc" id="ogPreviewDesc">
+                        Description...
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div id="ogImgBadge" class="img-badge"></div>
+              </div>
+              <div id="pane-twitter" class="preview-pane active">
+                <label
+                  style="
+                    margin-bottom: 6px;
+                    font-weight: 600;
+                    color: var(--text);
+                  "
+                  >X / Twitter Card Post Preview</label
+                >
+                <div class="social-post">
+                  <div class="social-header">
+                    <div class="social-avatar" id="twAvatar">X</div>
+                    <div class="social-author-info">
+                      <span class="social-author-name" id="twAuthorName"
+                        >xCONFLiCTiONx</span
+                      >
+                      <span class="social-author-handle" id="twAuthorHandle"
+                        >@username · 1m</span
+                      >
+                    </div>
+                  </div>
+                  <div class="social-post-text">
+                    Check out our latest update:
+                  </div>
+                  <div class="social-card" id="twCardBox">
+                    <div class="social-card-img-wrap" id="twImgWrap">
+                      <img
+                        id="twPreviewImg"
+                        class="social-card-img"
+                        src=""
+                        alt="X / Twitter Preview Image"
+                        style="display: none"
+                      />
+                      <div id="twImgFallback" class="social-card-fallback">
+                        <svg viewBox="0 0 24 24">
+                          <path
+                            d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"
+                          />
+                        </svg>
+                        <span>No image provided or loading error</span>
+                      </div>
+                    </div>
+                    <div class="social-card-body">
+                      <div class="social-card-domain" id="twPreviewDomain">
+                        xconflictionx.cc
+                      </div>
+                      <div class="social-card-title" id="twPreviewTitle">
+                        Title
+                      </div>
+                      <div class="social-card-desc" id="twPreviewDesc">
+                        Description...
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div id="twImgBadge" class="img-badge"></div>
+              </div>
+              <div id="pane-google" class="preview-pane active">
+                <label
+                  style="
+                    margin-bottom: 6px;
+                    font-weight: 600;
+                    color: var(--text);
+                  "
+                  >Google Search Snippet Preview</label
+                >
+                <div
+                  style="
+                    background: white;
+                    color: #202124;
+                    padding: 15px;
+                    border-radius: 8px;
+                  "
+                >
+                  <div
+                    id="previewUrl"
+                    style="color: #188038; font-size: 12px"
+                  ></div>
+                  <div
+                    id="previewTitle"
+                    style="color: #1a0dab; font-size: 20px"
+                  ></div>
+                  <div id="previewDesc" style="color: #4d5156"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <h2>Generated Files</h2>
+            <div class="actions">
+              <button class="primary" id="all">
+                Download All SEO Files (ZIP)</button
+              ><button id="dlRobots">robots.txt</button
+              ><button id="dlSitemap">sitemap.xml</button
+              ><button id="dlHead">seo-head.html</button
+              ><button id="dlJson">structured-data.json</button
+              ><button id="dlManifest">site.webmanifest</button
+              ><button id="dlLlms">llms.txt</button
+              ><button id="dlReport">seo-report.txt</button>
+            </div>
+            <details>
+              <summary>robots.txt</summary>
+              <pre id="outRobots"></pre>
+              <button id="copyRobots">Copy</button>
+            </details>
+            <details>
+              <summary>sitemap.xml</summary>
+              <pre id="outSitemap"></pre>
+              <button id="copySitemap">Copy</button>
+            </details>
+            <details>
+              <summary>seo-head.html</summary>
+              <pre id="outHead"></pre>
+              <button id="copyHead">Copy</button>
+            </details>
+            <details>
+              <summary>structured-data.json</summary>
+              <pre id="outJson"></pre>
+              <button id="copyJson">Copy</button>
+            </details>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <script src="../../js/framework.js?v=27"></script>
+    <script src="./js/core.js?v=27"></script>
+    <script src="./js/crawler.js?v=27"></script>
+    <script src="./js/pages.js?v=27"></script>
+    <script src="./js/generator.js?v=27"></script>
+    <script src="./js/ui.js?v=27"></script>
+    <script src="./js/app.js?v=27"></script>
+    <script>
+      if (window.PortfolioFramework) {
+        window.PortfolioFramework.getConfig().then((cfg) => {
+          if (cfg.site) {
+            if (cfg.site.canonicalBase && document.getElementById("siteUrl")) {
+              document.getElementById("siteUrl").value = cfg.site.canonicalBase;
+            }
+            if (cfg.site.name && document.getElementById("siteName")) {
+              document.getElementById("siteName").value = cfg.site.name;
+            }
+            if (cfg.site.name && document.getElementById("publisher")) {
+              document.getElementById("publisher").value = cfg.site.name;
+            }
+            if (cfg.site.author && document.getElementById("author")) {
+              document.getElementById("author").value = cfg.site.author;
+            }
+          }
+        });
+      }
+    </script>
+    <script src="../../js/jquery-3.2.1.min.js"></script>
+    <script src="../../js/github-fetch.js?v=25"></script>
+  </body>
 </html>
