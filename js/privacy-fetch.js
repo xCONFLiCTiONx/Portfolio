@@ -1,6 +1,6 @@
 /**
  * Dynamic Privacy Policy Fetcher
- * Version: 27 (Repository Policy Discovery)
+ * Version: 29 (Rate-Limit Resistant Policy Discovery)
  */
 
 async function initPrivacy() {
@@ -9,6 +9,7 @@ async function initPrivacy() {
     const selector = $(SELECTOR_ID);
     const content = $(CONTENT_ID);
     const copyBtn = $('#copyLinkBtn');
+    const CATALOG_CACHE_MS = 6 * 60 * 60 * 1000;
 
     if (!selector.length) return;
 
@@ -47,81 +48,120 @@ async function initPrivacy() {
             }
         });
 
-        // 2. DISCOVERY: Fetch all repositories for the user
+        // Reuse the repository catalog briefly to avoid repeated GitHub API calls.
+        const cacheKey = `privacy-policy-catalog:${username.toLowerCase()}`;
+        let cachedCatalog = null;
+        let staleCatalog = null;
+        try {
+            const stored = JSON.parse(localStorage.getItem(cacheKey) || 'null');
+            if (stored && Array.isArray(stored.policies)) {
+                staleCatalog = stored.policies;
+                if (Date.now() - stored.savedAt < CATALOG_CACHE_MS) {
+                    cachedCatalog = stored.policies;
+                }
+            }
+        } catch (error) {
+            console.warn('Privacy: Could not read cached policy catalog.', error);
+        }
+
+        // 2. DISCOVERY: Fetch repository names once, then probe raw files.
         const fetchOptions = {
             headers: typeof getGithubHeaders === 'function' ? getGithubHeaders(token) : {},
             cache: 'no-cache'
         };
 
-        const reposURL = `https://api.github.com/users/${encodeURIComponent(username)}/repos?sort=updated&per_page=100&page=1`;
-        const repos = [];
-        let nextPageUrl = reposURL;
-        let reposResponse;
-        while (nextPageUrl) {
-            reposResponse = await fetch(nextPageUrl, fetchOptions);
-            if (!reposResponse.ok) {
-                selector.html(`<option value="" disabled selected>GitHub Error (${reposResponse.status})</option>`);
-                return;
-            }
-            const pageRepos = await reposResponse.json();
-            if (!Array.isArray(pageRepos)) {
-                throw new Error('GitHub returned an invalid repository list.');
-            }
-            repos.push(...pageRepos);
-            const linkHeader = reposResponse.headers.get('Link') || '';
-            const nextLink = linkHeader.match(/<([^>]+)>;\s*rel="next"/);
-            nextPageUrl = nextLink ? nextLink[1] : '';
-        }
-
-        // Inspect the complete Git tree without probing missing raw files.
-        const foundPolicies = [];
-        let nextRepo = 0;
+        let foundPolicies = cachedCatalog;
         let failedRepoChecks = 0;
-        const workers = Array.from({ length: Math.min(5, repos.length) }, async () => {
-            while (nextRepo < repos.length) {
-                const repo = repos[nextRepo++];
-                const branch = repo.default_branch || 'main';
-                const treeUrl = `https://api.github.com/repos/${encodeURIComponent(repo.owner.login)}/${encodeURIComponent(repo.name)}/git/trees/${encodeURIComponent(branch)}?recursive=1`;
+        let usingCachedCatalog = cachedCatalog !== null;
+        if (foundPolicies === null) {
+            const repos = [];
+            let nextPageUrl = `https://api.github.com/users/${encodeURIComponent(username)}/repos?sort=updated&per_page=100&page=1`;
+            let reposResponse;
+            while (nextPageUrl) {
+                reposResponse = await fetch(nextPageUrl, fetchOptions);
+                if (!reposResponse.ok) {
+                    if (staleCatalog !== null) {
+                        foundPolicies = staleCatalog;
+                        usingCachedCatalog = true;
+                        break;
+                    }
+                    const rateLimitRemaining = reposResponse.headers.get('X-RateLimit-Remaining');
+                    const detail = reposResponse.status === 403 && rateLimitRemaining === '0'
+                        ? 'GitHub API rate limit reached. Please try again after it resets.'
+                        : `GitHub Error (${reposResponse.status})`;
+                    selector.html(`<option value="" disabled selected>${detail}</option>`);
+                    return;
+                }
+                const pageRepos = await reposResponse.json();
+                if (!Array.isArray(pageRepos)) {
+                    throw new Error('GitHub returned an invalid repository list.');
+                }
+                repos.push(...pageRepos);
+                const linkHeader = reposResponse.headers.get('Link') || '';
+                const nextLink = linkHeader.match(/<([^>]+)>;\s*rel="next"/);
+                nextPageUrl = nextLink ? nextLink[1] : '';
+            }
+
+            if (foundPolicies === null) {
+                foundPolicies = [];
+                let nextRepo = 0;
+                const workers = Array.from({ length: Math.min(8, repos.length) }, async () => {
+                    while (nextRepo < repos.length) {
+                        const repo = repos[nextRepo++];
+                        const owner = repo.owner && repo.owner.login ? repo.owner.login : username;
+                        const branch = (repo.default_branch || 'main')
+                            .split('/')
+                            .map(encodeURIComponent)
+                            .join('/');
+                        const privacyNames = ['privacy.md', 'PRIVACY.md', 'Privacy.md', 'Privacy.MD', 'PRIVACY.MD'];
+                        try {
+                            for (const privacyName of privacyNames) {
+                                const rawUrl = `https://raw.githubusercontent.com/${encodeURIComponent(owner)}/${encodeURIComponent(repo.name)}/${branch}/${privacyName}`;
+                                const response = await fetch(rawUrl, { method: 'HEAD', cache: 'no-cache' });
+                                if (response.ok) {
+                                    foundPolicies.push({
+                                        name: repo.name,
+                                        url: rawUrl,
+                                        slug: repo.name.toLowerCase()
+                                    });
+                                    break;
+                                }
+                                if (response.status !== 404) {
+                                    failedRepoChecks += 1;
+                                    break;
+                                }
+                            }
+                        } catch (error) {
+                            failedRepoChecks += 1;
+                        }
+                    }
+                });
+                await Promise.all(workers);
+                foundPolicies.sort((a, b) => a.name.localeCompare(b.name));
                 try {
-                    const treeResponse = await fetch(treeUrl, fetchOptions);
-                    if (!treeResponse.ok) {
-                        failedRepoChecks += 1;
-                        continue;
-                    }
-                    const treeData = await treeResponse.json();
-                    if (treeData && treeData.truncated) {
-                        failedRepoChecks += 1;
-                        continue;
-                    }
-                    const privacyFile = treeData && Array.isArray(treeData.tree)
-                        ? treeData.tree.find(item => item.path && item.path.toLowerCase() === 'privacy.md')
-                        : null;
-                    if (privacyFile) {
-                        foundPolicies.push({
-                            name: repo.name,
-                            url: `https://raw.githubusercontent.com/${repo.owner.login}/${repo.name}/${branch}/${privacyFile.path}`,
-                            slug: repo.name.toLowerCase()
-                        });
-                    }
+                    localStorage.setItem(cacheKey, JSON.stringify({
+                        savedAt: Date.now(),
+                        policies: foundPolicies
+                    }));
                 } catch (error) {
-                    failedRepoChecks += 1;
+                    console.warn('Privacy: Could not cache policy catalog.', error);
                 }
             }
-        });
-        await Promise.all(workers);
-        foundPolicies.sort((a, b) => a.name.localeCompare(b.name));
+        }
 
         if (foundPolicies.length === 0) {
             const message = failedRepoChecks
-                ? `Could not inspect ${failedRepoChecks} repositories. Check GitHub API rate limits or network access.`
+                ? `Could not check ${failedRepoChecks} repositories. Some results may be missing.`
                 : 'No root privacy.md found in any repository.';
             selector.html(`<option value="" disabled selected>${message}</option>`);
             return;
         }
 
-        const selectorLabel = failedRepoChecks
-            ? `-- ${foundPolicies.length} policies found; ${failedRepoChecks} repositories could not be checked --`
-            : '-- Select a Project Policy --';
+        const selectorLabel = usingCachedCatalog
+            ? '-- Showing cached policy list --'
+            : failedRepoChecks
+                ? `-- ${foundPolicies.length} policies found; ${failedRepoChecks} repositories could not be checked --`
+                : '-- Select a Project Policy --';
         selector.empty().append($('<option>', {
             value: '',
             text: selectorLabel,
