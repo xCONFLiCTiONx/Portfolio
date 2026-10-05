@@ -1,14 +1,14 @@
 /**
  * Dynamic Privacy Policy Fetcher
- * Version: 26 (Git Tree Discovery - Zero 404 Errors)
+ * Version: 27 (Repository Policy Discovery)
  */
 
 async function initPrivacy() {
-    const SELECTOR_ID = '#policySelector';
-    const CONTENT_ID = '#policy-content';
+    const SELECTOR_ID = '#policy-select';
+    const CONTENT_ID = '#policy-body';
     const selector = $(SELECTOR_ID);
     const content = $(CONTENT_ID);
-    const copyBtn = $('#copyPolicyLink');
+    const copyBtn = $('#copyLinkBtn');
 
     if (!selector.length) return;
 
@@ -53,67 +53,97 @@ async function initPrivacy() {
             cache: 'no-cache'
         };
 
-        const reposURL = `https://api.github.com/users/${username}/repos?sort=updated&per_page=100`;
-        const reposResponse = await fetch(reposURL, fetchOptions);
-
-        if (reposResponse.ok) {
-            const repos = await reposResponse.json();
-
-            // Check each repo using the Git Tree API to avoid 404 network errors
-            const policyCheckPromises = repos.map(async (repo) => {
-                const branch = repo.default_branch || 'main';
-                const treeUrl = `https://api.github.com/repos/${username}/${repo.name}/git/trees/${branch}?recursive=1`;
-
-                try {
-                    const treeResponse = await fetch(treeUrl, fetchOptions);
-                    if (treeResponse.ok) {
-                        const treeData = await treeResponse.json();
-                        if (treeData && treeData.tree) {
-                            // Find any file named privacy.md case-insensitively (handles PRIVACY.md, Privacy.md, etc.)
-                            const privacyFile = treeData.tree.find(
-                                item => item.path && item.path.toLowerCase() === 'privacy.md'
-                            );
-
-                            if (privacyFile) {
-                                const rawUrl = `https://raw.githubusercontent.com/${username}/${repo.name}/${branch}/${privacyFile.path}`;
-                                return {
-                                    name: repo.name,
-                                    url: rawUrl,
-                                    slug: repo.name.toLowerCase()
-                                };
-                            }
-                        }
-                    }
-                } catch (e) {
-                    // Fail silently for individual repo tree checks
-                }
-                return null;
-            });
-
-            const foundPolicies = (await Promise.all(policyCheckPromises)).filter(p => p !== null);
-
-            if (foundPolicies.length === 0) {
-                selector.html('<option value="" disabled selected>No privacy policy found in any repository.</option>');
+        const reposURL = `https://api.github.com/users/${encodeURIComponent(username)}/repos?sort=updated&per_page=100&page=1`;
+        const repos = [];
+        let nextPageUrl = reposURL;
+        let reposResponse;
+        while (nextPageUrl) {
+            reposResponse = await fetch(nextPageUrl, fetchOptions);
+            if (!reposResponse.ok) {
+                selector.html(`<option value="" disabled selected>GitHub Error (${reposResponse.status})</option>`);
                 return;
             }
-
-            let options = '<option value="" disabled selected>-- Select a Project Policy --</option>';
-            foundPolicies.forEach(policy => {
-                const isSelected = targetPolicy === policy.slug;
-                options += `<option value="${policy.url}" data-slug="${policy.slug}" ${isSelected ? 'selected' : ''}>${policy.name}</option>`;
-            });
-            selector.html(options);
-
-            if (selector.val()) {
-                selector.trigger('change');
+            const pageRepos = await reposResponse.json();
+            if (!Array.isArray(pageRepos)) {
+                throw new Error('GitHub returned an invalid repository list.');
             }
+            repos.push(...pageRepos);
+            const linkHeader = reposResponse.headers.get('Link') || '';
+            const nextLink = linkHeader.match(/<([^>]+)>;\s*rel="next"/);
+            nextPageUrl = nextLink ? nextLink[1] : '';
+        }
 
-        } else {
-            selector.html(`<option value="" disabled selected>GitHub Error (${reposResponse.status})</option>`);
+        // Inspect the complete Git tree without probing missing raw files.
+        const foundPolicies = [];
+        let nextRepo = 0;
+        let failedRepoChecks = 0;
+        const workers = Array.from({ length: Math.min(5, repos.length) }, async () => {
+            while (nextRepo < repos.length) {
+                const repo = repos[nextRepo++];
+                const branch = repo.default_branch || 'main';
+                const treeUrl = `https://api.github.com/repos/${encodeURIComponent(repo.owner.login)}/${encodeURIComponent(repo.name)}/git/trees/${encodeURIComponent(branch)}?recursive=1`;
+                try {
+                    const treeResponse = await fetch(treeUrl, fetchOptions);
+                    if (!treeResponse.ok) {
+                        failedRepoChecks += 1;
+                        continue;
+                    }
+                    const treeData = await treeResponse.json();
+                    if (treeData && treeData.truncated) {
+                        failedRepoChecks += 1;
+                        continue;
+                    }
+                    const privacyFile = treeData && Array.isArray(treeData.tree)
+                        ? treeData.tree.find(item => item.path && item.path.toLowerCase() === 'privacy.md')
+                        : null;
+                    if (privacyFile) {
+                        foundPolicies.push({
+                            name: repo.name,
+                            url: `https://raw.githubusercontent.com/${repo.owner.login}/${repo.name}/${branch}/${privacyFile.path}`,
+                            slug: repo.name.toLowerCase()
+                        });
+                    }
+                } catch (error) {
+                    failedRepoChecks += 1;
+                }
+            }
+        });
+        await Promise.all(workers);
+        foundPolicies.sort((a, b) => a.name.localeCompare(b.name));
+
+        if (foundPolicies.length === 0) {
+            const message = failedRepoChecks
+                ? `Could not inspect ${failedRepoChecks} repositories. Check GitHub API rate limits or network access.`
+                : 'No root privacy.md found in any repository.';
+            selector.html(`<option value="" disabled selected>${message}</option>`);
+            return;
+        }
+
+        const selectorLabel = failedRepoChecks
+            ? `-- ${foundPolicies.length} policies found; ${failedRepoChecks} repositories could not be checked --`
+            : '-- Select a Project Policy --';
+        selector.empty().append($('<option>', {
+            value: '',
+            text: selectorLabel,
+            disabled: true,
+            selected: true
+        }));
+        foundPolicies.forEach(policy => {
+            const isSelected = targetPolicy === policy.slug;
+            const option = $('<option>', {
+                value: policy.url,
+                text: policy.name,
+                selected: isSelected
+            }).attr('data-slug', policy.slug);
+            selector.append(option);
+        });
+
+        if (selector.val()) {
+            selector.trigger('change');
         }
     } catch (e) {
         console.error('[DEBUG] Privacy: Initialization error', e);
-        selector.html('<option value="" disabled selected>Initialization Error</option>');
+        selector.html('<option value="" disabled selected>Could not load privacy policies. Check the console for details.</option>');
     }
 
     // 3. Handle copy link button
