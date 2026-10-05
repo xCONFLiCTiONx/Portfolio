@@ -196,7 +196,7 @@
       "githubUrl": "https://github.com/xCONFLiCTiONx/Portfolio/blob/main/tools/privacy-test/index.html",
       "layout": {
         "header": true,
-        "sidebar": true,
+        "sidebar": false,
         "footer": true
       }
     }
