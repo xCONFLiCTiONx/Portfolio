@@ -2,7 +2,7 @@
   "site": {
     "name": "xCONFLiCTiONx",
     "title": "xCONFLiCTiONx — Privacy, Security & Technology",
-    "description": "Software Developer Portfolio - Building tools for freedom & productivity.",
+    "description": "Software Developer Portfolio — Building open-source, local-first tools focused on privacy, security, system automation, and digital freedom.",
     "author": "xCONFLiCTiONx",
     "themeColor": "#0b0d10",
     "favicon": "assets/favicon.ico",
@@ -128,7 +128,7 @@
     {
       "id": "seo-generator",
       "name": "SEO Generator",
-      "description": "Crawl static websites, audit page metadata, preview social cards, and generate SEO files.",
+      "description": "Crawl static websites, audit page metadata, preview real-time Open Graph and Twitter social cards, and generate optimized sitemaps and meta tags.",
       "path": "tools/seo-generator/",
       "icon": "im im-shield",
       "category": "Developer Utility",
@@ -143,7 +143,7 @@
     {
       "id": "image-tool",
       "name": "Image Tool",
-      "description": "Crop, resize, convert formats, generate ICO/ZIP packages, and edit SVG graphics entirely in browser memory.",
+      "description": "Crop, resize, convert image formats, edit SVG graphics, and bundle ICO/ZIP favicon packages entirely in client-side browser memory.",
       "path": "tools/image-tool/",
       "icon": "im im-shield",
       "category": "Developer Utility",
@@ -158,7 +158,7 @@
     {
       "id": "security-audit",
       "name": "Security Audit",
-      "description": "Android Privacy & Security Diagnostic",
+      "description": "Comprehensive Android Privacy & Security Diagnostic tool to inspect device permission scopes, surface potential security vulnerabilities, and evaluate system posture.",
       "path": "tools/security-audit/",
       "icon": "im im-shield",
       "category": "Developer Utility",
@@ -188,7 +188,7 @@
     {
       "id": "privacy-test",
       "name": "Privacy Test",
-      "description": "Privacy test for xPrivacyGuard.",
+      "description": "Interactive privacy test benchmark suite designed to evaluate and verify content blocking, script isolation, and data leak protection for xPrivacyGuard.",
       "path": "tools/privacy-test/",
       "icon": "im im-shield",
       "category": "Privacy Test",
