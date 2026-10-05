@@ -1482,10 +1482,10 @@
         );
         addCheck("Battery Status API", () => typeof navigator.getBattery === "undefined");
         addCheck("Local Font Access API", () => typeof window.queryLocalFonts === "undefined");
+        addCheck("Normalized processor count", () => navigator.hardwareConcurrency === 4);
+        addCheck("Normalized device memory", () => navigator.deviceMemory === 8);
 
         if (profile === "daily") {
-          addCheck("Normalized processor count", () => navigator.hardwareConcurrency === 4);
-          addCheck("Normalized device memory", () => navigator.deviceMemory === 8);
           addCheck("Masked WebGL vendor", () => {
             const canvas = document.createElement("canvas");
             const context = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
@@ -1493,8 +1493,6 @@
             return context.getParameter(37445) === "PROTECTED";
           });
         } else {
-          addCheck("Processor count hidden", () => typeof navigator.hardwareConcurrency === "undefined");
-          addCheck("Device memory hidden", () => typeof navigator.deviceMemory === "undefined");
           addCheck("WebGL disabled", () =>
             typeof window.WebGLRenderingContext === "undefined" &&
             typeof window.WebGL2RenderingContext === "undefined" &&
