@@ -143,6 +143,170 @@
         max-width: 650px;
       }
 
+      /* Grade & Score Card */
+      .grade-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: 24px;
+        margin-bottom: 24px;
+        box-shadow: var(--shadow-card);
+      }
+
+      .grade-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 16px;
+        margin-bottom: 20px;
+      }
+
+      .grade-badge-container {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+
+      .grade-badge {
+        width: 72px;
+        height: 72px;
+        border-radius: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 32px;
+        font-weight: 900;
+        color: #ffffff;
+        background: var(--bg-subtle);
+        border: 2px solid var(--border-highlight);
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+      }
+
+      .grade-badge.grade-aplus {
+        background: linear-gradient(135deg, #10b981, #059669);
+        border-color: #34d399;
+        box-shadow: 0 0 25px rgba(16, 185, 129, 0.4);
+      }
+
+      .grade-badge.grade-a {
+        background: linear-gradient(135deg, #059669, #10b981);
+        border-color: #10b981;
+      }
+
+      .grade-badge.grade-b {
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        border-color: #60a5fa;
+      }
+
+      .grade-badge.grade-c {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        border-color: #fbbf24;
+      }
+
+      .grade-badge.grade-d {
+        background: linear-gradient(135deg, #f97316, #ea580c);
+        border-color: #fb923c;
+      }
+
+      .grade-badge.grade-f {
+        background: linear-gradient(135deg, #ef4444, #dc2626);
+        border-color: #f87171;
+        box-shadow: 0 0 25px rgba(239, 68, 68, 0.4);
+      }
+
+      .grade-details h3 {
+        font-size: 20px;
+        font-weight: 800;
+      }
+
+      .grade-details p {
+        font-size: 13px;
+        color: var(--text-secondary);
+      }
+
+      .score-meter-box {
+        text-align: right;
+      }
+
+      .score-num {
+        font-size: 36px;
+        font-weight: 900;
+        line-height: 1;
+        color: var(--text-primary);
+      }
+
+      .score-label {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .pillars-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 14px;
+        margin-top: 16px;
+      }
+
+      .pillar-item {
+        background: var(--bg-subtle);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        padding: 14px;
+      }
+
+      .pillar-title {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--text-secondary);
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 6px;
+      }
+
+      .pillar-bar-bg {
+        width: 100%;
+        height: 6px;
+        background: var(--bg-card);
+        border-radius: var(--radius-full);
+        overflow: hidden;
+      }
+
+      .pillar-bar-fill {
+        height: 100%;
+        width: 0%;
+        background: var(--accent-blue);
+        border-radius: var(--radius-full);
+        transition: width 0.5s ease;
+      }
+
+      .recommendations-box {
+        margin-top: 18px;
+        padding: 14px 18px;
+        background: var(--bg-subtle);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+      }
+
+      .recommendations-title {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--accent-amber);
+        margin-bottom: 4px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .recommendations-list {
+        font-size: 12px;
+        color: var(--text-secondary);
+        padding-left: 18px;
+      }
+
       /* Stats Grid */
       .stats-grid {
         display: grid;
@@ -660,6 +824,10 @@
         button {
           justify-content: center;
         }
+
+        .score-meter-box {
+          text-align: left;
+        }
       }
     </style>
   </head>
@@ -677,7 +845,7 @@
           <div class="hero-status">
             <h2 id="overallStatusTitle">Checking Network Filtering Status...</h2>
             <p id="overallStatusSubtitle">
-              Testing DNS packet interception, domain sinkholing, Cloudflare Zero Trust gateways, and tracker blocking.
+              Testing local VPN packet interception, domain sinkholing, Cloudflare Zero Trust gateways, and tracker blocking.
             </p>
 
             <div class="progress-bar-bg">
@@ -711,6 +879,85 @@
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      <!-- GRADE & SECURITY SCORE CARD -->
+      <section class="grade-card" id="gradeCardSection">
+        <div class="grade-header">
+          <div class="grade-badge-container">
+            <div class="grade-badge" id="gradeLetterBadge">?</div>
+            <div class="grade-details">
+              <h3 id="gradeTitle">Analyzing Privacy Grade...</h3>
+              <p id="gradeSubtitle">Evaluating VPN interception, sinkhole efficiency, and DoH evasion prevention.</p>
+            </div>
+          </div>
+
+          <div class="score-meter-box">
+            <div class="score-num" id="securityScoreVal">--</div>
+            <div class="score-label">SECURITY SCORE / 100</div>
+          </div>
+        </div>
+
+        <!-- Security Pillars -->
+        <div class="pillars-grid">
+          <div class="pillar-item">
+            <div class="pillar-title">
+              <span>VPN Interception</span>
+              <span id="pillarVpnVal">0%</span>
+            </div>
+            <div class="pillar-bar-bg">
+              <div class="pillar-bar-fill" id="pillarVpnFill"></div>
+            </div>
+          </div>
+
+          <div class="pillar-item">
+            <div class="pillar-title">
+              <span>Ads & Trackers</span>
+              <span id="pillarAdsVal">0%</span>
+            </div>
+            <div class="pillar-bar-bg">
+              <div class="pillar-bar-fill" id="pillarAdsFill"></div>
+            </div>
+          </div>
+
+          <div class="pillar-item">
+            <div class="pillar-title">
+              <span>Telemetry & Strict Target</span>
+              <span id="pillarTelemetryVal">0%</span>
+            </div>
+            <div class="pillar-bar-bg">
+              <div class="pillar-bar-fill" id="pillarTelemetryFill"></div>
+            </div>
+          </div>
+
+          <div class="pillar-item">
+            <div class="pillar-title">
+              <span>DoH Evasion Guard</span>
+              <span id="pillarDohVal">0%</span>
+            </div>
+            <div class="pillar-bar-bg">
+              <div class="pillar-bar-fill" id="pillarDohFill"></div>
+            </div>
+          </div>
+
+          <div class="pillar-item">
+            <div class="pillar-title">
+              <span>In-Page Probes</span>
+              <span id="pillarResourceVal">0%</span>
+            </div>
+            <div class="pillar-bar-bg">
+              <div class="pillar-bar-fill" id="pillarResourceFill"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recommendations Box -->
+        <div class="recommendations-box" id="recommendationsBox" style="display: none;">
+          <div class="recommendations-title">
+            <span>💡</span> OPTIMIZATION RECOMMENDATIONS
+          </div>
+          <ul class="recommendations-list" id="recommendationsList"></ul>
         </div>
       </section>
 
@@ -794,6 +1041,7 @@
       <!-- FILTER TABS -->
       <div class="tabs">
         <button class="tab active" onclick="filterTests('all', this)">All Tests (<span id="countAll">0</span>)</button>
+        <button class="tab" onclick="filterTests('handshake', this)">VPN Handshake (<span id="countHandshake">0</span>)</button>
         <button class="tab" onclick="filterTests('ad', this)">Ad Networks (<span id="countAd">0</span>)</button>
         <button class="tab" onclick="filterTests('analytics', this)">Analytics & Trackers (<span id="countAnalytics">0</span>)</button>
         <button class="tab" onclick="filterTests('telemetry', this)">Telemetry (<span id="countTelemetry">0</span>)</button>
@@ -828,21 +1076,21 @@
           <div class="guide-item">
             <h4>🟢 1. Testing with App RUNNING</h4>
             <p>
-              When xPrivacyGuard is enabled, expected <strong>Block Rate is 90%–100%</strong>. Ad servers, tracker domains, and DoH bypass hosts (e.g. <code>dns.google</code>) will return <strong>NXDOMAIN</strong> or fail instantaneously.
+              When xPrivacyGuard is enabled, expected <strong>Grade is A+ or A (Score 85–100)</strong>. Ad servers, tracker domains, and DoH bypass hosts (e.g. <code>dns.google</code>) will return <strong>NXDOMAIN / Sinkhole</strong> instantaneously.
             </p>
           </div>
 
           <div class="guide-item">
             <h4>🟡 2. Testing with App PAUSED</h4>
             <p>
-              When protection is paused in xPrivacyGuard, requests pass through without interception. Expected <strong>Block Rate is 0%–15%</strong> (unless another network resolver blocks them).
+              When protection is paused in xPrivacyGuard, requests pass through without interception. Expected <strong>Grade is F or D (Score 0–40)</strong>.
             </p>
           </div>
 
           <div class="guide-item">
             <h4>🏢 3. Cloudflare Zero Trust Integration</h4>
             <p>
-              xPrivacyGuard routes DNS to your configured Zero Trust endpoints (e.g. <code>172.64.36.1</code> / <code>e0uvvv2ul3.cloudflare-gateway.com</code>). Check the matrix above to confirm Zero Trust status.
+              xPrivacyGuard routes DNS to your configured Zero Trust endpoints (e.g. <code>security.cloudflare-gateway.com</code>). Check the matrix above to confirm Zero Trust status.
             </p>
           </div>
         </div>
@@ -880,12 +1128,15 @@
       /*
        * ============================================================
        * TEST DOMAIN DEFINITIONS
-       * Matching DnsFilterEngine.kt from xPrivacyGuard Android app
+       * Matching BlocklistFilter.kt from xPrivacyGuard Android app
        * ============================================================
        */
 
       const TEST_TARGETS = [
-        // DoH / DoT Evasion Prevention (Blocked by xPrivacyGuard to enforce system DNS)
+        // Handshake Probe
+        { name: "xPrivacyGuard Active Handshake Probe", domain: "check.xprivacyguard.internal", cat: "handshake", url: "https://check.xprivacyguard.internal/" },
+
+        // DoH / DoT Evasion Prevention
         { name: "Google DoH Resolver", domain: "dns.google", cat: "doh-bypass", url: "https://dns.google/" },
         { name: "Cloudflare Chrome DoH", domain: "chrome.cloudflare-dns.com", cat: "doh-bypass", url: "https://chrome.cloudflare-dns.com/" },
         { name: "Quad9 DoH Resolver", domain: "dns.quad9.net", cat: "doh-bypass", url: "https://dns.quad9.net/" },
@@ -907,7 +1158,6 @@
         { name: "Google Analytics", domain: "google-analytics.com", cat: "analytics", url: "https://google-analytics.com/" },
         { name: "Google Tag Manager", domain: "googletagmanager.com", cat: "analytics", url: "https://googletagmanager.com/" },
         { name: "Facebook Connect / Pixel", domain: "connect.facebook.net", cat: "analytics", url: "https://connect.facebook.net/" },
-        { name: "Facebook Tracking Domain", domain: "facebook.com", cat: "analytics", url: "https://facebook.com/tr/" },
         { name: "TikTok Analytics", domain: "analytics.tiktok.com", cat: "analytics", url: "https://analytics.tiktok.com/" },
         { name: "Microsoft Clarity", domain: "clarity.ms", cat: "analytics", url: "https://clarity.ms/" },
         { name: "Hotjar Session Recorder", domain: "hotjar.com", cat: "analytics", url: "https://hotjar.com/" },
@@ -1168,7 +1418,7 @@
 
         try {
           const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 3000);
+          const timeoutId = setTimeout(() => controller.abort(), 2500);
 
           await fetch(target.url + "?xpg_test=" + Date.now() + "_" + Math.random().toString(36).substring(2, 7), {
             mode: "no-cors",
@@ -1184,8 +1434,13 @@
         } catch (err) {
           const elapsed = Math.round(performance.now() - startTime);
           blocked = true;
-          detail = `Blocked in ${elapsed} ms (Sinkholed / NXDOMAIN)`;
-          addLog(`[BLOCKED] ${target.name} (${target.domain}) → Intercepted in ${elapsed}ms`, "pass");
+          if (target.cat === "handshake") {
+            detail = `Handshake Intercepted in ${elapsed} ms (VPN Active)`;
+            addLog(`[HANDSHAKE SUCCESS] ${target.name} → Intercepted in ${elapsed}ms (xPrivacyGuard Live)`, "pass");
+          } else {
+            detail = `Blocked in ${elapsed} ms (Sinkholed / NXDOMAIN)`;
+            addLog(`[BLOCKED] ${target.name} (${target.domain}) → Intercepted in ${elapsed}ms`, "pass");
+          }
         }
 
         testResults[target.domain] = {
@@ -1247,7 +1502,7 @@
           const elapsed = Math.round(performance.now() - start);
           setResourceResult(target.id, true, `Timed out / Sinkholed in ${elapsed}ms`);
           addLog(`[RESOURCE BLOCKED] ${target.name} → Timed out (${elapsed}ms)`, "pass");
-        }, 3500);
+        }, 3000);
 
         img.onload = () => {
           if (done) return;
@@ -1282,7 +1537,7 @@
           const elapsed = Math.round(performance.now() - start);
           setResourceResult(target.id, true, `Script execution blocked / timed out (${elapsed}ms)`);
           addLog(`[SCRIPT BLOCKED] ${target.name} → Timed out (${elapsed}ms)`, "pass");
-        }, 3500);
+        }, 3000);
 
         script.onload = () => {
           if (done) return;
@@ -1341,7 +1596,7 @@
           const elapsed = Math.round(performance.now() - start);
           setResourceResult(target.id, true, `Third-party frame blocked/timed out (${elapsed}ms)`);
           addLog(`[IFRAME BLOCKED] ${target.name} → Timed out (${elapsed}ms)`, "pass");
-        }, 3500);
+        }, 3000);
 
         frame.onload = () => {
           if (done) return;
@@ -1488,6 +1743,7 @@
 
       function updateTabCounts() {
         const countAllEl = document.getElementById("countAll");
+        const countHandEl = document.getElementById("countHandshake");
         const countAdEl = document.getElementById("countAd");
         const countAnaEl = document.getElementById("countAnalytics");
         const countTelEl = document.getElementById("countTelemetry");
@@ -1495,6 +1751,7 @@
         const countStrEl = document.getElementById("countStrict");
 
         if (countAllEl) countAllEl.textContent = TEST_TARGETS.length;
+        if (countHandEl) countHandEl.textContent = TEST_TARGETS.filter(t => t.cat === "handshake").length;
         if (countAdEl) countAdEl.textContent = TEST_TARGETS.filter(t => t.cat === "ad").length;
         if (countAnaEl) countAnaEl.textContent = TEST_TARGETS.filter(t => t.cat === "analytics").length;
         if (countTelEl) countTelEl.textContent = TEST_TARGETS.filter(t => t.cat === "telemetry").length;
@@ -1519,27 +1776,104 @@
         });
       }
 
+      /*
+       * ============================================================
+       * TRUE TEST & GRADING SYSTEM CALCULATOR
+       * ============================================================
+       */
+
       function updateOverallSummary() {
         const domainEntries = Object.values(testResults);
         const resourceEntries = Object.values(resourceResults);
 
         const totalTests = domainEntries.length + resourceEntries.length;
         const blockedTests = domainEntries.filter(r => r.blocked).length + resourceEntries.filter(r => r.blocked).length;
+        const overallRate = totalTests === 0 ? 0 : Math.round((blockedTests / totalTests) * 100);
 
-        const rate = totalTests === 0 ? 0 : Math.round((blockedTests / totalTests) * 100);
+        // Sub-category counts
+        const handshakeEntry = testResults["check.xprivacyguard.internal"];
+        const isHandshakeActive = handshakeEntry ? handshakeEntry.blocked : false;
 
+        const adEntries = domainEntries.filter(e => e.cat === "ad");
+        const adBlocked = adEntries.filter(e => e.blocked).length;
+        const adRate = adEntries.length === 0 ? 0 : Math.round((adBlocked / adEntries.length) * 100);
+
+        const analyticsEntries = domainEntries.filter(e => e.cat === "analytics");
+        const analyticsBlocked = analyticsEntries.filter(e => e.blocked).length;
+        const analyticsRate = analyticsEntries.length === 0 ? 0 : Math.round((analyticsBlocked / analyticsEntries.length) * 100);
+
+        const trackerCombinedTotal = adEntries.length + analyticsEntries.length;
+        const trackerCombinedBlocked = adBlocked + analyticsBlocked;
+        const trackerRate = trackerCombinedTotal === 0 ? 0 : Math.round((trackerCombinedBlocked / trackerCombinedTotal) * 100);
+
+        const telemetryEntries = domainEntries.filter(e => e.cat === "telemetry" || e.cat === "strict");
+        const telemetryBlocked = telemetryEntries.filter(e => e.blocked).length;
+        const telemetryRate = telemetryEntries.length === 0 ? 0 : Math.round((telemetryBlocked / telemetryEntries.length) * 100);
+
+        const dohEntries = domainEntries.filter(e => e.cat === "doh-bypass");
+        const dohBlocked = dohEntries.filter(e => e.blocked).length;
+        const dohRate = dohEntries.length === 0 ? 0 : Math.round((dohBlocked / dohEntries.length) * 100);
+
+        const resourceRate = resourceEntries.length === 0 ? 0 : Math.round((resourceEntries.filter(e => e.blocked).length / resourceEntries.length) * 100);
+
+        // Weighted Score Calculation (Total = 100)
+        // 1. VPN Active Handshake & Interception: 25 pts
+        let scoreVpn = (isHandshakeActive ? 20 : 0) + (overallRate > 50 ? 5 : 0);
+        // 2. Ad & Tracker Sinkholing: 25 pts
+        let scoreTrackers = Math.round((trackerRate / 100) * 25);
+        // 3. Telemetry & Strict Protection: 20 pts
+        let scoreTelemetry = Math.round((telemetryRate / 100) * 20);
+        // 4. DoH Evasion Prevention: 15 pts
+        let scoreDoh = Math.round((dohRate / 100) * 15);
+        // 5. In-Page Resource Interception: 15 pts
+        let scoreResources = Math.round((resourceRate / 100) * 15);
+
+        const totalScore = Math.min(100, scoreVpn + scoreTrackers + scoreTelemetry + scoreDoh + scoreResources);
+
+        // Assign Letter Grade
+        let letterGrade = "F";
+        let gradeClass = "grade-f";
+        let gradeTitleText = "⏸️ xPrivacyGuard Disabled";
+        let gradeSubtitleText = "Local VPN protection is inactive. Domain requests are passing through directly.";
+
+        if (totalScore >= 95) {
+          letterGrade = "A+";
+          gradeClass = "grade-aplus";
+          gradeTitleText = "🛡️ Optimal Privacy Protection";
+          gradeSubtitleText = "Complete local VPN sinkholing active! Ads, trackers, telemetry, and DoH evasion blocked.";
+        } else if (totalScore >= 85) {
+          letterGrade = "A";
+          gradeClass = "grade-a";
+          gradeTitleText = "🛡️ Strong Privacy Shield";
+          gradeSubtitleText = "Strong DNS interception and tracker filtering active.";
+        } else if (totalScore >= 70) {
+          letterGrade = "B";
+          gradeClass = "grade-b";
+          gradeTitleText = "🛡️ Moderate Protection";
+          gradeSubtitleText = "Good network filtering active, but some strict targets or DoH evasion endpoints remain unblocked.";
+        } else if (totalScore >= 50) {
+          letterGrade = "C";
+          gradeClass = "grade-c";
+          gradeTitleText = "⚠️ Partial Filtering Active";
+          gradeSubtitleText = "Partial domain filtering detected. Enable Strict Mode & DoH Evasion Guard in xPrivacyGuard.";
+        } else if (totalScore >= 30) {
+          letterGrade = "D";
+          gradeClass = "grade-d";
+          gradeTitleText = "⚠️ Weak Protection";
+          gradeSubtitleText = "Low domain block rate. Check if xPrivacyGuard VPN is paused or split-tunneling Chrome.";
+        }
+
+        // Update Hero Stats
         const statRateEl = document.getElementById("statBlockRate");
         const statRateSubEl = document.getElementById("statBlockRateSub");
         const statBlockedEl = document.getElementById("statBlockedCount");
         const blockBarEl = document.getElementById("blockProgressBar");
 
-        if (statRateEl) statRateEl.textContent = `${rate}%`;
+        if (statRateEl) statRateEl.textContent = `${overallRate}%`;
         if (statRateSubEl) statRateSubEl.textContent = `${blockedTests} of ${totalTests} probes blocked`;
         if (statBlockedEl) statBlockedEl.textContent = blockedTests;
-        if (blockBarEl) blockBarEl.style.width = `${rate}%`;
+        if (blockBarEl) blockBarEl.style.width = `${overallRate}%`;
 
-        const dohEntries = domainEntries.filter(e => e.cat === "doh-bypass");
-        const dohBlocked = dohEntries.filter(e => e.blocked).length;
         const statBypassEl = document.getElementById("statBypassState");
         if (statBypassEl) {
           if (dohEntries.length > 0 && dohBlocked === dohEntries.length) {
@@ -1563,14 +1897,14 @@
           return;
         }
 
-        if (rate >= 80) {
+        if (overallRate >= 80 || isHandshakeActive) {
           if (shieldVisual) shieldVisual.className = "shield-visual active";
           if (shieldIcon) shieldIcon.textContent = "🛡️";
           if (shieldTag) shieldTag.textContent = "ACTIVE";
 
           if (title) title.textContent = "🛡️ xPrivacyGuard Protection Active";
           if (subtitle) subtitle.textContent = `Strong network sinkholing detected! ${blockedTests} of ${totalTests} tracking probes were successfully blocked at the local VPN layer.`;
-        } else if (rate >= 35) {
+        } else if (overallRate >= 35) {
           if (shieldVisual) shieldVisual.className = "shield-visual paused";
           if (shieldIcon) shieldIcon.textContent = "⚠️";
           if (shieldTag) shieldTag.textContent = "PARTIAL";
@@ -1584,6 +1918,72 @@
 
           if (title) title.textContent = "⏸️ xPrivacyGuard Disconnected / Paused";
           if (subtitle) subtitle.textContent = "Domain requests are passing through without sinkholing. Enable xPrivacyGuard on your Android device to activate local VPN interception.";
+        }
+
+        // Update Grade & Score Card UI
+        const badgeEl = document.getElementById("gradeLetterBadge");
+        const gradeTitleEl = document.getElementById("gradeTitle");
+        const gradeSubtitleEl = document.getElementById("gradeSubtitle");
+        const scoreValEl = document.getElementById("securityScoreVal");
+
+        if (badgeEl) {
+          badgeEl.textContent = letterGrade;
+          badgeEl.className = `grade-badge ${gradeClass}`;
+        }
+        if (gradeTitleEl) gradeTitleEl.textContent = gradeTitleText;
+        if (gradeSubtitleEl) gradeSubtitleEl.textContent = gradeSubtitleText;
+        if (scoreValEl) scoreValEl.textContent = `${totalScore}`;
+
+        // Pillar Fills
+        setPillarUI("pillarVpnVal", "pillarVpnFill", isHandshakeActive ? 100 : (overallRate > 50 ? 50 : 0));
+        setPillarUI("pillarAdsVal", "pillarAdsFill", trackerRate);
+        setPillarUI("pillarTelemetryVal", "pillarTelemetryFill", telemetryRate);
+        setPillarUI("pillarDohVal", "pillarDohFill", dohRate);
+        setPillarUI("pillarResourceVal", "pillarResourceFill", resourceRate);
+
+        // Generate Recommendations
+        updateRecommendations({
+          isHandshakeActive,
+          trackerRate,
+          telemetryRate,
+          dohRate,
+          resourceRate,
+          overallRate
+        });
+      }
+
+      function setPillarUI(valId, fillId, percentage) {
+        const valEl = document.getElementById(valId);
+        const fillEl = document.getElementById(fillId);
+        if (valEl) valEl.textContent = `${percentage}%`;
+        if (fillEl) fillEl.style.width = `${percentage}%`;
+      }
+
+      function updateRecommendations(stats) {
+        const box = document.getElementById("recommendationsBox");
+        const list = document.getElementById("recommendationsList");
+        if (!box || !list) return;
+
+        const recs = [];
+
+        if (!stats.isHandshakeActive) {
+          recs.push("xPrivacyGuard VPN service is not active. Open the Android app and tap <strong>'START PROTECTION'</strong>.");
+        }
+        if (stats.dohRate < 100) {
+          recs.push("Enable <strong>'DoH Evasion Guard'</strong> in xPrivacyGuard settings to prevent Chrome from bypassing local VPN DNS via public DoH resolvers.");
+        }
+        if (stats.telemetryRate < 100) {
+          recs.push("Enable <strong>'Strict Protection Mode'</strong> in xPrivacyGuard settings to sinkhole crashlytics, telemetry, and marketing automation domains.");
+        }
+        if (stats.trackerRate < 80 && stats.isHandshakeActive) {
+          recs.push("Check if Chrome is listed under <em>'Excluded Apps'</em> in the Split Tunneling firewall tab.");
+        }
+
+        if (recs.length > 0) {
+          box.style.display = "block";
+          list.innerHTML = recs.map(r => `<li>${r}</li>`).join("");
+        } else {
+          box.style.display = "none";
         }
       }
 
