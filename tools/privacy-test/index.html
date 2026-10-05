@@ -1441,13 +1441,13 @@
 
         const profile = profileSelect.value;
         const checks = [];
-        const addCheck = (label, test) => {
+        const addCheck = (label, test, unavailableDetail = "Not supported by this browser") => {
           try {
             const result = test();
             checks.push({
               label,
               status: result === null ? "na" : (result ? "pass" : "fail"),
-              detail: result === null ? "Not supported by this browser" : (result ? "Protected" : "Still exposed")
+              detail: result === null ? unavailableDetail : (result ? "Protected" : "Still exposed")
             });
           } catch (err) {
             checks.push({ label, status: "fail", detail: `Check failed: ${err.message}` });
@@ -1491,7 +1491,7 @@
             const context = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
             if (!context) return null;
             return context.getParameter(37445) === "PROTECTED";
-          });
+          }, "WebGL unavailable (browser/driver setting or Cautious mode)");
         } else {
           addCheck("WebGL disabled", () =>
             typeof window.WebGLRenderingContext === "undefined" &&
