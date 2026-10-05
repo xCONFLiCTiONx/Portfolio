@@ -32,7 +32,6 @@
         --accent-amber: #f59e0b;
         --accent-amber-bg: rgba(245, 158, 11, 0.15);
         --accent-cloudflare: #f97316;
-        --accent-cloudflare-bg: rgba(249, 115, 22, 0.15);
         --accent-purple: #8b5cf6;
 
         --radius-sm: 8px;
@@ -56,103 +55,16 @@
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         line-height: 1.5;
         min-height: 100vh;
-        padding-bottom: 60px;
+        padding: 20px 0;
         -webkit-font-smoothing: antialiased;
       }
 
-      /* Container */
       .container {
         width: min(1200px, calc(100% - 32px));
         margin: 0 auto;
-        padding-top: 28px;
       }
 
-      /* Header */
-      header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 16px;
-        margin-bottom: 24px;
-        padding-bottom: 20px;
-        border-bottom: 1px solid var(--border-color);
-      }
-
-      .brand {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-      }
-
-      .brand-logo {
-        width: 48px;
-        height: 48px;
-        background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
-        border-radius: var(--radius-md);
-        display: grid;
-        place-items: center;
-        font-size: 26px;
-        box-shadow: 0 0 20px var(--accent-blue-glow);
-      }
-
-      .brand-title h1 {
-        font-size: 24px;
-        font-weight: 800;
-        letter-spacing: -0.5px;
-        background: linear-gradient(90deg, #ffffff, #93c5fd);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-      }
-
-      .brand-title p {
-        font-size: 13px;
-        color: var(--text-secondary);
-      }
-
-      .header-actions {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-      }
-
-      .live-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        background: var(--bg-card);
-        border: 1px solid var(--border-color);
-        padding: 6px 14px;
-        border-radius: var(--radius-full);
-        font-size: 12px;
-        font-weight: 600;
-        color: var(--text-secondary);
-      }
-
-      .status-dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: var(--accent-amber);
-        box-shadow: 0 0 10px var(--accent-amber);
-      }
-
-      .status-dot.active {
-        background: var(--accent-green);
-        box-shadow: 0 0 10px var(--accent-green);
-      }
-
-      .status-dot.paused {
-        background: var(--accent-amber);
-        box-shadow: 0 0 10px var(--accent-amber);
-      }
-
-      .status-dot.inactive {
-        background: var(--accent-red);
-        box-shadow: 0 0 10px var(--accent-red);
-      }
-
-      /* Hero Section / Master Shield */
+      /* Hero Card */
       .hero-card {
         background: var(--bg-card);
         border: 1px solid var(--border-color);
@@ -231,7 +143,7 @@
         max-width: 650px;
       }
 
-      /* Stats Overview Row */
+      /* Stats Grid */
       .stats-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -274,7 +186,6 @@
         margin-top: 2px;
       }
 
-      /* Progress Bar */
       .progress-bar-bg {
         width: 100%;
         height: 6px;
@@ -292,7 +203,6 @@
         transition: width 0.5s ease;
       }
 
-      /* Cloudflare & Network Intelligence Matrix */
       .section-title {
         font-size: 18px;
         font-weight: 700;
@@ -371,7 +281,6 @@
         margin-top: 2px;
       }
 
-      /* Control Toolbar */
       .toolbar {
         display: flex;
         flex-wrap: wrap;
@@ -436,7 +345,6 @@
         background: var(--accent-blue-glow);
       }
 
-      /* Filter Tabs */
       .tabs {
         display: flex;
         gap: 6px;
@@ -469,7 +377,6 @@
         border-color: var(--accent-blue);
       }
 
-      /* Test Cards & Grid */
       .test-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
@@ -542,7 +449,6 @@
         margin-top: 2px;
       }
 
-      /* Badges */
       .badge {
         font-size: 11px;
         font-weight: 800;
@@ -577,7 +483,6 @@
         border: 1px solid rgba(59, 130, 246, 0.3);
       }
 
-      /* Resource & Beacon Section */
       .resource-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -585,7 +490,6 @@
         margin-bottom: 28px;
       }
 
-      /* Testing Guide Card */
       .guide-card {
         background: var(--bg-card);
         border: 1px solid var(--border-color);
@@ -623,7 +527,6 @@
         line-height: 1.6;
       }
 
-      /* Diagnostic Log Terminal */
       .terminal-card {
         background: #060911;
         border: 1px solid var(--border-color);
@@ -713,7 +616,6 @@
         color: #fbbf24;
       }
 
-      /* Hidden Frame */
       .hidden-frame {
         width: 1px;
         height: 1px;
@@ -723,7 +625,6 @@
         pointer-events: none;
       }
 
-      /* Responsive Adjustments */
       @media (max-width: 768px) {
         .hero-grid {
           grid-template-columns: 1fr;
@@ -763,26 +664,8 @@
     </style>
   </head>
 
-  <body id="top" data-tool-id="privacy-test">
+  <body>
     <div class="container">
-      <!-- HEADER -->
-      <header>
-        <div class="brand">
-          <div class="brand-logo">🛡️</div>
-          <div class="brand-title">
-            <h1>xPrivacyGuard Test Suite</h1>
-            <p>Adblock, Tracker Sinkhole, DoH Bypass & Cloudflare Zero Trust Verification</p>
-          </div>
-        </div>
-
-        <div class="header-actions">
-          <div class="live-pill">
-            <span class="status-dot" id="headerStatusDot"></span>
-            <span id="headerStatusText">INITIALIZING...</span>
-          </div>
-        </div>
-      </header>
-
       <!-- HERO / MASTER STATUS -->
       <section class="hero-card">
         <div class="hero-grid">
@@ -1017,7 +900,7 @@
         { name: "Criteo Retargeting", domain: "criteo.com", cat: "ad", url: "https://criteo.com/" },
         { name: "Taboola Content Ads", domain: "taboola.com", cat: "ad", url: "https://taboola.com/" },
         { name: "Outbrain Native Ads", domain: "outbrain.com", cat: "ad", url: "https://outbrain.com/" },
-        { name: "Rubicon Project", domain: "rubiconproject.com", cat: "cat-ad", url: "https://rubiconproject.com/" },
+        { name: "Rubicon Project", domain: "rubiconproject.com", cat: "ad", url: "https://rubiconproject.com/" },
         { name: "PubMatic Ad Server", domain: "pubmatic.com", cat: "ad", url: "https://pubmatic.com/" },
 
         // Analytics & Trackers
@@ -1076,6 +959,7 @@
 
       function renderLogEntry(entry) {
         const container = document.getElementById("terminalLog");
+        if (!container) return;
         const row = document.createElement("div");
         row.className = "log-row";
 
@@ -1094,13 +978,17 @@
 
       function clearLog() {
         logEntries = [];
-        document.getElementById("terminalLog").innerHTML = "";
+        const container = document.getElementById("terminalLog");
+        if (container) container.innerHTML = "";
         addLog("Log terminal cleared.", "info");
       }
 
       function filterLogs() {
-        const term = document.getElementById("logSearchInput").value.toLowerCase();
+        const input = document.getElementById("logSearchInput");
+        if (!input) return;
+        const term = input.value.toLowerCase();
         const container = document.getElementById("terminalLog");
+        if (!container) return;
         container.innerHTML = "";
 
         const filtered = logEntries.filter(e => e.msg.toLowerCase().includes(term));
@@ -1151,7 +1039,6 @@
         addLog("Initiating Cloudflare Trace Diagnostic...", "info");
 
         try {
-          // Attempting fetch to Cloudflare Trace endpoint
           const controller = new AbortController();
           const timeoutId = setTimeout(() => controller.abort(), 3500);
 
@@ -1201,61 +1088,71 @@
 
         cloudflareInfo = kv;
 
-        // 1. Cloudflare Connected
         const isCf = kv.h || kv.colo;
-        document.getElementById("cfConnected").textContent = isCf ? "CONNECTED" : "DIRECT";
-        document.getElementById("cfConnectedDetail").textContent = isCf ? "Routed through Cloudflare CDN Edge" : "Direct IP connection";
+        const cfConnEl = document.getElementById("cfConnected");
+        const cfConnDetEl = document.getElementById("cfConnectedDetail");
+        if (cfConnEl) cfConnEl.textContent = isCf ? "CONNECTED" : "DIRECT";
+        if (cfConnDetEl) cfConnDetEl.textContent = isCf ? "Routed through Cloudflare CDN Edge" : "Direct IP connection";
 
-        // 2. Cloudflare Zero Trust / Gateway
         const isGateway = kv.gateway === "on" || (kv.sliver && kv.sliver !== "none");
-        document.getElementById("cfGateway").textContent = isGateway ? "ACTIVE ✅" : "INACTIVE";
-        document.getElementById("cfGatewayDetail").textContent = isGateway ? "Cloudflare Zero Trust Teams Gateway active" : "Standard DNS resolver (Non-Zero Trust)";
+        const cfGatEl = document.getElementById("cfGateway");
+        const cfGatDetEl = document.getElementById("cfGatewayDetail");
+        if (cfGatEl) cfGatEl.textContent = isGateway ? "ACTIVE ✅" : "INACTIVE";
+        if (cfGatDetEl) cfGatDetEl.textContent = isGateway ? "Cloudflare Zero Trust Teams Gateway active" : "Standard DNS resolver (Non-Zero Trust)";
 
-        // 3. WARP / VPN
         const isWarp = kv.warp === "on" || kv.warp === "plus";
-        document.getElementById("cfWarp").textContent = isWarp ? `WARP (${kv.warp.toUpperCase()})` : "DISABLED";
-        document.getElementById("cfWarpDetail").textContent = isWarp ? "WARP encrypted tunnel detected" : "No WARP tunnel active";
+        const cfWarpEl = document.getElementById("cfWarp");
+        const cfWarpDetEl = document.getElementById("cfWarpDetail");
+        if (cfWarpEl) cfWarpEl.textContent = isWarp ? `WARP (${kv.warp.toUpperCase()})` : "DISABLED";
+        if (cfWarpDetEl) cfWarpDetEl.textContent = isWarp ? "WARP encrypted tunnel detected" : "No WARP tunnel active";
 
-        // 4. DNS Transport / TLS
         const tlsVer = kv.tls || "TLSv1.3";
         const sni = kv.sni || "encrypted";
-        document.getElementById("cfDnsTransport").textContent = `${tlsVer}`;
-        document.getElementById("cfDnsTransportDetail").textContent = `SNI: ${sni} | Scheme: ${kv.visit_scheme || 'https'}`;
+        const cfDnsTrEl = document.getElementById("cfDnsTransport");
+        const cfDnsTrDetEl = document.getElementById("cfDnsTransportDetail");
+        if (cfDnsTrEl) cfDnsTrEl.textContent = `${tlsVer}`;
+        if (cfDnsTrDetEl) cfDnsTrDetEl.textContent = `SNI: ${sni} | Scheme: ${kv.visit_scheme || 'https'}`;
 
-        // 5. Datacenter (Colo)
         const colo = kv.colo || "UNKNOWN";
         const loc = kv.loc || "";
-        document.getElementById("cfColo").textContent = `${colo} ${loc ? '(' + loc + ')' : ''}`;
-        document.getElementById("statColo").textContent = `Edge Datacenter: ${colo}`;
-        document.getElementById("cfLocation").textContent = `Cloudflare POP Datacenter Code`;
+        const cfColoEl = document.getElementById("cfColo");
+        const statColoEl = document.getElementById("statColo");
+        if (cfColoEl) cfColoEl.textContent = `${colo} ${loc ? '(' + loc + ')' : ''}`;
+        if (statColoEl) statColoEl.textContent = `Edge Datacenter: ${colo}`;
 
-        // 6. Client Details
         const clientIp = kv.ip || "Protected";
-        document.getElementById("cfClientIp").textContent = clientIp;
-        document.getElementById("cfProtocol").textContent = `HTTP: ${kv.http || 'h2'} | User Agent: ${kv.uag ? 'Detected' : 'Standard'}`;
+        const cfIpEl = document.getElementById("cfClientIp");
+        const cfProtEl = document.getElementById("cfProtocol");
+        if (cfIpEl) cfIpEl.textContent = clientIp;
+        if (cfProtEl) cfProtEl.textContent = `HTTP: ${kv.http || 'h2'} | User Agent: ${kv.uag ? 'Detected' : 'Standard'}`;
 
-        // Overall Stat Box
-        if (isGateway) {
-          document.getElementById("statCloudflareState").textContent = "Zero Trust";
-        } else if (isWarp) {
-          document.getElementById("statCloudflareState").textContent = "WARP VPN";
-        } else if (isCf) {
-          document.getElementById("statCloudflareState").textContent = "Cloudflare";
-        } else {
-          document.getElementById("statCloudflareState").textContent = "Standard";
+        const statCfEl = document.getElementById("statCloudflareState");
+        if (statCfEl) {
+          if (isGateway) statCfEl.textContent = "Zero Trust";
+          else if (isWarp) statCfEl.textContent = "WARP VPN";
+          else if (isCf) statCfEl.textContent = "Cloudflare";
+          else statCfEl.textContent = "Standard";
         }
 
         addLog(`Parsed CF Trace: Colo=${colo}, Gateway=${isGateway ? 'ON' : 'OFF'}, WARP=${isWarp ? 'ON' : 'OFF'}, IP=${clientIp}`, "info");
       }
 
       function updateCloudflareUIFallback() {
-        document.getElementById("cfConnected").textContent = "UNKNOWN";
-        document.getElementById("cfGateway").textContent = "NOT DETECTED";
-        document.getElementById("cfWarp").textContent = "OFF";
-        document.getElementById("cfDnsTransport").textContent = "System DNS";
-        document.getElementById("cfColo").textContent = "N/A";
-        document.getElementById("cfClientIp").textContent = "Direct / Local";
-        document.getElementById("statCloudflareState").textContent = "Unknown";
+        const cfConnEl = document.getElementById("cfConnected");
+        const cfGatEl = document.getElementById("cfGateway");
+        const cfWarpEl = document.getElementById("cfWarp");
+        const cfDnsTrEl = document.getElementById("cfDnsTransport");
+        const cfColoEl = document.getElementById("cfColo");
+        const cfIpEl = document.getElementById("cfClientIp");
+        const statCfEl = document.getElementById("statCloudflareState");
+
+        if (cfConnEl) cfConnEl.textContent = "UNKNOWN";
+        if (cfGatEl) cfGatEl.textContent = "NOT DETECTED";
+        if (cfWarpEl) cfWarpEl.textContent = "OFF";
+        if (cfDnsTrEl) cfDnsTrEl.textContent = "System DNS";
+        if (cfColoEl) cfColoEl.textContent = "N/A";
+        if (cfIpEl) cfIpEl.textContent = "Direct / Local";
+        if (statCfEl) statCfEl.textContent = "Unknown";
       }
 
       /*
@@ -1273,7 +1170,6 @@
           const controller = new AbortController();
           const timeoutId = setTimeout(() => controller.abort(), 3000);
 
-          // fetch with no-cors. If xPrivacyGuard sinkholes domain to NXDOMAIN, fetch throws TypeError immediately.
           await fetch(target.url + "?xpg_test=" + Date.now() + "_" + Math.random().toString(36).substring(2, 7), {
             mode: "no-cors",
             cache: "no-store",
@@ -1435,6 +1331,7 @@
 
       function testIframeResource(target) {
         const frame = document.getElementById("trackerFrame");
+        if (!frame) return;
         const start = performance.now();
         let done = false;
 
@@ -1480,55 +1377,55 @@
        */
 
       function initUI() {
-        // Render Domain Test Cards
         const grid = document.getElementById("testGrid");
-        grid.innerHTML = "";
+        if (grid) {
+          grid.innerHTML = "";
+          TEST_TARGETS.forEach(target => {
+            const card = document.createElement("div");
+            card.className = "test-card";
+            card.id = `card-${target.domain.replace(/[^a-z0-9]/gi, '_')}`;
+            card.setAttribute("data-cat", target.cat);
 
-        TEST_TARGETS.forEach(target => {
-          const card = document.createElement("div");
-          card.className = "test-card";
-          card.id = `card-${target.domain.replace(/[^a-z0-9]/gi, '_')}`;
-          card.setAttribute("data-cat", target.cat);
-
-          card.innerHTML = `
-            <div class="test-icon">?</div>
-            <div class="test-info">
-              <div class="test-title">
-                ${escapeHtml(target.name)}
-                <span class="test-cat">${target.cat.toUpperCase()}</span>
+            card.innerHTML = `
+              <div class="test-icon">?</div>
+              <div class="test-info">
+                <div class="test-title">
+                  ${escapeHtml(target.name)}
+                  <span class="test-cat">${target.cat.toUpperCase()}</span>
+                </div>
+                <div class="test-domain">${escapeHtml(target.domain)}</div>
+                <div class="test-time">Pending test execution...</div>
               </div>
-              <div class="test-domain">${escapeHtml(target.domain)}</div>
-              <div class="test-time">Pending test execution...</div>
-            </div>
-            <span class="badge pending">PENDING</span>
-          `;
+              <span class="badge pending">PENDING</span>
+            `;
 
-          grid.appendChild(card);
-        });
+            grid.appendChild(card);
+          });
+        }
 
-        // Render Resource Test Cards
         const resGrid = document.getElementById("resourceGrid");
-        resGrid.innerHTML = "";
+        if (resGrid) {
+          resGrid.innerHTML = "";
+          RESOURCE_TARGETS.forEach(target => {
+            const card = document.createElement("div");
+            card.className = "test-card";
+            card.id = `res-card-${target.id}`;
 
-        RESOURCE_TARGETS.forEach(target => {
-          const card = document.createElement("div");
-          card.className = "test-card";
-          card.id = `res-card-${target.id}`;
-
-          card.innerHTML = `
-            <div class="test-icon">🖼️</div>
-            <div class="test-info">
-              <div class="test-title">
-                ${escapeHtml(target.name)}
-                <span class="test-cat">${target.type.toUpperCase()}</span>
+            card.innerHTML = `
+              <div class="test-icon">🖼️</div>
+              <div class="test-info">
+                <div class="test-title">
+                  ${escapeHtml(target.name)}
+                  <span class="test-cat">${target.type.toUpperCase()}</span>
+                </div>
+                <div class="test-domain" id="${target.id}-detail">Waiting for probe...</div>
               </div>
-              <div class="test-domain" id="${target.id}-detail">Waiting for probe...</div>
-            </div>
-            <span class="badge pending" id="${target.id}-badge">PENDING</span>
-          `;
+              <span class="badge pending" id="${target.id}-badge">PENDING</span>
+            `;
 
-          resGrid.appendChild(card);
-        });
+            resGrid.appendChild(card);
+          });
+        }
 
         updateTabCounts();
       }
@@ -1541,8 +1438,10 @@
         card.querySelector(".test-icon").textContent = "⌛";
         card.querySelector(".test-time").textContent = "Testing connection...";
         const badge = card.querySelector(".badge");
-        badge.className = "badge pending";
-        badge.textContent = "TESTING";
+        if (badge) {
+          badge.className = "badge pending";
+          badge.textContent = "TESTING";
+        }
       }
 
       function updateDomainCardUI(domain) {
@@ -1556,16 +1455,20 @@
         const badge = card.querySelector(".badge");
 
         if (res.blocked) {
-          icon.textContent = "✓";
-          badge.className = "badge blocked";
-          badge.textContent = "BLOCKED";
+          if (icon) icon.textContent = "✓";
+          if (badge) {
+            badge.className = "badge blocked";
+            badge.textContent = "BLOCKED";
+          }
         } else {
-          icon.textContent = "✕";
-          badge.className = "badge allowed";
-          badge.textContent = "NOT BLOCKED";
+          if (icon) icon.textContent = "✕";
+          if (badge) {
+            badge.className = "badge allowed";
+            badge.textContent = "NOT BLOCKED";
+          }
         }
 
-        timeEl.textContent = res.detail;
+        if (timeEl) timeEl.textContent = res.detail;
       }
 
       function updateResourceCardUI(id, blocked, detail) {
@@ -1584,12 +1487,19 @@
       }
 
       function updateTabCounts() {
-        document.getElementById("countAll").textContent = TEST_TARGETS.length;
-        document.getElementById("countAd").textContent = TEST_TARGETS.filter(t => t.cat === "ad").length;
-        document.getElementById("countAnalytics").textContent = TEST_TARGETS.filter(t => t.cat === "analytics").length;
-        document.getElementById("countTelemetry").textContent = TEST_TARGETS.filter(t => t.cat === "telemetry").length;
-        document.getElementById("countDoh").textContent = TEST_TARGETS.filter(t => t.cat === "doh-bypass").length;
-        document.getElementById("countStrict").textContent = TEST_TARGETS.filter(t => t.cat === "strict").length;
+        const countAllEl = document.getElementById("countAll");
+        const countAdEl = document.getElementById("countAd");
+        const countAnaEl = document.getElementById("countAnalytics");
+        const countTelEl = document.getElementById("countTelemetry");
+        const countDohEl = document.getElementById("countDoh");
+        const countStrEl = document.getElementById("countStrict");
+
+        if (countAllEl) countAllEl.textContent = TEST_TARGETS.length;
+        if (countAdEl) countAdEl.textContent = TEST_TARGETS.filter(t => t.cat === "ad").length;
+        if (countAnaEl) countAnaEl.textContent = TEST_TARGETS.filter(t => t.cat === "analytics").length;
+        if (countTelEl) countTelEl.textContent = TEST_TARGETS.filter(t => t.cat === "telemetry").length;
+        if (countDohEl) countDohEl.textContent = TEST_TARGETS.filter(t => t.cat === "doh-bypass").length;
+        if (countStrEl) countStrEl.textContent = TEST_TARGETS.filter(t => t.cat === "strict").length;
       }
 
       function filterTests(cat, tabEl) {
@@ -1618,69 +1528,62 @@
 
         const rate = totalTests === 0 ? 0 : Math.round((blockedTests / totalTests) * 100);
 
-        // Update Stat Cards
-        document.getElementById("statBlockRate").textContent = `${rate}%`;
-        document.getElementById("statBlockRateSub").textContent = `${blockedTests} of ${totalTests} probes blocked`;
-        document.getElementById("statBlockedCount").textContent = blockedTests;
-        document.getElementById("blockProgressBar").style.width = `${rate}%`;
+        const statRateEl = document.getElementById("statBlockRate");
+        const statRateSubEl = document.getElementById("statBlockRateSub");
+        const statBlockedEl = document.getElementById("statBlockedCount");
+        const blockBarEl = document.getElementById("blockProgressBar");
 
-        // Check DoH Bypass protection state
+        if (statRateEl) statRateEl.textContent = `${rate}%`;
+        if (statRateSubEl) statRateSubEl.textContent = `${blockedTests} of ${totalTests} probes blocked`;
+        if (statBlockedEl) statBlockedEl.textContent = blockedTests;
+        if (blockBarEl) blockBarEl.style.width = `${rate}%`;
+
         const dohEntries = domainEntries.filter(e => e.cat === "doh-bypass");
         const dohBlocked = dohEntries.filter(e => e.blocked).length;
-        if (dohEntries.length > 0 && dohBlocked === dohEntries.length) {
-          document.getElementById("statBypassState").textContent = "Protected ✅";
-        } else if (dohBlocked > 0) {
-          document.getElementById("statBypassState").textContent = "Partial ⚠️";
-        } else {
-          document.getElementById("statBypassState").textContent = "Exposed ❌";
+        const statBypassEl = document.getElementById("statBypassState");
+        if (statBypassEl) {
+          if (dohEntries.length > 0 && dohBlocked === dohEntries.length) {
+            statBypassEl.textContent = "Protected ✅";
+          } else if (dohBlocked > 0) {
+            statBypassEl.textContent = "Partial ⚠️";
+          } else {
+            statBypassEl.textContent = "Exposed ❌";
+          }
         }
 
-        // Hero Shield Status Logic
         const shieldVisual = document.getElementById("shieldVisual");
         const shieldIcon = document.getElementById("shieldIcon");
         const shieldTag = document.getElementById("shieldTag");
         const title = document.getElementById("overallStatusTitle");
         const subtitle = document.getElementById("overallStatusSubtitle");
 
-        const headerDot = document.getElementById("headerStatusDot");
-        const headerText = document.getElementById("headerStatusText");
-
         if (totalTests === 0) {
-          title.textContent = "Ready to Test Protection";
-          subtitle.textContent = "Run the diagnostic probes below to evaluate xPrivacyGuard filtering.";
+          if (title) title.textContent = "Ready to Test Protection";
+          if (subtitle) subtitle.textContent = "Run the diagnostic probes below to evaluate xPrivacyGuard filtering.";
           return;
         }
 
         if (rate >= 80) {
-          shieldVisual.className = "shield-visual active";
-          shieldIcon.textContent = "🛡️";
-          shieldTag.textContent = "ACTIVE";
+          if (shieldVisual) shieldVisual.className = "shield-visual active";
+          if (shieldIcon) shieldIcon.textContent = "🛡️";
+          if (shieldTag) shieldTag.textContent = "ACTIVE";
 
-          title.textContent = "🛡️ xPrivacyGuard Protection Active";
-          subtitle.textContent = `Strong network sinkholing detected! ${blockedTests} of ${totalTests} tracking probes were successfully blocked at the local VPN layer.`;
-
-          headerDot.className = "status-dot active";
-          headerText.textContent = "PROTECTION ACTIVE";
+          if (title) title.textContent = "🛡️ xPrivacyGuard Protection Active";
+          if (subtitle) subtitle.textContent = `Strong network sinkholing detected! ${blockedTests} of ${totalTests} tracking probes were successfully blocked at the local VPN layer.`;
         } else if (rate >= 35) {
-          shieldVisual.className = "shield-visual paused";
-          shieldIcon.textContent = "⚠️";
-          shieldTag.textContent = "PARTIAL";
+          if (shieldVisual) shieldVisual.className = "shield-visual paused";
+          if (shieldIcon) shieldIcon.textContent = "⚠️";
+          if (shieldTag) shieldTag.textContent = "PARTIAL";
 
-          title.textContent = "⚠️ Partial Filtering / Evasion Detected";
-          subtitle.textContent = `Only ${blockedTests} of ${totalTests} probes were blocked. Check if xPrivacyGuard is in Normal vs. Strict mode or if specific domains are excluded.`;
-
-          headerDot.className = "status-dot paused";
-          headerText.textContent = "PARTIAL FILTERING";
+          if (title) title.textContent = "⚠️ Partial Filtering / Evasion Detected";
+          if (subtitle) subtitle.textContent = `Only ${blockedTests} of ${totalTests} probes were blocked. Check if xPrivacyGuard is in Normal vs. Strict mode or if specific domains are excluded.`;
         } else {
-          shieldVisual.className = "shield-visual";
-          shieldIcon.textContent = "⏸️";
-          shieldTag.textContent = "PAUSED";
+          if (shieldVisual) shieldVisual.className = "shield-visual";
+          if (shieldIcon) shieldIcon.textContent = "⏸️";
+          if (shieldTag) shieldTag.textContent = "PAUSED";
 
-          title.textContent = "⏸️ xPrivacyGuard Disconnected / Paused";
-          subtitle.textContent = "Domain requests are passing through without sinkholing. Enable xPrivacyGuard on your Android device to activate local VPN interception.";
-
-          headerDot.className = "status-dot inactive";
-          headerText.textContent = "PROTECTION PAUSED";
+          if (title) title.textContent = "⏸️ xPrivacyGuard Disconnected / Paused";
+          if (subtitle) subtitle.textContent = "Domain requests are passing through without sinkholing. Enable xPrivacyGuard on your Android device to activate local VPN interception.";
         }
       }
 
@@ -1713,22 +1616,15 @@
         testResults = {};
         resourceResults = {};
 
-        // 1. Trace Cloudflare Network
         await runCloudflareTrace();
-
-        // 2. Run Domain Filter Tests
         await runDomainFilterTests();
-
-        // 3. Run Resource & API Interception Tests
         runResourceTests();
       }
 
-      // Initialize on DOM Ready
       window.addEventListener("DOMContentLoaded", () => {
         initUI();
         addLog("xPrivacyGuard Privacy & Security Tester Initialized.", "info");
 
-        // Automatically run diagnostic suite on page load
         runAllTests();
       });
     </script>
