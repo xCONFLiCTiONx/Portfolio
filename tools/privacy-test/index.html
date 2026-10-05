@@ -143,6 +143,106 @@
         max-width: 650px;
       }
 
+      /* xPrivacyGuard Component Status Panel */
+      .xpg-status-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: 24px;
+        margin-bottom: 24px;
+        box-shadow: var(--shadow-card);
+      }
+
+      .xpg-status-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 18px;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+
+      .xpg-status-title {
+        font-size: 18px;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--text-primary);
+      }
+
+      .xpg-status-badge {
+        font-size: 12px;
+        font-weight: 800;
+        padding: 4px 14px;
+        border-radius: var(--radius-full);
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+      }
+
+      .xpg-status-badge.active {
+        background: var(--accent-green-bg);
+        color: #34d399;
+        border: 1px solid rgba(16, 185, 129, 0.4);
+        box-shadow: 0 0 15px rgba(16, 185, 129, 0.2);
+      }
+
+      .xpg-status-badge.inactive {
+        background: var(--accent-red-bg);
+        color: #f87171;
+        border: 1px solid rgba(239, 68, 68, 0.4);
+      }
+
+      .xpg-status-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 12px;
+      }
+
+      .xpg-status-item {
+        background: var(--bg-subtle);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        padding: 14px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        transition: var(--transition);
+      }
+
+      .xpg-status-item:hover {
+        border-color: var(--border-highlight);
+      }
+
+      .xpg-item-label {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .xpg-item-status {
+        font-size: 14px;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .xpg-item-status.active {
+        color: #34d399;
+      }
+
+      .xpg-item-status.inactive {
+        color: #f87171;
+      }
+
+      .xpg-item-status.partial {
+        color: #fbbf24;
+      }
+
       /* Grade & Score Card */
       .grade-card {
         background: var(--bg-card);
@@ -882,6 +982,43 @@
         </div>
       </section>
 
+      <!-- XPRIVACYGUARD LIVE COMPONENT STATUS PANEL -->
+      <section class="xpg-status-card" id="xpgStatusSection">
+        <div class="xpg-status-header">
+          <div class="xpg-status-title">
+            <span>🛡️</span> xPrivacyGuard Live Protection Status
+          </div>
+          <div class="xpg-status-badge inactive" id="xpgMasterBadge">INACTIVE</div>
+        </div>
+
+        <div class="xpg-status-grid">
+          <div class="xpg-status-item">
+            <span class="xpg-item-label">VPN Protection</span>
+            <span class="xpg-item-status inactive" id="xpgStatusVpn">🔴 INACTIVE</span>
+          </div>
+
+          <div class="xpg-status-item">
+            <span class="xpg-item-label">App Firewall</span>
+            <span class="xpg-item-status inactive" id="xpgStatusFirewall">🔴 INACTIVE</span>
+          </div>
+
+          <div class="xpg-status-item">
+            <span class="xpg-item-label">DNS Protection</span>
+            <span class="xpg-item-status inactive" id="xpgStatusDns">🔴 INACTIVE</span>
+          </div>
+
+          <div class="xpg-status-item">
+            <span class="xpg-item-label">Tracker Blocking</span>
+            <span class="xpg-item-status inactive" id="xpgStatusTracker">🔴 INACTIVE</span>
+          </div>
+
+          <div class="xpg-status-item">
+            <span class="xpg-item-label">Ad Blocking</span>
+            <span class="xpg-item-status inactive" id="xpgStatusAd">🔴 INACTIVE</span>
+          </div>
+        </div>
+      </section>
+
       <!-- GRADE & SECURITY SCORE CARD -->
       <section class="grade-card" id="gradeCardSection">
         <div class="grade-header">
@@ -1133,8 +1270,9 @@
        */
 
       const TEST_TARGETS = [
-        // Handshake Probe
-        { name: "xPrivacyGuard Active Handshake Probe", domain: "check.xprivacyguard.internal", cat: "handshake", url: "https://check.xprivacyguard.internal/" },
+        // Handshake Probes
+        { name: "xPrivacyGuard Status Probe (Public Subdomain)", domain: "xprivacyguard-status.xconflictionx.cc", cat: "handshake", url: "https://xprivacyguard-status.xconflictionx.cc/status.json" },
+        { name: "xPrivacyGuard Internal Handshake Probe", domain: "check.xprivacyguard.internal", cat: "handshake", url: "https://check.xprivacyguard.internal/" },
 
         // DoH / DoT Evasion Prevention
         { name: "Google DoH Resolver", domain: "dns.google", cat: "doh-bypass", url: "https://dns.google/" },
@@ -1415,31 +1553,62 @@
         const startTime = performance.now();
         let blocked = false;
         let detail = "";
+        const cacheBuster = "?xpg_test=" + Date.now() + "_" + Math.random().toString(36).substring(2, 7);
 
-        try {
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 2500);
+        if (target.cat === "handshake") {
+          try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 2000);
 
-          await fetch(target.url + "?xpg_test=" + Date.now() + "_" + Math.random().toString(36).substring(2, 7), {
-            mode: "no-cors",
-            cache: "no-store",
-            signal: controller.signal
-          });
+            await fetch(target.url + cacheBuster, {
+              mode: "cors",
+              cache: "no-store",
+              signal: controller.signal
+            });
 
-          clearTimeout(timeoutId);
-          const elapsed = Math.round(performance.now() - startTime);
-          blocked = false;
-          detail = `Connected in ${elapsed} ms (Request Passed)`;
-          addLog(`[UNBLOCKED] ${target.name} (${target.domain}) → Request completed in ${elapsed}ms`, "fail");
-        } catch (err) {
-          const elapsed = Math.round(performance.now() - startTime);
-          blocked = true;
-          if (target.cat === "handshake") {
-            detail = `Handshake Intercepted in ${elapsed} ms (VPN Active)`;
-            addLog(`[HANDSHAKE SUCCESS] ${target.name} → Intercepted in ${elapsed}ms (xPrivacyGuard Live)`, "pass");
-          } else {
-            detail = `Blocked in ${elapsed} ms (Sinkholed / NXDOMAIN)`;
-            addLog(`[BLOCKED] ${target.name} (${target.domain}) → Intercepted in ${elapsed}ms`, "pass");
+            clearTimeout(timeoutId);
+            const elapsed = Math.round(performance.now() - startTime);
+            blocked = false;
+            detail = `Resolved via Public DNS (${elapsed} ms) — VPN Inactive`;
+            addLog(`[HANDSHAKE PROBE UNFILTERED] ${target.name} (${target.domain}) → Resolved via public DNS in ${elapsed}ms (xPrivacyGuard Inactive)`, "warn");
+          } catch (err) {
+            const elapsed = Math.round(performance.now() - startTime);
+            if (navigator.onLine) {
+              blocked = true;
+              detail = `Intercepted by xPrivacyGuard in ${elapsed} ms`;
+              addLog(`[HANDSHAKE SUCCESS] ${target.name} (${target.domain}) → Intercepted by xPrivacyGuard local VPN in ${elapsed}ms`, "pass");
+            } else {
+              blocked = false;
+              detail = `Network Offline (${elapsed} ms)`;
+              addLog(`[OFFLINE] ${target.name} → Device offline`, "warn");
+            }
+          }
+        } else {
+          try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 2500);
+
+            await fetch(target.url + cacheBuster, {
+              mode: "no-cors",
+              cache: "no-store",
+              signal: controller.signal
+            });
+
+            clearTimeout(timeoutId);
+            const elapsed = Math.round(performance.now() - startTime);
+            blocked = false;
+            detail = `Connected in ${elapsed} ms (Request Passed)`;
+            addLog(`[UNBLOCKED] ${target.name} (${target.domain}) → Request completed in ${elapsed}ms`, "fail");
+          } catch (err) {
+            const elapsed = Math.round(performance.now() - startTime);
+            if (navigator.onLine) {
+              blocked = true;
+              detail = `Blocked in ${elapsed} ms (Sinkholed / NXDOMAIN)`;
+              addLog(`[BLOCKED] ${target.name} (${target.domain}) → Intercepted in ${elapsed}ms`, "pass");
+            } else {
+              blocked = false;
+              detail = `Offline (${elapsed} ms)`;
+            }
           }
         }
 
@@ -1790,9 +1959,13 @@
         const blockedTests = domainEntries.filter(r => r.blocked).length + resourceEntries.filter(r => r.blocked).length;
         const overallRate = totalTests === 0 ? 0 : Math.round((blockedTests / totalTests) * 100);
 
-        // Sub-category counts
-        const handshakeEntry = testResults["check.xprivacyguard.internal"];
-        const isHandshakeActive = handshakeEntry ? handshakeEntry.blocked : false;
+        // Handshake Status Probe verification
+        const probe1 = testResults["xprivacyguard-status.xconflictionx.cc"];
+        const probe2 = testResults["check.xprivacyguard.internal"];
+
+        // The VPN is considered ACTIVE if local VPN DNS explicitly intercepted the handshake status probe
+        const isHandshakeActive = Boolean((probe1 && probe1.blocked) || (probe2 && probe2.blocked));
+        const isVpnActive = isHandshakeActive && (navigator.onLine || overallRate > 30);
 
         const adEntries = domainEntries.filter(e => e.cat === "ad");
         const adBlocked = adEntries.filter(e => e.blocked).length;
@@ -1800,7 +1973,6 @@
 
         const analyticsEntries = domainEntries.filter(e => e.cat === "analytics");
         const analyticsBlocked = analyticsEntries.filter(e => e.blocked).length;
-        const analyticsRate = analyticsEntries.length === 0 ? 0 : Math.round((analyticsBlocked / analyticsEntries.length) * 100);
 
         const trackerCombinedTotal = adEntries.length + analyticsEntries.length;
         const trackerCombinedBlocked = adBlocked + analyticsBlocked;
@@ -1816,19 +1988,89 @@
 
         const resourceRate = resourceEntries.length === 0 ? 0 : Math.round((resourceEntries.filter(e => e.blocked).length / resourceEntries.length) * 100);
 
-        // Weighted Score Calculation (Total = 100)
-        // 1. VPN Active Handshake & Interception: 25 pts
-        let scoreVpn = (isHandshakeActive ? 20 : 0) + (overallRate > 50 ? 5 : 0);
-        // 2. Ad & Tracker Sinkholing: 25 pts
-        let scoreTrackers = Math.round((trackerRate / 100) * 25);
-        // 3. Telemetry & Strict Protection: 20 pts
-        let scoreTelemetry = Math.round((telemetryRate / 100) * 20);
-        // 4. DoH Evasion Prevention: 15 pts
-        let scoreDoh = Math.round((dohRate / 100) * 15);
-        // 5. In-Page Resource Interception: 15 pts
-        let scoreResources = Math.round((resourceRate / 100) * 15);
+        // Update xPrivacyGuard 5-Component Live Status Box
+        const masterBadgeEl = document.getElementById("xpgMasterBadge");
+        const statusVpnEl = document.getElementById("xpgStatusVpn");
+        const statusFirewallEl = document.getElementById("xpgStatusFirewall");
+        const statusDnsEl = document.getElementById("xpgStatusDns");
+        const statusTrackerEl = document.getElementById("xpgStatusTracker");
+        const statusAdEl = document.getElementById("xpgStatusAd");
 
-        const totalScore = Math.min(100, scoreVpn + scoreTrackers + scoreTelemetry + scoreDoh + scoreResources);
+        if (isVpnActive) {
+          if (masterBadgeEl) {
+            masterBadgeEl.textContent = "ACTIVE";
+            masterBadgeEl.className = "xpg-status-badge active";
+          }
+          if (statusVpnEl) {
+            statusVpnEl.textContent = "🟢 ACTIVE";
+            statusVpnEl.className = "xpg-item-status active";
+          }
+          if (statusFirewallEl) {
+            statusFirewallEl.textContent = "🟢 ACTIVE";
+            statusFirewallEl.className = "xpg-item-status active";
+          }
+          if (statusDnsEl) {
+            if (dohRate >= 50) {
+              statusDnsEl.textContent = "🟢 ACTIVE";
+              statusDnsEl.className = "xpg-item-status active";
+            } else {
+              statusDnsEl.textContent = "🟡 PARTIAL";
+              statusDnsEl.className = "xpg-item-status partial";
+            }
+          }
+          if (statusTrackerEl) {
+            if (trackerRate >= 50) {
+              statusTrackerEl.textContent = "🟢 ACTIVE";
+              statusTrackerEl.className = "xpg-item-status active";
+            } else {
+              statusTrackerEl.textContent = "🔴 INACTIVE";
+              statusTrackerEl.className = "xpg-item-status inactive";
+            }
+          }
+          if (statusAdEl) {
+            if (adRate >= 50) {
+              statusAdEl.textContent = "🟢 ACTIVE";
+              statusAdEl.className = "xpg-item-status active";
+            } else {
+              statusAdEl.textContent = "🔴 INACTIVE";
+              statusAdEl.className = "xpg-item-status inactive";
+            }
+          }
+        } else {
+          if (masterBadgeEl) {
+            masterBadgeEl.textContent = "INACTIVE";
+            masterBadgeEl.className = "xpg-status-badge inactive";
+          }
+          if (statusVpnEl) {
+            statusVpnEl.textContent = "🔴 INACTIVE";
+            statusVpnEl.className = "xpg-item-status inactive";
+          }
+          if (statusFirewallEl) {
+            statusFirewallEl.textContent = "🔴 INACTIVE";
+            statusFirewallEl.className = "xpg-item-status inactive";
+          }
+          if (statusDnsEl) {
+            statusDnsEl.textContent = "🔴 INACTIVE";
+            statusDnsEl.className = "xpg-item-status inactive";
+          }
+          if (statusTrackerEl) {
+            statusTrackerEl.textContent = "🔴 INACTIVE";
+            statusTrackerEl.className = "xpg-item-status inactive";
+          }
+          if (statusAdEl) {
+            statusAdEl.textContent = "🔴 INACTIVE";
+            statusAdEl.className = "xpg-item-status inactive";
+          }
+        }
+
+        // Weighted Score Calculation (Total = 100)
+        let scoreVpn = isVpnActive ? 25 : 0;
+        let scoreTrackers = isVpnActive ? Math.round((trackerRate / 100) * 25) : 0;
+        let scoreTelemetry = isVpnActive ? Math.round((telemetryRate / 100) * 20) : 0;
+        let scoreDoh = isVpnActive ? Math.round((dohRate / 100) * 15) : 0;
+        let scoreResources = isVpnActive ? Math.round((resourceRate / 100) * 15) : 0;
+
+        const totalScore = isVpnActive ? Math.min(100, scoreVpn + scoreTrackers + scoreTelemetry + scoreDoh + scoreResources) : 0;
 
         // Assign Letter Grade
         let letterGrade = "F";
@@ -1836,31 +2078,33 @@
         let gradeTitleText = "⏸️ xPrivacyGuard Disabled";
         let gradeSubtitleText = "Local VPN protection is inactive. Domain requests are passing through directly.";
 
-        if (totalScore >= 95) {
-          letterGrade = "A+";
-          gradeClass = "grade-aplus";
-          gradeTitleText = "🛡️ Optimal Privacy Protection";
-          gradeSubtitleText = "Complete local VPN sinkholing active! Ads, trackers, telemetry, and DoH evasion blocked.";
-        } else if (totalScore >= 85) {
-          letterGrade = "A";
-          gradeClass = "grade-a";
-          gradeTitleText = "🛡️ Strong Privacy Shield";
-          gradeSubtitleText = "Strong DNS interception and tracker filtering active.";
-        } else if (totalScore >= 70) {
-          letterGrade = "B";
-          gradeClass = "grade-b";
-          gradeTitleText = "🛡️ Moderate Protection";
-          gradeSubtitleText = "Good network filtering active, but some strict targets or DoH evasion endpoints remain unblocked.";
-        } else if (totalScore >= 50) {
-          letterGrade = "C";
-          gradeClass = "grade-c";
-          gradeTitleText = "⚠️ Partial Filtering Active";
-          gradeSubtitleText = "Partial domain filtering detected. Enable Strict Mode & DoH Evasion Guard in xPrivacyGuard.";
-        } else if (totalScore >= 30) {
-          letterGrade = "D";
-          gradeClass = "grade-d";
-          gradeTitleText = "⚠️ Weak Protection";
-          gradeSubtitleText = "Low domain block rate. Check if xPrivacyGuard VPN is paused or split-tunneling Chrome.";
+        if (isVpnActive) {
+          if (totalScore >= 95) {
+            letterGrade = "A+";
+            gradeClass = "grade-aplus";
+            gradeTitleText = "🛡️ Optimal Privacy Protection";
+            gradeSubtitleText = "Complete local VPN sinkholing active! Ads, trackers, telemetry, and DoH evasion blocked.";
+          } else if (totalScore >= 85) {
+            letterGrade = "A";
+            gradeClass = "grade-a";
+            gradeTitleText = "🛡️ Strong Privacy Shield";
+            gradeSubtitleText = "Strong DNS interception and tracker filtering active.";
+          } else if (totalScore >= 70) {
+            letterGrade = "B";
+            gradeClass = "grade-b";
+            gradeTitleText = "🛡️ Moderate Protection";
+            gradeSubtitleText = "Good network filtering active, but some strict targets or DoH evasion endpoints remain unblocked.";
+          } else if (totalScore >= 50) {
+            letterGrade = "C";
+            gradeClass = "grade-c";
+            gradeTitleText = "⚠️ Partial Filtering Active";
+            gradeSubtitleText = "Partial domain filtering detected. Enable Strict Mode & DoH Evasion Guard in xPrivacyGuard.";
+          } else {
+            letterGrade = "D";
+            gradeClass = "grade-d";
+            gradeTitleText = "⚠️ Weak Protection";
+            gradeSubtitleText = "Low domain block rate. Check if xPrivacyGuard VPN is paused or split-tunneling Chrome.";
+          }
         }
 
         // Update Hero Stats
@@ -1869,16 +2113,16 @@
         const statBlockedEl = document.getElementById("statBlockedCount");
         const blockBarEl = document.getElementById("blockProgressBar");
 
-        if (statRateEl) statRateEl.textContent = `${overallRate}%`;
-        if (statRateSubEl) statRateSubEl.textContent = `${blockedTests} of ${totalTests} probes blocked`;
-        if (statBlockedEl) statBlockedEl.textContent = blockedTests;
-        if (blockBarEl) blockBarEl.style.width = `${overallRate}%`;
+        if (statRateEl) statRateEl.textContent = `${isVpnActive ? overallRate : 0}%`;
+        if (statRateSubEl) statRateSubEl.textContent = `${isVpnActive ? blockedTests : 0} of ${totalTests} probes blocked`;
+        if (statBlockedEl) statBlockedEl.textContent = isVpnActive ? blockedTests : 0;
+        if (blockBarEl) blockBarEl.style.width = `${isVpnActive ? overallRate : 0}%`;
 
         const statBypassEl = document.getElementById("statBypassState");
         if (statBypassEl) {
-          if (dohEntries.length > 0 && dohBlocked === dohEntries.length) {
+          if (isVpnActive && dohEntries.length > 0 && dohBlocked === dohEntries.length) {
             statBypassEl.textContent = "Protected ✅";
-          } else if (dohBlocked > 0) {
+          } else if (isVpnActive && dohBlocked > 0) {
             statBypassEl.textContent = "Partial ⚠️";
           } else {
             statBypassEl.textContent = "Exposed ❌";
@@ -1897,20 +2141,13 @@
           return;
         }
 
-        if (overallRate >= 80 || isHandshakeActive) {
+        if (isVpnActive) {
           if (shieldVisual) shieldVisual.className = "shield-visual active";
           if (shieldIcon) shieldIcon.textContent = "🛡️";
           if (shieldTag) shieldTag.textContent = "ACTIVE";
 
           if (title) title.textContent = "🛡️ xPrivacyGuard Protection Active";
           if (subtitle) subtitle.textContent = `Strong network sinkholing detected! ${blockedTests} of ${totalTests} tracking probes were successfully blocked at the local VPN layer.`;
-        } else if (overallRate >= 35) {
-          if (shieldVisual) shieldVisual.className = "shield-visual paused";
-          if (shieldIcon) shieldIcon.textContent = "⚠️";
-          if (shieldTag) shieldTag.textContent = "PARTIAL";
-
-          if (title) title.textContent = "⚠️ Partial Filtering / Evasion Detected";
-          if (subtitle) subtitle.textContent = `Only ${blockedTests} of ${totalTests} probes were blocked. Check if xPrivacyGuard is in Normal vs. Strict mode or if specific domains are excluded.`;
         } else {
           if (shieldVisual) shieldVisual.className = "shield-visual";
           if (shieldIcon) shieldIcon.textContent = "⏸️";
@@ -1935,15 +2172,15 @@
         if (scoreValEl) scoreValEl.textContent = `${totalScore}`;
 
         // Pillar Fills
-        setPillarUI("pillarVpnVal", "pillarVpnFill", isHandshakeActive ? 100 : (overallRate > 50 ? 50 : 0));
-        setPillarUI("pillarAdsVal", "pillarAdsFill", trackerRate);
-        setPillarUI("pillarTelemetryVal", "pillarTelemetryFill", telemetryRate);
-        setPillarUI("pillarDohVal", "pillarDohFill", dohRate);
-        setPillarUI("pillarResourceVal", "pillarResourceFill", resourceRate);
+        setPillarUI("pillarVpnVal", "pillarVpnFill", isVpnActive ? 100 : 0);
+        setPillarUI("pillarAdsVal", "pillarAdsFill", isVpnActive ? trackerRate : 0);
+        setPillarUI("pillarTelemetryVal", "pillarTelemetryFill", isVpnActive ? telemetryRate : 0);
+        setPillarUI("pillarDohVal", "pillarDohFill", isVpnActive ? dohRate : 0);
+        setPillarUI("pillarResourceVal", "pillarResourceFill", isVpnActive ? resourceRate : 0);
 
         // Generate Recommendations
         updateRecommendations({
-          isHandshakeActive,
+          isHandshakeActive: isVpnActive,
           trackerRate,
           telemetryRate,
           dohRate,
