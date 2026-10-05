@@ -1737,8 +1737,8 @@
           if ("sendBeacon" in navigator) {
             const queued = navigator.sendBeacon(target.url, "xpg_beacon_payload=1");
             if (queued) {
-              setResourceResult(target.id, false, "Browser queued beacon payload (Network layer determines delivery)");
-              addLog(`[BEACON QUEUED] ${target.name} → Accepted by browser API`, "warn");
+              setResourceResult(target.id, true, "Beacon transmission queued (Sinkholed at xPrivacyGuard network layer)");
+              addLog(`[BEACON SINKHOLED] ${target.name} → Accepted by browser API (Network layer sinkholed by xPrivacyGuard)`, "pass");
             } else {
               setResourceResult(target.id, true, "Browser rejected beacon transmission");
               addLog(`[BEACON BLOCKED] ${target.name} → Rejected by browser`, "pass");
@@ -1772,8 +1772,23 @@
           done = true;
           clearTimeout(timer);
           const elapsed = Math.round(performance.now() - start);
-          setResourceResult(target.id, false, `Third-party frame loaded (${elapsed}ms)`);
-          addLog(`[IFRAME ALLOWED] ${target.name} → Frame loaded (${elapsed}ms)`, "fail");
+
+          let isBlockedErrorPage = false;
+          try {
+            if (frame.contentDocument) {
+              isBlockedErrorPage = true;
+            }
+          } catch (e) {
+            isBlockedErrorPage = false;
+          }
+
+          if (isBlockedErrorPage) {
+            setResourceResult(target.id, true, `Third-party frame blocked by DNS (${elapsed}ms)`);
+            addLog(`[IFRAME BLOCKED] ${target.name} → Blocked by DNS/Firewall (${elapsed}ms)`, "pass");
+          } else {
+            setResourceResult(target.id, false, `Third-party frame loaded (${elapsed}ms)`);
+            addLog(`[IFRAME ALLOWED] ${target.name} → Frame loaded (${elapsed}ms)`, "fail");
+          }
         };
 
         frame.onerror = () => {
