@@ -8,6 +8,12 @@
       name="description"
       content="Comprehensive live privacy, adblock, tracker sinkhole, Cloudflare Zero Trust, WARP, DoH, and DoT diagnostic tool for xPrivacyGuard."
     />
+    <meta name="portfolio-tool-id" content="privacy-test" />
+    <meta name="theme-color" content="#0b0d10" />
+    <link rel="manifest" href="../../site.webmanifest" />
+    <link rel="stylesheet" href="../../css/main.css" />
+    <link rel="icon" id="favicon-js" href="../../assets/favicon.ico" type="image/x-icon" />
+    <link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png" />
 
     <style>
       :root {
@@ -62,6 +68,10 @@
       .container {
         width: min(1200px, calc(100% - 32px));
         margin: 0 auto;
+      }
+
+      .main-content {
+        min-width: 0;
       }
 
       /* Hero Card */
@@ -1012,8 +1022,9 @@
     </style>
   </head>
 
-  <body>
-    <div class="container">
+  <body id="top" data-tool-id="privacy-test">
+    <main class="container">
+      <div class="main-content">
       <!-- HERO / MASTER STATUS -->
       <section class="hero-card">
         <div class="hero-grid">
@@ -1354,11 +1365,12 @@
 
         <div class="terminal-body" id="terminalLog"></div>
       </section>
-    </div>
+        <!-- HIDDEN IFRAME FOR THIRD PARTY FRAME TEST -->
+        <iframe id="trackerFrame" class="hidden-frame" title="Tracker Frame Test"></iframe>
+      </div>
+    </main>
 
-    <!-- HIDDEN IFRAME FOR THIRD PARTY FRAME TEST -->
-    <iframe id="trackerFrame" class="hidden-frame" title="Tracker Frame Test"></iframe>
-
+    <script src="../../js/framework.js"></script>
     <script>
       "use strict";
 
