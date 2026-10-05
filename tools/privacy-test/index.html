@@ -253,6 +253,86 @@
         box-shadow: var(--shadow-card);
       }
 
+      .profile-audit-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: 24px;
+        margin-bottom: 24px;
+        box-shadow: var(--shadow-card);
+      }
+
+      .profile-audit-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-bottom: 8px;
+      }
+
+      .profile-audit-header h3 {
+        font-size: 18px;
+      }
+
+      .profile-audit-controls {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .profile-audit-controls select,
+      .profile-audit-controls button {
+        min-height: 38px;
+        border: 1px solid var(--border-highlight);
+        border-radius: var(--radius-sm);
+        padding: 8px 12px;
+        color: var(--text-primary);
+        background: var(--bg-subtle);
+        font: inherit;
+      }
+
+      .profile-audit-controls button {
+        cursor: pointer;
+        background: var(--accent-blue);
+        border-color: var(--accent-blue);
+        font-weight: 700;
+      }
+
+      .profile-audit-note {
+        color: var(--text-secondary);
+        font-size: 13px;
+        margin-bottom: 16px;
+      }
+
+      .profile-audit-summary {
+        font-size: 15px;
+        font-weight: 800;
+        margin-bottom: 12px;
+      }
+
+      .profile-audit-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 8px;
+      }
+
+      .profile-audit-result {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        padding: 10px 12px;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-sm);
+        background: var(--bg-subtle);
+        font-size: 13px;
+      }
+
+      .profile-audit-result.pass { color: #34d399; }
+      .profile-audit-result.fail { color: #f87171; }
+      .profile-audit-result.na { color: var(--text-secondary); }
+
       .grade-header {
         display: flex;
         align-items: center;
@@ -1098,6 +1178,26 @@
         </div>
       </section>
 
+      <!-- DESKTOP EXTENSION PROFILE AUDIT -->
+      <section class="profile-audit-card" id="extensionProfileAudit">
+        <div class="profile-audit-header">
+          <h3>🧩 Desktop Extension Profile Score</h3>
+          <div class="profile-audit-controls">
+            <label for="extensionProfileSelect">Test profile</label>
+            <select id="extensionProfileSelect">
+              <option value="daily">Daily browsing</option>
+              <option value="cautious">Cautious browsing</option>
+            </select>
+            <button type="button" id="runExtensionProfileAudit">Test profile</button>
+          </div>
+        </div>
+        <p class="profile-audit-note">
+          Select the same profile enabled in the desktop extension. This score checks in-page protections only; the Android VPN score above remains separate.
+        </p>
+        <div class="profile-audit-summary" id="extensionProfileScore">Waiting for profile checks...</div>
+        <div class="profile-audit-grid" id="extensionProfileResults" aria-live="polite"></div>
+      </section>
+
       <!-- CLOUDFLARE & NETWORK INTELLIGENCE MATRIX -->
       <div class="section-title">
         Cloudflare & Network Diagnostic Matrix
@@ -1331,6 +1431,148 @@
       let cloudflareInfo = {};
       let activeFilter = "all";
       let logEntries = [];
+      let extensionProfileAudit = null;
+
+      function runExtensionProfileAudit() {
+        const profileSelect = document.getElementById("extensionProfileSelect");
+        const scoreEl = document.getElementById("extensionProfileScore");
+        const resultsEl = document.getElementById("extensionProfileResults");
+        if (!profileSelect || !scoreEl || !resultsEl) return;
+
+        const profile = profileSelect.value;
+        const checks = [];
+        const addCheck = (label, test) => {
+          try {
+            const result = test();
+            checks.push({
+              label,
+              status: result === null ? "na" : (result ? "pass" : "fail"),
+              detail: result === null ? "Not supported by this browser" : (result ? "Protected" : "Still exposed")
+            });
+          } catch (err) {
+            checks.push({ label, status: "fail", detail: `Check failed: ${err.message}` });
+          }
+        };
+
+        addCheck("Canvas readback noise", () => {
+          const canvas = document.createElement("canvas");
+          canvas.width = 2;
+          canvas.height = 2;
+          const context = canvas.getContext("2d", { willReadFrequently: true });
+          if (!context) return null;
+          context.fillStyle = "rgb(123, 77, 33)";
+          context.fillRect(0, 0, 2, 2);
+          for (let attempt = 0; attempt < 5; attempt++) {
+            if (context.getImageData(0, 0, 1, 1).data[0] !== 123) return true;
+          }
+          return false;
+        });
+        addCheck("Topics / Protected Audience APIs", () =>
+          typeof document.browsingTopics === "undefined" &&
+          typeof document.hasPrivateToken === "undefined" &&
+          typeof document.hasRedemptionRecord === "undefined" &&
+          typeof navigator.joinAdInterestGroup === "undefined" &&
+          typeof navigator.leaveAdInterestGroup === "undefined" &&
+          typeof navigator.runAdAuction === "undefined"
+        );
+        addCheck("Attribution Reporting API", () =>
+          typeof document.createElement("a").attributionSrc === "undefined" &&
+          typeof document.createElement("img").attributionSrc === "undefined" &&
+          typeof document.createElement("iframe").attributionSrc === "undefined"
+        );
+        addCheck("Battery Status API", () => typeof navigator.getBattery === "undefined");
+        addCheck("Local Font Access API", () => typeof window.queryLocalFonts === "undefined");
+
+        if (profile === "daily") {
+          addCheck("Normalized processor count", () => navigator.hardwareConcurrency === 4);
+          addCheck("Normalized device memory", () => navigator.deviceMemory === 8);
+          addCheck("Masked WebGL vendor", () => {
+            const canvas = document.createElement("canvas");
+            const context = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+            if (!context) return null;
+            return context.getParameter(37445) === "PROTECTED";
+          });
+        } else {
+          addCheck("Processor count hidden", () => typeof navigator.hardwareConcurrency === "undefined");
+          addCheck("Device memory hidden", () => typeof navigator.deviceMemory === "undefined");
+          addCheck("WebGL disabled", () =>
+            typeof window.WebGLRenderingContext === "undefined" &&
+            typeof window.WebGL2RenderingContext === "undefined" &&
+            document.createElement("canvas").getContext("webgl") === null
+          );
+          addCheck("WebRTC disabled", () =>
+            typeof window.RTCPeerConnection === "undefined" &&
+            typeof window.webkitRTCPeerConnection === "undefined"
+          );
+          addCheck("Screen metrics hidden", () =>
+            typeof screen.width === "undefined" &&
+            typeof screen.height === "undefined" &&
+            typeof screen.colorDepth === "undefined" &&
+            typeof screen.pixelDepth === "undefined" &&
+            typeof window.devicePixelRatio === "undefined"
+          );
+          addCheck("Canvas text measurement disabled", () =>
+            typeof CanvasRenderingContext2D === "undefined" ||
+            typeof CanvasRenderingContext2D.prototype.measureText === "undefined"
+          );
+          addCheck("Motion and orientation sensors disabled", () =>
+            [
+              "Accelerometer", "AmbientLightSensor", "AbsoluteOrientationSensor",
+              "GravitySensor", "Gyroscope", "LinearAccelerationSensor",
+              "Magnetometer", "RelativeOrientationSensor"
+            ].every((name) => typeof window[name] === "undefined")
+          );
+          addCheck("Audio readback perturbed", () => {
+            const AudioContextConstructor = window.AudioContext || window.webkitAudioContext;
+            if (!AudioContextConstructor) return null;
+            const audioContext = new AudioContextConstructor();
+            try {
+              const buffer = audioContext.createBuffer(1, 1, audioContext.sampleRate);
+              buffer.getChannelData(0)[0] = 0.5;
+              return buffer.getChannelData(0)[0] !== 0.5;
+            } finally {
+              audioContext.close().catch((err) => {
+                addLog(`Could not close the temporary audio context: ${err.message}`, "warn");
+              });
+            }
+          });
+          addCheck("Dynamic eval disabled", () => {
+            try {
+              window.eval("1");
+              return false;
+            } catch (err) {
+              return true;
+            }
+          });
+        }
+
+        const applicableChecks = checks.filter((check) => check.status !== "na");
+        const passedChecks = applicableChecks.filter((check) => check.status === "pass").length;
+        const score = applicableChecks.length
+          ? Math.round((passedChecks / applicableChecks.length) * 100)
+          : 0;
+        const profileName = profile === "daily" ? "Daily browsing" : "Cautious browsing";
+
+        scoreEl.textContent = `${profileName}: ${score}% (${passedChecks}/${applicableChecks.length} applicable checks passed; ${checks.length - applicableChecks.length} not supported)`;
+        resultsEl.replaceChildren();
+        checks.forEach((check) => {
+          const resultEl = document.createElement("div");
+          resultEl.className = `profile-audit-result ${check.status}`;
+          resultEl.textContent = `${check.status === "pass" ? "✓" : (check.status === "fail" ? "✕" : "—")} ${check.label}: ${check.detail}`;
+          resultsEl.appendChild(resultEl);
+        });
+
+        extensionProfileAudit = {
+          profile,
+          profileName,
+          score,
+          passedChecks,
+          applicableChecks: applicableChecks.length,
+          notSupported: checks.length - applicableChecks.length,
+          checks
+        };
+        addLog(`${profileName} browser API profile checks: ${score}% (${passedChecks}/${applicableChecks.length}).`, score === 100 ? "pass" : "warn");
+      }
 
       /*
        * ============================================================
@@ -1396,6 +1638,7 @@
         const report = {
           timestamp: new Date().toISOString(),
           overallStatus: getOverallStatusSummary(),
+          desktopExtensionProfile: extensionProfileAudit,
           cloudflareTrace: cloudflareInfo,
           domainTestResults: testResults,
           resourceTestResults: resourceResults,
@@ -2300,6 +2543,11 @@
 
       window.addEventListener("DOMContentLoaded", () => {
         initUI();
+        document.getElementById("runExtensionProfileAudit")
+          ?.addEventListener("click", runExtensionProfileAudit);
+        document.getElementById("extensionProfileSelect")
+          ?.addEventListener("change", runExtensionProfileAudit);
+        runExtensionProfileAudit();
         addLog("xPrivacyGuard Privacy & Security Tester Initialized.", "info");
 
         runAllTests();
