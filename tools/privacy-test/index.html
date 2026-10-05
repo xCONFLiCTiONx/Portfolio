@@ -1441,6 +1441,33 @@
 
         const profile = profileSelect.value;
         const checks = [];
+        const layers = window[Symbol.for("xPrivacyGuard.protectionLayers")];
+        const hasProfileLayers = Boolean(
+          layers &&
+          layers.daily === true &&
+          (profile === "daily" || layers.cautious === true)
+        );
+        if (!hasProfileLayers) {
+          const profileName = profile === "daily" ? "Daily browsing" : "Cautious browsing";
+          const detail = "Extension layer not detected. Reload the extension and page, and confirm this site is not excluded.";
+          const resultEl = document.createElement("div");
+          resultEl.className = "profile-audit-result na";
+          resultEl.textContent = `— ${profileName}: ${detail}`;
+          resultsEl.replaceChildren(resultEl);
+          scoreEl.textContent = `${profileName}: Not detected`;
+          extensionProfileAudit = {
+            profile,
+            profileName,
+            score: null,
+            passedChecks: 0,
+            applicableChecks: 0,
+            notSupported: 0,
+            checks: [{ label: "Extension injection", status: "na", detail }]
+          };
+          addLog(`${profileName} extension layer not detected on this page.`, "warn");
+          return;
+        }
+
         const addCheck = (label, test, unavailableDetail = "Not supported by this browser") => {
           try {
             const result = test();
