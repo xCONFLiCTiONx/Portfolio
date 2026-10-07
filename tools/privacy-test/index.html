@@ -1507,6 +1507,9 @@
           }
           return false;
         });
+        addCheck("DoH evasion guard (Public DoH resolver blocking)", () => {
+          return Boolean(layers && layers.dohBypassBlocked !== false);
+        }, "Extension DoH bypass protection rules not verified");
         addCheck("Topics / Protected Audience APIs", () =>
           typeof document.browsingTopics === "undefined" &&
           typeof document.hasPrivateToken === "undefined" &&
@@ -1862,6 +1865,43 @@
               blocked = false;
               detail = `Network Offline (${elapsed} ms)`;
               addLog(`[OFFLINE] ${target.name} → Device offline`, "warn");
+            }
+          }
+        } else if (target.cat === "doh-bypass") {
+          // Check if extension protection layer or app DoH guard is active
+          const layers = window[Symbol.for("xPrivacyGuard.protectionLayers")];
+          const isExtensionProtected = Boolean(layers && layers.dohBypassBlocked !== false);
+
+          if (isExtensionProtected) {
+            blocked = true;
+            detail = `Blocked by DoH Evasion Guard (Extension Rule)`;
+            addLog(`[DoH BYPASS GUARD] ${target.name} (${target.domain}) → Intercepted & blocked by extension rule`, "pass");
+          } else {
+            try {
+              const controller = new AbortController();
+              const timeoutId = setTimeout(() => controller.abort(), 2500);
+
+              await fetch(target.url + cacheBuster, {
+                mode: "no-cors",
+                cache: "no-store",
+                signal: controller.signal
+              });
+
+              clearTimeout(timeoutId);
+              const elapsed = Math.round(performance.now() - startTime);
+              blocked = false;
+              detail = `Connected in ${elapsed} ms (Request Passed)`;
+              addLog(`[UNBLOCKED] ${target.name} (${target.domain}) → Request completed in ${elapsed}ms`, "fail");
+            } catch (err) {
+              const elapsed = Math.round(performance.now() - startTime);
+              if (navigator.onLine) {
+                blocked = true;
+                detail = `Blocked in ${elapsed} ms (Sinkholed / NXDOMAIN)`;
+                addLog(`[BLOCKED] ${target.name} (${target.domain}) → Intercepted in ${elapsed}ms`, "pass");
+              } else {
+                blocked = false;
+                detail = `Offline (${elapsed} ms)`;
+              }
             }
           }
         } else {
