@@ -1186,6 +1186,7 @@
       return { success: true, message: "Workspace clean. Nothing to push." };
     }
 
+    const branch = state.githubBranch || "main";
     const results = [];
     for (const path of changed) {
       const content = state.files[path] || "";
@@ -1193,10 +1194,30 @@
       const body = {
         message: `${commitMsg} [${path}]`,
         content: b64,
-        branch: state.githubBranch || "main"
+        branch
       };
-      if (state.fileShas[path]) {
-        body.sha = state.fileShas[path];
+
+      // Ensure SHA is accurate to prevent 409 Conflict
+      let sha = state.fileShas[path];
+      if (!sha) {
+        try {
+          const headRes = await fetch(`https://api.github.com/repos/${state.githubRepo}/contents/${path}?ref=${branch}`, {
+            headers: {
+              "Authorization": `Bearer ${state.githubToken}`,
+              "Accept": "application/vnd.github.v3+json"
+            }
+          });
+          if (headRes.ok) {
+            const headData = await headRes.json();
+            sha = headData.sha;
+            state.fileShas[path] = sha;
+          }
+        } catch (e) {
+          console.warn("Could not pre-fetch file sha for", path, e);
+        }
+      }
+      if (sha) {
+        body.sha = sha;
       }
 
       const putRes = await fetch(`https://api.github.com/repos/${state.githubRepo}/contents/${path}`, {
@@ -1221,6 +1242,11 @@
       state.modifiedFiles.delete(path);
       results.push(path);
     }
+
+    // Persist file SHAs so reloads keep valid SHAs
+    try {
+      localStorage.setItem("vsc_gh_file_shas", JSON.stringify(state.fileShas));
+    } catch (e) {}
 
     updateGitStatus();
     return { success: true, pushedFiles: results };
@@ -1477,7 +1503,20 @@
 
   // --- MULTI-VIEW & TABS CONTROLLERS ---
   function switchSidebarView(viewId) {
-    if (el.sidebar && el.sidebar.classList.contains("collapsed")) {
+    const isCurrentActive = state.activeSidebarView === viewId;
+    const isCollapsed = el.sidebar && el.sidebar.classList.contains("collapsed");
+
+    // If clicking the currently active view and sidebar is open, collapse sidebar (Standard VS Code behavior)
+    if (isCurrentActive && !isCollapsed) {
+      if (el.sidebar) el.sidebar.classList.add("collapsed");
+      document.querySelectorAll(".vsc-act-btn").forEach(b => {
+        if (b !== el.actAccounts && b !== el.actSettings) b.classList.remove("active");
+      });
+      return;
+    }
+
+    // Otherwise expand sidebar and switch to selected view
+    if (el.sidebar) {
       el.sidebar.classList.remove("collapsed");
     }
     const viewMap = {
@@ -4133,18 +4172,24 @@ Subcommands:
     if (el.btnOpenGhModal) el.btnOpenGhModal.addEventListener("click", openGitHubModal);
     if (el.btnGitPush) {
       el.btnGitPush.addEventListener("click", async () => {
+        if (!state.githubRepo || !state.githubToken) {
+          openGitHubModal();
+          return;
+        }
         const msg = (el.gitCommitMsg && el.gitCommitMsg.value.trim()) || "feat: update workspace files via VS Code Tools";
-        termPrint(`Pushing changes to GitHub...`, "vsc-term-info");
+        termPrint(`Pushing ${state.modifiedFiles.size} changed file(s) to GitHub (${state.githubRepo})...`, "vsc-term-info");
         try {
           const res = await githubPush(msg);
           if (res.pushedFiles && res.pushedFiles.length > 0) {
             termPrint(`Committed and pushed ${res.pushedFiles.length} file(s) to GitHub: "${msg}"`, "vsc-term-success");
+            showMessage("success", "GITHUB PUSH", `Pushed ${res.pushedFiles.length} file(s) to ${state.githubRepo}: "${msg}"`);
             if (el.gitCommitMsg) el.gitCommitMsg.value = "";
           } else {
             termPrint(res.message || "Working tree clean. Nothing to push.", "vsc-term-info");
           }
         } catch (e) {
           termPrint(`Push failed: ${e.message}`, "vsc-term-error");
+          showMessage("error", "GITHUB PUSH FAILED", e.message);
         }
       });
     }
@@ -5211,11 +5256,29 @@ Subcommands:
       });
     });
 
-    // Sidebar activity toggle
-    if (el.actExplorer && el.sidebar) {
-      el.actExplorer.addEventListener("click", () => {
-        el.sidebar.classList.toggle("collapsed");
-        el.actExplorer.classList.toggle("active");
+    // Editor toolbar Push to GitHub button
+    if (el.btnPushEditor) {
+      el.btnPushEditor.addEventListener("click", async () => {
+        if (!state.githubRepo || !state.githubToken) {
+          openGitHubModal();
+          return;
+        }
+        const fileToPush = state.activeFile;
+        const msg = await promptInWorkbench("Commit Message", `feat: update ${fileToPush || "workspace files"}`, "Commit message");
+        if (!msg) return;
+        termPrint(`Pushing changes to GitHub (${state.githubRepo})...`, "vsc-term-info");
+        try {
+          const res = await githubPush(msg);
+          if (res.pushedFiles && res.pushedFiles.length > 0) {
+            termPrint(`Committed & pushed ${res.pushedFiles.length} file(s) to GitHub: "${msg}"`, "vsc-term-success");
+            showMessage("success", "GITHUB PUSH", `Committed and pushed to GitHub: ${msg}`);
+          } else {
+            termPrint(res.message || "Working tree clean. Nothing to push.", "vsc-term-info");
+          }
+        } catch (err) {
+          termPrint(`Push failed: ${err.message}`, "vsc-term-error");
+          showMessage("error", "GITHUB PUSH FAILED", err.message);
+        }
       });
     }
 
