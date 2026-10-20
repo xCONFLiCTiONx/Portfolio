@@ -596,7 +596,8 @@
     el.style.cssText =
       "position:fixed;bottom:24px;right:24px;z-index:3000;background:linear-gradient(90deg,#062c43,#054a68);border:1px solid #00e5ff;color:#fff;padding:12px 18px;border-radius:6px;font-family:var(--zh-font-mono);font-size:12px;box-shadow:0 8px 28px rgba(0,229,255,0.4);display:flex;align-items:center;gap:10px;";
     el.innerHTML = `<span style="color:#34d399;font-weight:800;">[✓]</span> <span>${escapeHtml(msg)}</span>`;
-    document.body.appendChild(el);
+    const host = document.getElementById("zero-hour-app") || document.body;
+    host.appendChild(el);
     setTimeout(() => {
       if (el.parentNode) el.remove();
     }, 3600);
@@ -1617,11 +1618,62 @@
     if (reportBtn) reportBtn.onclick = () => openIncidentReportModal();
 
     const fsBtn = document.getElementById("zh-btn-fullscreen");
+    const appEl = document.getElementById("zero-hour-app");
+
+    function syncFullscreenUI() {
+      const isNativeFs = !!(
+        document.fullscreenElement ||
+        document.webkitFullscreenElement ||
+        document.msFullscreenElement
+      );
+      document.body.classList.toggle("zh-fullscreen-mode", isNativeFs);
+      if (fsBtn) {
+        fsBtn.textContent = isNativeFs ? "✕ Exit Fullscreen" : "⛶ Fullscreen";
+      }
+    }
+
     if (fsBtn) {
-      fsBtn.onclick = () => {
-        document.body.classList.toggle("zh-fullscreen-mode");
+      fsBtn.onclick = async () => {
+        SoundFX.play("click");
+        const isNativeFs = !!(
+          document.fullscreenElement ||
+          document.webkitFullscreenElement ||
+          document.msFullscreenElement
+        );
+
+        try {
+          if (!isNativeFs) {
+            const target = appEl || document.documentElement;
+            if (target.requestFullscreen) {
+              await target.requestFullscreen();
+            } else if (target.webkitRequestFullscreen) {
+              target.webkitRequestFullscreen();
+            } else if (target.msRequestFullscreen) {
+              target.msRequestFullscreen();
+            } else {
+              document.body.classList.toggle("zh-fullscreen-mode");
+            }
+          } else {
+            if (document.exitFullscreen) {
+              await document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+              document.webkitExitFullscreen();
+            } else if (document.msExitFullscreen) {
+              document.msExitFullscreen();
+            } else {
+              document.body.classList.remove("zh-fullscreen-mode");
+            }
+          }
+        } catch (err) {
+          // Fallback if browser blocks Fullscreen API in restricted iframe
+          const fallbackActive = document.body.classList.toggle("zh-fullscreen-mode");
+          fsBtn.textContent = fallbackActive ? "✕ Exit Fullscreen" : "⛶ Fullscreen";
+        }
       };
     }
+
+    document.addEventListener("fullscreenchange", syncFullscreenUI);
+    document.addEventListener("webkitfullscreenchange", syncFullscreenUI);
 
     // Close modal on backdrop click
     const backdrop = document.getElementById("zh-modal-backdrop");

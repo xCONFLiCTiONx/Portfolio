@@ -61,6 +61,16 @@ body[data-tool-id="zero-hour"].zh-fullscreen-mode footer.site-footer {
   display: none !important;
 }
 
+#zero-hour-app:fullscreen,
+#zero-hour-app:-webkit-full-screen,
+body[data-tool-id="zero-hour"].zh-fullscreen-mode #zero-hour-app {
+  width: 100vw;
+  height: 100dvh;
+  min-height: 100dvh;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
 /* Main Command Center Wrapper */
 #zero-hour-app {
   position: relative;
