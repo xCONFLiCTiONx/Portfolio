@@ -128,7 +128,7 @@ User-Agent: VSCodeTools/4.2
     commandHistory: [],
     historyIndex: -1,
     isMaximized: false,
-    savedPanelHeight: 280,
+    savedPanelHeight: 180,
     activeShell: "powershell",
     activeTab: "terminal",
     servers: {}, // { port: { file, url, pid, startedAt } }
@@ -328,8 +328,9 @@ User-Agent: VSCodeTools/4.2
       const workspaceHeight = el.app.offsetHeight - 36 - 24; // Less titlebar & statusbar
       let newHeight = startHeight + deltaY;
 
-      // Bounds clamping: min 60px, max workspaceHeight - 80px
-      newHeight = Math.max(60, Math.min(workspaceHeight - 80, newHeight));
+      // Bounds clamping: min 40px, leave at least 140px visible for editor
+      const minEditorHeight = 140;
+      newHeight = Math.max(40, Math.min(workspaceHeight - minEditorHeight, newHeight));
       el.terminalPanel.style.height = `${newHeight}px`;
       state.savedPanelHeight = newHeight;
     });
@@ -360,7 +361,8 @@ User-Agent: VSCodeTools/4.2
       el.btnMaximize.classList.add("active");
     } else {
       el.terminalPanel.classList.remove("maximized");
-      el.terminalPanel.style.height = `${state.savedPanelHeight || 320}px`;
+      const restoreH = state.savedPanelHeight || 180;
+      el.terminalPanel.style.height = `${restoreH}px`;
       el.btnMaximize.title = "Maximize Panel Size";
       el.btnMaximize.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>`;
       el.btnMaximize.classList.remove("active");
@@ -2143,6 +2145,16 @@ Length: ${hex.length * 4} bits (${hex.length} hex chars)
     renderSidebarLists();
     openFile(state.activeFile);
     initEvents();
+
+    // Ensure clean initial terminal height (don't cover editor files on launch)
+    if (el.terminalPanel && el.app) {
+      const avail = el.app.offsetHeight - 36 - 24;
+      const initialH = Math.min(185, Math.floor(avail * 0.32));
+      if (initialH >= 100) {
+        el.terminalPanel.style.height = `${initialH}px`;
+        state.savedPanelHeight = initialH;
+      }
+    }
 
     // Print welcome banner in terminal
     termPrintHTML(`

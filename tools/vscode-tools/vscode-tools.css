@@ -642,7 +642,7 @@ body[data-tool-id="vscode-tools"].vsc-fullscreen #vscode-workbench {
   flex-direction: column;
   background-color: var(--vsc-bg-panel);
   border-top: 1px solid var(--vsc-border);
-  height: 320px; /* Default height */
+  height: clamp(140px, 26vh, 200px); /* Clean lower-third default height like VS Code */
   min-height: 40px;
   position: relative;
   overflow: hidden;
