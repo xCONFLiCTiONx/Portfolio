@@ -1499,23 +1499,83 @@
     return { success: true, pushedFiles: results };
   }
 
+  async function computeGitBlobSha(content) {
+    if (typeof content !== "string") return null;
+    try {
+      const normalized = content.replace(/\r\n/g, "\n");
+      const enc = new TextEncoder();
+      const bytes = enc.encode(normalized);
+      const header = `blob ${bytes.length}\0`;
+      const headerBytes = enc.encode(header);
+      const full = new Uint8Array(headerBytes.length + bytes.length);
+      full.set(headerBytes, 0);
+      full.set(bytes, headerBytes.length);
+      const hashBuf = await crypto.subtle.digest("SHA-1", full);
+      return Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2, "0")).join("");
+    } catch (e) {
+      return null;
+    }
+  }
+
   async function githubPull(options = {}) {
     if (!state.githubToken) throw new Error("GitHub Token required to pull changes.");
     if (!state.githubRepo) throw new Error("No repository selected. Connect a repo first.");
 
     const repo = state.githubRepo.trim();
-    const branch = (state.githubBranch || "main").trim();
+    let branch = (state.githubBranch || "main").trim();
     const onProgress = options.onProgress || null;
 
-    const treeUrl = `https://api.github.com/repos/${repo}/git/trees/${branch}?recursive=1`;
+    // 1. Resolve latest commit tree SHA to bypass GitHub API & browser caching
+    let targetTreeSha = branch;
+    try {
+      const commitRes = await fetch(`https://api.github.com/repos/${repo}/commits/${encodeURIComponent(branch)}?per_page=1&_t=${Date.now()}`, {
+        headers: {
+          "Authorization": `Bearer ${state.githubToken}`,
+          "Accept": "application/vnd.github.v3+json",
+          "Cache-Control": "no-cache",
+          "Pragma": "no-cache"
+        },
+        cache: "no-store"
+      });
+      if (commitRes.ok) {
+        const commitData = await commitRes.json();
+        if (commitData.commit && commitData.commit.tree && commitData.commit.tree.sha) {
+          targetTreeSha = commitData.commit.tree.sha;
+        }
+      }
+    } catch (e) {
+      console.warn("Could not resolve latest commit tree sha, falling back to branch ref:", e);
+    }
+
+    // 2. Fetch the remote tree (with cache-busting)
+    const treeUrl = `https://api.github.com/repos/${repo}/git/trees/${encodeURIComponent(targetTreeSha)}?recursive=1&_t=${Date.now()}`;
     const res = await fetch(treeUrl, {
       headers: {
         "Authorization": `Bearer ${state.githubToken}`,
-        "Accept": "application/vnd.github.v3+json"
-      }
+        "Accept": "application/vnd.github.v3+json",
+        "Cache-Control": "no-cache",
+        "Pragma": "no-cache"
+      },
+      cache: "no-store"
     });
 
     if (!res.ok) {
+      // Fallback check: if branch was "main" but repo default is "master"
+      if (res.status === 404 && branch === "main") {
+        const masterRes = await fetch(`https://api.github.com/repos/${repo}/git/trees/master?recursive=1&_t=${Date.now()}`, {
+          headers: {
+            "Authorization": `Bearer ${state.githubToken}`,
+            "Accept": "application/vnd.github.v3+json"
+          },
+          cache: "no-store"
+        });
+        if (masterRes.ok) {
+          branch = "master";
+          state.githubBranch = "master";
+          updateGitStatus();
+          return githubPull(options);
+        }
+      }
       throw new Error(`Failed to load tree from ${repo}@${branch}: ${res.status} ${res.statusText}`);
     }
 
@@ -1524,19 +1584,31 @@
       throw new Error("No files found in remote repository tree.");
     }
 
-    const remoteBlobs = data.tree.filter(item => item.type === "blob" && (!item.size || item.size < 500000));
+    const remoteBlobs = data.tree.filter(item => item.type === "blob" && (!item.size || item.size < 2000000));
     const remoteMap = new Map();
     remoteBlobs.forEach(item => remoteMap.set(item.path, item));
 
     const toPull = [];
     const conflicts = [];
 
+    // 3. Inspect every remote file against actual local content using Git blob SHAs
     for (const item of remoteBlobs) {
-      const localSha = state.fileShas[item.path];
       const hasLocalFile = Object.prototype.hasOwnProperty.call(state.files, item.path);
       const isModifiedLocally = state.modifiedFiles.has(item.path);
 
-      if (!hasLocalFile || localSha !== item.sha) {
+      let localMatchesRemote = false;
+      if (hasLocalFile) {
+        const localContent = state.files[item.path] || "";
+        const computedSha = await computeGitBlobSha(localContent);
+        if (computedSha && computedSha === item.sha) {
+          localMatchesRemote = true;
+          state.fileShas[item.path] = item.sha;
+        } else if (!state.isLocalProject && state.fileShas[item.path] === item.sha) {
+          localMatchesRemote = true;
+        }
+      }
+
+      if (!hasLocalFile || !localMatchesRemote || options.force) {
         if (isModifiedLocally && !options.force) {
           conflicts.push(item.path);
         } else {
@@ -1563,30 +1635,69 @@
     }
 
     if (toPull.length === 0) {
-      return { success: true, count: 0, pulledFiles: [], message: "Already up to date." };
+      return { success: true, count: 0, pulledFiles: [], diskSyncCount: 0, message: `Already up to date with remote (${remoteBlobs.length} files verified).` };
     }
 
     let loaded = 0;
     const pulledFiles = [];
+    let diskSyncCount = 0;
 
     for (const item of toPull) {
       try {
-        const fRes = await fetch(`https://api.github.com/repos/${repo}/contents/${item.path}?ref=${branch}`, {
+        const fRes = await fetch(`https://api.github.com/repos/${repo}/contents/${encodeURIComponent(item.path).replace(/%2F/g, "/")}?ref=${encodeURIComponent(branch)}&_t=${Date.now()}`, {
           headers: {
             "Authorization": `Bearer ${state.githubToken}`,
-            "Accept": "application/vnd.github.v3+json"
-          }
+            "Accept": "application/vnd.github.v3+json",
+            "Cache-Control": "no-cache",
+            "Pragma": "no-cache"
+          },
+          cache: "no-store"
         });
+
         if (fRes.ok) {
           const fData = await fRes.json();
           if (fData.content) {
-            const decoded = decodeURIComponent(escape(atob(fData.content.replace(/\s/g, ""))));
+            let decoded = "";
+            try {
+              const binStr = atob(fData.content.replace(/\s/g, ""));
+              const bytes = new Uint8Array(binStr.length);
+              for (let i = 0; i < binStr.length; i++) bytes[i] = binStr.charCodeAt(i);
+              decoded = new TextDecoder("utf-8").decode(bytes);
+            } catch (errDec) {
+              decoded = decodeURIComponent(escape(atob(fData.content.replace(/\s/g, ""))));
+            }
+
             state.files[item.path] = decoded;
             state.baselineFiles[item.path] = decoded;
-            state.fileShas[item.path] = fData.sha;
+            state.fileShas[item.path] = fData.sha || item.sha;
             state.modifiedFiles.delete(item.path);
             pulledFiles.push(item.path);
             loaded++;
+
+            // --- SYNC TO PHYSICAL DISK DRIVE IF LOCAL PROJECT IS LOADED ---
+            if (state.isLocalProject) {
+              try {
+                let handle = state.fileHandles ? state.fileHandles.get(item.path) : null;
+                if (!handle && state.projectDirHandle) {
+                  const parts = item.path.split("/");
+                  let curDir = state.projectDirHandle;
+                  for (let i = 0; i < parts.length - 1; i++) {
+                    curDir = await curDir.getDirectoryHandle(parts[i], { create: true });
+                  }
+                  handle = await curDir.getFileHandle(parts[parts.length - 1], { create: true });
+                  state.fileHandles.set(item.path, handle);
+                }
+                if (handle) {
+                  const writable = await handle.createWritable();
+                  await writable.write(decoded);
+                  await writable.close();
+                  diskSyncCount++;
+                }
+              } catch (diskErr) {
+                console.warn(`Could not sync pulled file ${item.path} to physical drive:`, diskErr);
+              }
+            }
+
             if (onProgress) onProgress(loaded, toPull.length, item.path);
           }
         }
@@ -1602,8 +1713,8 @@
 
     saveWorkspace();
 
-    // If active file was updated, reload in active editor textarea
-    if (state.activeFile && pulledFiles.includes(state.activeFile)) {
+    // Reload active editor textarea if active file was pulled
+    if (state.activeFile && pulledFiles.some(f => f === state.activeFile || f.replace(/^\.\//, "") === state.activeFile.replace(/^\.\//, ""))) {
       if (el.codeTextarea) {
         el.codeTextarea.value = state.files[state.activeFile] || "";
       }
@@ -1619,7 +1730,13 @@
     updateGitStatus();
     refreshProblems();
 
-    return { success: true, count: loaded, pulledFiles, total: toPull.length };
+    return {
+      success: true,
+      count: loaded,
+      pulledFiles,
+      diskSyncCount,
+      total: toPull.length
+    };
   }
 
   async function syncWithGitHub() {
@@ -4450,13 +4567,15 @@ Subcommands:
             termPrint(`Clone failed: ${e.message}`, "vsc-term-error");
           }
         } else if (sub === "pull") {
-          termPrint(`Pulling latest changes from ${state.githubRepo || "remote"} (${state.githubBranch || "main"})...`, "vsc-term-info");
+          const isForce = args.includes("--force") || args.includes("-f");
+          termPrint(`Pulling latest changes from ${state.githubRepo || "remote"} (${state.githubBranch || "main"})${isForce ? ' [force]' : ''}...`, "vsc-term-info");
           try {
-            const pullRes = await githubPull();
+            const pullRes = await githubPull({ force: isForce });
             if (pullRes.pulledFiles && pullRes.pulledFiles.length > 0) {
-              termPrint(`Successfully pulled ${pullRes.pulledFiles.length} file(s) from GitHub:`, "vsc-term-success");
+              const diskNote = pullRes.diskSyncCount > 0 ? ` (${pullRes.diskSyncCount} written to local disk)` : "";
+              termPrint(`Successfully pulled ${pullRes.pulledFiles.length} file(s) from GitHub${diskNote}:`, "vsc-term-success");
               pullRes.pulledFiles.forEach(f => termPrint(`  ↓ ${f}`, "vsc-term-dim"));
-              showMessage("success", "GITHUB PULL", `Pulled ${pullRes.pulledFiles.length} updated file(s) from ${state.githubRepo}`);
+              showMessage("success", "GITHUB PULL", `Pulled ${pullRes.pulledFiles.length} updated file(s) from ${state.githubRepo}${diskNote}`);
             } else {
               termPrint(pullRes.message || "Already up to date with remote repository.", "vsc-term-info");
             }
@@ -5403,7 +5522,7 @@ Subcommands:
       });
     }
     if (el.btnGitPull) {
-      el.btnGitPull.addEventListener("click", async () => {
+      el.btnGitPull.addEventListener("click", async (e) => {
         if (!state.githubToken) {
           openGitHubModal("Please connect your GitHub Personal Access Token to pull changes.");
           return;
@@ -5412,16 +5531,18 @@ Subcommands:
           openGitHubModal("Please select a target GitHub repository to pull changes.");
           return;
         }
-        termPrint(`Pulling changes from GitHub (${state.githubRepo}@${state.githubBranch || "main"})...`, "vsc-term-info");
+        const isForce = !!(e && (e.shiftKey || e.altKey));
+        termPrint(`Pulling changes from GitHub (${state.githubRepo}@${state.githubBranch || "main"})${isForce ? ' [force]' : ''}...`, "vsc-term-info");
         try {
-          const res = await githubPull();
+          const res = await githubPull({ force: isForce });
           if (res.pulledFiles && res.pulledFiles.length > 0) {
-            termPrint(`Successfully pulled ${res.pulledFiles.length} file(s) from GitHub:`, "vsc-term-success");
+            const diskNote = res.diskSyncCount > 0 ? ` (${res.diskSyncCount} written to local disk)` : "";
+            termPrint(`Successfully pulled ${res.pulledFiles.length} file(s) from GitHub${diskNote}:`, "vsc-term-success");
             res.pulledFiles.forEach(f => termPrint(`  ↓ ${f}`, "vsc-term-dim"));
-            showMessage("success", "GITHUB PULL", `Pulled ${res.pulledFiles.length} file(s) from ${state.githubRepo}`);
+            showMessage("success", "GITHUB PULL", `Pulled ${res.pulledFiles.length} file(s) from ${state.githubRepo}${diskNote}`);
           } else {
             termPrint(res.message || "Already up to date with remote repository.", "vsc-term-info");
-            showMessage("info", "GITHUB PULL", "Already up to date with remote repository.");
+            showMessage("info", "GITHUB PULL", res.message || "Already up to date with remote repository.");
           }
         } catch (e) {
           termPrint(`Pull failed: ${e.message}`, "vsc-term-error");
@@ -6611,7 +6732,7 @@ Subcommands:
 
     // Editor toolbar Pull & Push buttons
     if (el.btnPullEditor) {
-      el.btnPullEditor.addEventListener("click", async () => {
+      el.btnPullEditor.addEventListener("click", async (e) => {
         if (!state.githubToken) {
           openGitHubModal("Please connect your GitHub Personal Access Token to pull changes.");
           return;
@@ -6620,16 +6741,18 @@ Subcommands:
           openGitHubModal("Please select a target GitHub repository to pull changes.");
           return;
         }
-        termPrint(`Pulling changes from GitHub (${state.githubRepo}@${state.githubBranch || "main"})...`, "vsc-term-info");
+        const isForce = !!(e && (e.shiftKey || e.altKey));
+        termPrint(`Pulling changes from GitHub (${state.githubRepo}@${state.githubBranch || "main"})${isForce ? ' [force]' : ''}...`, "vsc-term-info");
         try {
-          const res = await githubPull();
+          const res = await githubPull({ force: isForce });
           if (res.pulledFiles && res.pulledFiles.length > 0) {
-            termPrint(`Successfully pulled ${res.pulledFiles.length} file(s) from GitHub:`, "vsc-term-success");
+            const diskNote = res.diskSyncCount > 0 ? ` (${res.diskSyncCount} written to disk)` : "";
+            termPrint(`Successfully pulled ${res.pulledFiles.length} file(s) from GitHub${diskNote}:`, "vsc-term-success");
             res.pulledFiles.forEach(f => termPrint(`  ↓ ${f}`, "vsc-term-dim"));
-            showMessage("success", "GITHUB PULL", `Successfully pulled ${res.pulledFiles.length} file(s) from ${state.githubRepo}`);
+            showMessage("success", "GITHUB PULL", `Successfully pulled ${res.pulledFiles.length} file(s) from ${state.githubRepo}${diskNote}`);
           } else {
             termPrint(res.message || "Already up to date with remote repository.", "vsc-term-info");
-            showMessage("info", "GITHUB PULL", "Already up to date with remote repository.");
+            showMessage("info", "GITHUB PULL", res.message || "Already up to date with remote repository.");
           }
         } catch (err) {
           termPrint(`Pull failed: ${err.message}`, "vsc-term-error");
