@@ -4,6 +4,7 @@
    ========================================================================== */
 
 :root {
+  color-scheme: dark;
   --zh-bg-deep: #02060d;
   --zh-bg-main: #040a15;
   --zh-bg-panel: rgba(6, 15, 30, 0.86);
@@ -33,6 +34,40 @@
   --zh-font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --zh-font-display: "Montserrat", "Orbitron", "Rajdhani", "Segoe UI", sans-serif;
   --zh-font-mono: "JetBrains Mono", "Fira Code", "Cascadia Code", "Consolas", monospace;
+
+  --scrollbar-thumb: #0a4d78;
+  --scrollbar-track: #030914;
+}
+
+/* Custom Cyber Scrollbars (Standard + Legacy Fallback) */
+html,
+body[data-tool-id="zero-hour"],
+#zero-hour-app,
+#zero-hour-app * {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+@supports not (scrollbar-color: auto) {
+  body[data-tool-id="zero-hour"]::-webkit-scrollbar,
+  #zero-hour-app::-webkit-scrollbar,
+  #zero-hour-app *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  body[data-tool-id="zero-hour"]::-webkit-scrollbar-thumb,
+  #zero-hour-app::-webkit-scrollbar-thumb,
+  #zero-hour-app *::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 4px;
+  }
+
+  body[data-tool-id="zero-hour"]::-webkit-scrollbar-track,
+  #zero-hour-app::-webkit-scrollbar-track,
+  #zero-hour-app *::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+  }
 }
 
 /* Override portfolio container constraints so Command Center is full-bleed */
