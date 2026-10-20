@@ -1779,18 +1779,24 @@
   }
 
   // --- MULTI-VIEW & TABS CONTROLLERS ---
-  function toggleExplorerSidebar() {
+  function toggleExplorerSidebar(e) {
+    if (e) {
+      if (typeof e.preventDefault === "function" && e.cancelable) e.preventDefault();
+      if (typeof e.stopPropagation === "function") e.stopPropagation();
+    }
     if (!el.sidebar) return;
     const isShowing = !el.sidebar.classList.contains("collapsed");
-    if (isShowing) {
-      // If currently showing, hide it
+    const isCurrentActive = state.activeSidebarView === "explorer";
+
+    if (isShowing && isCurrentActive) {
+      // If currently showing Explorer, collapse/hide it
       el.sidebar.classList.add("collapsed");
       document.querySelectorAll(".vsc-act-btn").forEach(b => {
         if (b !== el.actAccounts && b !== el.actSettings) b.classList.remove("active");
       });
       state.activeSidebarView = null;
     } else {
-      // If currently hidden, open it and show Explorer
+      // If currently hidden OR showing another view (search, git, etc.), open and show Explorer
       el.sidebar.classList.remove("collapsed");
       document.querySelectorAll(".vsc-sidebar-view").forEach(v => v.classList.remove("active"));
       document.querySelectorAll(".vsc-act-btn").forEach(b => {
@@ -1974,6 +1980,7 @@
 
   function openGitHubModal(statusPrompt = "") {
     if (!el.githubDialog) return;
+    const promptText = typeof statusPrompt === "string" ? statusPrompt : "";
     if (!state.githubToken) {
       state.githubToken = getStoredToken();
     }
@@ -2004,8 +2011,8 @@
     if (el.ghRepoInput) el.ghRepoInput.value = state.githubRepo;
     if (el.ghBranchInput) el.ghBranchInput.value = state.githubBranch || "main";
     if (el.ghStatusMsg) {
-      el.ghStatusMsg.innerHTML = statusPrompt
-        ? `<span style="color:var(--vsc-turquoise);font-weight:600">${escapeHtml(statusPrompt)}</span>`
+      el.ghStatusMsg.innerHTML = promptText
+        ? `<span style="color:var(--vsc-turquoise);font-weight:600">${escapeHtml(promptText)}</span>`
         : "";
     }
 
@@ -3973,7 +3980,11 @@ Subcommands:
 
   // --- UTILITY FORMATTERS ---
   function escapeHtml(str) {
-    return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    if (typeof str !== "string") {
+      if (str === null || str === undefined || typeof str === "object") return "";
+      str = String(str);
+    }
+    return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
   }
 
   function formatBytes(bytes) {
@@ -4566,14 +4577,32 @@ Subcommands:
     // Initialize Titlebar Menu Dropdowns
     initMenuDropdowns();
 
-    // Activity Bar View Switchers
-    if (el.actExplorer) el.actExplorer.addEventListener("click", toggleExplorerSidebar);
-    if (el.actSearch) el.actSearch.addEventListener("click", () => switchSidebarView("search"));
-    if (el.actGit) el.actGit.addEventListener("click", () => switchSidebarView("git"));
-    if (el.actDebug) el.actDebug.addEventListener("click", () => switchSidebarView("debug"));
-    if (el.actExtensions) el.actExtensions.addEventListener("click", () => switchSidebarView("extensions"));
-    if (el.actAccounts) el.actAccounts.addEventListener("click", openGitHubModal);
-    if (el.actSettings) el.actSettings.addEventListener("click", openSettingsModal);
+    // Activity Bar View Switchers (Supports pointerdown, touchstart, and click for reliable mobile response)
+    const bindActBtn = (btn, fn) => {
+      if (!btn) return;
+      let lastPress = 0;
+      const handler = (e) => {
+        if (e) {
+          if (typeof e.preventDefault === "function" && e.cancelable) e.preventDefault();
+          if (typeof e.stopPropagation === "function") e.stopPropagation();
+        }
+        const now = Date.now();
+        if (now - lastPress < 220) return;
+        lastPress = now;
+        fn(e);
+      };
+      btn.addEventListener("pointerdown", handler);
+      btn.addEventListener("touchstart", handler, { passive: false });
+      btn.addEventListener("click", handler);
+    };
+
+    bindActBtn(el.actExplorer, (e) => toggleExplorerSidebar(e));
+    bindActBtn(el.actSearch, () => switchSidebarView("search"));
+    bindActBtn(el.actGit, () => switchSidebarView("git"));
+    bindActBtn(el.actDebug, () => switchSidebarView("debug"));
+    bindActBtn(el.actExtensions, () => switchSidebarView("extensions"));
+    bindActBtn(el.actAccounts, () => openGitHubModal());
+    bindActBtn(el.actSettings, () => openSettingsModal());
 
     // Auto-close floating drawer on mobile when clicking workspace area
     if (el.workspaceArea) {

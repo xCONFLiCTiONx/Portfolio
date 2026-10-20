@@ -287,6 +287,10 @@ body[data-tool-id="code-tools"].vsc-fullscreen #vscode-workbench {
   cursor: pointer;
   position: relative;
   transition: color 0.15s ease;
+  touch-action: manipulation !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -webkit-tap-highlight-color: transparent !important;
 }
 
 .vsc-act-btn:hover {
@@ -1018,6 +1022,15 @@ body[data-tool-id="code-tools"].vsc-fullscreen #vscode-workbench {
     justify-content: center !important;
     touch-action: manipulation !important;
     cursor: pointer !important;
+  }
+
+  /* Mobile Activity Bar: elevated z-index and touch-ready */
+  .vsc-activity-bar {
+    position: relative !important;
+    z-index: 600 !important;
+    touch-action: manipulation !important;
+    user-select: none !important;
+    -webkit-user-select: none !important;
   }
 
   /* Mobile floating sidebar overlay */
