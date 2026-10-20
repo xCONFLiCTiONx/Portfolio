@@ -83,6 +83,7 @@
     githubUser: null,
     isLocalProject: false,
     projectName: "",
+    cachedRepos: null,
     projectDirHandle: null,
     fileHandles: new Map()
   };
@@ -211,6 +212,9 @@
     paletteList: document.getElementById("vsc-palette-list"),
     githubDialog: document.getElementById("vsc-github-dialog"),
     ghTokenInput: document.getElementById("vsc-gh-token-input"),
+    ghRepoSelect: document.getElementById("vsc-gh-repo-select"),
+    ghBtnRefreshRepos: document.getElementById("vsc-gh-btn-refresh-repos"),
+    ghReposLoading: document.getElementById("vsc-gh-repos-loading"),
     ghRepoInput: document.getElementById("vsc-gh-repo-input"),
     ghBranchInput: document.getElementById("vsc-gh-branch-input"),
     ghBtnConnect: document.getElementById("vsc-gh-btn-connect"),
@@ -1155,7 +1159,7 @@
 
   async function githubFetchRepos() {
     if (!state.githubToken) throw new Error("Not authenticated. Please connect your GitHub token.");
-    const res = await fetch("https://api.github.com/user/repos?sort=updated&per_page=30", {
+    const res = await fetch("https://api.github.com/user/repos?sort=updated&per_page=100&affiliation=owner,collaborator,organization_member", {
       headers: {
         "Authorization": `Bearer ${state.githubToken}`,
         "Accept": "application/vnd.github.v3+json"
@@ -1163,6 +1167,76 @@
     });
     if (!res.ok) throw new Error(`Failed to fetch repos (${res.status} ${res.statusText})`);
     return await res.json();
+  }
+
+  function renderRepoOptions(repos) {
+    if (!el.ghRepoSelect) return;
+    el.ghRepoSelect.innerHTML = "";
+
+    const placeholder = document.createElement("option");
+    placeholder.value = "";
+    placeholder.textContent = repos && repos.length > 0
+      ? `-- Select a repository (${repos.length} found) --`
+      : "-- No repositories found --";
+    el.ghRepoSelect.appendChild(placeholder);
+
+    let foundCurrent = false;
+    if (Array.isArray(repos)) {
+      repos.forEach((r) => {
+        const opt = document.createElement("option");
+        opt.value = r.full_name;
+        opt.dataset.branch = r.default_branch || "main";
+        const privacy = r.private ? "[Private]" : "[Public]";
+        opt.textContent = `${r.full_name} (${r.default_branch || 'main'}) ${privacy}`;
+        if (state.githubRepo && r.full_name.toLowerCase() === state.githubRepo.toLowerCase()) {
+          opt.selected = true;
+          foundCurrent = true;
+          if (el.ghBranchInput && !el.ghBranchInput.value) {
+            el.ghBranchInput.value = r.default_branch || "main";
+          }
+        }
+        el.ghRepoSelect.appendChild(opt);
+      });
+    }
+
+    const customOpt = document.createElement("option");
+    customOpt.value = "__custom__";
+    customOpt.textContent = "✎ Enter custom repository manually...";
+    el.ghRepoSelect.appendChild(customOpt);
+
+    if (state.githubRepo && !foundCurrent && el.ghRepoInput) {
+      el.ghRepoInput.value = state.githubRepo;
+    }
+  }
+
+  async function loadRepoOptions(forceRefresh = false) {
+    if (!el.ghRepoSelect) return;
+    const token = (el.ghTokenInput && el.ghTokenInput.value.trim()) || state.githubToken;
+    if (!token) {
+      el.ghRepoSelect.innerHTML = `<option value="">-- Enter token to load repositories --</option><option value="__custom__">✎ Enter custom repository manually...</option>`;
+      return;
+    }
+
+    if (!forceRefresh && state.cachedRepos && state.cachedRepos.length > 0) {
+      renderRepoOptions(state.cachedRepos);
+      return;
+    }
+
+    if (el.ghReposLoading) el.ghReposLoading.style.display = "block";
+    el.ghRepoSelect.innerHTML = `<option value="">Fetching your repositories from GitHub...</option>`;
+    el.ghRepoSelect.disabled = true;
+
+    try {
+      const repos = await githubFetchRepos();
+      state.cachedRepos = repos;
+      renderRepoOptions(repos);
+    } catch (err) {
+      console.warn("Could not fetch user repos:", err);
+      el.ghRepoSelect.innerHTML = `<option value="">-- Could not auto-load repos: ${err.message} --</option><option value="__custom__">✎ Enter custom repository manually...</option>`;
+    } finally {
+      if (el.ghReposLoading) el.ghReposLoading.style.display = "none";
+      el.ghRepoSelect.disabled = false;
+    }
   }
 
   async function githubCloneRepo(repoFullName, branch = "main", onProgress = null) {
@@ -1779,8 +1853,20 @@
     if (el.ghRepoInput) el.ghRepoInput.value = state.githubRepo;
     if (el.ghBranchInput) el.ghBranchInput.value = state.githubBranch || "main";
     if (el.ghStatusMsg) el.ghStatusMsg.textContent = "";
+
+    // Automatically load repositories if token exists
+    if (state.githubToken) {
+      loadRepoOptions(false);
+    } else if (el.ghRepoSelect) {
+      el.ghRepoSelect.innerHTML = `<option value="">-- Enter token to load repositories --</option><option value="__custom__">✎ Enter custom repository manually...</option>`;
+    }
+
     el.githubDialog.showModal();
-    if (el.ghTokenInput) el.ghTokenInput.focus();
+    if (!state.githubToken && el.ghTokenInput) {
+      el.ghTokenInput.focus();
+    } else if (el.ghRepoSelect) {
+      el.ghRepoSelect.focus();
+    }
   }
 
   function searchInFiles() {
@@ -4448,11 +4534,62 @@ Subcommands:
       });
     }
 
+    if (el.ghRepoSelect) {
+      el.ghRepoSelect.addEventListener("change", () => {
+        const selectedVal = el.ghRepoSelect.value;
+        const selectedOpt = el.ghRepoSelect.selectedOptions ? el.ghRepoSelect.selectedOptions[0] : null;
+
+        if (selectedVal === "__custom__") {
+          if (el.ghRepoInput) {
+            el.ghRepoInput.focus();
+            el.ghRepoInput.select();
+          }
+        } else if (selectedVal) {
+          if (el.ghRepoInput) el.ghRepoInput.value = selectedVal;
+          if (selectedOpt && selectedOpt.dataset.branch && el.ghBranchInput) {
+            el.ghBranchInput.value = selectedOpt.dataset.branch;
+          }
+          if (el.ghStatusMsg) {
+            el.ghStatusMsg.innerHTML = `<span style="color:#98c379">Selected ${selectedVal} (branch: ${el.ghBranchInput ? el.ghBranchInput.value : 'main'})</span>`;
+          }
+        }
+      });
+    }
+
+    if (el.ghBtnRefreshRepos) {
+      el.ghBtnRefreshRepos.addEventListener("click", () => {
+        loadRepoOptions(true);
+      });
+    }
+
+    if (el.ghRepoInput) {
+      el.ghRepoInput.addEventListener("input", () => {
+        const val = el.ghRepoInput.value.trim().toLowerCase();
+        if (!el.ghRepoSelect) return;
+        let matched = false;
+        Array.from(el.ghRepoSelect.options).forEach(opt => {
+          if (opt.value && opt.value.toLowerCase() === val) {
+            opt.selected = true;
+            matched = true;
+            if (opt.dataset.branch && el.ghBranchInput) {
+              el.ghBranchInput.value = opt.dataset.branch;
+            }
+          }
+        });
+        if (!matched && val) {
+          const customOpt = el.ghRepoSelect.querySelector('option[value="__custom__"]');
+          if (customOpt) customOpt.selected = true;
+        }
+      });
+    }
+
     if (el.ghTokenInput) {
       el.ghTokenInput.addEventListener("keydown", (e) => {
         if (e.key === "Enter") {
           e.preventDefault();
-          const repo = el.ghRepoInput && el.ghRepoInput.value.trim();
+          const repo = (el.ghRepoSelect && el.ghRepoSelect.value && el.ghRepoSelect.value !== "__custom__")
+            ? el.ghRepoSelect.value
+            : (el.ghRepoInput && el.ghRepoInput.value.trim());
           if (repo) {
             if (el.ghBtnConnect) el.ghBtnConnect.click();
           } else {
@@ -4472,30 +4609,41 @@ Subcommands:
         if (el.ghStatusMsg) el.ghStatusMsg.innerHTML = `<span style="color:var(--vsc-turquoise)">Saving &amp; verifying token...</span>`;
         const remember = !el.ghRememberToken || el.ghRememberToken.checked;
         const authRes = await githubAuth(token, remember);
-        if (authRes.success && authRes.user) {
-          if (el.ghStatusMsg) el.ghStatusMsg.innerHTML = `<span style="color:#98c379">✓ Token saved &amp; remembered as @${authRes.user.login}!</span>`;
-          termPrint(`GitHub token saved and remembered for @${authRes.user.login} (${maskToken(token)})`, "vsc-term-success");
-          showMessage("success", "GITHUB TOKEN", `Token remembered for @${authRes.user.login}. Automatically persisted across sessions.`);
+        if (authRes.success) {
+          const userStr = authRes.user && authRes.user.login ? `@${authRes.user.login}` : maskToken(token);
+          if (el.ghSavedBadge) {
+            el.ghSavedBadge.style.display = "inline-block";
+            el.ghSavedBadge.textContent = `✓ Saved (${userStr})`;
+          }
+          if (el.ghBtnDisconnect) el.ghBtnDisconnect.style.display = "inline-flex";
+          termPrint(`GitHub token saved and remembered for ${userStr}`, "vsc-term-success");
+          showMessage("success", "GITHUB TOKEN", `Token remembered for ${userStr}. Listing repositories.`);
+
+          if (el.ghStatusMsg) el.ghStatusMsg.innerHTML = `<span style="color:var(--vsc-turquoise)">✓ Token verified! Loading your repositories...</span>`;
+          await loadRepoOptions(true);
+          if (el.ghStatusMsg) el.ghStatusMsg.innerHTML = `<span style="color:#98c379">✓ Token verified! Choose a repository from the list above.</span>`;
+          if (el.ghRepoSelect) el.ghRepoSelect.focus();
         } else {
-          if (el.ghStatusMsg) el.ghStatusMsg.innerHTML = `<span style="color:#98c379">✓ Token saved in browser storage (${maskToken(token)})</span>`;
-          termPrint(`GitHub token saved in local browser storage (${maskToken(token)}). Note: ${authRes.message}`, "vsc-term-info");
-          showMessage("info", "GITHUB TOKEN", `Token saved in local storage (${maskToken(token)}).`);
+          if (el.ghStatusMsg) el.ghStatusMsg.innerHTML = `<span style="color:#f44336">Verification failed: ${authRes.message}</span>`;
+          termPrint(`GitHub token verification failed: ${authRes.message}`, "vsc-term-error");
+          showMessage("error", "GITHUB TOKEN", authRes.message);
         }
-        setTimeout(() => {
-          if (el.githubDialog && el.githubDialog.open) el.githubDialog.close();
-        }, 900);
       });
     }
 
     const handleGhDisconnect = async () => {
       await githubAuth("");
+      state.cachedRepos = null;
       if (el.ghTokenInput) el.ghTokenInput.value = "";
       if (el.ghRepoInput) el.ghRepoInput.value = "";
+      if (el.ghRepoSelect) el.ghRepoSelect.innerHTML = `<option value="">-- Enter token to load repositories --</option><option value="__custom__">✎ Enter custom repository manually...</option>`;
       if (el.settingGhToken) el.settingGhToken.value = "";
       state.githubRepo = "";
       try { localStorage.removeItem("vsc_gh_repo"); } catch(e){}
       setCookie("gh_repo", "", -1);
       updateGitStatus();
+      if (el.ghSavedBadge) el.ghSavedBadge.style.display = "none";
+      if (el.ghBtnDisconnect) el.ghBtnDisconnect.style.display = "none";
       if (el.ghStatusMsg) el.ghStatusMsg.innerHTML = `<span style="color:var(--vsc-fg-secondary)">Logged out. Token and repo cleared.</span>`;
       termPrint("Logged out from GitHub. Token cleared from cookies and local storage.", "vsc-term-info");
       showMessage("info", "GITHUB LOGOUT", "Logged out. Token removed from device.");
@@ -4510,7 +4658,10 @@ Subcommands:
     if (el.ghBtnConnect) {
       el.ghBtnConnect.addEventListener("click", async () => {
         const token = (el.ghTokenInput && el.ghTokenInput.value.trim()) || state.githubToken;
-        const repo = el.ghRepoInput && el.ghRepoInput.value.trim();
+        let repo = (el.ghRepoSelect && el.ghRepoSelect.value) || (el.ghRepoInput && el.ghRepoInput.value.trim());
+        if (repo === "__custom__" || !repo) {
+          repo = el.ghRepoInput ? el.ghRepoInput.value.trim() : "";
+        }
         const branch = (el.ghBranchInput && el.ghBranchInput.value.trim()) || "main";
 
         if (!token) {
@@ -4526,8 +4677,13 @@ Subcommands:
           return;
         }
 
-        if (repo) {
-          state.githubRepo = repo;
+        if (!repo) {
+          if (el.ghStatusMsg) el.ghStatusMsg.innerHTML = `<span style="color:#f44336">Please select or enter a repository to load.</span>`;
+          if (el.ghRepoSelect) el.ghRepoSelect.focus();
+          return;
+        }
+
+        state.githubRepo = repo;
           state.githubBranch = branch;
           try {
             localStorage.setItem("vsc_gh_repo", repo);
@@ -4550,10 +4706,6 @@ Subcommands:
           } catch (e) {
             if (el.ghStatusMsg) el.ghStatusMsg.innerHTML = `<span style="color:#f44336">${e.message}</span>`;
           }
-        } else {
-          if (el.ghStatusMsg) el.ghStatusMsg.innerHTML = `<span style="color:#98c379">Authenticated as ${authRes.user.login}!</span>`;
-          setTimeout(() => el.githubDialog.close(), 800);
-        }
       });
     }
 

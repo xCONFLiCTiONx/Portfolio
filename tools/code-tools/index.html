@@ -698,9 +698,21 @@
             <label for="vsc-gh-remember-token" style="font-size:11px;color:var(--vsc-fg-secondary);cursor:pointer">Remember token on this device (localStorage &amp; cookies)</label>
           </div>
         </div>
-        <div class="vsc-input-group">
-          <label class="vsc-input-label" for="vsc-gh-repo-input">Target Repository (owner/repo):</label>
-          <input type="text" class="vsc-modal-input" id="vsc-gh-repo-input" placeholder="e.g. xCONFLiCTiONx/Portfolio" />
+        <div class="vsc-input-group" id="vsc-gh-repo-picker-group">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <label class="vsc-input-label" for="vsc-gh-repo-select">Target Repository:</label>
+            <button type="button" class="vsc-editor-btn" id="vsc-gh-btn-refresh-repos" title="Refresh repositories list" style="padding:2px 8px;font-size:10px;height:auto;line-height:1.3">↻ Refresh Repos</button>
+          </div>
+          <div id="vsc-gh-repos-loading" style="font-size:11px;color:var(--vsc-turquoise);display:none;padding:4px 0">
+            <span>Fetching your repositories from GitHub...</span>
+          </div>
+          <select class="vsc-modal-input" id="vsc-gh-repo-select" style="width:100%">
+            <option value="">-- Enter token to load repositories --</option>
+          </select>
+          <div id="vsc-gh-manual-repo-wrap" style="margin-top:6px">
+            <label class="vsc-input-label" for="vsc-gh-repo-input" style="font-size:10px;color:var(--vsc-fg-secondary);font-weight:normal">Or enter custom / third-party repository (owner/repo):</label>
+            <input type="text" class="vsc-modal-input" id="vsc-gh-repo-input" placeholder="e.g. owner/repo" style="width:100%" />
+          </div>
         </div>
         <div class="vsc-input-group">
           <label class="vsc-input-label" for="vsc-gh-branch-input">Branch (default: main):</label>

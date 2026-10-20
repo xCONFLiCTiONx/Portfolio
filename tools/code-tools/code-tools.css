@@ -1428,6 +1428,17 @@ dialog.vsc-dialog::backdrop {
   font-size: 12px;
   font-family: var(--vsc-font-code);
   outline: none;
+  box-sizing: border-box;
+}
+
+select.vsc-modal-input {
+  cursor: pointer;
+}
+
+select.vsc-modal-input option {
+  background: #181818;
+  color: #fff;
+  padding: 6px 8px;
 }
 
 .vsc-modal-input:focus {
