@@ -88,7 +88,9 @@
     fileHandles: new Map(),
     baselineFiles: {},
     geminiApiKey: localStorage.getItem("vsc_gemini_api_key") || "",
-    lastCommitGen: null
+    lastCommitGen: null,
+    currentServingFile: "",
+    currentServingPort: 3000
   };
 
   // Load persisted user workspace or initialize clean empty workspace
@@ -941,6 +943,7 @@
           }
           await scanDir(entry, path);
         } else if (entry.kind === "file") {
+          state.fileHandles.set(path, entry);
           const ext = entry.name.includes(".") ? entry.name.split(".").pop().toLowerCase() : "";
           if (textExtensions.has(ext) || entry.name.startsWith(".")) {
             try {
@@ -949,7 +952,6 @@
                 const text = await file.text();
                 state.files[path] = text;
                 state.baselineFiles[path] = text;
-                state.fileHandles.set(path, entry);
                 loadedCount++;
               }
             } catch (err) {
@@ -3555,34 +3557,405 @@ Integrated Web Developer Workbench:
     showMessage("info", "Markdown Preview", `Previewing "${fn}". Tap '← Back to Code' anytime to edit.`);
   }
 
-  // --- LIVE VIRTUAL WEB SERVER ENGINE (SERVE & PREVIEW) ---
-  function serveFile(filename, customPort = 3000, openInChrome = false) {
-    if (!state.files[filename]) {
-      termPrint(`Cannot serve: file '${filename}' does not exist in workspace.`, "vsc-term-error");
+  // --- WORKSPACE ASSET RESOLUTION & VIRTUAL SERVER ENGINE ---
+  function resolveWorkspacePath(refPath, currentFile) {
+    if (!refPath || typeof refPath !== "string") return null;
+    const trimmed = refPath.trim();
+    if (trimmed.startsWith("data:") || trimmed.startsWith("http:") || trimmed.startsWith("https:") ||
+        trimmed.startsWith("//") || trimmed.startsWith("blob:") || trimmed.startsWith("#") ||
+        trimmed.startsWith("javascript:") || trimmed.startsWith("mailto:") || trimmed.startsWith("tel:")) {
+      return null;
+    }
+
+    // Strip query string and hash
+    const cleanRef = trimmed.split(/[?#]/)[0];
+    if (cleanRef.startsWith("/")) {
+      return cleanRef.slice(1);
+    }
+
+    const currentDir = (currentFile && currentFile.includes("/"))
+      ? currentFile.slice(0, currentFile.lastIndexOf("/"))
+      : "";
+    const parts = (currentDir ? currentDir.split("/") : []).concat(cleanRef.split("/"));
+    const resolved = [];
+    for (const part of parts) {
+      if (!part || part === ".") continue;
+      if (part === "..") {
+        if (resolved.length > 0) resolved.pop();
+      } else {
+        resolved.push(part);
+      }
+    }
+    return resolved.join("/");
+  }
+
+  function findWorkspaceFile(resolvedPath) {
+    if (!resolvedPath || !state.files) return null;
+    if (state.files[resolvedPath] !== undefined) {
+      return { path: resolvedPath, content: state.files[resolvedPath] };
+    }
+    const lower = resolvedPath.toLowerCase();
+    for (const k of Object.keys(state.files)) {
+      if (k.toLowerCase() === lower) {
+        return { path: k, content: state.files[k] };
+      }
+    }
+    for (const k of Object.keys(state.files)) {
+      if (k.endsWith("/" + resolvedPath) || resolvedPath.endsWith("/" + k)) {
+        return { path: k, content: state.files[k] };
+      }
+    }
+    return null;
+  }
+
+  async function buildVirtualWebsite(filename) {
+    if (!state.files[filename]) return "";
+    let html = state.files[filename];
+
+    const currentDir = filename.includes("/") ? filename.slice(0, filename.lastIndexOf("/")) : "";
+
+    // Determine site root URL if running on a web origin
+    let siteBaseUrl = "";
+    if (window.location && window.location.protocol && window.location.protocol.startsWith("http")) {
+      siteBaseUrl = window.location.origin + window.location.pathname.replace(/\/tools\/code-tools.*$/, "/");
+    }
+
+    // 1. Resolve and inline CSS stylesheets (<link rel="stylesheet">)
+    const linkRegex = /<link\s+([^>]*?)>/gi;
+    const linksToReplace = [];
+    let match;
+    while ((match = linkRegex.exec(html)) !== null) {
+      const fullTag = match[0];
+      const attrs = match[1];
+      if (/rel=["'](?:stylesheet)["']/i.test(attrs)) {
+        const hrefMatch = attrs.match(/href=["']([^"']+)["']/i);
+        if (hrefMatch) {
+          const href = hrefMatch[1];
+          const resolved = resolveWorkspacePath(href, filename);
+          const file = findWorkspaceFile(resolved);
+          if (file) {
+            linksToReplace.push({ fullTag, href, path: file.path, content: file.content });
+          }
+        }
+      }
+    }
+
+    for (const item of linksToReplace) {
+      let cssContent = item.content;
+      // Inline any @import in the stylesheet
+      cssContent = cssContent.replace(/@import\s+(?:url\(['"]?|['"])([^'")]+)['"]?\)?;?/gi, (impMatch, impUrl) => {
+        const impResolved = resolveWorkspacePath(impUrl, item.path);
+        const impFile = findWorkspaceFile(impResolved);
+        if (impFile) {
+          return `/* @import ${impUrl} */\n${impFile.content}\n`;
+        }
+        return impMatch;
+      });
+
+      // If siteBaseUrl exists, adjust root-relative URLs like url('/fonts/...')
+      if (siteBaseUrl) {
+        cssContent = cssContent.replace(/url\(['"]?\/([^\/'")][^'")]+)['"]?\)/gi, `url('${siteBaseUrl}$1')`);
+      }
+
+      // Check if CSS references local fonts or images in fileHandles
+      if (state.fileHandles && state.fileHandles.size > 0) {
+        const urlMatches = cssContent.match(/url\(['"]?([^'")]+)['"]?\)/gi) || [];
+        for (const uMatch of urlMatches) {
+          const rawUrl = uMatch.replace(/^url\(['"]?|['"]?\)$/gi, "");
+          if (!rawUrl.startsWith("data:") && !rawUrl.startsWith("http:") && !rawUrl.startsWith("https:") && !rawUrl.startsWith("//")) {
+            const resolvedAsset = resolveWorkspacePath(rawUrl, item.path);
+            if (resolvedAsset && state.fileHandles.has(resolvedAsset)) {
+              try {
+                const h = state.fileHandles.get(resolvedAsset);
+                const f = await h.getFile();
+                const bUrl = URL.createObjectURL(f);
+                cssContent = cssContent.split(uMatch).join(`url('${bUrl}')`);
+              } catch (e) {}
+            }
+          }
+        }
+      }
+
+      const styleBlock = `<style data-source="${escapeHtml(item.href)}" data-path="${escapeHtml(item.path)}">\n${cssContent}\n</style>`;
+      html = html.replace(item.fullTag, styleBlock);
+    }
+
+    // 2. Resolve and inline local scripts (<script src="..."></script>)
+    const scriptRegex = /<script\s+([^>]*?)>(?:[\s\S]*?<\/script>|)/gi;
+    const scriptsToReplace = [];
+    while ((match = scriptRegex.exec(html)) !== null) {
+      const fullTag = match[0];
+      const attrs = match[1];
+      const srcMatch = attrs.match(/src=["']([^"']+)["']/i);
+      if (srcMatch) {
+        const src = srcMatch[1];
+        const resolved = resolveWorkspacePath(src, filename);
+        const file = findWorkspaceFile(resolved);
+        if (file) {
+          const cleanAttrs = attrs.replace(/\s*src=["'][^"']*["']/i, "");
+          scriptsToReplace.push({ fullTag, src, path: file.path, content: file.content, cleanAttrs });
+        }
+      }
+    }
+
+    for (const item of scriptsToReplace) {
+      const scriptBlock = `<script data-source="${escapeHtml(item.src)}" data-path="${escapeHtml(item.path)}"${item.cleanAttrs}>\n${item.content}\n</script>`;
+      html = html.replace(item.fullTag, scriptBlock);
+    }
+
+    // 3. Resolve images and icons from SVG or file handles
+    const assetRegex = /<(img|link)\s+([^>]*?)>/gi;
+    const assetsToReplace = [];
+    while ((match = assetRegex.exec(html)) !== null) {
+      const fullTag = match[0];
+      const tag = match[1].toLowerCase();
+      const attrs = match[2];
+      const attrName = tag === "link" ? "href" : "src";
+      const regex = new RegExp(`${attrName}=["']([^"']+)["']`, "i");
+      const attrMatch = attrs.match(regex);
+      if (attrMatch) {
+        const ref = attrMatch[1];
+        const resolved = resolveWorkspacePath(ref, filename);
+        if (resolved) {
+          const file = findWorkspaceFile(resolved);
+          if (file && file.path.endsWith(".svg")) {
+            const svgData = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(file.content);
+            const newTag = fullTag.replace(regex, `${attrName}="${svgData}"`);
+            assetsToReplace.push({ fullTag, newTag });
+          } else if (state.fileHandles && state.fileHandles.has(resolved)) {
+            try {
+              const h = state.fileHandles.get(resolved);
+              const f = await h.getFile();
+              const bUrl = URL.createObjectURL(f);
+              const newTag = fullTag.replace(regex, `${attrName}="${bUrl}"`);
+              assetsToReplace.push({ fullTag, newTag });
+            } catch (e) {}
+          }
+        }
+      }
+    }
+
+    for (const item of assetsToReplace) {
+      html = html.replace(item.fullTag, item.newTag);
+    }
+
+    // 4. Virtual file map for fetch & XMLHttpRequest interception
+    const virtualFiles = {};
+    for (const [k, v] of Object.entries(state.files)) {
+      if (typeof v === "string") {
+        virtualFiles[k] = v;
+        if (k.startsWith("/")) virtualFiles[k.slice(1)] = v;
+        if (currentDir && k.startsWith(currentDir + "/")) {
+          virtualFiles[k.slice(currentDir.length + 1)] = v;
+        }
+        const baseName = k.split("/").pop();
+        if (k.endsWith(".json") || k.endsWith(".config.json") || k.endsWith(".manifest") || k.endsWith(".xml")) {
+          virtualFiles[baseName] = v;
+          virtualFiles["./" + baseName] = v;
+          virtualFiles["../" + baseName] = v;
+          virtualFiles["../../" + baseName] = v;
+        }
+      }
+    }
+
+    // 5. Virtual Server runtime script
+    const virtualServerScript = `
+<script id="__vsc_virtual_server_runtime__">
+(function() {
+  const CURRENT_FILE = ${JSON.stringify(filename)};
+  const VIRTUAL_FILES = ${JSON.stringify(virtualFiles)};
+  const SITE_BASE_URL = ${JSON.stringify(siteBaseUrl)};
+
+  function getMime(path) {
+    const p = (path || '').toLowerCase().split('?')[0];
+    if (p.endsWith('.json')) return 'application/json';
+    if (p.endsWith('.js')) return 'application/javascript';
+    if (p.endsWith('.css')) return 'text/css';
+    if (p.endsWith('.html') || p.endsWith('.htm')) return 'text/html';
+    if (p.endsWith('.svg')) return 'image/svg+xml';
+    if (p.endsWith('.xml') || p.endsWith('.webmanifest')) return 'application/xml';
+    if (p.endsWith('.txt') || p.endsWith('.md')) return 'text/plain';
+    return 'application/octet-stream';
+  }
+
+  function resolveVirtualPath(url) {
+    if (!url || typeof url !== 'string') return null;
+    let clean = url.split(/[?#]/)[0];
+    if (clean.startsWith('http://') || clean.startsWith('https://') || clean.startsWith('//')) {
+      if (SITE_BASE_URL && clean.startsWith(SITE_BASE_URL)) {
+        clean = clean.slice(SITE_BASE_URL.length);
+      } else {
+        return null;
+      }
+    }
+    clean = clean.replace(/^\\/+/, '');
+    if (VIRTUAL_FILES[clean] !== undefined) return clean;
+    if (VIRTUAL_FILES['./' + clean] !== undefined) return './' + clean;
+
+    const parts = clean.split('/');
+    const resolved = [];
+    for (const part of parts) {
+      if (!part || part === '.') continue;
+      if (part === '..') {
+        if (resolved.length) resolved.pop();
+      } else {
+        resolved.push(part);
+      }
+    }
+    const norm = resolved.join('/');
+    if (VIRTUAL_FILES[norm] !== undefined) return norm;
+
+    const base = clean.split('/').pop();
+    if (VIRTUAL_FILES[base] !== undefined) return base;
+
+    return null;
+  }
+
+  // Intercept window.fetch for virtual workspace files
+  const origFetch = window.fetch;
+  window.fetch = async function(input, init) {
+    let url = typeof input === 'string' ? input : (input && input.url ? input.url : '');
+    const virtualKey = resolveVirtualPath(url);
+    if (virtualKey !== null && VIRTUAL_FILES[virtualKey] !== undefined) {
+      const content = VIRTUAL_FILES[virtualKey];
+      return new Response(content, {
+        status: 200,
+        statusText: 'OK',
+        headers: new Headers({
+          'Content-Type': getMime(virtualKey),
+          'X-Virtual-Server': 'VSCode-Tools'
+        })
+      });
+    }
+    return origFetch.apply(this, arguments);
+  };
+
+  // Intercept XMLHttpRequest
+  const OrigXHR = window.XMLHttpRequest;
+  window.XMLHttpRequest = function() {
+    const xhr = new OrigXHR();
+    const origOpen = xhr.open;
+    let targetUrl = '';
+    xhr.open = function(method, url) {
+      targetUrl = url;
+      return origOpen.apply(this, arguments);
+    };
+    const origSend = xhr.send;
+    xhr.send = function() {
+      const virtualKey = resolveVirtualPath(targetUrl);
+      if (virtualKey !== null && VIRTUAL_FILES[virtualKey] !== undefined) {
+        const content = VIRTUAL_FILES[virtualKey];
+        Object.defineProperty(xhr, 'status', { value: 200, writable: true });
+        Object.defineProperty(xhr, 'statusText', { value: 'OK', writable: true });
+        Object.defineProperty(xhr, 'responseText', { value: content, writable: true });
+        Object.defineProperty(xhr, 'response', { value: content, writable: true });
+        Object.defineProperty(xhr, 'readyState', { value: 4, writable: true });
+        setTimeout(() => {
+          if (typeof xhr.onreadystatechange === 'function') xhr.onreadystatechange();
+          if (typeof xhr.onload === 'function') xhr.onload();
+        }, 1);
+        return;
+      }
+      return origSend.apply(this, arguments);
+    };
+    return xhr;
+  };
+
+  // Intercept in-preview link navigation
+  document.addEventListener('click', function(e) {
+    const a = e.target.closest('a');
+    if (!a) return;
+    const href = a.getAttribute('href');
+    if (!href || href.startsWith('#') || href.startsWith('javascript:') || href.startsWith('mailto:') || href.startsWith('tel:')) {
       return;
+    }
+    if (href.startsWith('http://') || href.startsWith('https://') || href.startsWith('//')) {
+      return;
+    }
+    e.preventDefault();
+    e.stopPropagation();
+    window.parent.postMessage({
+      type: 'VSC_PREVIEW_NAVIGATE',
+      href: href,
+      fromFile: CURRENT_FILE
+    }, '*');
+  }, true);
+
+  // Pipe preview console logs to parent workbench terminal
+  const origLog = console.log;
+  const origWarn = console.warn;
+  const origError = console.error;
+  console.log = function(...args) {
+    origLog.apply(console, args);
+    try { window.parent.postMessage({ type: 'VSC_PREVIEW_LOG', level: 'info', msg: args.map(String).join(' ') }, '*'); } catch(e){}
+  };
+  console.warn = function(...args) {
+    origWarn.apply(console, args);
+    try { window.parent.postMessage({ type: 'VSC_PREVIEW_LOG', level: 'warn', msg: args.map(String).join(' ') }, '*'); } catch(e){}
+  };
+  console.error = function(...args) {
+    origError.apply(console, args);
+    try { window.parent.postMessage({ type: 'VSC_PREVIEW_LOG', level: 'error', msg: args.map(String).join(' ') }, '*'); } catch(e){}
+  };
+})();
+</script>
+`;
+
+    if (html.includes("<head>")) {
+      html = html.replace("<head>", `<head>\n${virtualServerScript}`);
+    } else if (html.includes("<html>")) {
+      html = html.replace("<html>", `<html>\n<head>${virtualServerScript}</head>`);
+    } else {
+      html = `${virtualServerScript}\n${html}`;
+    }
+
+    return html;
+  }
+
+  // --- LIVE VIRTUAL WEB SERVER ENGINE (SERVE & PREVIEW) ---
+  async function serveFile(filename, customPort = 3000, openInChrome = false) {
+    let resolvedTarget = filename;
+    if (!state.files[resolvedTarget]) {
+      const candidates = [
+        filename,
+        filename + ".html",
+        filename + "/index.html",
+        filename.replace(/\/$/, "") + "/index.html"
+      ];
+      const matched = candidates.find(c => findWorkspaceFile(c));
+      if (matched) {
+        resolvedTarget = findWorkspaceFile(matched).path;
+      } else {
+        termPrint(`Cannot serve: file '${filename}' does not exist in workspace.`, "vsc-term-error");
+        return;
+      }
     }
 
     const port = parseInt(customPort, 10) || 3000;
-    let content = state.files[filename];
-    const isMarkdown = filename.toLowerCase().endsWith(".md") || filename.toLowerCase().endsWith(".markdown");
+    state.currentServingFile = resolvedTarget;
+    state.currentServingPort = port;
+
+    let content = state.files[resolvedTarget];
+    const isMarkdown = resolvedTarget.toLowerCase().endsWith(".md") || resolvedTarget.toLowerCase().endsWith(".markdown");
 
     if (isMarkdown) {
-      content = buildMarkdownDocument(content, filename);
+      content = buildMarkdownDocument(content, resolvedTarget);
     } else {
-      // Auto-resolve root asset links for live rendering
-      // Resolves ../../css/main.css and ./code-tools.css to accessible site assets
-      content = content.replace(/href=["']\.\.\/\.\.\/css\/main\.css["']/gi, 'href="../../css/main.css"');
-      content = content.replace(/href=["']\.\/code-tools\.css["']/gi, 'href="./code-tools.css"');
-      content = content.replace(/src=["']\.\.\/\.\.\/js\/framework\.js["']/gi, 'src="../../js/framework.js"');
+      content = await buildVirtualWebsite(resolvedTarget);
+    }
+
+    // Revoke previous blob if any
+    if (state.servers[port] && state.servers[port].url) {
+      try { URL.revokeObjectURL(state.servers[port].url); } catch (e) {}
     }
 
     // Create a live Blob URL
-    const blob = new Blob([content], { type: "text/html" });
+    const blob = new Blob([content], { type: "text/html;charset=utf-8" });
     const blobUrl = URL.createObjectURL(blob);
 
     state.servers[port] = {
       port,
-      file: filename,
+      file: resolvedTarget,
       url: blobUrl,
       pid: Math.floor(Math.random() * 8000) + 1024,
       startedAt: Date.now()
@@ -3590,20 +3963,20 @@ Integrated Web Developer Workbench:
 
     renderPortsTable();
 
-    const displayUrl = `http://localhost:${port}/${filename}`;
+    const displayUrl = `http://localhost:${port}/${resolvedTarget}`;
     termPrintHTML(`
 <span class="vsc-term-success">[VIRTUAL HTTP SERVER READY]</span>
   Port:      <b style="color:var(--vsc-turquoise)">${port}</b> (PID: ${state.servers[port].pid})
-  Serving:   <b style="color:var(--vsc-turquoise)">${filename}</b> (${content.length} bytes)
+  Serving:   <b style="color:var(--vsc-turquoise)">${resolvedTarget}</b> (${content.length} bytes bundled)
   Local URL: <a href="${blobUrl}" target="_blank" style="color:var(--vsc-turquoise);text-decoration:underline">${displayUrl}</a>
   Status:    <span style="color:#98c379">● Active</span>
-  <span class="vsc-term-dim">Opening live preview pane... Use 'kill ${port}' to stop.</span>
+  <span class="vsc-term-dim">Live virtual server active with inlined styles, scripts &amp; dynamic fetch proxy.</span>
 `);
 
     // Open In-Workbench Live Preview Pane
     if (el.livePreview && el.previewFrame) {
       el.livePreview.classList.remove("hidden");
-      // Use srcdoc as primary for instant CSP-safe rendering without blob: frame restrictions
+      if (el.workspaceArea) el.workspaceArea.classList.add("preview-active");
       el.previewFrame.srcdoc = content;
       try {
         el.previewFrame.src = blobUrl;
@@ -6986,7 +7359,8 @@ Subcommands:
     }
 
     window.addEventListener("message", (e) => {
-      if (e.data && e.data.type === "VSC_BACK_TO_CODE") {
+      if (!e.data) return;
+      if (e.data.type === "VSC_BACK_TO_CODE") {
         if (el.previewBtnBackCode) {
           el.previewBtnBackCode.click();
         } else {
@@ -6995,19 +7369,52 @@ Subcommands:
           if (el.codeTextarea) el.codeTextarea.focus();
           updateMarkdownPreviewButton();
         }
+      } else if (e.data.type === "VSC_PREVIEW_NAVIGATE") {
+        const fromFile = e.data.fromFile || state.currentServingFile || state.activeFile || "index.html";
+        const rawHref = e.data.href || "";
+        const resolved = resolveWorkspacePath(rawHref, fromFile);
+        const candidates = [
+          resolved,
+          resolved + "/index.html",
+          resolved ? resolved.replace(/\/$/, "") + "/index.html" : "index.html",
+          resolved + ".html"
+        ];
+        let target = null;
+        for (const cand of candidates) {
+          const found = findWorkspaceFile(cand);
+          if (found) {
+            target = found.path;
+            break;
+          }
+        }
+        if (target) {
+          serveFile(target, state.currentServingPort || 3000, false);
+          termPrint(`[Virtual Server] Navigated to: ${target}`, "vsc-term-info");
+        } else {
+          termPrint(`[Virtual Server] 404 Not Found: Could not resolve '${rawHref}'`, "vsc-term-warn");
+        }
+      } else if (e.data.type === "VSC_PREVIEW_LOG") {
+        const prefix = `[Preview ${e.data.level ? e.data.level.toUpperCase() : 'INFO'}]`;
+        const cls = e.data.level === "error" ? "vsc-term-error" : e.data.level === "warn" ? "vsc-term-warn" : "vsc-term-dim";
+        termPrint(`${prefix} ${e.data.msg}`, cls);
       }
     });
 
-    if (el.previewBtnReload && el.previewFrame) {
+    if (el.previewBtnReload) {
       el.previewBtnReload.addEventListener("click", () => {
-        const curDoc = el.previewFrame.srcdoc;
-        const curSrc = el.previewFrame.src;
-        if (curDoc) {
-          el.previewFrame.srcdoc = "";
-          setTimeout(() => { el.previewFrame.srcdoc = curDoc; }, 50);
-        } else {
-          el.previewFrame.src = "";
-          setTimeout(() => { el.previewFrame.src = curSrc; }, 50);
+        if (state.currentServingFile) {
+          serveFile(state.currentServingFile, state.currentServingPort || 3000, false);
+          showMessage("info", "LIVE PREVIEW", `Reloaded ${state.currentServingFile} with latest workspace edits.`, false);
+        } else if (el.previewFrame) {
+          const curDoc = el.previewFrame.srcdoc;
+          const curSrc = el.previewFrame.src;
+          if (curDoc) {
+            el.previewFrame.srcdoc = "";
+            setTimeout(() => { el.previewFrame.srcdoc = curDoc; }, 50);
+          } else {
+            el.previewFrame.src = "";
+            setTimeout(() => { el.previewFrame.src = curSrc; }, 50);
+          }
         }
       });
     }
