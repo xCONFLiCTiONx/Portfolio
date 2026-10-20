@@ -151,7 +151,11 @@ User-Agent: VSCodeTools/4.2
     githubToken: getCookie("gh_pat") || localStorage.getItem("vsc_gh_token") || "",
     githubRepo: getCookie("gh_repo") || localStorage.getItem("vsc_gh_repo") || "",
     githubBranch: getCookie("gh_branch") || localStorage.getItem("vsc_gh_branch") || "main",
-    githubUser: null
+    githubUser: null,
+    isLocalProject: false,
+    projectName: "",
+    projectDirHandle: null,
+    fileHandles: new Map()
   };
 
   // Load persisted files or initialize defaults
@@ -264,6 +268,10 @@ User-Agent: VSCodeTools/4.2
     workspaceLabel: document.getElementById("vsc-workspace-label"),
     btnNewFile: document.getElementById("vsc-btn-new-file"),
     btnRefreshSidebar: document.getElementById("vsc-btn-refresh-sidebar"),
+    btnOpenFolder: document.getElementById("vsc-btn-open-folder"),
+    btnOpenProjectBanner: document.getElementById("vsc-btn-open-project-banner"),
+    openProjectContainer: document.getElementById("vsc-open-project-container"),
+    folderInput: document.getElementById("vsc-folder-input"),
     btnDebugRun: document.getElementById("vsc-btn-debug-run"),
 
     // Status bar interactive items
@@ -389,6 +397,247 @@ User-Agent: VSCodeTools/4.2
       li2.addEventListener("click", () => openFile(filename));
       el.workspaceFilesList.appendChild(li2);
     });
+  }
+
+  // --- LOCAL PROJECT (FILE SYSTEM ACCESS API) ENGINE ---
+  const IDB_NAME = "vsc_local_projects_v1";
+  const IDB_STORE = "handles";
+  function openProjectDB() {
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open(IDB_NAME, 1);
+      req.onupgradeneeded = () => req.result.createObjectStore(IDB_STORE);
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+  }
+  async function saveProjectHandle(key, handle) {
+    try {
+      const db = await openProjectDB();
+      const tx = db.transaction(IDB_STORE, "readwrite");
+      tx.objectStore(IDB_STORE).put(handle, key);
+    } catch (e) {}
+  }
+  async function getProjectHandle(key) {
+    try {
+      const db = await openProjectDB();
+      const tx = db.transaction(IDB_STORE, "readonly");
+      return new Promise((resolve) => {
+        const req = tx.objectStore(IDB_STORE).get(key);
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => resolve(null);
+      });
+    } catch (e) { return null; }
+  }
+
+  async function saveCurrentFile() {
+    const filename = state.activeFile;
+    if (!filename) return;
+
+    if (el.codeTextarea) {
+      state.files[filename] = el.codeTextarea.value;
+    }
+    saveWorkspace();
+
+    // Direct write to physical hard drive (E:\ drive file handle)
+    if (state.fileHandles && state.fileHandles.has(filename)) {
+      try {
+        const handle = state.fileHandles.get(filename);
+        const writable = await handle.createWritable();
+        await writable.write(state.files[filename]);
+        await writable.close();
+        state.modifiedFiles.delete(filename);
+        updateGitStatus();
+        refreshProblems();
+        termPrint(`Saved to disk: ${filename} (Local Drive)`, "vsc-term-success");
+        return;
+      } catch (err) {
+        termPrint(`Disk write error (${filename}): ${err.message}`, "vsc-term-error");
+      }
+    }
+
+    // If active in a local project but file was created in editor, create it on disk
+    if (state.isLocalProject && state.projectDirHandle) {
+      try {
+        const parts = filename.split("/");
+        let curDir = state.projectDirHandle;
+        for (let i = 0; i < parts.length - 1; i++) {
+          curDir = await curDir.getDirectoryHandle(parts[i], { create: true });
+        }
+        const newFileHandle = await curDir.getFileHandle(parts[parts.length - 1], { create: true });
+        state.fileHandles.set(filename, newFileHandle);
+        const writable = await newFileHandle.createWritable();
+        await writable.write(state.files[filename]);
+        await writable.close();
+        state.modifiedFiles.delete(filename);
+        updateGitStatus();
+        refreshProblems();
+        termPrint(`Created & saved on disk: ${filename}`, "vsc-term-success");
+        return;
+      } catch (err) {
+        termPrint(`Disk create error: ${err.message}`, "vsc-term-error");
+      }
+    }
+
+    state.modifiedFiles.delete(filename);
+    updateGitStatus();
+    refreshProblems();
+    termPrint(`Saved ${filename} to browser storage.`, "vsc-term-success");
+  }
+
+  async function loadLocalDirectory(dirHandle) {
+    state.projectDirHandle = dirHandle;
+    state.projectName = dirHandle.name;
+    state.isLocalProject = true;
+    state.fileHandles.clear();
+    state.files = {};
+    state.modifiedFiles.clear();
+
+    const ignoreDirs = new Set([
+      "node_modules", ".git", ".svn", ".hg", "dist", "build", "out",
+      ".next", ".nuxt", ".cache", ".idea", ".vscode-test", "__pycache__", "venv", ".venv"
+    ]);
+
+    const textExtensions = new Set([
+      "js", "jsx", "ts", "tsx", "html", "htm", "css", "scss", "sass", "less",
+      "json", "md", "markdown", "txt", "xml", "svg", "yaml", "yml", "ini", "toml",
+      "sh", "bash", "bat", "ps1", "py", "rb", "php", "java", "c", "cpp", "h", "cs",
+      "go", "rs", "sql", "env", "gitignore", "dockerignore", "lock", "http"
+    ]);
+
+    let loadedCount = 0;
+    const maxFiles = 300;
+
+    async function scanDir(handle, currentPath = "") {
+      if (loadedCount >= maxFiles) return;
+
+      for await (const entry of handle.values()) {
+        if (loadedCount >= maxFiles) break;
+
+        const path = currentPath ? `${currentPath}/${entry.name}` : entry.name;
+
+        if (entry.kind === "directory") {
+          if (ignoreDirs.has(entry.name) || (entry.name.startsWith(".") && entry.name !== ".github" && entry.name !== ".vscode")) {
+            continue;
+          }
+          await scanDir(entry, path);
+        } else if (entry.kind === "file") {
+          const ext = entry.name.includes(".") ? entry.name.split(".").pop().toLowerCase() : "";
+          if (textExtensions.has(ext) || entry.name.startsWith(".")) {
+            try {
+              const file = await entry.getFile();
+              if (file.size < 1_500_000) {
+                const text = await file.text();
+                state.files[path] = text;
+                state.fileHandles.set(path, entry);
+                loadedCount++;
+              }
+            } catch (err) {
+              console.warn(`Could not read ${path}:`, err);
+            }
+          }
+        }
+      }
+    }
+
+    termPrint(`Reading files from '${dirHandle.name}'...`, "vsc-term-info");
+    await scanDir(dirHandle);
+    await saveProjectHandle("last_project", dirHandle);
+
+    saveWorkspace();
+    renderSidebarLists();
+    renderTabs();
+
+    if (el.workspaceLabel) {
+      el.workspaceLabel.innerHTML = `📂 <b>${dirHandle.name}</b> <span style="color:#98c379">(Local Disk)</span>`;
+    }
+    if (el.breadcrumbsFile) {
+      el.breadcrumbsFile.textContent = dirHandle.name;
+    }
+    if (el.openProjectContainer) {
+      el.openProjectContainer.style.display = "none";
+    }
+
+    const priorityFiles = ["index.html", "README.md", "package.json", "portfolio.config.json"];
+    const toOpen = priorityFiles.find(p => state.files[p]) || Object.keys(state.files)[0];
+    if (toOpen) {
+      openFile(toOpen);
+    }
+
+    updateGitStatus();
+    refreshProblems();
+
+    termPrint(`Successfully opened '${dirHandle.name}'! (${loadedCount} files loaded from local disk)`, "vsc-term-success");
+    termPrint(`Direct disk write enabled: Press Ctrl+S or click 'Save' to write modifications directly to your drive.`, "vsc-term-info");
+  }
+
+  async function openLocalProjectFolder() {
+    if (!("showDirectoryPicker" in window)) {
+      const input = document.getElementById("vsc-folder-input");
+      if (input) {
+        input.click();
+      } else {
+        termPrint("File System Access API is not supported in this browser. Please use Chrome on Desktop for direct read/write disk access.", "vsc-term-warn");
+      }
+      return;
+    }
+
+    try {
+      const dirHandle = await window.showDirectoryPicker({
+        id: "code_workbench_root",
+        mode: "readwrite"
+      });
+      if (dirHandle) {
+        await loadLocalDirectory(dirHandle);
+      }
+    } catch (err) {
+      if (err.name !== "AbortError") {
+        termPrint(`Failed to open folder: ${err.message}`, "vsc-term-error");
+      }
+    }
+  }
+
+  function handleFileInputFolder(e) {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    state.files = {};
+    state.fileHandles.clear();
+    state.isLocalProject = false;
+    state.modifiedFiles.clear();
+
+    let folderName = "";
+    let loaded = 0;
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const path = file.webkitRelativePath || file.name;
+      if (!folderName && path.includes("/")) {
+        folderName = path.split("/")[0];
+      }
+      const relPath = path.includes("/") ? path.substring(path.indexOf("/") + 1) : path;
+      if (relPath.includes("node_modules/") || relPath.includes(".git/")) continue;
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        state.files[relPath] = event.target.result;
+        loaded++;
+        if (loaded === 1) {
+          openFile(relPath);
+        }
+        renderSidebarLists();
+        renderTabs();
+      };
+      reader.readAsText(file);
+    }
+
+    if (folderName && el.workspaceLabel) {
+      el.workspaceLabel.innerHTML = `📂 <b>${folderName}</b> <span style="color:#e5c07b">(Imported)</span>`;
+    }
+    if (el.openProjectContainer) {
+      el.openProjectContainer.style.display = "none";
+    }
+    saveWorkspace();
+    termPrint(`Imported folder '${folderName}' (${files.length} files). Note: Read-only in this mode. Use Chrome Desktop for direct read/write disk access.`, "vsc-term-info");
   }
 
   // --- GIT STATUS & DIAGNOSTICS HELPERS ---
@@ -691,7 +940,8 @@ User-Agent: VSCodeTools/4.2
     { id: "view_preview", label: "View: Toggle Live Preview", exec: () => { if (el.livePreview) el.livePreview.classList.toggle("hidden"); } },
     { id: "view_fullscreen", label: "View: Toggle Fullscreen", exec: () => { if (el.btnFullscreen) el.btnFullscreen.click(); } },
     { id: "file_new", label: "File: New File", exec: () => { const name = prompt("Enter new filename:", "new-file.js"); if (name) openFile(name); } },
-    { id: "file_save", label: "File: Save Current File", exec: () => { if (el.btnSave) el.btnSave.click(); } },
+    { id: "file_open_project", label: "File: Open Local Folder / Project (E:\\ Drive)...", exec: () => openLocalProjectFolder() },
+    { id: "file_save", label: "File: Save Current File (Direct to Disk)", exec: () => saveCurrentFile() },
     { id: "file_save_all", label: "File: Save All Files", exec: () => { saveWorkspace(); termPrint("All files saved to browser storage.", "vsc-term-success"); } },
     { id: "file_export", label: "File: Export Workspace as JSON", exec: () => exportWorkspaceJSON() },
     { id: "github_connect", label: "GitHub: Connect Repository & Personal Access Token", exec: () => openGitHubModal() },
@@ -1022,9 +1272,10 @@ User-Agent: VSCodeTools/4.2
       const name = prompt("Enter new filename:", "untitled.js");
       if (name) openFile(name);
     });
+    bindItem("vsc-item-open-folder", openLocalProjectFolder);
     bindItem("vsc-item-connect-github", openGitHubModal);
     bindItem("vsc-item-save-file", () => {
-      if (el.btnSave) el.btnSave.click();
+      saveCurrentFile();
     });
     bindItem("vsc-item-save-all", () => {
       saveWorkspace();
@@ -1450,6 +1701,10 @@ Integrated Web Developer Workbench:
   <b class="vsc-term-success">github</b> repos                        List your recent GitHub repositories
   <b class="vsc-term-success">github</b> status                       Show current repo, branch, user and modified files
   <b class="vsc-term-success">github</b> logout                       Clear GitHub token and cookies
+
+<span class="vsc-prompt-tag">[LOCAL PROJECT &amp; DISK]</span>
+  <b class="vsc-term-success">openproject</b> / <b class="vsc-term-success">openfolder</b>            Open folder or project from drive (e.g. E:\) with direct 2-way disk save
+  <b class="vsc-term-success">save</b>                                Save active file directly to your disk or storage
 
 <span class="vsc-prompt-tag">[EDITOR &amp; WORKSPACE]</span>
   <b class="vsc-term-success">nano</b> &lt;filename&gt;                     In-terminal GNU nano text editor (save with ^O, exit ^X)
@@ -2315,6 +2570,23 @@ Length: ${hex.length * 4} bits (${hex.length} hex chars)
   COMMANDS.git = COMMANDS.github;
   COMMANDS.gh = COMMANDS.github;
 
+  COMMANDS.openproject = {
+    desc: "Open any folder or project from your local drive (e.g. E:\\) with direct two-way disk saving",
+    usage: "openproject",
+    exec: async () => {
+      await openLocalProjectFolder();
+    }
+  };
+  COMMANDS.openfolder = COMMANDS.openproject;
+
+  COMMANDS.save = {
+    desc: "Save the current active file directly to your disk or storage",
+    usage: "save",
+    exec: async () => {
+      await saveCurrentFile();
+    }
+  };
+
   // --- TAB KEY AUTOCOMPLETION ---
   function handleTabCompletion(e) {
     if (e.key !== "Tab") return;
@@ -2880,11 +3152,7 @@ Length: ${hex.length * 4} bits (${hex.length} hex chars)
     // Save button in editor toolbar
     if (el.btnSave) {
       el.btnSave.addEventListener("click", () => {
-        if (el.codeTextarea) {
-          state.files[state.activeFile] = el.codeTextarea.value;
-          saveWorkspace();
-          termPrint(`Saved ${state.activeFile} to local storage.`, "vsc-term-success");
-        }
+        saveCurrentFile();
       });
     }
 
@@ -2950,6 +3218,9 @@ Length: ${hex.length * 4} bits (${hex.length} hex chars)
 
     // Titlebar & Searchbar
     if (el.searchBar) el.searchBar.addEventListener("click", openCommandPalette);
+    if (el.btnOpenFolder) el.btnOpenFolder.addEventListener("click", openLocalProjectFolder);
+    if (el.btnOpenProjectBanner) el.btnOpenProjectBanner.addEventListener("click", openLocalProjectFolder);
+    if (el.folderInput) el.folderInput.addEventListener("change", handleFileInputFolder);
     if (el.btnNewFile) {
       el.btnNewFile.addEventListener("click", () => {
         const name = prompt("Enter new filename:", "untitled.js");
@@ -3272,7 +3543,10 @@ Length: ${hex.length * 4} bits (${hex.length} hex chars)
         openCommandPalette();
       } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
         e.preventDefault();
-        if (el.btnSave) el.btnSave.click();
+        saveCurrentFile();
+      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "o") {
+        e.preventDefault();
+        openLocalProjectFolder();
       } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "b") {
         e.preventDefault();
         if (el.sidebar) el.sidebar.classList.toggle("collapsed");
@@ -3343,11 +3617,11 @@ Length: ${hex.length * 4} bits (${hex.length} hex chars)
       el.nanoBtnSave.addEventListener("click", () => {
         if (el.nanoEditor && state.nanoCurrentFile) {
           state.files[state.nanoCurrentFile] = el.nanoEditor.value;
-          saveWorkspace();
           if (state.activeFile === state.nanoCurrentFile && el.codeTextarea) {
             el.codeTextarea.value = state.files[state.nanoCurrentFile];
             updateGutter();
           }
+          saveCurrentFile();
           const lines = el.nanoEditor.value.split("\n").length;
           if (el.nanoStatus) el.nanoStatus.textContent = `[ Wrote ${lines} lines ]`;
           renderSidebarLists();
@@ -3460,6 +3734,16 @@ Length: ${hex.length * 4} bits (${hex.length} hex chars)
       githubAuth(state.githubToken).catch(() => {});
     }
 
+    // Auto-reconnect last opened local project if permission is already active
+    getProjectHandle("last_project").then(async (handle) => {
+      if (handle) {
+        const perm = await handle.queryPermission({ mode: "readwrite" });
+        if (perm === "granted") {
+          loadLocalDirectory(handle).catch(() => {});
+        }
+      }
+    }).catch(() => {});
+
     // Ensure clean initial terminal height (don't cover editor files on launch)
     if (el.terminalPanel && el.app) {
       const avail = el.app.offsetHeight - 36 - 24;
@@ -3475,6 +3759,7 @@ Length: ${hex.length * 4} bits (${hex.length} hex chars)
 <span class="vsc-term-info">Visual Studio Code Tools [Version 4.2.0-web]</span>
 <span class="vsc-term-dim">(c) DevStudio Web. Pitch Black &amp; Turquoise Workspace.</span>
 Type <b style="color:var(--vsc-turquoise)">help</b> to see all daily diagnostic, network, crypto, and code tools.
+Local Disk: Click <b style="color:var(--vsc-turquoise)">📂 Open Project on E:\\</b> or press <b style="color:var(--vsc-turquoise)">Ctrl+O</b> to edit files directly on your drive.
 ${state.githubRepo ? `Remote: <b style="color:var(--vsc-turquoise)">${state.githubRepo}@${state.githubBranch}</b> connected.` : "GitHub: Type <b style=\"color:var(--vsc-turquoise)\">github auth &lt;token&gt;</b> or click Accounts to sync real files."}
 `);
   }

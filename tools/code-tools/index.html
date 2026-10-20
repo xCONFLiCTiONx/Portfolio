@@ -55,6 +55,7 @@
               <span class="vsc-menu-item" id="vsc-menu-btn-file">File</span>
               <div class="vsc-dropdown-menu" id="vsc-dropdown-file">
                 <div class="vsc-dropdown-item" id="vsc-item-new-file"><span>New File</span><kbd>Ctrl+N</kbd></div>
+                <div class="vsc-dropdown-item" id="vsc-item-open-folder"><span>Open Local Project (E:\)...</span><kbd>Ctrl+O</kbd></div>
                 <div class="vsc-dropdown-item" id="vsc-item-connect-github"><span>Connect GitHub Repo...</span></div>
                 <div class="vsc-dropdown-divider"></div>
                 <div class="vsc-dropdown-item" id="vsc-item-save-file"><span>Save</span><kbd>Ctrl+S</kbd></div>
@@ -184,6 +185,7 @@
           <div class="vsc-sidebar-header">
             <span id="vsc-sidebar-title">Explorer</span>
             <div style="display:flex;gap:4px">
+              <button class="vsc-title-btn" id="vsc-btn-open-folder" title="Open Local Project Folder (E:\ Drive)">📂</button>
               <button class="vsc-title-btn" id="vsc-btn-new-file" title="New File">+</button>
               <button class="vsc-title-btn" id="vsc-btn-refresh-sidebar" title="Refresh">↻</button>
             </div>
@@ -204,7 +206,13 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
                 <span id="vsc-workspace-label">dev-vault (Workspace)</span>
               </div>
+              <div id="vsc-open-project-container" style="padding:6px 10px">
+                <button class="vsc-editor-btn" id="vsc-btn-open-project-banner" style="width:100%;display:flex;align-items:center;justify-content:center;gap:6px;background:rgba(0,240,255,0.08);border:1px solid rgba(0,240,255,0.35);color:var(--vsc-turquoise);font-weight:600;padding:6px">
+                  <span>📂</span><span>Open Project on E:\</span>
+                </button>
+              </div>
               <ul class="vsc-tree" id="vsc-workspace-files-list"></ul>
+              <input type="file" id="vsc-folder-input" webkitdirectory directory multiple style="display:none" />
 
               <!-- DAILY CLI UTILITIES -->
               <div class="vsc-section-title" style="margin-top:12px">
