@@ -988,17 +988,36 @@ body[data-tool-id="code-tools"].vsc-fullscreen #vscode-workbench {
     overflow-x: hidden !important;
   }
 
-  /* Compact mobile titlebar - hide overflow items */
+  /* Compact mobile titlebar - hide overflow items but keep Reload and Fullscreen accessible */
   .vsc-titlebar {
     padding: 0 8px !important;
     height: 38px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
     overflow: hidden !important;
   }
 
   .vsc-menu-bar,
-  .vsc-searchbar,
-  .vsc-titlebar-right {
+  .vsc-searchbar {
     display: none !important;
+  }
+
+  .vsc-titlebar-right {
+    display: flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    margin-left: auto !important;
+  }
+
+  .vsc-title-btn {
+    min-width: 34px !important;
+    min-height: 32px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    touch-action: manipulation !important;
+    cursor: pointer !important;
   }
 
   /* Mobile floating sidebar overlay */
@@ -1047,29 +1066,51 @@ body[data-tool-id="code-tools"].vsc-fullscreen #vscode-workbench {
     white-space: nowrap !important;
   }
 
-  /* Fullscreen mobile live preview (Markdown & web server) */
+  /* Fullscreen mobile live preview (Markdown & web server) - REPLACES side-by-side */
   .vsc-live-preview {
-    position: fixed !important;
+    position: absolute !important;
     left: 0 !important;
     top: 0 !important;
     right: 0 !important;
     bottom: 0 !important;
-    width: 100vw !important;
-    height: 100dvh !important;
-    z-index: 99999 !important;
+    width: 100% !important;
+    height: 100% !important;
+    z-index: 100 !important;
     border-left: none !important;
+    box-shadow: none !important;
+  }
+
+  /* When live preview is active on small screens, hide editor behind it cleanly */
+  .vsc-workspace-area.preview-active .vsc-editor-panel {
+    display: none !important;
   }
 
   .vsc-preview-header {
     height: 44px !important;
     padding: 0 8px !important;
     gap: 6px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
   }
 
   .vsc-preview-address {
-    max-width: 150px !important;
-    padding: 2px 6px !important;
-    font-size: 11px !important;
+    display: none !important;
+  }
+
+  .vsc-preview-back-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    font-weight: 600 !important;
+    color: var(--vsc-turquoise) !important;
+    background: #252525 !important;
+    border: 1px solid rgba(55, 145, 183, 0.45) !important;
+    padding: 6px 10px !important;
+    border-radius: 4px !important;
+    font-size: 12px !important;
+    cursor: pointer !important;
+    touch-action: manipulation !important;
   }
 
   #vsc-preview-btn-desktop,
@@ -1227,6 +1268,54 @@ body[data-tool-id="code-tools"].vsc-fullscreen #vscode-workbench {
   z-index: 45;
   box-shadow: -4px 0 20px rgba(0, 0, 0, 0.7);
   transition: transform 0.2s ease;
+}
+
+@media (max-width: 900px) {
+  .vsc-live-preview {
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    border-left: none !important;
+    z-index: 100 !important;
+  }
+  .vsc-workspace-area.preview-active .vsc-editor-panel {
+    display: none !important;
+  }
+}
+
+.vsc-preview-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #202020;
+  color: var(--vsc-turquoise);
+  border: 1px solid rgba(55, 145, 183, 0.35);
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.vsc-preview-back-btn:hover {
+  background: #2a2a2a;
+  border-color: var(--vsc-turquoise);
+}
+
+.vsc-token-toggle-btn {
+  min-width: 44px !important;
+  min-height: 38px !important;
+  padding: 4px 10px !important;
+  font-size: 16px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  touch-action: manipulation !important;
+  cursor: pointer !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -webkit-tap-highlight-color: transparent !important;
 }
 
 

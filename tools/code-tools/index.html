@@ -98,6 +98,7 @@
                 <div class="vsc-dropdown-item" id="vsc-item-toggle-sidebar"><span>Toggle Primary Sidebar</span><kbd>Ctrl+B</kbd></div>
                 <div class="vsc-dropdown-item" id="vsc-item-toggle-term"><span>Toggle Terminal Panel</span><kbd>Ctrl+`</kbd></div>
                 <div class="vsc-dropdown-item" id="vsc-item-toggle-preview"><span>Toggle Live Preview</span></div>
+                <div class="vsc-dropdown-item" id="vsc-item-reload-window"><span>Reload Window</span><kbd>Ctrl+R</kbd></div>
                 <div class="vsc-dropdown-divider"></div>
                 <div class="vsc-dropdown-item" id="vsc-item-view-fullscreen"><span>Toggle Fullscreen</span><kbd>F11</kbd></div>
               </div>
@@ -148,6 +149,13 @@
         </div>
 
         <div class="vsc-titlebar-right">
+          <button class="vsc-title-btn" id="vsc-btn-reload-window" title="Reload Window (Ctrl+R / F5)" aria-label="Reload Window">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="23 4 23 10 17 10" />
+              <polyline points="1 20 1 14 7 14" />
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+            </svg>
+          </button>
           <button class="vsc-title-btn" id="vsc-btn-fullscreen" title="Toggle Fullscreen (⛶)" aria-label="Toggle Fullscreen">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
           </button>
@@ -221,6 +229,9 @@
                   </button>
                   <button class="vsc-editor-btn" id="vsc-btn-new-banner" style="flex:1;display:flex;align-items:center;justify-content:center;gap:4px;padding:5px;font-size:11px" title="Create New File (Ctrl+N)">
                     <span>➕</span><span>New File</span>
+                  </button>
+                  <button class="vsc-editor-btn" id="vsc-btn-clear-workspace-banner" style="flex:1;display:flex;align-items:center;justify-content:center;gap:4px;padding:5px;font-size:11px;color:#f44336;border-color:rgba(244,67,54,0.3)" title="Clear Workspace &amp; Start Fresh">
+                    <span>🗑️</span><span>Start Fresh</span>
                   </button>
                 </div>
               </div>
@@ -613,6 +624,9 @@
           <div class="vsc-live-preview hidden" id="vsc-live-preview">
             <header class="vsc-preview-header">
               <div class="vsc-preview-nav">
+                <button class="vsc-preview-btn vsc-preview-back-btn" id="vsc-preview-btn-back-code" title="Return to Code Editor">
+                  ← Back to Code
+                </button>
                 <button class="vsc-preview-btn" id="vsc-preview-btn-reload" title="Reload Page">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
                 </button>
@@ -668,8 +682,8 @@
       </footer>
     </div>
 
-    <!-- MODAL DIALOG 1: COMMAND PALETTE (<dialog closedby="any">) -->
-    <dialog class="vsc-dialog" id="vsc-palette-dialog" closedby="any" aria-label="Command Palette">
+    <!-- MODAL DIALOG 1: COMMAND PALETTE -->
+    <dialog class="vsc-dialog" id="vsc-palette-dialog" aria-label="Command Palette">
       <div class="vsc-palette-input-wrap">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input type="text" class="vsc-palette-input" id="vsc-palette-input" placeholder="Type a command or file name..." autocomplete="off" />
@@ -678,7 +692,7 @@
     </dialog>
 
     <!-- MODAL DIALOG 2: GITHUB CONNECT & REPO LOADER -->
-    <dialog class="vsc-dialog" id="vsc-github-dialog" closedby="any" aria-label="GitHub Repository &amp; Token Connect">
+    <dialog class="vsc-dialog" id="vsc-github-dialog" aria-label="GitHub Repository &amp; Token Connect">
       <div class="vsc-dialog-header">
         <span>CONNECT TO GITHUB REPOSITORY</span>
         <button class="vsc-title-btn" id="vsc-gh-btn-close">✕</button>
@@ -691,7 +705,7 @@
           </div>
           <div style="display:flex;gap:6px;align-items:center;position:relative">
             <input type="password" class="vsc-modal-input" id="vsc-gh-token-input" placeholder="ghp_... or github_pat_..." style="flex:1" autocomplete="off" />
-            <button type="button" class="vsc-editor-btn" id="vsc-gh-btn-toggle-token" title="Show / Hide Token" style="padding:6px 10px">👁</button>
+            <button type="button" class="vsc-editor-btn vsc-token-toggle-btn" id="vsc-gh-btn-toggle-token" title="Show / Hide Token" aria-label="Show / Hide Token">👁</button>
           </div>
           <div style="display:flex;align-items:center;gap:6px;margin-top:2px">
             <input type="checkbox" id="vsc-gh-remember-token" checked style="accent-color:var(--vsc-turquoise);cursor:pointer" />
@@ -729,7 +743,7 @@
     </dialog>
 
     <!-- MODAL DIALOG 3: WORKBENCH SETTINGS -->
-    <dialog class="vsc-dialog" id="vsc-settings-dialog" closedby="any" aria-label="Workbench Settings">
+    <dialog class="vsc-dialog" id="vsc-settings-dialog" aria-label="Workbench Settings">
       <div class="vsc-dialog-header">
         <span>WORKBENCH SETTINGS</span>
         <button class="vsc-title-btn" id="vsc-settings-btn-close">✕</button>
@@ -765,7 +779,7 @@
           </div>
           <div style="display:flex;gap:6px;align-items:center">
             <input type="password" class="vsc-modal-input" id="vsc-setting-gh-token" placeholder="ghp_... or github_pat_..." style="flex:1" autocomplete="off" />
-            <button type="button" class="vsc-editor-btn" id="vsc-setting-btn-toggle-token" title="Show / Hide Token" style="padding:6px 10px">👁</button>
+            <button type="button" class="vsc-editor-btn vsc-token-toggle-btn" id="vsc-setting-btn-toggle-token" title="Show / Hide Token" aria-label="Show / Hide Token">👁</button>
           </div>
           <span style="font-size:10px;color:var(--vsc-fg-muted)">Remembered across browser sessions via localStorage and secure cookies.</span>
         </div>
@@ -783,7 +797,7 @@
     </dialog>
 
     <!-- MODAL DIALOG 4: IN-PAGE QUICK INPUT (Preserves fullscreen) -->
-    <dialog class="vsc-dialog" id="vsc-quickinput-dialog" closedby="any" aria-label="Workbench Quick Input">
+    <dialog class="vsc-dialog" id="vsc-quickinput-dialog" aria-label="Workbench Quick Input">
       <div class="vsc-dialog-header">
         <span id="vsc-quickinput-title">PROMPT</span>
         <button class="vsc-title-btn" id="vsc-quickinput-btn-close">✕</button>

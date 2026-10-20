@@ -135,6 +135,7 @@
     importFileInput: document.getElementById("vsc-import-file-input"),
     btnImportBanner: document.getElementById("vsc-btn-import-banner"),
     btnNewBanner: document.getElementById("vsc-btn-new-banner"),
+    btnClearWorkspaceBanner: document.getElementById("vsc-btn-clear-workspace-banner"),
     sashResizer: document.getElementById("vsc-sash-resizer"),
     terminalPanel: document.getElementById("vsc-terminal-panel"),
     termBody: document.getElementById("vsc-term-body"),
@@ -150,6 +151,8 @@
     btnPushEditor: document.getElementById("vsc-btn-push-editor"),
     btnClear: document.getElementById("vsc-btn-clear"),
     btnFullscreen: document.getElementById("vsc-btn-fullscreen"),
+    btnReloadWindow: document.getElementById("vsc-btn-reload-window"),
+    itemReloadWindow: document.getElementById("vsc-item-reload-window"),
     shellSelect: document.getElementById("vsc-shell-select"),
     openEditorsList: document.getElementById("vsc-open-editors-list"),
     workspaceFilesList: document.getElementById("vsc-workspace-files-list"),
@@ -177,6 +180,7 @@
     livePreview: document.getElementById("vsc-live-preview"),
     previewFrame: document.getElementById("vsc-preview-iframe"),
     previewUrlText: document.getElementById("vsc-preview-url-text"),
+    previewBtnBackCode: document.getElementById("vsc-preview-btn-back-code"),
     previewBtnReload: document.getElementById("vsc-preview-btn-reload"),
     previewBtnDesktop: document.getElementById("vsc-preview-btn-desktop"),
     previewBtnTablet: document.getElementById("vsc-preview-btn-tablet"),
@@ -417,28 +421,72 @@
         }
       };
 
-      const onOkClick = () => finish(true);
-      const onCancelClick = () => finish(false);
+      const onOkClick = (e) => {
+        if (e) {
+          if (e.cancelable) e.preventDefault();
+          e.stopPropagation();
+        }
+        finish(true);
+      };
+      const onCancelClick = (e) => {
+        if (e) {
+          if (e.cancelable) e.preventDefault();
+          e.stopPropagation();
+        }
+        finish(false);
+      };
       const onBackdropClick = (e) => {
-        if (e.target === el.quickInputDialog) finish(false);
+        if (e.target !== el.quickInputDialog) return;
+        const rect = el.quickInputDialog.getBoundingClientRect();
+        const isInDialog = (
+          rect.top <= e.clientY && e.clientY <= rect.top + rect.height &&
+          rect.left <= e.clientX && e.clientX <= rect.left + rect.width
+        );
+        if (!isInDialog) finish(false);
       };
 
       const cleanup = () => {
         if (el.quickInputInput) el.quickInputInput.removeEventListener("keydown", onKeyDown);
-        if (el.quickInputBtnOk) el.quickInputBtnOk.removeEventListener("click", onOkClick);
-        if (el.quickInputBtnCancel) el.quickInputBtnCancel.removeEventListener("click", onCancelClick);
-        if (el.quickInputBtnClose) el.quickInputBtnClose.removeEventListener("click", onCancelClick);
+        if (el.quickInputBtnOk) {
+          el.quickInputBtnOk.removeEventListener("click", onOkClick);
+          el.quickInputBtnOk.removeEventListener("touchend", onOkClick);
+        }
+        if (el.quickInputBtnCancel) {
+          el.quickInputBtnCancel.removeEventListener("click", onCancelClick);
+          el.quickInputBtnCancel.removeEventListener("touchend", onCancelClick);
+        }
+        if (el.quickInputBtnClose) {
+          el.quickInputBtnClose.removeEventListener("click", onCancelClick);
+          el.quickInputBtnClose.removeEventListener("touchend", onCancelClick);
+        }
         el.quickInputDialog.removeEventListener("click", onBackdropClick);
       };
 
       if (el.quickInputInput) el.quickInputInput.addEventListener("keydown", onKeyDown);
-      if (el.quickInputBtnOk) el.quickInputBtnOk.addEventListener("click", onOkClick);
-      if (el.quickInputBtnCancel) el.quickInputBtnCancel.addEventListener("click", onCancelClick);
-      if (el.quickInputBtnClose) el.quickInputBtnClose.addEventListener("click", onCancelClick);
-      el.quickInputDialog.addEventListener("click", onBackdropClick);
+      if (el.quickInputBtnOk) {
+        el.quickInputBtnOk.addEventListener("click", onOkClick);
+        el.quickInputBtnOk.addEventListener("touchend", onOkClick);
+      }
+      if (el.quickInputBtnCancel) {
+        el.quickInputBtnCancel.addEventListener("click", onCancelClick);
+        el.quickInputBtnCancel.addEventListener("touchend", onCancelClick);
+      }
+      if (el.quickInputBtnClose) {
+        el.quickInputBtnClose.addEventListener("click", onCancelClick);
+        el.quickInputBtnClose.addEventListener("touchend", onCancelClick);
+      }
 
-      el.quickInputDialog.showModal();
-      if (el.quickInputBtnOk) el.quickInputBtnOk.focus();
+      setTimeout(() => {
+        if (!isDone) el.quickInputDialog.addEventListener("click", onBackdropClick);
+      }, 100);
+
+      try {
+        el.quickInputDialog.showModal();
+        if (el.quickInputBtnOk) el.quickInputBtnOk.focus();
+      } catch (err) {
+        console.warn("Could not open modal dialog, falling back to confirm:", err);
+        resolve(window.confirm ? window.confirm(message.replace(/<[^>]+>/g, "")) : true);
+      }
     });
   }
 
@@ -1167,11 +1215,12 @@
     }
   }
 
-  async function githubFetchRepos() {
-    if (!state.githubToken) throw new Error("Not authenticated. Please connect your GitHub token.");
+  async function githubFetchRepos(customToken) {
+    const tok = customToken || state.githubToken || getStoredToken();
+    if (!tok) throw new Error("Not authenticated. Please connect your GitHub token.");
     const res = await fetch("https://api.github.com/user/repos?sort=updated&per_page=100&affiliation=owner,collaborator,organization_member", {
       headers: {
-        "Authorization": `Bearer ${state.githubToken}`,
+        "Authorization": `Bearer ${tok}`,
         "Accept": "application/vnd.github.v3+json"
       }
     });
@@ -1207,6 +1256,22 @@
         }
         el.ghRepoSelect.appendChild(opt);
       });
+
+      // If no exact match yet, check for Portfolio repository
+      if (!foundCurrent) {
+        const matchPortfolio = repos.find(r => r.full_name.toLowerCase().includes("portfolio"));
+        if (matchPortfolio) {
+          const targetOpt = Array.from(el.ghRepoSelect.options).find(o => o.value === matchPortfolio.full_name);
+          if (targetOpt) {
+            targetOpt.selected = true;
+            foundCurrent = true;
+            state.githubRepo = matchPortfolio.full_name;
+            state.githubBranch = matchPortfolio.default_branch || "main";
+            if (el.ghBranchInput) el.ghBranchInput.value = state.githubBranch;
+            if (el.ghRepoInput) el.ghRepoInput.value = matchPortfolio.full_name;
+          }
+        }
+      }
     }
 
     const customOpt = document.createElement("option");
@@ -1221,10 +1286,26 @@
 
   async function loadRepoOptions(forceRefresh = false) {
     if (!el.ghRepoSelect) return;
-    const token = (el.ghTokenInput && el.ghTokenInput.value.trim()) || state.githubToken;
+    const token = (el.ghTokenInput && el.ghTokenInput.value.trim()) || state.githubToken || getStoredToken();
     if (!token) {
-      el.ghRepoSelect.innerHTML = `<option value="">-- Enter token to load repositories --</option><option value="__custom__">✎ Enter custom repository manually...</option>`;
+      el.ghRepoSelect.innerHTML = `<option value="">-- Enter token above to load repositories --</option><option value="__custom__">✎ Enter custom repository manually...</option>`;
       return;
+    }
+
+    // Ensure state has the token and is authenticated
+    if (token !== state.githubToken || !state.githubUser) {
+      state.githubToken = token;
+      persistToken(token);
+      const authRes = await githubAuth(token, true);
+      if (authRes.success) {
+        if (el.ghSavedBadge) {
+          el.ghSavedBadge.style.display = "inline-block";
+          el.ghSavedBadge.textContent = state.githubUser && state.githubUser.login
+            ? `✓ Saved (@${state.githubUser.login})`
+            : `✓ Saved (${maskToken(token)})`;
+        }
+        if (el.ghBtnDisconnect) el.ghBtnDisconnect.style.display = "inline-flex";
+      }
     }
 
     if (!forceRefresh && state.cachedRepos && state.cachedRepos.length > 0) {
@@ -1237,12 +1318,12 @@
     el.ghRepoSelect.disabled = true;
 
     try {
-      const repos = await githubFetchRepos();
+      const repos = await githubFetchRepos(token);
       state.cachedRepos = repos;
       renderRepoOptions(repos);
     } catch (err) {
       console.warn("Could not fetch user repos:", err);
-      el.ghRepoSelect.innerHTML = `<option value="">-- Could not auto-load repos: ${err.message} --</option><option value="__custom__">✎ Enter custom repository manually...</option>`;
+      el.ghRepoSelect.innerHTML = `<option value="">-- Could not auto-load repos: ${escapeHtml(err.message)} --</option><option value="__custom__">✎ Enter custom repository manually...</option>`;
     } finally {
       if (el.ghReposLoading) el.ghReposLoading.style.display = "none";
       el.ghRepoSelect.disabled = false;
@@ -1461,7 +1542,9 @@
     { id: "file_save_all", label: "File: Save All Files", exec: () => { saveWorkspace(); termPrint("All files saved to browser storage.", "vsc-term-success"); } },
     { id: "file_export", label: "File: Export Workspace as JSON", exec: () => exportWorkspaceJSON() },
     { id: "file_import", label: "File: Import Workspace from JSON", exec: () => triggerWorkspaceImport() },
+    { id: "workbench_reload", label: "Developer: Reload Window", exec: () => window.location.reload() },
     { id: "file_clear_workspace", label: "File: Clear Workspace (Start Clean)", exec: () => clearWorkspace() },
+    { id: "file_clear_workspace_fresh", label: "File: Reset Workspace & Start Fresh (Keep Token)", exec: () => resetWorkspaceData() },
     { id: "github_connect", label: "GitHub: Connect Repository & Personal Access Token", exec: () => openGitHubModal() },
     { id: "github_push", label: "Git: Commit and Push Changes to GitHub", exec: () => { if (el.btnGitPush) el.btnGitPush.click(); } },
     { id: "edit_find", label: "Edit: Find in Files", exec: () => { switchSidebarView("search"); if (el.searchQueryInput) el.searchQueryInput.focus(); } },
@@ -1889,8 +1972,11 @@
     } catch (e) {}
   }
 
-  function openGitHubModal() {
+  function openGitHubModal(statusPrompt = "") {
     if (!el.githubDialog) return;
+    if (!state.githubToken) {
+      state.githubToken = getStoredToken();
+    }
     if (el.ghTokenInput) {
       el.ghTokenInput.value = state.githubToken || "";
       el.ghTokenInput.type = "password";
@@ -1917,16 +2003,23 @@
     }
     if (el.ghRepoInput) el.ghRepoInput.value = state.githubRepo;
     if (el.ghBranchInput) el.ghBranchInput.value = state.githubBranch || "main";
-    if (el.ghStatusMsg) el.ghStatusMsg.textContent = "";
+    if (el.ghStatusMsg) {
+      el.ghStatusMsg.innerHTML = statusPrompt
+        ? `<span style="color:var(--vsc-turquoise);font-weight:600">${escapeHtml(statusPrompt)}</span>`
+        : "";
+    }
 
     // Automatically load repositories if token exists
     if (state.githubToken) {
       loadRepoOptions(false);
     } else if (el.ghRepoSelect) {
-      el.ghRepoSelect.innerHTML = `<option value="">-- Enter token to load repositories --</option><option value="__custom__">✎ Enter custom repository manually...</option>`;
+      el.ghRepoSelect.innerHTML = `<option value="">-- Enter token above to load repositories --</option><option value="__custom__">✎ Enter custom repository manually...</option>`;
     }
 
-    el.githubDialog.showModal();
+    try {
+      el.githubDialog.showModal();
+    } catch (e) {}
+
     if (!state.githubToken && el.ghTokenInput) {
       el.ghTokenInput.focus();
     } else if (el.ghRepoSelect) {
@@ -2175,6 +2268,9 @@
     bindItem("vsc-item-toggle-term", toggleMaximizeTerminal);
     bindItem("vsc-item-toggle-preview", () => {
       if (el.livePreview) el.livePreview.classList.toggle("hidden");
+    });
+    bindItem("vsc-item-reload-window", () => {
+      window.location.reload();
     });
     bindItem("vsc-item-view-fullscreen", () => {
       if (el.btnFullscreen) el.btnFullscreen.click();
@@ -2574,9 +2670,33 @@ Integrated Web Developer Workbench:
   </style>
 </head>
 <body>
+  <div class="md-top-nav" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;padding-bottom:10px;border-bottom:1px solid #30363d">
+    <span style="font-size:12px;color:#8b949e;font-weight:600">📖 ${escapeHtml(filename)}</span>
+    <button onclick="window.parent.postMessage({type:'VSC_BACK_TO_CODE'}, '*')" style="background:#21262d;color:#3791B7;border:1px solid rgba(55,145,183,0.4);padding:5px 12px;border-radius:5px;font-size:12px;font-weight:600;cursor:pointer;touch-action:manipulation">← Back to Code</button>
+  </div>
   ${renderedBody}
 </body>
 </html>`;
+  }
+
+  function updateMarkdownPreviewButton() {
+    if (!el.btnPreviewMd) return;
+    const isMd = state.activeFile && (state.activeFile.toLowerCase().endsWith(".md") || state.activeFile.toLowerCase().endsWith(".markdown"));
+    if (!isMd) {
+      el.btnPreviewMd.style.display = "none";
+      return;
+    }
+    el.btnPreviewMd.style.display = "inline-flex";
+    const isPreviewing = el.livePreview && !el.livePreview.classList.contains("hidden");
+    if (isPreviewing) {
+      el.btnPreviewMd.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> <span>Edit Code</span>`;
+      el.btnPreviewMd.title = "Back to Code Editor (Ctrl+Shift+V)";
+      if (el.workspaceArea) el.workspaceArea.classList.add("preview-active");
+    } else {
+      el.btnPreviewMd.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg> <span>Preview</span>`;
+      el.btnPreviewMd.title = "Preview Markdown (Ctrl+Shift+V)";
+      if (el.workspaceArea) el.workspaceArea.classList.remove("preview-active");
+    }
   }
 
   function previewMarkdown(filename) {
@@ -2586,17 +2706,28 @@ Integrated Web Developer Workbench:
       return;
     }
 
+    const isCurrentlyOpen = el.livePreview && !el.livePreview.classList.contains("hidden");
+    if (isCurrentlyOpen) {
+      el.livePreview.classList.add("hidden");
+      if (el.workspaceArea) el.workspaceArea.classList.remove("preview-active");
+      if (el.codeTextarea) el.codeTextarea.focus();
+      updateMarkdownPreviewButton();
+      return;
+    }
+
     const mdContent = state.files[fn];
     const docHtml = buildMarkdownDocument(mdContent, fn);
 
     if (el.livePreview && el.previewFrame) {
       el.livePreview.classList.remove("hidden");
+      if (el.workspaceArea) el.workspaceArea.classList.add("preview-active");
       el.previewFrame.srcdoc = docHtml;
       if (el.previewUrlText) {
         el.previewUrlText.innerHTML = `📖 <b>Markdown Preview:</b> ${escapeHtml(fn)}`;
       }
     }
-    showMessage("info", "Markdown Preview", `Previewing "${fn}" in side pane`);
+    updateMarkdownPreviewButton();
+    showMessage("info", "Markdown Preview", `Previewing "${fn}". Tap '← Back to Code' anytime to edit.`);
   }
 
   // --- LIVE VIRTUAL WEB SERVER ENGINE (SERVE & PREVIEW) ---
@@ -2830,6 +2961,15 @@ Integrated Web Developer Workbench:
       usage: "clear",
       exec: async () => {
         if (el.termHistory) el.termHistory.innerHTML = "";
+      }
+    },
+
+    reload: {
+      desc: "Reload the workbench window",
+      usage: "reload",
+      exec: async () => {
+        termPrint("Reloading workbench window...", "vsc-term-info");
+        setTimeout(() => window.location.reload(), 150);
       }
     },
 
@@ -4279,6 +4419,30 @@ Subcommands:
     return out;
   }
 
+  function setupPasswordToggle(btn, input) {
+    if (!btn || !input) return;
+    let lastToggle = 0;
+    const toggle = (e) => {
+      if (e) {
+        if (e.cancelable) e.preventDefault();
+        e.stopPropagation();
+      }
+      const now = Date.now();
+      if (now - lastToggle < 200) return;
+      lastToggle = now;
+
+      const isPass = input.type === "password";
+      input.type = isPass ? "text" : "password";
+      btn.textContent = isPass ? "🔒" : "👁";
+      btn.title = isPass ? "Hide Token" : "Show Token";
+      btn.setAttribute("aria-label", isPass ? "Hide Token" : "Show Token");
+    };
+
+    btn.addEventListener("pointerdown", toggle);
+    btn.addEventListener("touchstart", toggle, { passive: false });
+    btn.addEventListener("click", toggle);
+  }
+
   // --- EVENT LISTENERS INITIALIZATION ---
   function initEvents() {
     // Terminal input handling
@@ -4361,6 +4525,13 @@ Subcommands:
           document.exitFullscreen().catch(() => {});
           document.body.classList.remove("vsc-fullscreen");
         }
+      });
+    }
+
+    // Reload Window button in titlebar
+    if (el.btnReloadWindow) {
+      el.btnReloadWindow.addEventListener("click", () => {
+        window.location.reload();
       });
     }
 
@@ -4456,8 +4627,12 @@ Subcommands:
     if (el.btnOpenGhModal) el.btnOpenGhModal.addEventListener("click", openGitHubModal);
     if (el.btnGitPush) {
       el.btnGitPush.addEventListener("click", async () => {
-        if (!state.githubRepo || !state.githubToken) {
-          openGitHubModal();
+        if (!state.githubToken) {
+          openGitHubModal("Please connect your GitHub Personal Access Token to commit & push changes.");
+          return;
+        }
+        if (!state.githubRepo) {
+          openGitHubModal("Please select a target GitHub repository to commit & push changes.");
           return;
         }
         const msg = (el.gitCommitMsg && el.gitCommitMsg.value.trim()) || "feat: update workspace files via VS Code Tools";
@@ -4591,21 +4766,11 @@ Subcommands:
     }
 
     if (el.ghBtnToggleToken && el.ghTokenInput) {
-      el.ghBtnToggleToken.addEventListener("click", () => {
-        const isPass = el.ghTokenInput.type === "password";
-        el.ghTokenInput.type = isPass ? "text" : "password";
-        el.ghBtnToggleToken.textContent = isPass ? "🔒" : "👁";
-        el.ghBtnToggleToken.title = isPass ? "Hide Token" : "Show Token";
-      });
+      setupPasswordToggle(el.ghBtnToggleToken, el.ghTokenInput);
     }
 
     if (el.settingBtnToggleToken && el.settingGhToken) {
-      el.settingBtnToggleToken.addEventListener("click", () => {
-        const isPass = el.settingGhToken.type === "password";
-        el.settingGhToken.type = isPass ? "text" : "password";
-        el.settingBtnToggleToken.textContent = isPass ? "🔒" : "👁";
-        el.settingBtnToggleToken.title = isPass ? "Hide Token" : "Show Token";
-      });
+      setupPasswordToggle(el.settingBtnToggleToken, el.settingGhToken);
     }
 
     if (el.ghRepoSelect) {
@@ -4658,6 +4823,26 @@ Subcommands:
     }
 
     if (el.ghTokenInput) {
+      let tokenDebounce = null;
+      const onTokenInput = () => {
+        const val = el.ghTokenInput ? el.ghTokenInput.value.trim() : "";
+        if (!val) {
+          if (el.ghSavedBadge) el.ghSavedBadge.style.display = "none";
+          if (el.ghRepoSelect) el.ghRepoSelect.innerHTML = `<option value="">-- Enter token above to load repositories --</option><option value="__custom__">✎ Enter custom repository manually...</option>`;
+          return;
+        }
+        if (val.length >= 15 || val.startsWith("ghp_") || val.startsWith("github_pat_")) {
+          clearTimeout(tokenDebounce);
+          tokenDebounce = setTimeout(() => {
+            loadRepoOptions(true);
+          }, 350);
+        }
+      };
+
+      el.ghTokenInput.addEventListener("input", onTokenInput);
+      el.ghTokenInput.addEventListener("paste", () => setTimeout(onTokenInput, 50));
+      el.ghTokenInput.addEventListener("change", onTokenInput);
+
       el.ghTokenInput.addEventListener("keydown", (e) => {
         if (e.key === "Enter") {
           e.preventDefault();
@@ -4798,15 +4983,35 @@ Subcommands:
       });
     }
 
-    // Reset Data action buttons
-    if (el.btnResetData) {
-      el.btnResetData.addEventListener("click", () => {
-        if (el.settingsDialog && el.settingsDialog.open) el.settingsDialog.close();
+    // Reset & Clear Workspace Data action buttons
+    if (el.btnClearWorkspaceBanner) {
+      el.btnClearWorkspaceBanner.addEventListener("click", (e) => {
+        if (e) {
+          if (e.cancelable) e.preventDefault();
+          e.stopPropagation();
+        }
         resetWorkspaceData();
       });
     }
+
+    if (el.btnResetData) {
+      el.btnResetData.addEventListener("click", (e) => {
+        if (e) {
+          if (e.cancelable) e.preventDefault();
+          e.stopPropagation();
+        }
+        if (el.settingsDialog && el.settingsDialog.open) el.settingsDialog.close();
+        setTimeout(() => {
+          resetWorkspaceData();
+        }, 50);
+      });
+    }
     if (el.itemResetData) {
-      el.itemResetData.addEventListener("click", () => {
+      el.itemResetData.addEventListener("click", (e) => {
+        if (e) {
+          if (e.cancelable) e.preventDefault();
+          e.stopPropagation();
+        }
         resetWorkspaceData();
       });
     }
@@ -5622,8 +5827,12 @@ Subcommands:
     // Editor toolbar Push to GitHub button
     if (el.btnPushEditor) {
       el.btnPushEditor.addEventListener("click", async () => {
-        if (!state.githubRepo || !state.githubToken) {
-          openGitHubModal();
+        if (!state.githubToken) {
+          openGitHubModal("Please connect your GitHub Personal Access Token to commit & push changes.");
+          return;
+        }
+        if (!state.githubRepo) {
+          openGitHubModal("Please select a target GitHub repository to commit & push changes.");
           return;
         }
         const fileToPush = state.activeFile;
@@ -5693,12 +5902,36 @@ Subcommands:
       });
     }
 
-    // Live Server Preview Controls
+    // Live Server & Markdown Preview Controls
     if (el.previewBtnClose && el.livePreview) {
       el.previewBtnClose.addEventListener("click", () => {
         el.livePreview.classList.add("hidden");
+        if (el.workspaceArea) el.workspaceArea.classList.remove("preview-active");
+        updateMarkdownPreviewButton();
       });
     }
+
+    if (el.previewBtnBackCode) {
+      el.previewBtnBackCode.addEventListener("click", () => {
+        if (el.livePreview) el.livePreview.classList.add("hidden");
+        if (el.workspaceArea) el.workspaceArea.classList.remove("preview-active");
+        if (el.codeTextarea) el.codeTextarea.focus();
+        updateMarkdownPreviewButton();
+      });
+    }
+
+    window.addEventListener("message", (e) => {
+      if (e.data && e.data.type === "VSC_BACK_TO_CODE") {
+        if (el.previewBtnBackCode) {
+          el.previewBtnBackCode.click();
+        } else {
+          if (el.livePreview) el.livePreview.classList.add("hidden");
+          if (el.workspaceArea) el.workspaceArea.classList.remove("preview-active");
+          if (el.codeTextarea) el.codeTextarea.focus();
+          updateMarkdownPreviewButton();
+        }
+      }
+    });
 
     if (el.previewBtnReload && el.previewFrame) {
       el.previewBtnReload.addEventListener("click", () => {
