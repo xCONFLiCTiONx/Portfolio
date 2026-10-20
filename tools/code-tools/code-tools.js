@@ -551,7 +551,7 @@ User-Agent: VSCodeTools/4.2
     }
     saveWorkspace();
 
-    // Direct write to physical hard drive (E:\ drive file handle)
+    // Direct write to physical hard drive (drive file handle)
     if (state.fileHandles && state.fileHandles.has(filename)) {
       try {
         const handle = state.fileHandles.get(filename);
@@ -1058,7 +1058,7 @@ User-Agent: VSCodeTools/4.2
     { id: "view_preview", label: "View: Toggle Live Preview", exec: () => { if (el.livePreview) el.livePreview.classList.toggle("hidden"); } },
     { id: "view_fullscreen", label: "View: Toggle Fullscreen", exec: () => { if (el.btnFullscreen) el.btnFullscreen.click(); } },
     { id: "file_new", label: "File: New File", exec: async () => { const name = await promptInWorkbench("New File", "new-file.js", "filename.js"); if (name) openFile(name); } },
-    { id: "file_open_project", label: "File: Open Local Folder / Project (E:\\ Drive)...", exec: () => openLocalProjectFolder() },
+    { id: "file_open_project", label: "File: Open Local Folder / Project", exec: () => openLocalProjectFolder() },
     { id: "file_save", label: "File: Save Current File (Direct to Disk)", exec: () => saveCurrentFile() },
     { id: "file_save_all", label: "File: Save All Files", exec: () => { saveWorkspace(); termPrint("All files saved to browser storage.", "vsc-term-success"); } },
     { id: "file_export", label: "File: Export Workspace as JSON", exec: () => exportWorkspaceJSON() },
@@ -1827,7 +1827,7 @@ Integrated Web Developer Workbench:
   <b class="vsc-term-success">github</b> logout                       Clear GitHub token and cookies
 
 <span class="vsc-prompt-tag">[LOCAL PROJECT &amp; DISK]</span>
-  <b class="vsc-term-success">openproject</b> / <b class="vsc-term-success">openfolder</b>            Open folder or project from drive (e.g. E:\) with direct 2-way disk save
+  <b class="vsc-term-success">openproject</b> / <b class="vsc-term-success">openfolder</b>            Open folder or project from drive with direct 2-way disk save
   <b class="vsc-term-success">save</b>                                Save active file directly to your disk or storage
 
 <span class="vsc-prompt-tag">[EDITOR &amp; WORKSPACE]</span>
@@ -2696,7 +2696,7 @@ Length: ${hex.length * 4} bits (${hex.length} hex chars)
   COMMANDS.gh = COMMANDS.github;
 
   COMMANDS.openproject = {
-    desc: "Open any folder or project from your local drive (e.g. E:\\) with direct two-way disk saving",
+    desc: "Open any folder or project from your local drive with direct two-way disk saving",
     usage: "openproject",
     exec: async () => {
       await openLocalProjectFolder();

@@ -55,7 +55,7 @@
               <span class="vsc-menu-item" id="vsc-menu-btn-file">File</span>
               <div class="vsc-dropdown-menu" id="vsc-dropdown-file">
                 <div class="vsc-dropdown-item" id="vsc-item-new-file"><span>New File</span><kbd>Ctrl+N</kbd></div>
-                <div class="vsc-dropdown-item" id="vsc-item-open-folder"><span>Open Local Project (E:\)...</span><kbd>Ctrl+O</kbd></div>
+                <div class="vsc-dropdown-item" id="vsc-item-open-folder"><span>Open Local Project</span><kbd>Ctrl+O</kbd></div>
                 <div class="vsc-dropdown-item" id="vsc-item-connect-github"><span>Connect GitHub Repo...</span></div>
                 <div class="vsc-dropdown-divider"></div>
                 <div class="vsc-dropdown-item" id="vsc-item-save-file"><span>Save</span><kbd>Ctrl+S</kbd></div>
@@ -63,6 +63,7 @@
                 <div class="vsc-dropdown-item" id="vsc-item-export-zip"><span>Export Workspace (JSON)</span></div>
                 <div class="vsc-dropdown-divider"></div>
                 <div class="vsc-dropdown-item" id="vsc-item-close-file"><span>Close Editor</span><kbd>Ctrl+W</kbd></div>
+                <div class="vsc-dropdown-item" id="vsc-item-close-all"><span>Close All Editors</span><kbd>Ctrl+K W</kbd></div>
               </div>
             </div>
 
@@ -185,7 +186,7 @@
           <div class="vsc-sidebar-header">
             <span id="vsc-sidebar-title">Explorer</span>
             <div style="display:flex;gap:4px">
-              <button class="vsc-title-btn" id="vsc-btn-open-folder" title="Open Local Project Folder (E:\ Drive)">📂</button>
+              <button class="vsc-title-btn" id="vsc-btn-open-folder" title="Open Local Project Folder">📂</button>
               <button class="vsc-title-btn" id="vsc-btn-new-file" title="New File">+</button>
               <button class="vsc-title-btn" id="vsc-btn-refresh-sidebar" title="Refresh">↻</button>
             </div>
@@ -208,7 +209,7 @@
               </div>
               <div id="vsc-open-project-container" style="padding:6px 10px">
                 <button class="vsc-editor-btn" id="vsc-btn-open-project-banner" style="width:100%;display:flex;align-items:center;justify-content:center;gap:6px;background:rgba(55,145,183,0.1);border:1px solid rgba(55,145,183,0.35);color:var(--vsc-turquoise);font-weight:600;padding:6px">
-                  <span>📂</span><span>Open Project on E:\</span>
+                  <span>📂</span><span>Open Project</span>
                 </button>
               </div>
               <ul class="vsc-tree" id="vsc-workspace-files-list"></ul>
