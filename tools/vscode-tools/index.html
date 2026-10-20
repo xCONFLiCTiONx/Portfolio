@@ -51,14 +51,87 @@
             <span>Code</span>
           </div>
           <nav class="vsc-menu-bar" aria-label="Editor Menu">
-            <span class="vsc-menu-item">File</span>
-            <span class="vsc-menu-item">Edit</span>
-            <span class="vsc-menu-item">Selection</span>
-            <span class="vsc-menu-item">View</span>
-            <span class="vsc-menu-item">Go</span>
-            <span class="vsc-menu-item">Run</span>
-            <span class="vsc-menu-item">Terminal</span>
-            <span class="vsc-menu-item">Help</span>
+            <div class="vsc-menu-container">
+              <span class="vsc-menu-item" id="vsc-menu-btn-file">File</span>
+              <div class="vsc-dropdown-menu" id="vsc-dropdown-file">
+                <div class="vsc-dropdown-item" id="vsc-item-new-file"><span>New File</span><kbd>Ctrl+N</kbd></div>
+                <div class="vsc-dropdown-item" id="vsc-item-connect-github"><span>Connect GitHub Repo...</span></div>
+                <div class="vsc-dropdown-divider"></div>
+                <div class="vsc-dropdown-item" id="vsc-item-save-file"><span>Save</span><kbd>Ctrl+S</kbd></div>
+                <div class="vsc-dropdown-item" id="vsc-item-save-all"><span>Save All</span></div>
+                <div class="vsc-dropdown-item" id="vsc-item-export-zip"><span>Export Workspace (JSON)</span></div>
+                <div class="vsc-dropdown-divider"></div>
+                <div class="vsc-dropdown-item" id="vsc-item-close-file"><span>Close Editor</span><kbd>Ctrl+W</kbd></div>
+              </div>
+            </div>
+
+            <div class="vsc-menu-container">
+              <span class="vsc-menu-item" id="vsc-menu-btn-edit">Edit</span>
+              <div class="vsc-dropdown-menu" id="vsc-dropdown-edit">
+                <div class="vsc-dropdown-item" id="vsc-item-undo"><span>Undo</span><kbd>Ctrl+Z</kbd></div>
+                <div class="vsc-dropdown-item" id="vsc-item-redo"><span>Redo</span><kbd>Ctrl+Y</kbd></div>
+                <div class="vsc-dropdown-divider"></div>
+                <div class="vsc-dropdown-item" id="vsc-item-cut"><span>Cut</span><kbd>Ctrl+X</kbd></div>
+                <div class="vsc-dropdown-item" id="vsc-item-copy"><span>Copy</span><kbd>Ctrl+C</kbd></div>
+                <div class="vsc-dropdown-item" id="vsc-item-paste"><span>Paste from Clipboard</span><kbd>Ctrl+V</kbd></div>
+                <div class="vsc-dropdown-divider"></div>
+                <div class="vsc-dropdown-item" id="vsc-item-find"><span>Find in Files</span><kbd>Ctrl+F</kbd></div>
+                <div class="vsc-dropdown-item" id="vsc-item-format-doc"><span>Format Document</span><kbd>Shift+Alt+F</kbd></div>
+              </div>
+            </div>
+
+            <div class="vsc-menu-container">
+              <span class="vsc-menu-item" id="vsc-menu-btn-selection">Selection</span>
+              <div class="vsc-dropdown-menu" id="vsc-dropdown-selection">
+                <div class="vsc-dropdown-item" id="vsc-item-select-all"><span>Select All</span><kbd>Ctrl+A</kbd></div>
+                <div class="vsc-dropdown-item" id="vsc-item-dup-line"><span>Duplicate Line</span><kbd>Shift+Alt+Down</kbd></div>
+              </div>
+            </div>
+
+            <div class="vsc-menu-container">
+              <span class="vsc-menu-item" id="vsc-menu-btn-view">View</span>
+              <div class="vsc-dropdown-menu" id="vsc-dropdown-view">
+                <div class="vsc-dropdown-item" id="vsc-item-toggle-sidebar"><span>Toggle Primary Sidebar</span><kbd>Ctrl+B</kbd></div>
+                <div class="vsc-dropdown-item" id="vsc-item-toggle-term"><span>Toggle Terminal Panel</span><kbd>Ctrl+`</kbd></div>
+                <div class="vsc-dropdown-item" id="vsc-item-toggle-preview"><span>Toggle Live Preview</span></div>
+                <div class="vsc-dropdown-divider"></div>
+                <div class="vsc-dropdown-item" id="vsc-item-view-fullscreen"><span>Toggle Fullscreen</span><kbd>F11</kbd></div>
+              </div>
+            </div>
+
+            <div class="vsc-menu-container">
+              <span class="vsc-menu-item" id="vsc-menu-btn-go">Go</span>
+              <div class="vsc-dropdown-menu" id="vsc-dropdown-go">
+                <div class="vsc-dropdown-item" id="vsc-item-go-file"><span>Go to File...</span><kbd>Ctrl+P</kbd></div>
+                <div class="vsc-dropdown-item" id="vsc-item-go-line"><span>Go to Line...</span><kbd>Ctrl+G</kbd></div>
+              </div>
+            </div>
+
+            <div class="vsc-menu-container">
+              <span class="vsc-menu-item" id="vsc-menu-btn-run">Run</span>
+              <div class="vsc-dropdown-menu" id="vsc-dropdown-run">
+                <div class="vsc-dropdown-item" id="vsc-item-run-code"><span>Run Active Script</span><kbd>Ctrl+Enter</kbd></div>
+                <div class="vsc-dropdown-item" id="vsc-item-serve-page"><span>Serve Page in Browser</span><kbd>Ctrl+F5</kbd></div>
+              </div>
+            </div>
+
+            <div class="vsc-menu-container">
+              <span class="vsc-menu-item" id="vsc-menu-btn-terminal">Terminal</span>
+              <div class="vsc-dropdown-menu" id="vsc-dropdown-terminal">
+                <div class="vsc-dropdown-item" id="vsc-item-new-term"><span>New Terminal</span></div>
+                <div class="vsc-dropdown-item" id="vsc-item-clear-term"><span>Clear Terminal</span></div>
+                <div class="vsc-dropdown-item" id="vsc-item-max-term"><span>Maximize Terminal</span></div>
+              </div>
+            </div>
+
+            <div class="vsc-menu-container">
+              <span class="vsc-menu-item" id="vsc-menu-btn-help">Help</span>
+              <div class="vsc-dropdown-menu" id="vsc-dropdown-help">
+                <div class="vsc-dropdown-item" id="vsc-item-cmd-palette"><span>Command Palette...</span><kbd>Ctrl+Shift+P</kbd></div>
+                <div class="vsc-dropdown-item" id="vsc-item-gh-docs"><span>GitHub Setup Guide</span></div>
+                <div class="vsc-dropdown-item" id="vsc-item-about-tool"><span>About VS Code Tools</span></div>
+              </div>
+            </div>
           </nav>
         </div>
 
@@ -83,113 +156,189 @@
             <button class="vsc-act-btn active" id="vsc-act-explorer" title="Explorer (Ctrl+Shift+E)" aria-label="Explorer">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
             </button>
-            <button class="vsc-act-btn" title="Search (Ctrl+Shift+F)" aria-label="Search">
+            <button class="vsc-act-btn" id="vsc-act-search" title="Search (Ctrl+Shift+F)" aria-label="Search">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             </button>
-            <button class="vsc-act-btn" title="Source Control" aria-label="Source Control">
+            <button class="vsc-act-btn" id="vsc-act-git" title="Source Control (Ctrl+Shift+G)" aria-label="Source Control">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/><path d="M6 9v12"/></svg>
             </button>
-            <button class="vsc-act-btn" title="Run and Debug" aria-label="Run and Debug">
+            <button class="vsc-act-btn" id="vsc-act-debug" title="Run and Debug (Ctrl+Shift+D)" aria-label="Run and Debug">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
             </button>
-            <button class="vsc-act-btn" title="Extensions" aria-label="Extensions">
+            <button class="vsc-act-btn" id="vsc-act-extensions" title="Extensions &amp; Snippets (Ctrl+Shift+X)" aria-label="Extensions">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
             </button>
           </div>
           <div class="vsc-activity-bottom">
-            <button class="vsc-act-btn" title="Accounts" aria-label="Accounts">
+            <button class="vsc-act-btn" id="vsc-act-accounts" title="Accounts &amp; GitHub Auth" aria-label="Accounts">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
             </button>
-            <button class="vsc-act-btn" title="Settings" aria-label="Settings">
+            <button class="vsc-act-btn" id="vsc-act-settings" title="Settings (Ctrl+,)" aria-label="Settings">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
             </button>
           </div>
         </aside>
 
-        <!-- 2B. SIDEBAR (EXPLORER) -->
-        <aside class="vsc-sidebar vsc-scrollable" id="vsc-sidebar" aria-label="Sidebar Explorer">
+        <!-- 2B. SIDEBAR (MULTI-VIEW) -->
+        <aside class="vsc-sidebar vsc-scrollable" id="vsc-sidebar" aria-label="Sidebar Primary View">
           <div class="vsc-sidebar-header">
-            <span>Explorer</span>
-            <span style="cursor:pointer" title="More Actions">...</span>
+            <span id="vsc-sidebar-title">Explorer</span>
+            <div style="display:flex;gap:4px">
+              <button class="vsc-title-btn" id="vsc-btn-new-file" title="New File">+</button>
+              <button class="vsc-title-btn" id="vsc-btn-refresh-sidebar" title="Refresh">↻</button>
+            </div>
           </div>
 
-          <div class="vsc-sidebar-content">
-            <!-- OPEN EDITORS -->
-            <div class="vsc-section-title">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-              <span>Open Editors</span>
-            </div>
-            <ul class="vsc-tree" id="vsc-open-editors-list"></ul>
+          <!-- VIEW 1: EXPLORER -->
+          <div class="vsc-sidebar-view active" id="vsc-view-explorer">
+            <div class="vsc-sidebar-content">
+              <!-- OPEN EDITORS -->
+              <div class="vsc-section-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                <span>Open Editors</span>
+              </div>
+              <ul class="vsc-tree" id="vsc-open-editors-list"></ul>
 
-            <!-- DEV-VAULT WORKSPACE -->
-            <div class="vsc-section-title" style="margin-top:6px">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-              <span>dev-vault (Workspace)</span>
-            </div>
-            <ul class="vsc-tree" id="vsc-workspace-files-list"></ul>
+              <!-- DEV-VAULT WORKSPACE -->
+              <div class="vsc-section-title" style="margin-top:6px">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                <span id="vsc-workspace-label">dev-vault (Workspace)</span>
+              </div>
+              <ul class="vsc-tree" id="vsc-workspace-files-list"></ul>
 
-            <!-- DAILY CLI UTILITIES -->
-            <div class="vsc-section-title" style="margin-top:12px">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-              <span>Active CLI Tools</span>
+              <!-- DAILY CLI UTILITIES -->
+              <div class="vsc-section-title" style="margin-top:12px">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                <span>Active CLI Tools</span>
+              </div>
+              <ul class="vsc-tree">
+                <li class="vsc-tree-item" onclick="document.getElementById('vsc-term-input').value='curl https://httpbin.org/get'; document.getElementById('vsc-term-input').focus()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                  <span>HTTP Client</span>
+                  <span class="vsc-tool-chip">curl</span>
+                </li>
+                <li class="vsc-tree-item" onclick="document.getElementById('vsc-term-input').value='jwt '; document.getElementById('vsc-term-input').focus()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                  <span>JWT Inspector</span>
+                  <span class="vsc-tool-chip">jwt</span>
+                </li>
+                <li class="vsc-tree-item" onclick="document.getElementById('vsc-term-input').value='dns cloudflare.com A'; document.getElementById('vsc-term-input').focus()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m9.17 14.83-4.24 4.24"/></svg>
+                  <span>DNS-over-HTTPS</span>
+                  <span class="vsc-tool-chip">dns</span>
+                </li>
+                <li class="vsc-tree-item" onclick="document.getElementById('vsc-term-input').value='myip'; document.getElementById('vsc-term-input').focus()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                  <span>IP Telemetry</span>
+                  <span class="vsc-tool-chip">myip</span>
+                </li>
+                <li class="vsc-tree-item" onclick="document.getElementById('vsc-term-input').value='regex '; document.getElementById('vsc-term-input').focus()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21 16-4 4-4-4"/><path d="M17 20V4"/><path d="m3 8 4-4 4 4"/><path d="M7 4v16"/></svg>
+                  <span>Regex Evaluator</span>
+                  <span class="vsc-tool-chip">regex</span>
+                </li>
+                <li class="vsc-tree-item" onclick="document.getElementById('vsc-term-input').value='calc 1024 * 1024 * 50'; document.getElementById('vsc-term-input').focus()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="16" y1="14" x2="16" y2="18"/><path d="M8 10h.01"/><path d="M12 10h.01"/><path d="M16 10h.01"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/></svg>
+                  <span>Programmer Calc</span>
+                  <span class="vsc-tool-chip">calc</span>
+                </li>
+                <li class="vsc-tree-item" onclick="document.getElementById('vsc-term-input').value='hash sha256 '; document.getElementById('vsc-term-input').focus()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                  <span>Crypto Hasher</span>
+                  <span class="vsc-tool-chip">hash</span>
+                </li>
+                <li class="vsc-tree-item" onclick="document.getElementById('vsc-term-input').value='sysinfo'; document.getElementById('vsc-term-input').focus()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                  <span>OS &amp; Browser Telemetry</span>
+                  <span class="vsc-tool-chip">sysinfo</span>
+                </li>
+                <li class="vsc-tree-item" onclick="document.getElementById('vsc-term-input').value='nano mypage.html'; document.getElementById('vsc-term-input').focus()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                  <span>Terminal Nano Editor</span>
+                  <span class="vsc-tool-chip">nano</span>
+                </li>
+                <li class="vsc-tree-item" onclick="document.getElementById('vsc-term-input').value='serve mypage.html'; document.getElementById('vsc-term-input').focus()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                  <span>Live Web Server</span>
+                  <span class="vsc-tool-chip">serve</span>
+                </li>
+              </ul>
             </div>
-            <ul class="vsc-tree">
-              <li class="vsc-tree-item" onclick="document.getElementById('vsc-term-input').value='curl https://httpbin.org/get'; document.getElementById('vsc-term-input').focus()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-                <span>HTTP Client</span>
-                <span class="vsc-tool-chip">curl</span>
-              </li>
-              <li class="vsc-tree-item" onclick="document.getElementById('vsc-term-input').value='jwt '; document.getElementById('vsc-term-input').focus()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                <span>JWT Inspector</span>
-                <span class="vsc-tool-chip">jwt</span>
-              </li>
-              <li class="vsc-tree-item" onclick="document.getElementById('vsc-term-input').value='dns cloudflare.com A'; document.getElementById('vsc-term-input').focus()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m9.17 14.83-4.24 4.24"/></svg>
-                <span>DNS-over-HTTPS</span>
-                <span class="vsc-tool-chip">dns</span>
-              </li>
-              <li class="vsc-tree-item" onclick="document.getElementById('vsc-term-input').value='myip'; document.getElementById('vsc-term-input').focus()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                <span>IP Telemetry</span>
-                <span class="vsc-tool-chip">myip</span>
-              </li>
-              <li class="vsc-tree-item" onclick="document.getElementById('vsc-term-input').value='regex '; document.getElementById('vsc-term-input').focus()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21 16-4 4-4-4"/><path d="M17 20V4"/><path d="m3 8 4-4 4 4"/><path d="M7 4v16"/></svg>
-                <span>Regex Evaluator</span>
-                <span class="vsc-tool-chip">regex</span>
-              </li>
-              <li class="vsc-tree-item" onclick="document.getElementById('vsc-term-input').value='json format'; document.getElementById('vsc-term-input').focus()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-                <span>JSON / JQ Query</span>
-                <span class="vsc-tool-chip">json</span>
-              </li>
-              <li class="vsc-tree-item" onclick="document.getElementById('vsc-term-input').value='calc 1024 * 1024 * 50'; document.getElementById('vsc-term-input').focus()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="16" y1="14" x2="16" y2="18"/><path d="M8 10h.01"/><path d="M12 10h.01"/><path d="M16 10h.01"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/></svg>
-                <span>Programmer Calc</span>
-                <span class="vsc-tool-chip">calc</span>
-              </li>
-              <li class="vsc-tree-item" onclick="document.getElementById('vsc-term-input').value='hash sha256 '; document.getElementById('vsc-term-input').focus()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-                <span>Crypto Hasher</span>
-                <span class="vsc-tool-chip">hash</span>
-              </li>
-              <li class="vsc-tree-item" onclick="document.getElementById('vsc-term-input').value='sysinfo'; document.getElementById('vsc-term-input').focus()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-                <span>OS &amp; Browser Telemetry</span>
-                <span class="vsc-tool-chip">sysinfo</span>
-              </li>
-              <li class="vsc-tree-item" onclick="document.getElementById('vsc-term-input').value='nano mypage.html'; document.getElementById('vsc-term-input').focus()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-                <span>Terminal Nano Editor</span>
-                <span class="vsc-tool-chip">nano</span>
-              </li>
-              <li class="vsc-tree-item" onclick="document.getElementById('vsc-term-input').value='serve mypage.html'; document.getElementById('vsc-term-input').focus()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                <span>Live Web Server</span>
-                <span class="vsc-tool-chip">serve</span>
-              </li>
-            </ul>
+          </div>
+
+          <!-- VIEW 2: SEARCH -->
+          <div class="vsc-sidebar-view" id="vsc-view-search">
+            <div class="vsc-search-view-wrap">
+              <input type="text" class="vsc-modal-input" id="vsc-search-query-input" placeholder="Search in files..." />
+              <input type="text" class="vsc-modal-input" id="vsc-replace-query-input" placeholder="Replace with..." />
+              <div style="display:flex;gap:6px">
+                <button class="vsc-editor-btn" id="vsc-btn-find-in-files">Find</button>
+                <button class="vsc-editor-btn" id="vsc-btn-replace-in-files">Replace All</button>
+              </div>
+              <ul class="vsc-search-results-list" id="vsc-search-results-list"></ul>
+            </div>
+          </div>
+
+          <!-- VIEW 3: SOURCE CONTROL (GITHUB GIT) -->
+          <div class="vsc-sidebar-view" id="vsc-view-git">
+            <div class="vsc-git-view-wrap">
+              <div class="vsc-git-status-card">
+                <span style="font-weight:700;color:var(--vsc-turquoise)">GitHub Integration</span>
+                <span id="vsc-git-repo-display" style="color:var(--vsc-fg-secondary)">No remote repo connected</span>
+                <button class="vsc-editor-btn" id="vsc-btn-open-gh-modal" style="margin-top:6px">Connect GitHub Token</button>
+              </div>
+              <div class="vsc-input-group">
+                <label class="vsc-input-label">Commit Message:</label>
+                <textarea class="vsc-commit-input" id="vsc-git-commit-msg" placeholder="feat: update workspace files"></textarea>
+                <button class="vsc-editor-btn run" id="vsc-btn-git-push" style="margin-top:6px">Commit &amp; Push to GitHub</button>
+              </div>
+              <div class="vsc-section-title" style="margin-top:8px">
+                <span>Changed Files</span>
+              </div>
+              <ul class="vsc-tree" id="vsc-git-changes-list"></ul>
+            </div>
+          </div>
+
+          <!-- VIEW 4: RUN & DEBUG -->
+          <div class="vsc-sidebar-view" id="vsc-view-debug">
+            <div class="vsc-git-view-wrap">
+              <button class="vsc-editor-btn run" id="vsc-btn-debug-run">▶ Start Debugging (Run)</button>
+              <div class="vsc-section-title">
+                <span>Variables &amp; State</span>
+              </div>
+              <div style="font-family:var(--vsc-font-code);font-size:11px;color:var(--vsc-fg-secondary);padding:6px" id="vsc-debug-variables">
+                activeFile: <b style="color:var(--vsc-turquoise)">scratchpad.js</b><br>
+                status: <span style="color:#98c379">ready</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- VIEW 5: EXTENSIONS & SNIPPETS -->
+          <div class="vsc-sidebar-view" id="vsc-view-extensions">
+            <div class="vsc-ext-view-wrap">
+              <span style="font-size:11px;font-weight:700;color:var(--vsc-turquoise)">Quick Code Snippets</span>
+              <div class="vsc-snippet-card">
+                <div class="vsc-snippet-info">
+                  <span class="vsc-snippet-title">HTML5 Boilerplate</span>
+                  <span class="vsc-snippet-desc">Responsive HTML5 layout with site CSS</span>
+                </div>
+                <button class="vsc-editor-btn" onclick="insertSnippet('html5')">Insert</button>
+              </div>
+              <div class="vsc-snippet-card">
+                <div class="vsc-snippet-info">
+                  <span class="vsc-snippet-title">Async Fetch Wrapper</span>
+                  <span class="vsc-snippet-desc">HTTP client with error handling</span>
+                </div>
+                <button class="vsc-editor-btn" onclick="insertSnippet('fetch')">Insert</button>
+              </div>
+              <div class="vsc-snippet-card">
+                <div class="vsc-snippet-info">
+                  <span class="vsc-snippet-title">Web Crypto SHA-256</span>
+                  <span class="vsc-snippet-desc">Fast browser digest hashing</span>
+                </div>
+                <button class="vsc-editor-btn" onclick="insertSnippet('crypto')">Insert</button>
+              </div>
+            </div>
           </div>
         </aside>
 
@@ -253,21 +402,21 @@
             <!-- Terminal Header -->
             <header class="vsc-term-header">
               <div class="vsc-term-tabs" role="tablist">
-                <div class="vsc-term-tab active" role="tab" aria-selected="true">
+                <div class="vsc-term-tab active" id="vsc-tab-term" role="tab" aria-selected="true">
                   <span>Terminal</span>
                 </div>
-                <div class="vsc-term-tab" role="tab" aria-selected="false">
+                <div class="vsc-term-tab" id="vsc-tab-output" role="tab" aria-selected="false">
                   <span>Output</span>
                 </div>
-                <div class="vsc-term-tab" role="tab" aria-selected="false">
+                <div class="vsc-term-tab" id="vsc-tab-problems" role="tab" aria-selected="false">
                   <span>Problems</span>
-                  <span class="vsc-term-badge">0</span>
+                  <span class="vsc-term-badge" id="vsc-problems-count">0</span>
                 </div>
                 <div class="vsc-term-tab" id="vsc-tab-ports" role="tab" aria-selected="false">
                   <span>Ports</span>
                   <span class="vsc-term-badge" id="vsc-ports-count" style="display:none">0</span>
                 </div>
-                <div class="vsc-term-tab" role="tab" aria-selected="false">
+                <div class="vsc-term-tab" id="vsc-tab-debug" role="tab" aria-selected="false">
                   <span>Debug Console</span>
                 </div>
               </div>
@@ -317,6 +466,31 @@
                   aria-label="Terminal Input"
                   placeholder="Type a command (e.g. help, myip, dns, jwt, curl, regex, calc)..."
                 />
+              </div>
+            </div>
+
+            <!-- In-Terminal Output View -->
+            <div class="vsc-term-body vsc-scrollable" id="vsc-output-panel" style="display:none">
+              <div class="vsc-term-history" id="vsc-output-history">
+                <div class="vsc-term-line vsc-term-dim">[Virtual Output Stream Ready]</div>
+              </div>
+            </div>
+
+            <!-- In-Terminal Problems / Diagnostics View -->
+            <div class="vsc-term-body vsc-scrollable" id="vsc-problems-panel" style="display:none">
+              <div class="vsc-term-history" id="vsc-problems-history">
+                <div class="vsc-term-line vsc-term-dim">No problems detected in workspace files.</div>
+              </div>
+            </div>
+
+            <!-- In-Terminal Debug Console REPL View -->
+            <div class="vsc-debug-console-panel vsc-scrollable" id="vsc-debug-panel">
+              <div class="vsc-term-history" id="vsc-debug-history">
+                <div class="vsc-term-line vsc-term-dim">[Debug Console REPL — Evaluate JavaScript expressions in sandbox]</div>
+              </div>
+              <div class="vsc-input-row">
+                <span class="vsc-prompt-str">&gt;</span>
+                <input type="text" id="vsc-debug-input" class="vsc-term-input" placeholder="Evaluate JS expression (e.g. 2 + 2)..." />
               </div>
             </div>
 
@@ -408,33 +582,107 @@
       <!-- 6. BOTTOM STATUS BAR -->
       <footer class="vsc-statusbar" aria-label="Status Bar">
         <div class="vsc-status-left">
-          <div class="vsc-status-item accent" title="Git Branch: main">
+          <div class="vsc-status-item accent" id="vsc-status-git" title="Git Branch / Remote Repo">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/><path d="M6 9v12"/></svg>
-            <span>main*</span>
+            <span id="vsc-status-git-branch">main*</span>
           </div>
-          <div class="vsc-status-item" title="Synchronize Changes">
+          <div class="vsc-status-item" id="vsc-status-sync" title="Synchronize Changes with GitHub">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-            <span>0 ↓ 1 ↑</span>
+            <span id="vsc-status-sync-text">0 ↓ 1 ↑</span>
           </div>
-          <div class="vsc-status-item" title="Diagnostics: 0 Errors, 0 Warnings">
+          <div class="vsc-status-item" id="vsc-status-diagnostics" title="Diagnostics: 0 Errors, 0 Warnings">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
-            <span>0</span>
+            <span id="vsc-status-err-count">0</span>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-            <span>0</span>
+            <span id="vsc-status-warn-count">0</span>
           </div>
         </div>
 
         <div class="vsc-status-right">
           <div class="vsc-status-item" id="vsc-status-lncol">Ln 1, Col 1</div>
-          <div class="vsc-status-item">Spaces: 2</div>
-          <div class="vsc-status-item">UTF-8</div>
-          <div class="vsc-status-item">JavaScript / JSON</div>
-          <div class="vsc-status-item accent" title="DevTools Engine Active">
+          <div class="vsc-status-item" id="vsc-status-spaces" title="Click to Change Indentation">Spaces: 2</div>
+          <div class="vsc-status-item" id="vsc-status-encoding">UTF-8</div>
+          <div class="vsc-status-item" id="vsc-status-lang">JavaScript / JSON</div>
+          <div class="vsc-status-item accent" id="vsc-status-online" title="DevTools Engine Active">
             <span class="vsc-pulse-beacon"></span>
             <span>Online</span>
           </div>
         </div>
       </footer>
+    </div>
+
+    <!-- MODAL DIALOG 1: COMMAND PALETTE (<dialog closedby="any">) -->
+    <dialog class="vsc-dialog" id="vsc-palette-dialog" closedby="any" aria-label="Command Palette">
+      <div class="vsc-palette-input-wrap">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" class="vsc-palette-input" id="vsc-palette-input" placeholder="Type a command or file name..." autocomplete="off" />
+      </div>
+      <ul class="vsc-palette-list vsc-scrollable" id="vsc-palette-list"></ul>
+    </dialog>
+
+    <!-- MODAL DIALOG 2: GITHUB CONNECT & REPO LOADER -->
+    <dialog class="vsc-dialog" id="vsc-github-dialog" closedby="any" aria-label="GitHub Repository &amp; Token Connect">
+      <div class="vsc-dialog-header">
+        <span>CONNECT TO GITHUB REPOSITORY</span>
+        <button class="vsc-title-btn" id="vsc-gh-btn-close">✕</button>
+      </div>
+      <div class="vsc-dialog-body">
+        <div class="vsc-input-group">
+          <label class="vsc-input-label">GitHub Personal Access Token (PAT):</label>
+          <input type="password" class="vsc-modal-input" id="vsc-gh-token-input" placeholder="ghp_... or github_pat_..." />
+          <span style="font-size:10px;color:var(--vsc-fg-muted)">Saved securely in browser cookies &amp; localStorage for persistent sync across PC &amp; Android phone.</span>
+        </div>
+        <div class="vsc-input-group">
+          <label class="vsc-input-label">Target Repository (owner/repo):</label>
+          <input type="text" class="vsc-modal-input" id="vsc-gh-repo-input" placeholder="e.g. xCONFLiCTiONx/Portfolio" />
+        </div>
+        <div class="vsc-input-group">
+          <label class="vsc-input-label">Branch (default: main):</label>
+          <input type="text" class="vsc-modal-input" id="vsc-gh-branch-input" placeholder="main" value="main" />
+        </div>
+        <div id="vsc-gh-status-msg" style="font-size:11px;min-height:16px;"></div>
+      </div>
+      <div class="vsc-dialog-footer">
+        <button class="vsc-editor-btn" id="vsc-gh-btn-cancel">Cancel</button>
+        <button class="vsc-editor-btn run" id="vsc-gh-btn-connect">Connect &amp; Load Repo</button>
+      </div>
+    </dialog>
+
+    <!-- MODAL DIALOG 3: WORKBENCH SETTINGS -->
+    <dialog class="vsc-dialog" id="vsc-settings-dialog" closedby="any" aria-label="Workbench Settings">
+      <div class="vsc-dialog-header">
+        <span>WORKBENCH SETTINGS</span>
+        <button class="vsc-title-btn" id="vsc-settings-btn-close">✕</button>
+      </div>
+      <div class="vsc-dialog-body">
+        <div class="vsc-input-group">
+          <label class="vsc-input-label">Editor Font Size:</label>
+          <select class="vsc-modal-input" id="vsc-setting-fontsize">
+            <option value="12px">12px (Compact)</option>
+            <option value="13px" selected>13px (Default)</option>
+            <option value="14px">14px (Comfortable)</option>
+            <option value="16px">16px (Large)</option>
+          </select>
+        </div>
+        <div class="vsc-input-group">
+          <label class="vsc-input-label">Tab Size / Indentation:</label>
+          <select class="vsc-modal-input" id="vsc-setting-tabsize">
+            <option value="2" selected>2 Spaces</option>
+            <option value="4">4 Spaces</option>
+          </select>
+        </div>
+        <div class="vsc-input-group">
+          <label class="vsc-input-label">Word Wrap:</label>
+          <select class="vsc-modal-input" id="vsc-setting-wordwrap">
+            <option value="off">Off (Horizontal Scroll)</option>
+            <option value="on" selected>On (Wrap lines)</option>
+          </select>
+        </div>
+      </div>
+      <div class="vsc-dialog-footer">
+        <button class="vsc-editor-btn run" id="vsc-settings-btn-save">Save &amp; Close</button>
+      </div>
+    </dialog>
     </div>
   </main>
 

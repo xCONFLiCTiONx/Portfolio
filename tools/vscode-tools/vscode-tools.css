@@ -1227,4 +1227,325 @@ body[data-tool-id="vscode-tools"].vsc-fullscreen #vscode-workbench {
   font-weight: 700;
 }
 
+/* ==========================================================================
+   MODAL DIALOGS (Modern Web Guidance: <dialog closedby="any"> + ::backdrop)
+   ========================================================================== */
+dialog.vsc-dialog {
+  background: #181818;
+  color: var(--vsc-fg-primary);
+  border: 1px solid var(--vsc-border);
+  border-radius: 6px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.85);
+  padding: 0;
+  max-width: 580px;
+  width: 90vw;
+  font-family: var(--vsc-font-ui);
+  overflow: hidden;
+}
+
+dialog.vsc-dialog::backdrop {
+  background-color: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(3px);
+}
+
+.vsc-dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: #141414;
+  border-bottom: 1px solid var(--vsc-border);
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--vsc-turquoise);
+}
+
+.vsc-dialog-body {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 75vh;
+  overflow-y: auto;
+}
+
+.vsc-dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 10px 14px;
+  background: #141414;
+  border-top: 1px solid var(--vsc-border);
+}
+
+.vsc-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.vsc-input-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--vsc-fg-secondary);
+}
+
+.vsc-modal-input {
+  background: #101010;
+  border: 1px solid var(--vsc-border);
+  color: #fff;
+  border-radius: 4px;
+  padding: 8px 10px;
+  font-size: 12px;
+  font-family: var(--vsc-font-code);
+  outline: none;
+}
+
+.vsc-modal-input:focus {
+  border-color: var(--vsc-turquoise);
+  box-shadow: 0 0 6px var(--vsc-turquoise-glow);
+}
+
+/* Command Palette Dialog */
+#vsc-palette-dialog {
+  top: 10%;
+  max-width: 620px;
+  border-color: var(--vsc-turquoise);
+  box-shadow: 0 0 20px rgba(0, 240, 255, 0.25);
+}
+
+.vsc-palette-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: #141414;
+  border-bottom: 1px solid var(--vsc-border);
+}
+
+.vsc-palette-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #fff;
+  font-size: 13px;
+  font-family: var(--vsc-font-ui);
+}
+
+.vsc-palette-list {
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+  max-height: 340px;
+  overflow-y: auto;
+}
+
+.vsc-palette-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--vsc-fg-secondary);
+  border-left: 2px solid transparent;
+}
+
+.vsc-palette-item:hover,
+.vsc-palette-item.selected {
+  background: var(--vsc-bg-hover);
+  color: #fff;
+  border-left-color: var(--vsc-turquoise);
+}
+
+.vsc-palette-shortcut {
+  font-family: var(--vsc-font-code);
+  font-size: 10px;
+  color: var(--vsc-turquoise);
+  background: rgba(0, 240, 255, 0.1);
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+/* Titlebar Dropdown Menus */
+.vsc-menu-container {
+  position: relative;
+  display: inline-block;
+}
+
+.vsc-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: #1e1e1e;
+  border: 1px solid var(--vsc-border);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7);
+  border-radius: 4px;
+  min-width: 200px;
+  z-index: 100;
+  padding: 4px 0;
+  display: none;
+}
+
+.vsc-dropdown-menu.show {
+  display: block;
+}
+
+.vsc-dropdown-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 14px;
+  font-size: 12px;
+  color: var(--vsc-fg-secondary);
+  cursor: pointer;
+  user-select: none;
+}
+
+.vsc-dropdown-item:hover {
+  background: var(--vsc-bg-hover);
+  color: #fff;
+}
+
+.vsc-dropdown-divider {
+  height: 1px;
+  background: var(--vsc-border);
+  margin: 4px 0;
+}
+
+/* Sidebar Multiple Views (Explorer, Search, Git, Debug, Extensions) */
+.vsc-sidebar-view {
+  display: none;
+  flex: 1;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.vsc-sidebar-view.active {
+  display: flex;
+}
+
+/* Search Sidebar View */
+.vsc-search-view-wrap {
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.vsc-search-results-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+}
+
+.vsc-search-result-file {
+  font-weight: 700;
+  font-size: 11px;
+  color: var(--vsc-turquoise);
+  padding: 4px 6px;
+  background: rgba(255, 255, 255, 0.04);
+  margin-top: 6px;
+  border-radius: 3px;
+}
+
+.vsc-search-result-match {
+  font-size: 11px;
+  padding: 3px 12px;
+  color: var(--vsc-fg-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vsc-search-result-match:hover {
+  background: var(--vsc-bg-hover);
+  color: #fff;
+}
+
+/* Git / Source Control Sidebar View */
+.vsc-git-view-wrap {
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.vsc-git-status-card {
+  background: #141414;
+  border: 1px solid var(--vsc-border);
+  border-radius: 4px;
+  padding: 8px 10px;
+  font-size: 11px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.vsc-commit-input {
+  background: #101010;
+  border: 1px solid var(--vsc-border);
+  color: #fff;
+  border-radius: 4px;
+  padding: 6px 8px;
+  font-size: 12px;
+  font-family: var(--vsc-font-ui);
+  resize: vertical;
+  min-height: 48px;
+}
+
+/* Extensions & Snippets View */
+.vsc-ext-view-wrap {
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+}
+
+.vsc-snippet-card {
+  background: #141414;
+  border: 1px solid var(--vsc-border);
+  border-radius: 4px;
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.vsc-snippet-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.vsc-snippet-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.vsc-snippet-desc {
+  font-size: 10px;
+  color: var(--vsc-fg-muted);
+}
+
+/* Debug Console REPL View in Terminal */
+.vsc-debug-console-panel {
+  display: none;
+  flex: 1;
+  flex-direction: column;
+  padding: 8px 12px;
+  overflow-y: auto;
+  font-family: var(--vsc-font-code);
+  font-size: 12px;
+}
+
+.vsc-debug-console-panel.active {
+  display: flex;
+}
+
+
 

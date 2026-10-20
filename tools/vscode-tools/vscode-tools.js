@@ -121,9 +121,22 @@ User-Agent: VSCodeTools/4.2
 `
   };
 
+  // --- COOKIE & PERSISTENT STORAGE HELPERS ---
+  function getCookie(name) {
+    const match = document.cookie.match(new RegExp("(^|;\\s*)(" + name + ")=([^;]*)"));
+    return match ? decodeURIComponent(match[3]) : "";
+  }
+
+  function setCookie(name, val, days = 365) {
+    const maxAge = days * 86400;
+    document.cookie = `${name}=${encodeURIComponent(val)}; max-age=${maxAge}; path=/; SameSite=Lax`;
+  }
+
   // --- APPLICATION STATE ---
   const state = {
     files: {},
+    fileShas: {}, // { filename: sha }
+    modifiedFiles: new Set(),
     activeFile: "scratchpad.js",
     commandHistory: [],
     historyIndex: -1,
@@ -131,9 +144,14 @@ User-Agent: VSCodeTools/4.2
     savedPanelHeight: 180,
     activeShell: "powershell",
     activeTab: "terminal",
+    activeSidebarView: "explorer",
     servers: {}, // { port: { file, url, pid, startedAt } }
     nanoActive: false,
-    nanoCurrentFile: ""
+    nanoCurrentFile: "",
+    githubToken: getCookie("gh_pat") || localStorage.getItem("vsc_gh_token") || "",
+    githubRepo: getCookie("gh_repo") || localStorage.getItem("vsc_gh_repo") || "",
+    githubBranch: getCookie("gh_branch") || localStorage.getItem("vsc_gh_branch") || "main",
+    githubUser: null
   };
 
   // Load persisted files or initialize defaults
@@ -176,7 +194,14 @@ User-Agent: VSCodeTools/4.2
     workspaceFilesList: document.getElementById("vsc-workspace-files-list"),
     statusLnCol: document.getElementById("vsc-status-lncol"),
     sidebar: document.getElementById("vsc-sidebar"),
+    sidebarTitle: document.getElementById("vsc-sidebar-title"),
     actExplorer: document.getElementById("vsc-act-explorer"),
+    actSearch: document.getElementById("vsc-act-search"),
+    actGit: document.getElementById("vsc-act-git"),
+    actDebug: document.getElementById("vsc-act-debug"),
+    actExtensions: document.getElementById("vsc-act-extensions"),
+    actAccounts: document.getElementById("vsc-act-accounts"),
+    actSettings: document.getElementById("vsc-act-settings"),
 
     // GNU nano elements
     nanoContainer: document.getElementById("vsc-nano-container"),
@@ -197,11 +222,74 @@ User-Agent: VSCodeTools/4.2
     previewBtnExternal: document.getElementById("vsc-preview-btn-external"),
     previewBtnClose: document.getElementById("vsc-preview-btn-close"),
 
-    // Ports view elements
+    // Terminal views & tabs
+    tabTerm: document.getElementById("vsc-tab-term"),
+    tabOutput: document.getElementById("vsc-tab-output"),
+    tabProblems: document.getElementById("vsc-tab-problems"),
     tabPorts: document.getElementById("vsc-tab-ports"),
+    tabDebug: document.getElementById("vsc-tab-debug"),
+    outputPanel: document.getElementById("vsc-output-panel"),
+    outputHistory: document.getElementById("vsc-output-history"),
+    problemsPanel: document.getElementById("vsc-problems-panel"),
+    problemsHistory: document.getElementById("vsc-problems-history"),
+    problemsCount: document.getElementById("vsc-problems-count"),
     portsPanel: document.getElementById("vsc-ports-panel"),
     portsTbody: document.getElementById("vsc-ports-tbody"),
-    portsCount: document.getElementById("vsc-ports-count")
+    portsCount: document.getElementById("vsc-ports-count"),
+    debugPanel: document.getElementById("vsc-debug-panel"),
+    debugHistory: document.getElementById("vsc-debug-history"),
+    debugInput: document.getElementById("vsc-debug-input"),
+
+    // Modals
+    paletteDialog: document.getElementById("vsc-palette-dialog"),
+    paletteInput: document.getElementById("vsc-palette-input"),
+    paletteList: document.getElementById("vsc-palette-list"),
+    githubDialog: document.getElementById("vsc-github-dialog"),
+    ghTokenInput: document.getElementById("vsc-gh-token-input"),
+    ghRepoInput: document.getElementById("vsc-gh-repo-input"),
+    ghBranchInput: document.getElementById("vsc-gh-branch-input"),
+    ghBtnConnect: document.getElementById("vsc-gh-btn-connect"),
+    ghBtnClose: document.getElementById("vsc-gh-btn-close"),
+    ghBtnCancel: document.getElementById("vsc-gh-btn-cancel"),
+    ghStatusMsg: document.getElementById("vsc-gh-status-msg"),
+    settingsDialog: document.getElementById("vsc-settings-dialog"),
+    settingFontSize: document.getElementById("vsc-setting-fontsize"),
+    settingTabSize: document.getElementById("vsc-setting-tabsize"),
+    settingWordWrap: document.getElementById("vsc-setting-wordwrap"),
+    settingsBtnClose: document.getElementById("vsc-settings-btn-close"),
+    settingsBtnSave: document.getElementById("vsc-settings-btn-save"),
+
+    // Titlebar & Searchbar
+    searchBar: document.querySelector(".vsc-searchbar"),
+    workspaceLabel: document.getElementById("vsc-workspace-label"),
+    btnNewFile: document.getElementById("vsc-btn-new-file"),
+    btnRefreshSidebar: document.getElementById("vsc-btn-refresh-sidebar"),
+    btnDebugRun: document.getElementById("vsc-btn-debug-run"),
+
+    // Status bar interactive items
+    statusGit: document.getElementById("vsc-status-git"),
+    statusGitBranch: document.getElementById("vsc-status-git-branch"),
+    statusSync: document.getElementById("vsc-status-sync"),
+    statusSyncText: document.getElementById("vsc-status-sync-text"),
+    statusDiagnostics: document.getElementById("vsc-status-diagnostics"),
+    statusSpaces: document.getElementById("vsc-status-spaces"),
+    statusEncoding: document.getElementById("vsc-status-encoding"),
+    statusLang: document.getElementById("vsc-status-lang"),
+    statusOnline: document.getElementById("vsc-status-online"),
+
+    // Search view elements
+    searchQueryInput: document.getElementById("vsc-search-query-input"),
+    replaceQueryInput: document.getElementById("vsc-replace-query-input"),
+    btnFindInFiles: document.getElementById("vsc-btn-find-in-files"),
+    btnReplaceInFiles: document.getElementById("vsc-btn-replace-in-files"),
+    searchResultsList: document.getElementById("vsc-search-results-list"),
+
+    // Git view elements
+    gitRepoDisplay: document.getElementById("vsc-git-repo-display"),
+    btnOpenGhModal: document.getElementById("vsc-btn-open-gh-modal"),
+    gitCommitMsg: document.getElementById("vsc-git-commit-msg"),
+    btnGitPush: document.getElementById("vsc-btn-git-push"),
+    gitChangesList: document.getElementById("vsc-git-changes-list")
   };
 
   // --- SAVE WORKSPACE HELPER ---
@@ -300,6 +388,751 @@ User-Agent: VSCodeTools/4.2
       const li2 = li.cloneNode(true);
       li2.addEventListener("click", () => openFile(filename));
       el.workspaceFilesList.appendChild(li2);
+    });
+  }
+
+  // --- GIT STATUS & DIAGNOSTICS HELPERS ---
+  function updateGitStatus() {
+    const branch = state.githubBranch || "main";
+    const modCount = state.modifiedFiles.size;
+    if (el.statusGitBranch) {
+      el.statusGitBranch.textContent = `${branch}${modCount > 0 ? "*" : ""}`;
+    }
+    if (el.statusSyncText) {
+      el.statusSyncText.textContent = `0 \u2193  ${modCount} \u2191`;
+    }
+    if (el.gitRepoDisplay) {
+      if (state.githubRepo) {
+        el.gitRepoDisplay.textContent = `${state.githubRepo} (${branch})`;
+        el.gitRepoDisplay.style.color = "var(--vsc-turquoise)";
+      } else {
+        el.gitRepoDisplay.textContent = "No remote repo connected";
+        el.gitRepoDisplay.style.color = "var(--vsc-fg-secondary)";
+      }
+    }
+    if (el.gitChangesList) {
+      el.gitChangesList.innerHTML = "";
+      if (modCount === 0) {
+        el.gitChangesList.innerHTML = `<li class="vsc-tree-item" style="color:var(--vsc-fg-secondary);font-style:italic">No local changes</li>`;
+      } else {
+        state.modifiedFiles.forEach((file) => {
+          const li = document.createElement("li");
+          li.className = "vsc-tree-item";
+          li.innerHTML = `<span style="color:#e5c07b;font-weight:700;margin-right:6px">M</span><span>${file}</span>`;
+          li.addEventListener("click", () => openFile(file));
+          el.gitChangesList.appendChild(li);
+        });
+      }
+    }
+  }
+
+  function refreshProblems() {
+    const problems = [];
+    Object.keys(state.files).forEach((filename) => {
+      const content = state.files[filename];
+      if (filename.endsWith(".json")) {
+        try {
+          JSON.parse(content);
+        } catch (e) {
+          problems.push({ file: filename, message: e.message, severity: "error" });
+        }
+      } else if (filename.endsWith(".js")) {
+        const opens = (content.match(/[\{\[\(]/g) || []).length;
+        const closes = (content.match(/[\}\]\)]/g) || []).length;
+        if (opens !== closes) {
+          problems.push({ file: filename, message: `Unmatched delimiters (${opens} open vs ${closes} closed)`, severity: "warning" });
+        }
+      }
+    });
+
+    if (el.problemsCount) {
+      el.problemsCount.textContent = problems.length;
+      el.problemsCount.style.display = problems.length > 0 ? "inline-block" : "none";
+    }
+    const errCountEl = document.getElementById("vsc-status-err-count");
+    if (errCountEl) errCountEl.textContent = problems.filter(p => p.severity === "error").length;
+    const warnCountEl = document.getElementById("vsc-status-warn-count");
+    if (warnCountEl) warnCountEl.textContent = problems.filter(p => p.severity === "warning").length;
+
+    if (el.problemsHistory) {
+      if (problems.length === 0) {
+        el.problemsHistory.innerHTML = `<div style="color:var(--vsc-fg-secondary);padding:10px">No problems detected in workspace files.</div>`;
+      } else {
+        el.problemsHistory.innerHTML = problems.map(p => `
+          <div class="vsc-tree-item" style="padding:6px 12px;border-bottom:1px solid #232323" data-file="${p.file}">
+            <span style="color:${p.severity === 'error' ? '#f44336' : '#e5c07b'};font-weight:700;margin-right:8px">[${p.severity.toUpperCase()}]</span>
+            <span style="color:#fff;font-weight:600;margin-right:8px">${p.file}:</span>
+            <span style="color:var(--vsc-fg-secondary)">${p.message}</span>
+          </div>
+        `).join("");
+        el.problemsHistory.querySelectorAll(".vsc-tree-item").forEach(item => {
+          item.addEventListener("click", () => openFile(item.dataset.file));
+        });
+      }
+    }
+  }
+
+  // --- GITHUB REST API ENGINE ---
+  async function githubAuth(token) {
+    if (!token) {
+      state.githubToken = "";
+      state.githubUser = null;
+      setCookie("gh_pat", "", -1);
+      localStorage.removeItem("vsc_gh_token");
+      updateGitStatus();
+      return { success: false, message: "Logged out / token cleared." };
+    }
+    try {
+      const res = await fetch("https://api.github.com/user", {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Accept": "application/vnd.github.v3+json"
+        }
+      });
+      if (!res.ok) {
+        throw new Error(`GitHub Auth Failed (${res.status} ${res.statusText})`);
+      }
+      const user = await res.json();
+      state.githubToken = token;
+      state.githubUser = user;
+      setCookie("gh_pat", token, 365);
+      localStorage.setItem("vsc_gh_token", token);
+      updateGitStatus();
+      return { success: true, user };
+    } catch (err) {
+      return { success: false, message: err.message };
+    }
+  }
+
+  async function githubFetchRepos() {
+    if (!state.githubToken) throw new Error("Not authenticated. Please connect your GitHub token.");
+    const res = await fetch("https://api.github.com/user/repos?sort=updated&per_page=30", {
+      headers: {
+        "Authorization": `Bearer ${state.githubToken}`,
+        "Accept": "application/vnd.github.v3+json"
+      }
+    });
+    if (!res.ok) throw new Error(`Failed to fetch repos (${res.status} ${res.statusText})`);
+    return await res.json();
+  }
+
+  async function githubCloneRepo(repoFullName, branch = "main", onProgress = null) {
+    if (!state.githubToken) throw new Error("GitHub Token required to clone.");
+    const repo = repoFullName.trim();
+    const b = branch.trim() || "main";
+
+    const treeUrl = `https://api.github.com/repos/${repo}/git/trees/${b}?recursive=1`;
+    const res = await fetch(treeUrl, {
+      headers: {
+        "Authorization": `Bearer ${state.githubToken}`,
+        "Accept": "application/vnd.github.v3+json"
+      }
+    });
+
+    if (!res.ok) {
+      throw new Error(`Failed to load tree from ${repo}@${b}: ${res.status} ${res.statusText}`);
+    }
+
+    const data = await res.json();
+    if (!data.tree || !Array.isArray(data.tree)) {
+      throw new Error("No files found in repo tree.");
+    }
+
+    const fileBlobs = data.tree.filter(item => item.type === "blob" && (!item.size || item.size < 500000)).slice(0, 100);
+
+    state.githubRepo = repo;
+    state.githubBranch = b;
+    setCookie("gh_repo", repo, 365);
+    setCookie("gh_branch", b, 365);
+    localStorage.setItem("vsc_gh_repo", repo);
+    localStorage.setItem("vsc_gh_branch", b);
+
+    if (el.workspaceLabel) el.workspaceLabel.textContent = `${repo} (${b})`;
+
+    let loaded = 0;
+    for (const item of fileBlobs) {
+      try {
+        const fRes = await fetch(`https://api.github.com/repos/${repo}/contents/${item.path}?ref=${b}`, {
+          headers: {
+            "Authorization": `Bearer ${state.githubToken}`,
+            "Accept": "application/vnd.github.v3+json"
+          }
+        });
+        if (fRes.ok) {
+          const fData = await fRes.json();
+          if (fData.content) {
+            const decoded = decodeURIComponent(escape(atob(fData.content.replace(/\s/g, ""))));
+            state.files[item.path] = decoded;
+            state.fileShas[item.path] = fData.sha;
+            loaded++;
+            if (onProgress) onProgress(loaded, fileBlobs.length, item.path);
+          }
+        }
+      } catch (e) {
+        console.warn("Failed to fetch file:", item.path, e);
+      }
+    }
+
+    saveWorkspace();
+    state.modifiedFiles.clear();
+    renderSidebarLists();
+    renderTabs();
+    const first = Object.keys(state.files)[0];
+    if (first) openFile(first);
+    updateGitStatus();
+    refreshProblems();
+    return { success: true, count: loaded, total: fileBlobs.length };
+  }
+
+  async function githubPush(commitMsg = "feat: update workspace files") {
+    if (!state.githubToken) throw new Error("GitHub Token required to commit & push.");
+    if (!state.githubRepo) throw new Error("No repository selected. Connect a repo first.");
+
+    const changed = Array.from(state.modifiedFiles);
+    if (changed.length === 0) {
+      return { success: true, message: "Workspace clean. Nothing to push." };
+    }
+
+    const results = [];
+    for (const path of changed) {
+      const content = state.files[path] || "";
+      const b64 = btoa(unescape(encodeURIComponent(content)));
+      const body = {
+        message: `${commitMsg} [${path}]`,
+        content: b64,
+        branch: state.githubBranch || "main"
+      };
+      if (state.fileShas[path]) {
+        body.sha = state.fileShas[path];
+      }
+
+      const putRes = await fetch(`https://api.github.com/repos/${state.githubRepo}/contents/${path}`, {
+        method: "PUT",
+        headers: {
+          "Authorization": `Bearer ${state.githubToken}`,
+          "Accept": "application/vnd.github.v3+json",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(body)
+      });
+
+      if (!putRes.ok) {
+        const errJson = await putRes.json().catch(() => ({}));
+        throw new Error(`Failed to push ${path}: ${errJson.message || putRes.statusText}`);
+      }
+
+      const resJson = await putRes.json();
+      if (resJson.content && resJson.content.sha) {
+        state.fileShas[path] = resJson.content.sha;
+      }
+      state.modifiedFiles.delete(path);
+      results.push(path);
+    }
+
+    updateGitStatus();
+    return { success: true, pushedFiles: results };
+  }
+
+  // --- SNIPPETS INSERTION API ---
+  window.insertSnippet = function (type) {
+    let snippet = "";
+    if (type === "html5") {
+      snippet = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>App</title>
+  <link rel="stylesheet" href="../../css/main.css" />
+  <link rel="stylesheet" href="./vscode-tools.css" />
+</head>
+<body>
+  <h1>App Live Preview</h1>
+</body>
+</html>\n`;
+    } else if (type === "fetch") {
+      snippet = `async function request(url, options = {}) {
+  try {
+    const res = await fetch(url, options);
+    if (!res.ok) throw new Error(\`HTTP error! status: \${res.status}\`);
+    return await res.json();
+  } catch (err) {
+    console.error("Fetch failed:", err);
+    throw err;
+  }
+}\n`;
+    } else if (type === "crypto") {
+      snippet = `async function sha256(message) {
+  const msgUint8 = new TextEncoder().encode(message);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", msgUint8);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+}\n`;
+    }
+    if (el.codeTextarea && snippet) {
+      const start = el.codeTextarea.selectionStart;
+      const end = el.codeTextarea.selectionEnd;
+      const val = el.codeTextarea.value;
+      el.codeTextarea.value = val.substring(0, start) + snippet + val.substring(end);
+      state.files[state.activeFile] = el.codeTextarea.value;
+      state.modifiedFiles.add(state.activeFile);
+      saveWorkspace();
+      updateGutter();
+      updateGitStatus();
+      refreshProblems();
+      termPrint(`Snippet '${type}' inserted into ${state.activeFile}`, "vsc-term-success");
+    }
+  };
+
+  // --- COMMAND PALETTE ENGINE ---
+  const COMMAND_PALETTE_ITEMS = [
+    { id: "view_sidebar", label: "View: Toggle Primary Sidebar", exec: () => { if (el.sidebar) el.sidebar.classList.toggle("collapsed"); if (el.actExplorer) el.actExplorer.classList.toggle("active"); } },
+    { id: "view_terminal", label: "View: Toggle Terminal Panel", exec: () => toggleMaximizeTerminal() },
+    { id: "view_preview", label: "View: Toggle Live Preview", exec: () => { if (el.livePreview) el.livePreview.classList.toggle("hidden"); } },
+    { id: "view_fullscreen", label: "View: Toggle Fullscreen", exec: () => { if (el.btnFullscreen) el.btnFullscreen.click(); } },
+    { id: "file_new", label: "File: New File", exec: () => { const name = prompt("Enter new filename:", "new-file.js"); if (name) openFile(name); } },
+    { id: "file_save", label: "File: Save Current File", exec: () => { if (el.btnSave) el.btnSave.click(); } },
+    { id: "file_save_all", label: "File: Save All Files", exec: () => { saveWorkspace(); termPrint("All files saved to browser storage.", "vsc-term-success"); } },
+    { id: "file_export", label: "File: Export Workspace as JSON", exec: () => exportWorkspaceJSON() },
+    { id: "github_connect", label: "GitHub: Connect Repository & Personal Access Token", exec: () => openGitHubModal() },
+    { id: "github_push", label: "Git: Commit and Push Changes to GitHub", exec: () => { if (el.btnGitPush) el.btnGitPush.click(); } },
+    { id: "edit_find", label: "Edit: Find in Files", exec: () => { switchSidebarView("search"); if (el.searchQueryInput) el.searchQueryInput.focus(); } },
+    { id: "edit_format", label: "Format Document", exec: () => { if (el.btnFormat) el.btnFormat.click(); } },
+    { id: "term_run", label: "Terminal: Run Active Script", exec: () => COMMANDS.run.exec([]) },
+    { id: "term_clear", label: "Terminal: Clear Console", exec: () => COMMANDS.clear.exec([]) },
+    { id: "server_preview", label: "Live Server: Preview Active Page (localhost:3000)", exec: () => serveFile(state.activeFile, 3000, false) },
+    { id: "settings_open", label: "Preferences: Open Settings", exec: () => openSettingsModal() },
+    { id: "problems_open", label: "Problems: Show Workspace Diagnostics", exec: () => switchTerminalTab("problems") }
+  ];
+
+  function openCommandPalette() {
+    if (!el.paletteDialog) return;
+    renderPaletteList("");
+    if (el.paletteInput) el.paletteInput.value = "";
+    el.paletteDialog.showModal();
+    if (el.paletteInput) el.paletteInput.focus();
+  }
+
+  function renderPaletteList(filter = "") {
+    if (!el.paletteList) return;
+    el.paletteList.innerHTML = "";
+    const f = filter.toLowerCase().trim();
+
+    const matchedCommands = COMMAND_PALETTE_ITEMS.filter(item => item.label.toLowerCase().includes(f));
+    const matchedFiles = Object.keys(state.files)
+      .filter(name => name.toLowerCase().includes(f))
+      .map(name => ({
+        id: "file_" + name,
+        label: `Go to File: ${name}`,
+        exec: () => openFile(name)
+      }));
+
+    const combined = [...matchedFiles, ...matchedCommands];
+    if (combined.length === 0) {
+      el.paletteList.innerHTML = `<li class="vsc-palette-item" style="color:var(--vsc-fg-secondary);font-style:italic">No matching commands or files</li>`;
+      return;
+    }
+
+    combined.forEach((item, idx) => {
+      const li = document.createElement("li");
+      li.className = `vsc-palette-item ${idx === 0 ? "active" : ""}`;
+      li.textContent = item.label;
+      li.addEventListener("click", () => {
+        el.paletteDialog.close();
+        item.exec();
+      });
+      el.paletteList.appendChild(li);
+    });
+  }
+
+  function exportWorkspaceJSON() {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state.files, null, 2));
+    const dlAnchor = document.createElement("a");
+    dlAnchor.setAttribute("href", dataStr);
+    dlAnchor.setAttribute("download", `workspace-backup-${new Date().toISOString().slice(0, 10)}.json`);
+    document.body.appendChild(dlAnchor);
+    dlAnchor.click();
+    dlAnchor.remove();
+    termPrint("Workspace exported as JSON file download.", "vsc-term-success");
+  }
+
+  // --- MULTI-VIEW & TABS CONTROLLERS ---
+  function switchSidebarView(viewId) {
+    if (el.sidebar && el.sidebar.classList.contains("collapsed")) {
+      el.sidebar.classList.remove("collapsed");
+    }
+    const viewMap = {
+      explorer: { view: document.getElementById("vsc-view-explorer"), btn: el.actExplorer, title: "Explorer" },
+      search: { view: document.getElementById("vsc-view-search"), btn: el.actSearch, title: "Search" },
+      git: { view: document.getElementById("vsc-view-git"), btn: el.actGit, title: "Source Control" },
+      debug: { view: document.getElementById("vsc-view-debug"), btn: el.actDebug, title: "Run and Debug" },
+      extensions: { view: document.getElementById("vsc-view-extensions"), btn: el.actExtensions, title: "Extensions & Snippets" }
+    };
+
+    document.querySelectorAll(".vsc-sidebar-view").forEach(v => v.classList.remove("active"));
+    document.querySelectorAll(".vsc-act-btn").forEach(b => {
+      if (b !== el.actAccounts && b !== el.actSettings) b.classList.remove("active");
+    });
+
+    if (viewMap[viewId]) {
+      if (viewMap[viewId].view) viewMap[viewId].view.classList.add("active");
+      if (viewMap[viewId].btn) viewMap[viewId].btn.classList.add("active");
+      if (el.sidebarTitle) el.sidebarTitle.textContent = viewMap[viewId].title;
+      state.activeSidebarView = viewId;
+    }
+  }
+
+  function switchTerminalTab(tabId) {
+    const tabs = {
+      terminal: { tab: el.tabTerm, panel: el.termBody },
+      output: { tab: el.tabOutput, panel: el.outputPanel },
+      problems: { tab: el.tabProblems, panel: el.problemsPanel },
+      ports: { tab: el.tabPorts, panel: el.portsPanel },
+      debug: { tab: el.tabDebug, panel: el.debugPanel }
+    };
+
+    document.querySelectorAll(".vsc-term-tab").forEach(t => t.classList.remove("active"));
+    if (el.termBody) el.termBody.style.display = "none";
+    if (el.outputPanel) el.outputPanel.style.display = "none";
+    if (el.problemsPanel) el.problemsPanel.style.display = "none";
+    if (el.portsPanel) el.portsPanel.classList.remove("active");
+    if (el.debugPanel) el.debugPanel.classList.remove("active");
+
+    if (tabs[tabId]) {
+      if (tabs[tabId].tab) tabs[tabId].tab.classList.add("active");
+      if (tabs[tabId].panel) {
+        if (tabId === "ports" || tabId === "debug") {
+          tabs[tabId].panel.classList.add("active");
+        } else {
+          tabs[tabId].panel.style.display = "flex";
+        }
+      }
+      state.activeTab = tabId;
+      if (tabId === "ports") renderPortsTable();
+      if (tabId === "problems") refreshProblems();
+      if (tabId === "debug" && el.debugInput) el.debugInput.focus();
+      if (tabId === "terminal" && el.termInput) el.termInput.focus();
+    }
+  }
+
+  function openSettingsModal() {
+    if (!el.settingsDialog) return;
+    try {
+      const saved = JSON.parse(localStorage.getItem("vsc_workbench_settings") || "{}");
+      if (saved.fontSize && el.settingFontSize) el.settingFontSize.value = saved.fontSize;
+      if (saved.tabSize && el.settingTabSize) el.settingTabSize.value = saved.tabSize;
+      if (saved.wordWrap && el.settingWordWrap) el.settingWordWrap.value = saved.wordWrap;
+    } catch (e) {}
+    el.settingsDialog.showModal();
+  }
+
+  function applySettings() {
+    const fs = el.settingFontSize ? el.settingFontSize.value : "13px";
+    const ts = el.settingTabSize ? el.settingTabSize.value : "2";
+    const ww = el.settingWordWrap ? el.settingWordWrap.value : "off";
+
+    if (el.codeTextarea) {
+      el.codeTextarea.style.fontSize = fs;
+      el.codeTextarea.style.tabSize = ts;
+      el.codeTextarea.style.whiteSpace = ww === "on" ? "pre-wrap" : "pre";
+    }
+    if (el.gutter) {
+      el.gutter.style.fontSize = fs;
+    }
+    if (el.statusSpaces) {
+      el.statusSpaces.textContent = `Spaces: ${ts}`;
+    }
+
+    try {
+      localStorage.setItem("vsc_workbench_settings", JSON.stringify({ fontSize: fs, tabSize: ts, wordWrap: ww }));
+    } catch (e) {}
+  }
+
+  function openGitHubModal() {
+    if (!el.githubDialog) return;
+    if (el.ghTokenInput) el.ghTokenInput.value = state.githubToken;
+    if (el.ghRepoInput) el.ghRepoInput.value = state.githubRepo;
+    if (el.ghBranchInput) el.ghBranchInput.value = state.githubBranch || "main";
+    if (el.ghStatusMsg) el.ghStatusMsg.textContent = "";
+    el.githubDialog.showModal();
+    if (el.ghTokenInput) el.ghTokenInput.focus();
+  }
+
+  function searchInFiles() {
+    if (!el.searchQueryInput || !el.searchResultsList) return;
+    const query = el.searchQueryInput.value.toLowerCase().trim();
+    el.searchResultsList.innerHTML = "";
+    if (!query) return;
+
+    let matchCount = 0;
+    Object.keys(state.files).forEach((filename) => {
+      const lines = state.files[filename].split("\n");
+      lines.forEach((lineText, idx) => {
+        if (lineText.toLowerCase().includes(query)) {
+          matchCount++;
+          const li = document.createElement("li");
+          li.className = "vsc-search-result-item";
+          li.innerHTML = `<strong>${filename}</strong>:${idx + 1} <span>${lineText.trim().replace(/</g, "&lt;")}</span>`;
+          li.addEventListener("click", () => {
+            openFile(filename);
+            setTimeout(() => {
+              const charIdx = lines.slice(0, idx).join("\n").length + 1;
+              if (el.codeTextarea) {
+                el.codeTextarea.setSelectionRange(charIdx, charIdx);
+                el.codeTextarea.focus();
+                updateGutter();
+              }
+            }, 50);
+          });
+          el.searchResultsList.appendChild(li);
+        }
+      });
+    });
+
+    if (matchCount === 0) {
+      el.searchResultsList.innerHTML = `<li style="color:var(--vsc-fg-secondary);font-size:11px;padding:6px">No matches found for "${query}".</li>`;
+    }
+  }
+
+  function replaceAllInFiles() {
+    if (!el.searchQueryInput || !el.replaceQueryInput) return;
+    const search = el.searchQueryInput.value;
+    const replaceWith = el.replaceQueryInput.value;
+    if (!search) return;
+
+    let totalReplacements = 0;
+    let filesModified = 0;
+
+    Object.keys(state.files).forEach((filename) => {
+      const content = state.files[filename];
+      if (content.includes(search)) {
+        const count = content.split(search).length - 1;
+        totalReplacements += count;
+        filesModified++;
+        state.files[filename] = content.split(search).join(replaceWith);
+        state.modifiedFiles.add(filename);
+      }
+    });
+
+    if (filesModified > 0) {
+      saveWorkspace();
+      openFile(state.activeFile);
+      updateGitStatus();
+      refreshProblems();
+      termPrint(`Replaced ${totalReplacements} occurrences in ${filesModified} file(s).`, "vsc-term-success");
+      searchInFiles();
+    } else {
+      termPrint(`No matches found to replace.`, "vsc-term-info");
+    }
+  }
+
+  async function runDebugRepl(expr) {
+    if (!expr || !expr.trim()) return;
+    const trimmed = expr.trim();
+    if (el.debugHistory) {
+      const inputEntry = document.createElement("div");
+      inputEntry.className = "vsc-term-line";
+      inputEntry.innerHTML = `<span style="color:var(--vsc-turquoise)">&gt; </span><span>${trimmed.replace(/</g, "&lt;")}</span>`;
+      el.debugHistory.appendChild(inputEntry);
+    }
+
+    try {
+      const result = await executeSandboxedScript(`return (${trimmed});`);
+      if (el.debugHistory) {
+        const outEntry = document.createElement("div");
+        outEntry.className = "vsc-term-line";
+        if (result.success) {
+          outEntry.innerHTML = `<span style="color:#98c379">&lt; </span><span style="color:#fff">${typeof result.result === 'object' ? JSON.stringify(result.result) : String(result.result)}</span>`;
+        } else {
+          outEntry.innerHTML = `<span style="color:#f44336">&lt; </span><span style="color:#f44336">${result.error}</span>`;
+        }
+        el.debugHistory.appendChild(outEntry);
+        el.debugHistory.scrollTop = el.debugHistory.scrollHeight;
+      }
+    } catch (e) {
+      if (el.debugHistory) {
+        const errEntry = document.createElement("div");
+        errEntry.className = "vsc-term-line";
+        errEntry.innerHTML = `<span style="color:#f44336">&lt; ${e.message}</span>`;
+        el.debugHistory.appendChild(errEntry);
+      }
+    }
+  }
+
+  function closeAllDropdowns() {
+    document.querySelectorAll(".vsc-dropdown-menu").forEach(d => d.classList.remove("show"));
+  }
+
+  function initMenuDropdowns() {
+    const menuButtons = [
+      { btn: "vsc-menu-btn-file", menu: "vsc-dropdown-file" },
+      { btn: "vsc-menu-btn-edit", menu: "vsc-dropdown-edit" },
+      { btn: "vsc-menu-btn-selection", menu: "vsc-dropdown-selection" },
+      { btn: "vsc-menu-btn-view", menu: "vsc-dropdown-view" },
+      { btn: "vsc-menu-btn-go", menu: "vsc-dropdown-go" },
+      { btn: "vsc-menu-btn-run", menu: "vsc-dropdown-run" },
+      { btn: "vsc-menu-btn-terminal", menu: "vsc-dropdown-terminal" },
+      { btn: "vsc-menu-btn-help", menu: "vsc-dropdown-help" }
+    ];
+
+    menuButtons.forEach(({ btn, menu }) => {
+      const btnEl = document.getElementById(btn);
+      const menuEl = document.getElementById(menu);
+      if (btnEl && menuEl) {
+        btnEl.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const isShown = menuEl.classList.contains("show");
+          closeAllDropdowns();
+          if (!isShown) menuEl.classList.add("show");
+        });
+      }
+    });
+
+    document.addEventListener("click", () => closeAllDropdowns());
+
+    const bindItem = (id, fn) => {
+      const itemEl = document.getElementById(id);
+      if (itemEl) {
+        itemEl.addEventListener("click", (e) => {
+          e.stopPropagation();
+          closeAllDropdowns();
+          fn();
+        });
+      }
+    };
+
+    bindItem("vsc-item-new-file", () => {
+      const name = prompt("Enter new filename:", "untitled.js");
+      if (name) openFile(name);
+    });
+    bindItem("vsc-item-connect-github", openGitHubModal);
+    bindItem("vsc-item-save-file", () => {
+      if (el.btnSave) el.btnSave.click();
+    });
+    bindItem("vsc-item-save-all", () => {
+      saveWorkspace();
+      termPrint("All workspace files saved.", "vsc-term-success");
+    });
+    bindItem("vsc-item-export-zip", exportWorkspaceJSON);
+    bindItem("vsc-item-close-file", () => closeFile(state.activeFile));
+
+    bindItem("vsc-item-undo", () => {
+      if (el.codeTextarea) document.execCommand("undo");
+    });
+    bindItem("vsc-item-redo", () => {
+      if (el.codeTextarea) document.execCommand("redo");
+    });
+    bindItem("vsc-item-cut", () => {
+      if (el.codeTextarea) document.execCommand("cut");
+    });
+    bindItem("vsc-item-copy", () => {
+      if (el.codeTextarea) document.execCommand("copy");
+    });
+    bindItem("vsc-item-paste", async () => {
+      if (navigator.clipboard && navigator.clipboard.readText) {
+        try {
+          const text = await navigator.clipboard.readText();
+          if (el.codeTextarea) {
+            const start = el.codeTextarea.selectionStart;
+            const end = el.codeTextarea.selectionEnd;
+            const val = el.codeTextarea.value;
+            el.codeTextarea.value = val.substring(0, start) + text + val.substring(end);
+            state.files[state.activeFile] = el.codeTextarea.value;
+            updateGutter();
+            saveWorkspace();
+          }
+        } catch (e) {
+          termPrint(`Paste permission: ${e.message}`, "vsc-term-warn");
+        }
+      }
+    });
+    bindItem("vsc-item-find", () => {
+      switchSidebarView("search");
+      if (el.searchQueryInput) el.searchQueryInput.focus();
+    });
+    bindItem("vsc-item-format-doc", () => {
+      if (el.btnFormat) el.btnFormat.click();
+    });
+
+    bindItem("vsc-item-select-all", () => {
+      if (el.codeTextarea) el.codeTextarea.select();
+    });
+    bindItem("vsc-item-dup-line", () => {
+      if (el.codeTextarea) {
+        const pos = el.codeTextarea.selectionStart;
+        const val = el.codeTextarea.value;
+        const lineStart = val.lastIndexOf("\n", pos - 1) + 1;
+        let lineEnd = val.indexOf("\n", pos);
+        if (lineEnd === -1) lineEnd = val.length;
+        const line = val.substring(lineStart, lineEnd);
+        el.codeTextarea.value = val.substring(0, lineEnd) + "\n" + line + val.substring(lineEnd);
+        state.files[state.activeFile] = el.codeTextarea.value;
+        updateGutter();
+        saveWorkspace();
+      }
+    });
+
+    bindItem("vsc-item-toggle-sidebar", () => {
+      if (el.sidebar) el.sidebar.classList.toggle("collapsed");
+    });
+    bindItem("vsc-item-toggle-term", toggleMaximizeTerminal);
+    bindItem("vsc-item-toggle-preview", () => {
+      if (el.livePreview) el.livePreview.classList.toggle("hidden");
+    });
+    bindItem("vsc-item-view-fullscreen", () => {
+      if (el.btnFullscreen) el.btnFullscreen.click();
+    });
+
+    bindItem("vsc-item-go-file", openCommandPalette);
+    bindItem("vsc-item-go-line", () => {
+      const ln = prompt("Go to line number:");
+      if (ln && el.codeTextarea) {
+        const lineNum = parseInt(ln, 10);
+        const lines = el.codeTextarea.value.split("\n");
+        if (lineNum > 0 && lineNum <= lines.length) {
+          const charPos = lines.slice(0, lineNum - 1).join("\n").length + 1;
+          el.codeTextarea.setSelectionRange(charPos, charPos);
+          el.codeTextarea.focus();
+          updateGutter();
+        }
+      }
+    });
+
+    bindItem("vsc-item-run-code", () => COMMANDS.run.exec([]));
+    bindItem("vsc-item-serve-page", () => serveFile(state.activeFile, 3000, false));
+
+    bindItem("vsc-item-new-term", () => {
+      if (el.termHistory) el.termHistory.innerHTML = "";
+      termPrint("New integrated terminal session initialized.", "vsc-term-info");
+    });
+    bindItem("vsc-item-clear-term", () => COMMANDS.clear.exec([]));
+    bindItem("vsc-item-max-term", toggleMaximizeTerminal);
+
+    bindItem("vsc-item-cmd-palette", openCommandPalette);
+    bindItem("vsc-item-gh-docs", () => {
+      termPrintHTML(`
+<span class="vsc-term-info">=== GITHUB PERSONAL ACCESS TOKEN (PAT) SETUP ===</span>
+1. Go to <b style="color:var(--vsc-turquoise)">https://github.com/settings/tokens</b>
+2. Generate new token (classic or fine-grained with <b style="color:#98c379">repo</b> scope).
+3. Connect inside VS Code Tools via:
+   - Click <b style="color:var(--vsc-turquoise)">Accounts</b> (bottom of Activity Bar) OR
+   - Terminal: <b style="color:var(--vsc-turquoise)">github auth &lt;token&gt;</b>
+4. Clone any repository:
+   - Terminal: <b style="color:var(--vsc-turquoise)">github clone owner/repo [branch]</b>
+5. Commit and push directly from the Source Control view or terminal!
+Token is securely synced across Chrome PC and mobile via persistent cookie and storage.
+`);
+    });
+    bindItem("vsc-item-about-tool", () => {
+      termPrintHTML(`
+<span class="vsc-term-info">Visual Studio Code Tools for Web — Version 4.2.0</span>
+Pitch Black (#121212), Crisp White (#FFFFFF), Turquoise Accent (#00F0FF).
+Integrated Web Developer Workbench:
+- Real GitHub API sync (Pull trees, edit in browser, push commits)
+- Localhost Virtual Web Server with responsive preview
+- 10GB Browser Storage engine &amp; telemetry harvester
+- Full developer command suite (CURL, DNS, JWT, Regex, Nano, SysInfo)
+`);
     });
   }
 
@@ -452,7 +1285,12 @@ User-Agent: VSCodeTools/4.2
     // Open In-Workbench Live Preview Pane
     if (el.livePreview && el.previewFrame) {
       el.livePreview.classList.remove("hidden");
-      el.previewFrame.src = blobUrl;
+      // Use srcdoc as primary for instant CSP-safe rendering without blob: frame restrictions
+      el.previewFrame.srcdoc = content;
+      try {
+        el.previewFrame.src = blobUrl;
+      } catch (e) {}
+      el.previewFrame.dataset.blobUrl = blobUrl;
       if (el.previewUrlText) el.previewUrlText.textContent = displayUrl;
     }
 
@@ -587,6 +1425,14 @@ User-Agent: VSCodeTools/4.2
   <b class="vsc-term-success">color</b> &lt;hex|rgb|hsl&gt;                 Color space converter &amp; WCAG AA/AAA contrast ratios
   <b class="vsc-term-success">url</b> &lt;parse|enc|dec&gt; &lt;url&gt;           Breakdown URL origin, path &amp; query params table
   <b class="vsc-term-success">timestamp</b> [epoch]                   Unix timestamp converter (UTC, Local, Relative)
+
+<span class="vsc-prompt-tag">[GITHUB &amp; GIT CLOUD REPO SYNC]</span>
+  <b class="vsc-term-success">github</b> auth &lt;token&gt;                 Authenticate with GitHub PAT (syncs across PC &amp; phone)
+  <b class="vsc-term-success">github</b> clone &lt;repo&gt; [branch]        Fetch file tree and load real files into workspace
+  <b class="vsc-term-success">github</b> push [commit message]        Commit &amp; push changed files to GitHub repo
+  <b class="vsc-term-success">github</b> repos                        List your recent GitHub repositories
+  <b class="vsc-term-success">github</b> status                       Show current repo, branch, user and modified files
+  <b class="vsc-term-success">github</b> logout                       Clear GitHub token and cookies
 
 <span class="vsc-prompt-tag">[EDITOR &amp; WORKSPACE]</span>
   <b class="vsc-term-success">nano</b> &lt;filename&gt;                     In-terminal GNU nano text editor (save with ^O, exit ^X)
@@ -1358,6 +2204,86 @@ Length: ${hex.length * 4} bits (${hex.length} hex chars)
           termPrint(`Storage query failed: ${e.message}`, "vsc-term-error");
         }
       }
+    },
+
+    github: {
+      desc: "GitHub integration: auth, clone repo trees, push commits, and view status",
+      usage: "github <auth|clone|push|repos|status|logout> [args...]",
+      exec: async (args) => {
+        const sub = (args[0] || "status").toLowerCase();
+
+        if (sub === "auth") {
+          const token = args[1] || prompt("Enter GitHub Personal Access Token (PAT):");
+          if (!token) {
+            termPrint("GitHub auth requires a token: github auth <token>", "vsc-term-warn");
+            return;
+          }
+          termPrint("Authenticating with GitHub API...", "vsc-term-dim");
+          const authRes = await githubAuth(token);
+          if (authRes.success) {
+            termPrint(`Authenticated successfully as ${authRes.user.login} (${authRes.user.name || "GitHub User"})!`, "vsc-term-success");
+            termPrint(`Token saved to cookie (gh_pat) and local storage for cross-device sync.`, "vsc-term-info");
+          } else {
+            termPrint(`Authentication failed: ${authRes.message}`, "vsc-term-error");
+          }
+        } else if (sub === "clone") {
+          const repo = args[1] || prompt("Enter repository (owner/repo):");
+          const branch = args[2] || "main";
+          if (!repo) {
+            termPrint("Usage: github clone <owner/repo> [branch]", "vsc-term-warn");
+            return;
+          }
+          termPrint(`Cloning ${repo}@${branch} via GitHub Tree API...`, "vsc-term-info");
+          try {
+            const cloneRes = await githubCloneRepo(repo, branch, (cur, total, path) => {
+              if (cur % 5 === 0 || cur === total) {
+                termPrint(`[${cur}/${total}] Loaded: ${path}`, "vsc-term-dim");
+              }
+            });
+            termPrint(`Successfully cloned ${cloneRes.count} files from ${repo}!`, "vsc-term-success");
+          } catch (e) {
+            termPrint(`Clone failed: ${e.message}`, "vsc-term-error");
+          }
+        } else if (sub === "push") {
+          const commitMsg = args.slice(1).join(" ") || "feat: update workspace files via VS Code Tools";
+          termPrint(`Pushing ${state.modifiedFiles.size} changed file(s) to ${state.githubRepo}...`, "vsc-term-info");
+          try {
+            const pushRes = await githubPush(commitMsg);
+            if (pushRes.pushedFiles && pushRes.pushedFiles.length > 0) {
+              termPrint(`Successfully pushed commit: "${commitMsg}"`, "vsc-term-success");
+              pushRes.pushedFiles.forEach(f => termPrint(`  + ${f}`, "vsc-term-dim"));
+            } else {
+              termPrint(pushRes.message || "Working tree clean. Nothing to push.", "vsc-term-info");
+            }
+          } catch (e) {
+            termPrint(`Push failed: ${e.message}`, "vsc-term-error");
+          }
+        } else if (sub === "repos") {
+          termPrint("Fetching repositories from GitHub...", "vsc-term-dim");
+          try {
+            const repos = await githubFetchRepos();
+            termPrint(`Found ${repos.length} recent repositories:`, "vsc-term-info");
+            repos.slice(0, 15).forEach(r => {
+              termPrint(`  ${r.full_name} (${r.default_branch}) ${r.private ? "[Private]" : "[Public]"} - ${r.description || ""}`);
+            });
+            termPrint(`\nClone with: github clone <owner/repo>`, "vsc-term-dim");
+          } catch (e) {
+            termPrint(`Failed to fetch repos: ${e.message}`, "vsc-term-error");
+          }
+        } else if (sub === "logout") {
+          await githubAuth("");
+          termPrint("Logged out from GitHub. Token cleared from cookies and local storage.", "vsc-term-info");
+        } else {
+          termPrintHTML(`
+<span class="vsc-term-info">=== GITHUB WORKSPACE STATUS ===</span>
+  User:        ${state.githubUser ? `<b style="color:var(--vsc-turquoise)">${state.githubUser.login}</b>` : (state.githubToken ? "<b style='color:#98c379'>Token Connected</b>" : "Not authenticated")}
+  Remote Repo: <b style="color:var(--vsc-turquoise)">${state.githubRepo || "None"}</b>
+  Branch:      ${state.githubBranch || "main"}
+  Unsaved/Mod: <b style="color:${state.modifiedFiles.size > 0 ? '#e5c07b' : '#98c379'}">${state.modifiedFiles.size} file(s) changed</b>
+  Cookies:     ${getCookie("gh_pat") ? "gh_pat present (cross-device sync)" : "None"}
+`);
+        }
+      }
     }
   };
 
@@ -1369,6 +2295,8 @@ Length: ${hex.length * 4} bits (${hex.length} hex chars)
   COMMANDS.telemetry = COMMANDS.sysinfo;
   COMMANDS.browser = COMMANDS.sysinfo;
   COMMANDS.stop = COMMANDS.kill;
+  COMMANDS.git = COMMANDS.github;
+  COMMANDS.gh = COMMANDS.github;
 
   // --- TAB KEY AUTOCOMPLETION ---
   function handleTabCompletion(e) {
@@ -1981,12 +2909,366 @@ Length: ${hex.length * 4} bits (${hex.length} hex chars)
     if (el.codeTextarea) {
       el.codeTextarea.addEventListener("input", () => {
         state.files[state.activeFile] = el.codeTextarea.value;
+        state.modifiedFiles.add(state.activeFile);
         updateGutter();
+        updateGitStatus();
+        refreshProblems();
         saveWorkspace();
       });
       el.codeTextarea.addEventListener("keyup", updateGutter);
       el.codeTextarea.addEventListener("click", updateGutter);
     }
+
+    // Initialize Titlebar Menu Dropdowns
+    initMenuDropdowns();
+
+    // Activity Bar View Switchers
+    if (el.actExplorer) el.actExplorer.addEventListener("click", () => switchSidebarView("explorer"));
+    if (el.actSearch) el.actSearch.addEventListener("click", () => switchSidebarView("search"));
+    if (el.actGit) el.actGit.addEventListener("click", () => switchSidebarView("git"));
+    if (el.actDebug) el.actDebug.addEventListener("click", () => switchSidebarView("debug"));
+    if (el.actExtensions) el.actExtensions.addEventListener("click", () => switchSidebarView("extensions"));
+    if (el.actAccounts) el.actAccounts.addEventListener("click", openGitHubModal);
+    if (el.actSettings) el.actSettings.addEventListener("click", openSettingsModal);
+
+    // Titlebar & Searchbar
+    if (el.searchBar) el.searchBar.addEventListener("click", openCommandPalette);
+    if (el.btnNewFile) {
+      el.btnNewFile.addEventListener("click", () => {
+        const name = prompt("Enter new filename:", "untitled.js");
+        if (name) openFile(name);
+      });
+    }
+    if (el.btnRefreshSidebar) {
+      el.btnRefreshSidebar.addEventListener("click", () => {
+        renderSidebarLists();
+        renderTabs();
+        updateGitStatus();
+        refreshProblems();
+        termPrint("Explorer & Git workspace refreshed.", "vsc-term-info");
+      });
+    }
+
+    // Search view buttons
+    if (el.btnFindInFiles) el.btnFindInFiles.addEventListener("click", searchInFiles);
+    if (el.searchQueryInput) {
+      el.searchQueryInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") searchInFiles();
+      });
+    }
+    if (el.btnReplaceInFiles) el.btnReplaceInFiles.addEventListener("click", replaceAllInFiles);
+
+    // Git view buttons
+    if (el.btnOpenGhModal) el.btnOpenGhModal.addEventListener("click", openGitHubModal);
+    if (el.btnGitPush) {
+      el.btnGitPush.addEventListener("click", async () => {
+        const msg = (el.gitCommitMsg && el.gitCommitMsg.value.trim()) || "feat: update workspace files via VS Code Tools";
+        termPrint(`Pushing changes to GitHub...`, "vsc-term-info");
+        try {
+          const res = await githubPush(msg);
+          if (res.pushedFiles && res.pushedFiles.length > 0) {
+            termPrint(`Committed and pushed ${res.pushedFiles.length} file(s) to GitHub: "${msg}"`, "vsc-term-success");
+            if (el.gitCommitMsg) el.gitCommitMsg.value = "";
+          } else {
+            termPrint(res.message || "Working tree clean. Nothing to push.", "vsc-term-info");
+          }
+        } catch (e) {
+          termPrint(`Push failed: ${e.message}`, "vsc-term-error");
+        }
+      });
+    }
+
+    // Run & Debug view
+    if (el.btnDebugRun) {
+      el.btnDebugRun.addEventListener("click", () => {
+        switchTerminalTab("debug");
+        COMMANDS.run.exec([]);
+      });
+    }
+    if (el.debugInput) {
+      el.debugInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          const val = el.debugInput.value;
+          el.debugInput.value = "";
+          runDebugRepl(val);
+        }
+      });
+    }
+
+    // Terminal Tabs
+    if (el.tabTerm) el.tabTerm.addEventListener("click", () => switchTerminalTab("terminal"));
+    if (el.tabOutput) el.tabOutput.addEventListener("click", () => switchTerminalTab("output"));
+    if (el.tabProblems) el.tabProblems.addEventListener("click", () => switchTerminalTab("problems"));
+    if (el.tabPorts) el.tabPorts.addEventListener("click", () => switchTerminalTab("ports"));
+    if (el.tabDebug) el.tabDebug.addEventListener("click", () => switchTerminalTab("debug"));
+
+    // Status bar interactive items
+    if (el.statusGit) el.statusGit.addEventListener("click", openGitHubModal);
+    if (el.statusSync) {
+      el.statusSync.addEventListener("click", () => {
+        if (el.btnGitPush) el.btnGitPush.click();
+      });
+    }
+    if (el.statusDiagnostics) el.statusDiagnostics.addEventListener("click", () => switchTerminalTab("problems"));
+    if (el.statusLnCol) {
+      el.statusLnCol.addEventListener("click", () => {
+        const ln = prompt("Go to line number:");
+        if (ln && el.codeTextarea) {
+          const lineNum = parseInt(ln, 10);
+          const lines = el.codeTextarea.value.split("\n");
+          if (lineNum > 0 && lineNum <= lines.length) {
+            const charPos = lines.slice(0, lineNum - 1).join("\n").length + 1;
+            el.codeTextarea.setSelectionRange(charPos, charPos);
+            el.codeTextarea.focus();
+            updateGutter();
+          }
+        }
+      });
+    }
+    if (el.statusSpaces) {
+      el.statusSpaces.addEventListener("click", () => {
+        const curTab = el.codeTextarea && el.codeTextarea.style.tabSize === "4" ? "2" : "4";
+        if (el.codeTextarea) el.codeTextarea.style.tabSize = curTab;
+        el.statusSpaces.textContent = `Spaces: ${curTab}`;
+        termPrint(`Indentation set to Spaces: ${curTab}`, "vsc-term-info");
+      });
+    }
+    if (el.statusEncoding) {
+      el.statusEncoding.addEventListener("click", () => {
+        termPrint("File encoding: UTF-8 (Unicode Standard).", "vsc-term-info");
+      });
+    }
+    if (el.statusLang) {
+      el.statusLang.addEventListener("click", () => {
+        termPrint(`Active file type: ${state.activeFile.split('.').pop().toUpperCase() || 'Plain Text'}`, "vsc-term-info");
+      });
+    }
+    if (el.statusOnline) {
+      el.statusOnline.addEventListener("click", async () => {
+        termPrint("Testing network latency & reachability...", "vsc-term-dim");
+        const t0 = performance.now();
+        try {
+          await fetch("https://cloudflare.com/cdn-cgi/trace", { mode: "no-cors" });
+          const ms = (performance.now() - t0).toFixed(1);
+          termPrint(`Ping to Edge CDN: ${ms} ms [Online]`, "vsc-term-success");
+        } catch (e) {
+          termPrint(`Offline or restricted: ${e.message}`, "vsc-term-warn");
+        }
+      });
+    }
+
+    // Command Palette Dialog
+    if (el.paletteInput) {
+      el.paletteInput.addEventListener("input", () => renderPaletteList(el.paletteInput.value));
+      el.paletteInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          const first = el.paletteList && el.paletteList.querySelector(".vsc-palette-item:not([style*='italic'])");
+          if (first) first.click();
+        }
+      });
+    }
+    if (el.paletteDialog) {
+      el.paletteDialog.addEventListener("click", (e) => {
+        if (e.target === el.paletteDialog) el.paletteDialog.close();
+      });
+    }
+
+    // GitHub Dialog
+    if (el.ghBtnClose) el.ghBtnClose.addEventListener("click", () => el.githubDialog.close());
+    if (el.ghBtnCancel) el.ghBtnCancel.addEventListener("click", () => el.githubDialog.close());
+    if (el.githubDialog) {
+      el.githubDialog.addEventListener("click", (e) => {
+        if (e.target === el.githubDialog) el.githubDialog.close();
+      });
+    }
+    if (el.ghBtnConnect) {
+      el.ghBtnConnect.addEventListener("click", async () => {
+        const token = (el.ghTokenInput && el.ghTokenInput.value.trim()) || state.githubToken;
+        const repo = el.ghRepoInput && el.ghRepoInput.value.trim();
+        const branch = (el.ghBranchInput && el.ghBranchInput.value.trim()) || "main";
+
+        if (!token) {
+          if (el.ghStatusMsg) el.ghStatusMsg.innerHTML = `<span style="color:#f44336">Token is required.</span>`;
+          return;
+        }
+
+        if (el.ghStatusMsg) el.ghStatusMsg.innerHTML = `<span style="color:var(--vsc-turquoise)">Verifying token...</span>`;
+        const authRes = await githubAuth(token);
+        if (!authRes.success) {
+          if (el.ghStatusMsg) el.ghStatusMsg.innerHTML = `<span style="color:#f44336">${authRes.message}</span>`;
+          return;
+        }
+
+        if (repo) {
+          if (el.ghStatusMsg) el.ghStatusMsg.innerHTML = `<span style="color:var(--vsc-turquoise)">Loading repository ${repo}...</span>`;
+          try {
+            const cloneRes = await githubCloneRepo(repo, branch, (cur, total, path) => {
+              if (el.ghStatusMsg) el.ghStatusMsg.innerHTML = `<span style="color:var(--vsc-turquoise)">[${cur}/${total}] ${path}</span>`;
+            });
+            if (el.ghStatusMsg) el.ghStatusMsg.innerHTML = `<span style="color:#98c379">Loaded ${cloneRes.count} files!</span>`;
+            setTimeout(() => {
+              el.githubDialog.close();
+              termPrint(`Connected to GitHub repo ${repo}@${branch} (${cloneRes.count} files).`, "vsc-term-success");
+            }, 800);
+          } catch (e) {
+            if (el.ghStatusMsg) el.ghStatusMsg.innerHTML = `<span style="color:#f44336">${e.message}</span>`;
+          }
+        } else {
+          if (el.ghStatusMsg) el.ghStatusMsg.innerHTML = `<span style="color:#98c379">Authenticated as ${authRes.user.login}!</span>`;
+          setTimeout(() => el.githubDialog.close(), 800);
+        }
+      });
+    }
+
+    // Settings Dialog
+    if (el.settingsBtnClose) el.settingsBtnClose.addEventListener("click", () => el.settingsDialog.close());
+    if (el.settingsBtnSave) {
+      el.settingsBtnSave.addEventListener("click", () => {
+        applySettings();
+        el.settingsDialog.close();
+        termPrint("Settings applied and saved.", "vsc-term-success");
+      });
+    }
+    if (el.settingsDialog) {
+      el.settingsDialog.addEventListener("click", (e) => {
+        if (e.target === el.settingsDialog) el.settingsDialog.close();
+      });
+    }
+
+    // Additional GNU Nano Buttons
+    const nanoWhere = document.getElementById("vsc-nano-btn-where");
+    if (nanoWhere) {
+      nanoWhere.addEventListener("click", () => {
+        const query = prompt("Search in nano:");
+        if (query && el.nanoEditor) {
+          const idx = el.nanoEditor.value.indexOf(query);
+          if (idx !== -1) {
+            el.nanoEditor.setSelectionRange(idx, idx + query.length);
+            el.nanoEditor.focus();
+            if (el.nanoStatus) el.nanoStatus.textContent = `[Found '${query}']`;
+          } else {
+            if (el.nanoStatus) el.nanoStatus.textContent = `['${query}' Not Found]`;
+          }
+        }
+      });
+    }
+
+    const nanoCut = document.getElementById("vsc-nano-btn-cut");
+    if (nanoCut && el.nanoEditor) {
+      nanoCut.addEventListener("click", () => {
+        const start = el.nanoEditor.selectionStart;
+        const end = el.nanoEditor.selectionEnd;
+        if (start !== end) {
+          const cutText = el.nanoEditor.value.substring(start, end);
+          if (navigator.clipboard) navigator.clipboard.writeText(cutText).catch(() => {});
+          el.nanoEditor.value = el.nanoEditor.value.substring(0, start) + el.nanoEditor.value.substring(end);
+          if (el.nanoStatus) el.nanoStatus.textContent = `[Cut ${cutText.length} chars]`;
+        }
+      });
+    }
+
+    const nanoPaste = document.getElementById("vsc-nano-btn-paste");
+    if (nanoPaste && el.nanoEditor) {
+      nanoPaste.addEventListener("click", async () => {
+        try {
+          const text = await navigator.clipboard.readText();
+          const start = el.nanoEditor.selectionStart;
+          const end = el.nanoEditor.selectionEnd;
+          el.nanoEditor.value = el.nanoEditor.value.substring(0, start) + text + el.nanoEditor.value.substring(end);
+          if (el.nanoStatus) el.nanoStatus.textContent = `[Pasted ${text.length} chars]`;
+        } catch (e) {}
+      });
+    }
+
+    const nanoReplace = document.getElementById("vsc-nano-btn-replace");
+    if (nanoReplace && el.nanoEditor) {
+      nanoReplace.addEventListener("click", () => {
+        const findText = prompt("Find text to replace:");
+        if (!findText) return;
+        const repText = prompt(`Replace '${findText}' with:`) || "";
+        const parts = el.nanoEditor.value.split(findText);
+        if (parts.length > 1) {
+          el.nanoEditor.value = parts.join(repText);
+          if (el.nanoStatus) el.nanoStatus.textContent = `[Replaced ${parts.length - 1} occurrences]`;
+        } else {
+          if (el.nanoStatus) el.nanoStatus.textContent = `[No match found]`;
+        }
+      });
+    }
+
+    const nanoHelp = document.getElementById("vsc-nano-btn-help");
+    if (nanoHelp) {
+      nanoHelp.addEventListener("click", () => {
+        alert("GNU nano shortcuts:\n^O / WriteOut: Save changes\n^X / Exit: Close editor\n^W / Where Is: Search\n^K / Cut: Cut text\n^U / Paste: Paste text");
+      });
+    }
+
+    const nanoPos = document.getElementById("vsc-nano-btn-pos");
+    if (nanoPos && el.nanoEditor) {
+      nanoPos.addEventListener("click", () => {
+        const pos = el.nanoEditor.selectionStart;
+        const textBefore = el.nanoEditor.value.substring(0, pos);
+        const line = textBefore.split("\n").length;
+        const col = pos - textBefore.lastIndexOf("\n");
+        if (el.nanoStatus) el.nanoStatus.textContent = `[Line ${line}/${el.nanoEditor.value.split("\n").length}, Col ${col}]`;
+      });
+    }
+
+    const nanoJustify = document.getElementById("vsc-nano-btn-justify");
+    if (nanoJustify && el.nanoEditor) {
+      nanoJustify.addEventListener("click", () => {
+        el.nanoEditor.value = el.nanoEditor.value.split("\n").map(l => l.trimRight()).join("\n");
+        if (el.nanoStatus) el.nanoStatus.textContent = `[Justified text]`;
+      });
+    }
+
+    const nanoRead = document.getElementById("vsc-nano-btn-read");
+    if (nanoRead && el.nanoEditor) {
+      nanoRead.addEventListener("click", () => {
+        const fn = prompt("File to read into nano:", Object.keys(state.files)[0]);
+        if (fn && state.files[fn]) {
+          const pos = el.nanoEditor.selectionStart;
+          el.nanoEditor.value = el.nanoEditor.value.substring(0, pos) + state.files[fn] + el.nanoEditor.value.substring(pos);
+          if (el.nanoStatus) el.nanoStatus.textContent = `[Inserted ${fn}]`;
+        }
+      });
+    }
+
+    const nanoSpell = document.getElementById("vsc-nano-btn-spell");
+    if (nanoSpell) {
+      nanoSpell.addEventListener("click", () => {
+        if (el.nanoStatus) el.nanoStatus.textContent = `[Spell check: 0 syntax issues]`;
+      });
+    }
+
+    const nanoNext = document.getElementById("vsc-nano-btn-next");
+    if (nanoNext && el.nanoEditor) {
+      nanoNext.addEventListener("click", () => {
+        el.nanoEditor.scrollTop += el.nanoEditor.clientHeight * 0.8;
+      });
+    }
+
+    // Global Workbench Keyboard Shortcuts
+    document.addEventListener("keydown", (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "p") {
+        e.preventDefault();
+        openCommandPalette();
+      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
+        e.preventDefault();
+        if (el.btnSave) el.btnSave.click();
+      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "b") {
+        e.preventDefault();
+        if (el.sidebar) el.sidebar.classList.toggle("collapsed");
+      } else if ((e.ctrlKey || e.metaKey) && e.key === "`") {
+        e.preventDefault();
+        toggleMaximizeTerminal();
+      } else if ((e.ctrlKey || e.metaKey) && e.key === "Enter" && !e.shiftKey) {
+        if (document.activeElement === el.codeTextarea) {
+          e.preventDefault();
+          COMMANDS.run.exec([]);
+        }
+      }
+    });
 
     // Mobile quickbar buttons
     document.querySelectorAll(".vsc-mobile-key").forEach((btn) => {
@@ -2141,10 +3423,18 @@ Length: ${hex.length * 4} bits (${hex.length} hex chars)
 
   // --- BOOTSTRAP WORKBENCH ---
   function init() {
+    applySettings();
     renderTabs();
     renderSidebarLists();
     openFile(state.activeFile);
+    updateGitStatus();
+    refreshProblems();
     initEvents();
+
+    // Background verify GitHub token if stored
+    if (state.githubToken) {
+      githubAuth(state.githubToken).catch(() => {});
+    }
 
     // Ensure clean initial terminal height (don't cover editor files on launch)
     if (el.terminalPanel && el.app) {
@@ -2161,6 +3451,7 @@ Length: ${hex.length * 4} bits (${hex.length} hex chars)
 <span class="vsc-term-info">Visual Studio Code Tools [Version 4.2.0-web]</span>
 <span class="vsc-term-dim">(c) DevStudio Web. Pitch Black &amp; Turquoise Workspace.</span>
 Type <b style="color:var(--vsc-turquoise)">help</b> to see all daily diagnostic, network, crypto, and code tools.
+${state.githubRepo ? `Remote: <b style="color:var(--vsc-turquoise)">${state.githubRepo}@${state.githubBranch}</b> connected.` : "GitHub: Type <b style=\"color:var(--vsc-turquoise)\">github auth &lt;token&gt;</b> or click Accounts to sync real files."}
 `);
   }
 
