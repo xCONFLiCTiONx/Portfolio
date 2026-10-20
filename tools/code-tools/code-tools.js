@@ -831,13 +831,19 @@
     saveWorkspace();
 
     // Direct write to physical hard drive (drive file handle)
+    const isDiffFromBaseline = (state.baselineFiles[filename] !== undefined && state.files[filename] !== state.baselineFiles[filename]);
+
     if (state.fileHandles && state.fileHandles.has(filename)) {
       try {
         const handle = state.fileHandles.get(filename);
         const writable = await handle.createWritable();
         await writable.write(state.files[filename]);
         await writable.close();
-        state.modifiedFiles.delete(filename);
+        if (state.githubRepo || isDiffFromBaseline) {
+          state.modifiedFiles.add(filename);
+        } else {
+          state.modifiedFiles.delete(filename);
+        }
         updateGitStatus();
         refreshProblems();
         termPrint(`Saved to disk: ${filename} (Local Drive)`, "vsc-term-success");
@@ -862,7 +868,11 @@
         const writable = await newFileHandle.createWritable();
         await writable.write(state.files[filename]);
         await writable.close();
-        state.modifiedFiles.delete(filename);
+        if (state.githubRepo || isDiffFromBaseline) {
+          state.modifiedFiles.add(filename);
+        } else {
+          state.modifiedFiles.delete(filename);
+        }
         updateGitStatus();
         refreshProblems();
         termPrint(`Created & saved on disk: ${filename}`, "vsc-term-success");
@@ -883,7 +893,11 @@
       return;
     }
 
-    state.modifiedFiles.delete(filename);
+    if (isDiffFromBaseline) {
+      state.modifiedFiles.add(filename);
+    } else {
+      state.modifiedFiles.delete(filename);
+    }
     updateGitStatus();
     refreshProblems();
     termPrint(`Saved ${filename} to browser storage.`, "vsc-term-success");
@@ -1050,7 +1064,21 @@
   }
 
   // --- GIT STATUS & DIAGNOSTICS HELPERS ---
+  function syncModifiedFilesWithBaseline() {
+    if (!state.files) return;
+    Object.keys(state.files).forEach(file => {
+      const current = state.files[file];
+      const base = state.baselineFiles ? state.baselineFiles[file] : undefined;
+      if (base === undefined || current !== base) {
+        state.modifiedFiles.add(file);
+      } else if (!state.githubRepo) {
+        state.modifiedFiles.delete(file);
+      }
+    });
+  }
+
   function updateGitStatus() {
+    syncModifiedFilesWithBaseline();
     const branch = state.githubBranch || "main";
     const modCount = state.modifiedFiles.size;
     if (el.statusGitBranch) {
@@ -1502,19 +1530,55 @@
   async function computeGitBlobSha(content) {
     if (typeof content !== "string") return null;
     try {
-      const normalized = content.replace(/\r\n/g, "\n");
       const enc = new TextEncoder();
-      const bytes = enc.encode(normalized);
+      const bytes = enc.encode(content);
       const header = `blob ${bytes.length}\0`;
       const headerBytes = enc.encode(header);
       const full = new Uint8Array(headerBytes.length + bytes.length);
       full.set(headerBytes, 0);
       full.set(bytes, headerBytes.length);
-      const hashBuf = await crypto.subtle.digest("SHA-1", full);
+      const subtle = (window.crypto && window.crypto.subtle) ? window.crypto.subtle : (typeof crypto !== "undefined" ? crypto.subtle : null);
+      if (!subtle) return null;
+      const hashBuf = await subtle.digest("SHA-1", full);
       return Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2, "0")).join("");
     } catch (e) {
       return null;
     }
+  }
+
+  async function doesLocalMatchRemoteSha(localContent, remoteSha) {
+    if (typeof localContent !== "string" || !remoteSha) return false;
+    const rawSha = await computeGitBlobSha(localContent);
+    if (rawSha === remoteSha) return true;
+    if (localContent.includes("\r\n")) {
+      const lfSha = await computeGitBlobSha(localContent.replace(/\r\n/g, "\n"));
+      if (lfSha === remoteSha) return true;
+    } else if (localContent.includes("\n")) {
+      const crlfSha = await computeGitBlobSha(localContent.replace(/\n/g, "\r\n"));
+      if (crlfSha === remoteSha) return true;
+    }
+    return false;
+  }
+
+  function resolveLocalPath(remotePath) {
+    if (Object.prototype.hasOwnProperty.call(state.files, remotePath)) {
+      return remotePath;
+    }
+    for (const localKey of Object.keys(state.files)) {
+      if (remotePath.endsWith("/" + localKey)) {
+        return localKey;
+      }
+    }
+    if (state.projectName) {
+      const idx = remotePath.indexOf(state.projectName + "/");
+      if (idx !== -1) {
+        const sub = remotePath.slice(idx + state.projectName.length + 1);
+        if (Object.prototype.hasOwnProperty.call(state.files, sub)) {
+          return sub;
+        }
+      }
+    }
+    return remotePath;
   }
 
   async function githubPull(options = {}) {
@@ -1593,24 +1657,26 @@
 
     // 3. Inspect every remote file against actual local content using Git blob SHAs
     for (const item of remoteBlobs) {
-      const hasLocalFile = Object.prototype.hasOwnProperty.call(state.files, item.path);
-      const isModifiedLocally = state.modifiedFiles.has(item.path);
+      const targetLocalPath = resolveLocalPath(item.path);
+      const hasLocalFile = Object.prototype.hasOwnProperty.call(state.files, targetLocalPath);
+      const isModifiedLocally = state.modifiedFiles.has(targetLocalPath);
 
       let localMatchesRemote = false;
       if (hasLocalFile) {
-        const localContent = state.files[item.path] || "";
-        const computedSha = await computeGitBlobSha(localContent);
-        if (computedSha && computedSha === item.sha) {
+        const localContent = state.files[targetLocalPath] || "";
+        const matchesSha = await doesLocalMatchRemoteSha(localContent, item.sha);
+        if (matchesSha) {
           localMatchesRemote = true;
+          state.fileShas[targetLocalPath] = item.sha;
           state.fileShas[item.path] = item.sha;
-        } else if (!state.isLocalProject && state.fileShas[item.path] === item.sha) {
+        } else if (!state.isLocalProject && state.fileShas[targetLocalPath] === item.sha) {
           localMatchesRemote = true;
         }
       }
 
       if (!hasLocalFile || !localMatchesRemote || options.force) {
         if (isModifiedLocally && !options.force) {
-          conflicts.push(item.path);
+          conflicts.push(targetLocalPath);
         } else {
           toPull.push(item);
         }
@@ -1644,62 +1710,94 @@
 
     for (const item of toPull) {
       try {
-        const fRes = await fetch(`https://api.github.com/repos/${repo}/contents/${encodeURIComponent(item.path).replace(/%2F/g, "/")}?ref=${encodeURIComponent(branch)}&_t=${Date.now()}`, {
-          headers: {
-            "Authorization": `Bearer ${state.githubToken}`,
-            "Accept": "application/vnd.github.v3+json",
-            "Cache-Control": "no-cache",
-            "Pragma": "no-cache"
-          },
-          cache: "no-store"
-        });
+        let decoded = "";
+        let fetchedSha = item.sha;
 
-        if (fRes.ok) {
-          const fData = await fRes.json();
-          if (fData.content) {
-            let decoded = "";
-            try {
-              const binStr = atob(fData.content.replace(/\s/g, ""));
+        // Try direct Git blob fetch first (bypasses CDN branch cache and 1MB contents limit)
+        try {
+          const blobRes = await fetch(`https://api.github.com/repos/${repo}/git/blobs/${item.sha}`, {
+            headers: {
+              "Authorization": `Bearer ${state.githubToken}`,
+              "Accept": "application/vnd.github.v3+json"
+            }
+          });
+          if (blobRes.ok) {
+            const bData = await blobRes.json();
+            if (bData.content) {
+              const binStr = atob(bData.content.replace(/\s/g, ""));
               const bytes = new Uint8Array(binStr.length);
               for (let i = 0; i < binStr.length; i++) bytes[i] = binStr.charCodeAt(i);
               decoded = new TextDecoder("utf-8").decode(bytes);
-            } catch (errDec) {
-              decoded = decodeURIComponent(escape(atob(fData.content.replace(/\s/g, ""))));
+              fetchedSha = bData.sha || item.sha;
             }
-
-            state.files[item.path] = decoded;
-            state.baselineFiles[item.path] = decoded;
-            state.fileShas[item.path] = fData.sha || item.sha;
-            state.modifiedFiles.delete(item.path);
-            pulledFiles.push(item.path);
-            loaded++;
-
-            // --- SYNC TO PHYSICAL DISK DRIVE IF LOCAL PROJECT IS LOADED ---
-            if (state.isLocalProject) {
-              try {
-                let handle = state.fileHandles ? state.fileHandles.get(item.path) : null;
-                if (!handle && state.projectDirHandle) {
-                  const parts = item.path.split("/");
-                  let curDir = state.projectDirHandle;
-                  for (let i = 0; i < parts.length - 1; i++) {
-                    curDir = await curDir.getDirectoryHandle(parts[i], { create: true });
-                  }
-                  handle = await curDir.getFileHandle(parts[parts.length - 1], { create: true });
-                  state.fileHandles.set(item.path, handle);
-                }
-                if (handle) {
-                  const writable = await handle.createWritable();
-                  await writable.write(decoded);
-                  await writable.close();
-                  diskSyncCount++;
-                }
-              } catch (diskErr) {
-                console.warn(`Could not sync pulled file ${item.path} to physical drive:`, diskErr);
-              }
-            }
-
-            if (onProgress) onProgress(loaded, toPull.length, item.path);
           }
+        } catch (bErr) {
+          console.warn("Direct blob fetch fallback for", item.path, bErr);
+        }
+
+        // Fallback to contents endpoint if blob fetch didn't decode
+        if (!decoded) {
+          const fRes = await fetch(`https://api.github.com/repos/${repo}/contents/${encodeURIComponent(item.path).replace(/%2F/g, "/")}?ref=${encodeURIComponent(branch)}&_t=${Date.now()}`, {
+            headers: {
+              "Authorization": `Bearer ${state.githubToken}`,
+              "Accept": "application/vnd.github.v3+json",
+              "Cache-Control": "no-cache",
+              "Pragma": "no-cache"
+            },
+            cache: "no-store"
+          });
+
+          if (fRes.ok) {
+            const fData = await fRes.json();
+            if (fData.content) {
+              try {
+                const binStr = atob(fData.content.replace(/\s/g, ""));
+                const bytes = new Uint8Array(binStr.length);
+                for (let i = 0; i < binStr.length; i++) bytes[i] = binStr.charCodeAt(i);
+                decoded = new TextDecoder("utf-8").decode(bytes);
+              } catch (errDec) {
+                decoded = decodeURIComponent(escape(atob(fData.content.replace(/\s/g, ""))));
+              }
+              fetchedSha = fData.sha || item.sha;
+            }
+          }
+        }
+
+        if (decoded !== "") {
+          const targetKey = resolveLocalPath(item.path);
+          state.files[targetKey] = decoded;
+          state.baselineFiles[targetKey] = decoded;
+          state.fileShas[targetKey] = fetchedSha;
+          state.fileShas[item.path] = fetchedSha;
+          state.modifiedFiles.delete(targetKey);
+          pulledFiles.push(targetKey);
+          loaded++;
+
+          // --- SYNC TO PHYSICAL DISK DRIVE IF LOCAL PROJECT IS LOADED ---
+          if (state.isLocalProject) {
+            try {
+              let handle = state.fileHandles ? state.fileHandles.get(targetKey) : null;
+              if (!handle && state.projectDirHandle) {
+                const parts = targetKey.split("/");
+                let curDir = state.projectDirHandle;
+                for (let i = 0; i < parts.length - 1; i++) {
+                  curDir = await curDir.getDirectoryHandle(parts[i], { create: true });
+                }
+                handle = await curDir.getFileHandle(parts[parts.length - 1], { create: true });
+                state.fileHandles.set(targetKey, handle);
+              }
+              if (handle) {
+                const writable = await handle.createWritable();
+                await writable.write(decoded);
+                await writable.close();
+                diskSyncCount++;
+              }
+            } catch (diskErr) {
+              console.warn(`Could not sync pulled file ${targetKey} to physical drive:`, diskErr);
+            }
+          }
+
+          if (onProgress) onProgress(loaded, toPull.length, targetKey);
         }
       } catch (e) {
         console.warn("Failed to pull file:", item.path, e);
@@ -1867,43 +1965,52 @@
 
     fileList.slice(0, 8).forEach(file => {
       const current = state.files[file] || "";
-      const base = state.baselineFiles[file] || "";
-      let newText = current;
+      const base = state.baselineFiles ? state.baselineFiles[file] : undefined;
+      let newText = "";
       let diffSummary = "";
 
-      if (base && current !== base) {
-        const baseLines = new Set(base.split("\n").map(l => l.trim()));
-        const addedLines = current.split("\n")
-          .map(l => l.trim())
-          .filter(l => l.length > 0 && !baseLines.has(l));
-        newText = addedLines.join("\n");
-        diffSummary = `+${addedLines.length} lines`;
+      if (base !== undefined) {
+        if (current !== base) {
+          const baseLines = new Set(base.split("\n").map(l => l.trim()));
+          const addedLines = current.split("\n")
+            .map(l => l.trim())
+            .filter(l => l.length > 0 && !baseLines.has(l));
+          newText = addedLines.join("\n");
+          diffSummary = `+${addedLines.length} lines`;
+        } else {
+          diffSummary = "unchanged";
+        }
+      } else {
+        newText = current;
+        diffSummary = "new file";
       }
 
-      if (/\b(fix|bug|issue|error|prevent|patch|catch|exception|nullcheck|undefined)\b/i.test(newText)) {
-        hasFixKeyword = true;
-      }
-      if (/\b(perf|optimize|cache|caching|throttle|debounce|latency)\b/i.test(newText)) {
-        hasPerfKeyword = true;
-      }
-      if (/\b(refactor|cleanup|clean up|modularize|deprecate|remove dead)\b/i.test(newText)) {
-        hasRefactorKeyword = true;
-      }
+      if (newText) {
+        if (/\b(fix|bug|issue|error|prevent|patch|catch|exception|nullcheck|undefined)\b/i.test(newText)) {
+          hasFixKeyword = true;
+        }
+        if (/\b(perf|optimize|cache|caching|throttle|debounce|latency)\b/i.test(newText)) {
+          hasPerfKeyword = true;
+        }
+        if (/\b(refactor|cleanup|clean up|modularize|deprecate|remove dead)\b/i.test(newText)) {
+          hasRefactorKeyword = true;
+        }
 
-      const fnMatches = newText.match(/(?:function\s+([a-zA-Z0-9_$]+)|(?:const|let|var)\s+([a-zA-Z0-9_$]+)\s*=\s*(?:async\s*)?\()/g);
-      if (fnMatches) {
-        fnMatches.slice(0, 2).forEach(m => {
-          const fnName = m.replace(/^function\s+/, "").replace(/^(?:const|let|var)\s+/, "").split(/\s*=/)[0].trim();
-          if (fnName && !addedFunctions.includes(fnName)) addedFunctions.push(fnName);
-        });
-      }
+        const fnMatches = newText.match(/(?:function\s+([a-zA-Z0-9_$]+)|(?:const|let|var)\s+([a-zA-Z0-9_$]+)\s*=\s*(?:async\s*)?\()/g);
+        if (fnMatches) {
+          fnMatches.slice(0, 2).forEach(m => {
+            const fnName = m.replace(/^function\s+/, "").replace(/^(?:const|let|var)\s+/, "").split(/\s*=/)[0].trim();
+            if (fnName && !addedFunctions.includes(fnName)) addedFunctions.push(fnName);
+          });
+        }
 
-      const idMatches = newText.match(/id=["']([a-zA-Z0-9_-]+)["']/g);
-      if (idMatches) {
-        idMatches.slice(0, 2).forEach(m => {
-          const id = m.replace(/^id=["']|["']$/g, "");
-          if (id && !addedUiElements.includes(id)) addedUiElements.push(id);
-        });
+        const idMatches = newText.match(/id=["']([a-zA-Z0-9_-]+)["']/g);
+        if (idMatches) {
+          idMatches.slice(0, 2).forEach(m => {
+            const id = m.replace(/^id=["']|["']$/g, "");
+            if (id && !addedUiElements.includes(id)) addedUiElements.push(id);
+          });
+        }
       }
 
       highlights.push({
@@ -2003,8 +2110,20 @@
 
     const analysis = analyzeChanges(fileList);
     const chosenType = options.type || analysis.type;
-    const scope = options.scope || analysis.scope;
-    let subject = analysis.subject;
+    const scope = options.scope !== undefined ? options.scope : analysis.scope;
+    let subject = options.subject || analysis.subject;
+
+    // Adapt subject to chosen type if not manually customized
+    if (!options.subject && analysis.subject.startsWith("update ")) {
+      if (chosenType === "fix") subject = analysis.subject.replace(/^update\s+/, "fix issue in ");
+      else if (chosenType === "docs") subject = analysis.subject.replace(/^update\s+/, "document ");
+      else if (chosenType === "refactor") subject = analysis.subject.replace(/^update\s+/, "refactor ");
+      else if (chosenType === "style") subject = "improve styling and UI layout";
+      else if (chosenType === "test") subject = "add test coverage";
+      else if (chosenType === "chore") subject = analysis.subject.replace(/^update\s+/, "maintenance for ");
+      else if (chosenType === "perf") subject = analysis.subject.replace(/^update\s+/, "optimize performance of ");
+    }
+
     const apiKey = (options.apiKey !== undefined ? options.apiKey : (state.geminiApiKey || localStorage.getItem("vsc_gemini_api_key") || "")).trim();
 
     let primaryMessage = "";
@@ -2058,8 +2177,16 @@
     return result;
   }
 
-  async function generateCommitMessageUI(preferredType = null) {
+  async function generateCommitMessageUI(preferredType = null, customSubject = null) {
     if (!el.gitCommitMsg) return;
+
+    let targetType = preferredType;
+    if (!targetType && el.gitPresetsBar) {
+      const activeChip = el.gitPresetsBar.querySelector(".vsc-chip-btn.active");
+      if (activeChip && activeChip.dataset.type) {
+        targetType = activeChip.dataset.type;
+      }
+    }
 
     if (el.btnGitGenMsg) {
       el.btnGitGenMsg.disabled = true;
@@ -2067,8 +2194,9 @@
     }
 
     try {
-      const res = await generateCommitMessage({ type: preferredType });
+      const res = await generateCommitMessage({ type: targetType, subject: customSubject });
       el.gitCommitMsg.value = res.message;
+      el.gitCommitMsg.focus();
 
       // Update active type chip
       if (el.gitPresetsBar) {
@@ -2090,7 +2218,7 @@
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;flex-wrap:wrap;gap:2px">
             <span style="color:${badgeColor};font-weight:600">✓ ${badgeText} (${fileCountText})</span>
             <div style="display:flex;gap:4px;align-items:center">
-              <a href="#" class="vsc-gen-variant-link" data-v="conventional" title="Standard conventional commit">Conventional</a>
+              <a href="#" class="vsc-gen-variant-link active-variant" data-v="conventional" title="Standard conventional commit">Conventional</a>
               <span style="color:var(--vsc-fg-muted)">·</span>
               <a href="#" class="vsc-gen-variant-link" data-v="detailed" title="Include modified files bullet points">Detailed</a>
               <span style="color:var(--vsc-fg-muted)">·</span>
@@ -2107,6 +2235,8 @@
             const variant = a.dataset.v;
             if (res.variants && res.variants[variant]) {
               el.gitCommitMsg.value = res.variants[variant];
+              el.gitGenStatus.querySelectorAll(".vsc-gen-variant-link").forEach(l => l.classList.remove("active-variant"));
+              a.classList.add("active-variant");
               showMessage("info", "COMMIT STYLE", `Switched commit style to ${variant}.`, false);
             }
           });
@@ -2615,7 +2745,7 @@
     el.settingsDialog.showModal();
   }
 
-  function applySettings() {
+  function applySettings(fromDialog = false) {
     const fs = el.settingFontSize ? el.settingFontSize.value : "13px";
     const ts = el.settingTabSize ? el.settingTabSize.value : "2";
     const ww = el.settingWordWrap ? el.settingWordWrap.value : "off";
@@ -2632,26 +2762,29 @@
       el.statusSpaces.textContent = `Spaces: ${ts}`;
     }
 
-    // Save token from settings if changed
-    if (el.settingGhToken) {
-      const tokVal = el.settingGhToken.value.trim();
-      if (tokVal !== state.githubToken) {
-        if (tokVal) {
-          githubAuth(tokVal);
-        } else {
-          githubAuth("");
+    // Only update credentials when explicitly submitted from the settings dialog
+    if (fromDialog) {
+      // Save token from settings if changed
+      if (el.settingGhToken) {
+        const tokVal = el.settingGhToken.value.trim();
+        if (tokVal !== state.githubToken) {
+          if (tokVal) {
+            githubAuth(tokVal);
+          } else {
+            githubAuth("");
+          }
         }
       }
-    }
 
-    // Save optional Gemini API Key for commit generation
-    if (el.settingGeminiKey) {
-      const gVal = el.settingGeminiKey.value.trim();
-      state.geminiApiKey = gVal;
-      if (gVal) {
-        localStorage.setItem("vsc_gemini_api_key", gVal);
-      } else {
-        localStorage.removeItem("vsc_gemini_api_key");
+      // Save optional Gemini API Key for commit generation
+      if (el.settingGeminiKey) {
+        const gVal = el.settingGeminiKey.value.trim();
+        state.geminiApiKey = gVal;
+        if (gVal) {
+          localStorage.setItem("vsc_gemini_api_key", gVal);
+        } else {
+          localStorage.removeItem("vsc_gemini_api_key");
+        }
       }
     }
 
@@ -5464,18 +5597,12 @@ Subcommands:
         chip.classList.add("active");
 
         const currVal = (el.gitCommitMsg ? el.gitCommitMsg.value.trim() : "");
-        if (!currVal) {
-          generateCommitMessageUI(type);
-          return;
-        }
-
-        const convMatch = currVal.match(/^([a-zA-Z0-9_-]+)(\([^)]+\))?:\s*(.*)$/s);
-        if (convMatch) {
-          const scope = convMatch[2] || "";
+        const convMatch = currVal.match(/^(?:[^\w\s]+\s*)?([a-zA-Z0-9_-]+)(\([^)]+\))?:\s*(.*)$/s);
+        if (currVal && convMatch) {
           const rest = convMatch[3] || "";
-          el.gitCommitMsg.value = `${type}${scope}: ${rest}`;
+          generateCommitMessageUI(type, rest);
         } else {
-          el.gitCommitMsg.value = `${type}: ${currVal}`;
+          generateCommitMessageUI(type);
         }
       });
     }
@@ -5870,7 +5997,7 @@ Subcommands:
     if (el.settingsBtnClose) el.settingsBtnClose.addEventListener("click", () => el.settingsDialog.close());
     if (el.settingsBtnSave) {
       el.settingsBtnSave.addEventListener("click", () => {
-        applySettings();
+        applySettings(true);
         el.settingsDialog.close();
         termPrint("Settings applied and saved.", "vsc-term-success");
       });
@@ -6940,7 +7067,7 @@ Subcommands:
   // --- BOOTSTRAP WORKBENCH ---
   function init() {
     initResponsiveSidebar();
-    applySettings();
+    applySettings(false);
     updateWorkspaceUI();
     renderTabs();
     renderSidebarLists();

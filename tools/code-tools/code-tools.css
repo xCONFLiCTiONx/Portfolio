@@ -1827,6 +1827,13 @@ select.vsc-modal-input option {
   background: rgba(0, 240, 255, 0.1);
 }
 
+.vsc-gen-variant-link.active-variant {
+  color: #fff;
+  background: rgba(0, 240, 255, 0.22);
+  text-decoration: underline;
+  font-weight: 600;
+}
+
 /* Extensions & Snippets View */
 .vsc-ext-view-wrap {
   padding: 10px;
