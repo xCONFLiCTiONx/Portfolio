@@ -972,21 +972,140 @@ body[data-tool-id="code-tools"].vsc-fullscreen #vscode-workbench {
 }
 
 @media (max-width: 768px) {
-  .vsc-sidebar {
-    position: absolute;
-    left: 48px;
-    top: 36px;
-    bottom: 24px;
-    z-index: 50;
-    box-shadow: 4px 0 16px rgba(0, 0, 0, 0.6);
+  /* Prevent horizontal screen expansion on mobile */
+  html, body {
+    overflow-x: hidden !important;
+    width: 100% !important;
   }
 
-  .vsc-searchbar {
-    width: 160px;
+  #vscode-workbench {
+    width: 100vw !important;
+    overflow-x: hidden !important;
+  }
+
+  /* Compact mobile titlebar - hide overflow items */
+  .vsc-titlebar {
+    padding: 0 8px !important;
+    height: 38px !important;
+    overflow: hidden !important;
+  }
+
+  .vsc-menu-bar,
+  .vsc-searchbar,
+  .vsc-titlebar-right {
+    display: none !important;
+  }
+
+  /* Mobile floating sidebar overlay */
+  .vsc-sidebar {
+    position: fixed !important;
+    left: 48px !important;
+    top: 38px !important;
+    bottom: 24px !important;
+    width: calc(100vw - 48px) !important;
+    max-width: 320px !important;
+    z-index: 500 !important;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.85) !important;
+    background: #181818 !important;
+  }
+
+  .vsc-sidebar.collapsed {
+    display: none !important;
+  }
+
+  /* Compact editor actions on mobile */
+  .vsc-breadcrumbs {
+    display: none !important;
+  }
+
+  .vsc-editor-subbar {
+    padding: 3px 6px !important;
+    gap: 4px !important;
+  }
+
+  .vsc-editor-actions {
+    display: flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .vsc-editor-btn {
+    padding: 3px 7px !important;
+    font-size: 11px !important;
+    white-space: nowrap !important;
+  }
+
+  /* Fullscreen mobile live preview (Markdown & web server) */
+  .vsc-live-preview {
+    position: fixed !important;
+    left: 0 !important;
+    top: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100vw !important;
+    height: 100dvh !important;
+    z-index: 99999 !important;
+    border-left: none !important;
+  }
+
+  .vsc-preview-header {
+    height: 44px !important;
+    padding: 0 8px !important;
+    gap: 6px !important;
+  }
+
+  .vsc-preview-address {
+    max-width: 150px !important;
+    padding: 2px 6px !important;
+    font-size: 11px !important;
+  }
+
+  #vsc-preview-btn-desktop,
+  #vsc-preview-btn-tablet,
+  #vsc-preview-btn-mobile,
+  #vsc-preview-btn-external {
+    display: none !important;
+  }
+
+  #vsc-preview-btn-close {
+    font-size: 16px !important;
+    padding: 6px 12px !important;
+    background: #2b2b2b !important;
+    color: #fff !important;
+    border-radius: 4px !important;
+    border: 1px solid var(--vsc-border) !important;
+    cursor: pointer !important;
+    min-width: 44px !important;
+    min-height: 36px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* Statusbar overflow protection on mobile */
+  .vsc-statusbar {
+    height: 24px !important;
+    padding: 0 6px !important;
+    font-size: 10px !important;
+    overflow: hidden !important;
+  }
+
+  #vsc-status-spaces,
+  #vsc-status-encoding,
+  #vsc-status-lang {
+    display: none !important;
+  }
+
+  .vsc-status-left,
+  .vsc-status-right {
+    gap: 8px !important;
   }
 
   .vsc-mobile-quickbar {
-    display: flex;
+    display: flex !important;
   }
 }
 
@@ -1100,31 +1219,6 @@ body[data-tool-id="code-tools"].vsc-fullscreen #vscode-workbench {
   transition: transform 0.2s ease;
 }
 
-@media (max-width: 768px) {
-  .vsc-live-preview {
-    left: 0 !important;
-    top: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
-    z-index: 100 !important;
-  }
-  .vsc-preview-header {
-    height: 42px;
-    padding: 0 8px;
-  }
-  #vsc-preview-btn-desktop,
-  #vsc-preview-btn-tablet,
-  #vsc-preview-btn-mobile {
-    display: none;
-  }
-  .vsc-breadcrumbs {
-    display: none;
-  }
-  .vsc-editor-subbar {
-    padding: 4px 6px;
-    gap: 6px;
-  }
-}
 
 .vsc-live-preview.hidden {
   display: none !important;
@@ -1306,6 +1400,7 @@ dialog.vsc-dialog::backdrop {
 .vsc-dialog-footer {
   display: flex;
   justify-content: flex-end;
+  flex-wrap: wrap;
   gap: 8px;
   padding: 10px 14px;
   background: #141414;

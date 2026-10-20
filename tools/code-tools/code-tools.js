@@ -113,6 +113,12 @@
     state.files = {};
   }
 
+  // Restore saved file SHAs for GitHub Contents API
+  try {
+    const savedShas = localStorage.getItem("vsc_gh_file_shas");
+    if (savedShas) state.fileShas = JSON.parse(savedShas);
+  } catch (e) {}
+
   // Initialize open editor tabs
   state.openTabs = Object.keys(state.files).slice(0, 5);
   state.activeFile = state.openTabs[0] || null;
@@ -140,6 +146,7 @@
     btnPreviewMd: document.getElementById("vsc-btn-preview-md"),
     btnFormat: document.getElementById("vsc-btn-format"),
     btnSave: document.getElementById("vsc-btn-save"),
+    btnPushEditor: document.getElementById("vsc-btn-push-editor"),
     btnClear: document.getElementById("vsc-btn-clear"),
     btnFullscreen: document.getElementById("vsc-btn-fullscreen"),
     shellSelect: document.getElementById("vsc-shell-select"),
@@ -733,6 +740,15 @@
       }
     }
 
+    if (state.githubRepo) {
+      state.modifiedFiles.add(filename);
+      updateGitStatus();
+      refreshProblems();
+      termPrint(`Saved ${filename} to workspace. Ready to commit & push to GitHub (${state.githubRepo}).`, "vsc-term-success");
+      showMessage("info", "SAVED LOCALLY", `${filename} saved. Click 'Push' or go to Source Control to sync with GitHub.`);
+      return;
+    }
+
     state.modifiedFiles.delete(filename);
     updateGitStatus();
     refreshProblems();
@@ -939,6 +955,12 @@
 
     if (el.btnDisconnectGh) {
       el.btnDisconnectGh.style.display = state.githubToken ? "inline-flex" : "none";
+    }
+
+    if (el.btnPushEditor) {
+      const canPush = !!(state.githubToken && state.githubRepo && modCount > 0);
+      el.btnPushEditor.style.display = canPush ? "inline-flex" : "none";
+      el.btnPushEditor.title = `Commit and push ${modCount} changed file(s) to ${state.githubRepo}@${branch}`;
     }
 
     if (el.gitRepoDisplay) {
