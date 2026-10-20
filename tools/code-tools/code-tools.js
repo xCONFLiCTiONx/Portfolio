@@ -421,6 +421,55 @@ User-Agent: VSCodeTools/4.2
     });
   }
 
+  // --- DYNAMIC WORKSPACE & SHELL PROMPT HELPERS ---
+  function getWorkspaceName() {
+    if (state.projectName) return state.projectName;
+    if (state.githubRepo) return state.githubRepo.split("/").pop();
+    return "workspace";
+  }
+
+  function getPromptString() {
+    const ws = getWorkspaceName();
+    if (state.activeShell === "bash") {
+      return `${ws} $ `;
+    } else if (state.activeShell === "zsh") {
+      return `➜ ${ws} `;
+    } else if (state.activeShell === "cmd") {
+      return `C:\\${ws}> `;
+    } else {
+      // Default powershell
+      return `PS ~/${ws}> `;
+    }
+  }
+
+  function updatePromptTag() {
+    if (el.promptTag) {
+      el.promptTag.textContent = getPromptString();
+    }
+  }
+
+  function updateWorkspaceUI() {
+    const ws = getWorkspaceName();
+    if (el.workspaceLabel) {
+      if (state.isLocalProject) {
+        el.workspaceLabel.innerHTML = `📂 <b>${ws}</b> <span style="color:#98c379">(Local Disk)</span>`;
+      } else if (state.githubRepo) {
+        el.workspaceLabel.innerHTML = `🐙 <b>${ws}</b> <span style="color:#3791B7">(${state.githubBranch})</span>`;
+      } else {
+        el.workspaceLabel.innerHTML = `<b>${ws}</b> <span style="color:var(--vsc-fg-muted)">(Workspace)</span>`;
+      }
+    }
+    const breadRoot = document.getElementById("vsc-bread-root");
+    if (breadRoot) {
+      breadRoot.textContent = ws;
+    }
+    const titleWs = document.getElementById("vsc-title-workspace");
+    if (titleWs) {
+      titleWs.textContent = ws;
+    }
+    updatePromptTag();
+  }
+
   // --- SAVE WORKSPACE HELPER ---
   function saveWorkspace() {
     try {
@@ -777,9 +826,9 @@ User-Agent: VSCodeTools/4.2
     renderSidebarLists();
     renderTabs();
 
-    if (el.workspaceLabel) {
-      el.workspaceLabel.innerHTML = `📂 <b>${dirHandle.name}</b> <span style="color:#98c379">(Local Disk)</span>`;
-    }
+    state.projectName = dirHandle.name;
+    state.isLocalProject = true;
+    updateWorkspaceUI();
     if (el.breadcrumbsFile) {
       el.breadcrumbsFile.textContent = dirHandle.name;
     }

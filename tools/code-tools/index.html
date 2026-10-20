@@ -139,7 +139,7 @@
 
         <div class="vsc-searchbar" title="Command Palette &amp; Search">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <span>dev-vault &gt; VS Code Tools (Daily Workbench)</span>
+          <span><span id="vsc-title-workspace">workspace</span> &gt; Code Tools</span>
           <kbd>Ctrl+P</kbd>
         </div>
 
@@ -202,10 +202,10 @@
               </div>
               <ul class="vsc-tree" id="vsc-open-editors-list"></ul>
 
-              <!-- DEV-VAULT WORKSPACE -->
+              <!-- ACTIVE WORKSPACE -->
               <div class="vsc-section-title" style="margin-top:6px">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-                <span id="vsc-workspace-label">dev-vault (Workspace)</span>
+                <span id="vsc-workspace-label">workspace</span>
               </div>
               <div id="vsc-open-project-container" style="padding:6px 10px">
                 <button class="vsc-editor-btn" id="vsc-btn-open-project-banner" style="width:100%;display:flex;align-items:center;justify-content:center;gap:6px;background:rgba(55,145,183,0.1);border:1px solid rgba(55,145,183,0.35);color:var(--vsc-turquoise);font-weight:600;padding:6px">
@@ -361,7 +361,7 @@
             <!-- Breadcrumbs and Toolbar -->
             <div class="vsc-editor-subbar">
               <div class="vsc-breadcrumbs">
-                <span>dev-vault</span>
+                <span id="vsc-bread-root">workspace</span>
                 <span>&gt;</span>
                 <span class="active" id="vsc-bread-file">scratchpad.js</span>
               </div>
@@ -467,7 +467,7 @@
               <div class="vsc-term-history" id="vsc-term-history"></div>
 
               <div class="vsc-input-row">
-                <span class="vsc-prompt-str" id="vsc-prompt-tag">PS E:\dev-vault&gt;</span>
+                <span class="vsc-prompt-str" id="vsc-prompt-tag">PS ~/workspace&gt; </span>
                 <input
                   type="text"
                   id="vsc-term-input"
