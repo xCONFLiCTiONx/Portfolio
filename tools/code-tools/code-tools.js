@@ -1076,7 +1076,9 @@ User-Agent: VSCodeTools/4.2
     localStorage.setItem("vsc_gh_repo", repo);
     localStorage.setItem("vsc_gh_branch", b);
 
-    if (el.workspaceLabel) el.workspaceLabel.textContent = `${repo} (${b})`;
+    state.projectName = repo.split("/").pop();
+    state.isLocalProject = false;
+    updateWorkspaceUI();
 
     let loaded = 0;
     for (const item of fileBlobs) {
@@ -1999,7 +2001,7 @@ Integrated Web Developer Workbench:
 <span class="vsc-prompt-tag">[EDITOR &amp; WORKSPACE]</span>
   <b class="vsc-term-success">nano</b> &lt;filename&gt;                     In-terminal GNU nano text editor (save with ^O, exit ^X)
   <b class="vsc-term-success">run</b> / <b class="vsc-term-success">eval</b> [code]                   Execute active editor snippet or JS expression
-  <b class="vsc-term-success">ls</b> / <b class="vsc-term-success">dir</b>                            List files in your virtual dev-vault workspace
+  <b class="vsc-term-success">ls</b> / <b class="vsc-term-success">dir</b>                            List files in the active workspace
   <b class="vsc-term-success">open</b> &lt;filename&gt;                     Open or create a file in the VS Code editor
   <b class="vsc-term-success">cat</b> &lt;filename&gt;                      Print file contents directly to the terminal
   <b class="vsc-term-success">format</b>                              Format code/JSON in the active editor tab
@@ -2557,10 +2559,11 @@ Length: ${hex.length * 4} bits (${hex.length} hex chars)
     },
 
     ls: {
-      desc: "List files in your virtual dev-vault workspace",
+      desc: "List files in the active workspace",
       usage: "ls",
       exec: async () => {
-        let out = `<span class="vsc-term-success">WORKSPACE FILES (dev-vault):</span>\n`;
+        const wsName = getWorkspaceName();
+        let out = `<span class="vsc-term-success">WORKSPACE FILES (${wsName}):</span>\n`;
         Object.keys(state.files).forEach((f) => {
           const len = state.files[f].length;
           out += `  <b style="color:var(--vsc-turquoise)">${f.padEnd(20)}</b> ${len} bytes\n`;
@@ -2916,7 +2919,7 @@ Length: ${hex.length * 4} bits (${hex.length} hex chars)
     state.commandHistory.push(input);
     state.historyIndex = state.commandHistory.length;
 
-    const promptText = el.promptTag ? el.promptTag.textContent : "PS E:\\dev-vault>";
+    const promptText = el.promptTag ? el.promptTag.textContent : getPromptString();
     termPrint(`${promptText} ${input}`, "vsc-line-cmd");
 
     const parts = input.split(/\s+/);
@@ -3475,9 +3478,7 @@ Length: ${hex.length * 4} bits (${hex.length} hex chars)
     if (el.shellSelect) {
       el.shellSelect.addEventListener("change", (e) => {
         state.activeShell = e.target.value;
-        if (el.promptTag) {
-          el.promptTag.textContent = state.activeShell === "bash" ? "bash $ " : "PS E:\\dev-vault> ";
-        }
+        updatePromptTag();
       });
     }
 
@@ -3981,7 +3982,7 @@ Length: ${hex.length * 4} bits (${hex.length} hex chars)
         },
         { separator: true },
         {
-          label: "Open Project Folder on E:\\...",
+          label: "Open Local Project Folder...",
           shortcut: "Ctrl+O",
           exec: () => openLocalProjectFolder()
         }
@@ -4109,7 +4110,7 @@ Length: ${hex.length * 4} bits (${hex.length} hex chars)
           exec: () => createNewFilePrompt()
         },
         {
-          label: "Open Project Folder on E:\\...",
+          label: "Open Local Project Folder...",
           shortcut: "Ctrl+O",
           exec: () => openLocalProjectFolder()
         },
@@ -4196,7 +4197,7 @@ Length: ${hex.length * 4} bits (${hex.length} hex chars)
         },
         { separator: true },
         {
-          label: "Open Project Folder on E:\\...",
+          label: "Open Local Project Folder...",
           shortcut: "Ctrl+O",
           exec: () => openLocalProjectFolder()
         },
@@ -4605,6 +4606,7 @@ Length: ${hex.length * 4} bits (${hex.length} hex chars)
   // --- BOOTSTRAP WORKBENCH ---
   function init() {
     applySettings();
+    updateWorkspaceUI();
     renderTabs();
     renderSidebarLists();
     openFile(state.activeFile);
@@ -4642,7 +4644,7 @@ Length: ${hex.length * 4} bits (${hex.length} hex chars)
 <span class="vsc-term-info">Visual Studio Code Tools [Version 4.2.0-web]</span>
 <span class="vsc-term-dim">(c) DevStudio Web. Pitch Black &amp; Turquoise Workspace.</span>
 Type <b style="color:var(--vsc-turquoise)">help</b> to see all daily diagnostic, network, crypto, and code tools.
-Local Disk: Click <b style="color:var(--vsc-turquoise)">📂 Open Project\\</b> or press <b style="color:var(--vsc-turquoise)">Ctrl+O</b> to edit files directly on your drive.
+Local Disk: Click <b style="color:var(--vsc-turquoise)">📂 Open Project</b> or press <b style="color:var(--vsc-turquoise)">Ctrl+O</b> to edit files directly on your drive.
 ${state.githubRepo ? `Remote: <b style="color:var(--vsc-turquoise)">${state.githubRepo}@${state.githubBranch}</b> connected.` : "GitHub: Type <b style=\"color:var(--vsc-turquoise)\">github auth &lt;token&gt;</b> or click Accounts to sync real files."}
 `);
   }
