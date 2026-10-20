@@ -90,7 +90,8 @@
     geminiApiKey: localStorage.getItem("vsc_gemini_api_key") || "",
     lastCommitGen: null,
     currentServingFile: "",
-    currentServingPort: 3000
+    currentServingPort: 3000,
+    activePreviewBlobs: []
   };
 
   // Load persisted user workspace or initialize clean empty workspace
@@ -3608,11 +3609,56 @@ Integrated Web Developer Workbench:
     return null;
   }
 
+  // Virtual MIME resolver for preview runtime
+  function getVirtualMime(filePath) {
+    const p = (filePath || "").toLowerCase().split(/[?#]/)[0];
+    if (p.endsWith(".json") || p.endsWith(".config.json")) return "application/json";
+    if (p.endsWith(".js") || p.endsWith(".mjs")) return "application/javascript";
+    if (p.endsWith(".css")) return "text/css";
+    if (p.endsWith(".html") || p.endsWith(".htm")) return "text/html";
+    if (p.endsWith(".svg")) return "image/svg+xml";
+    if (p.endsWith(".xml") || p.endsWith(".webmanifest")) return "application/xml";
+    if (p.endsWith(".txt") || p.endsWith(".md")) return "text/plain";
+    if (p.endsWith(".png")) return "image/png";
+    if (p.endsWith(".jpg") || p.endsWith(".jpeg")) return "image/jpeg";
+    if (p.endsWith(".gif")) return "image/gif";
+    if (p.endsWith(".woff2")) return "font/woff2";
+    if (p.endsWith(".woff")) return "font/woff";
+    if (p.endsWith(".ttf")) return "font/ttf";
+    return "application/octet-stream";
+  }
+
+  // Global virtual file resolver callable from preview iframes and popout windows
+  window.__vsc_getVirtualFile = function(reqPath, baseFile) {
+    if (!reqPath || !state.files) return null;
+    const from = baseFile || state.currentServingFile || state.activeFile || "index.html";
+    const clean = reqPath.split(/[?#]/)[0].replace(/^\.\//, "").replace(/^\/+/, "");
+
+    // 1. Resolve relative to baseFile
+    const resolved = resolveWorkspacePath(clean, from);
+    let found = findWorkspaceFile(resolved || clean);
+    if (found) {
+      return { path: found.path, content: found.content, mime: getVirtualMime(found.path) };
+    }
+
+    // 2. Direct match in state.files
+    if (state.files[clean] !== undefined) {
+      return { path: clean, content: state.files[clean], mime: getVirtualMime(clean) };
+    }
+
+    // 3. Basename match
+    const baseName = clean.split("/").pop();
+    for (const [k, v] of Object.entries(state.files)) {
+      if (k === baseName || k.endsWith("/" + baseName)) {
+        return { path: k, content: v, mime: getVirtualMime(k) };
+      }
+    }
+    return null;
+  };
+
   async function buildVirtualWebsite(filename) {
     if (!state.files[filename]) return "";
     let html = state.files[filename];
-
-    const currentDir = filename.includes("/") ? filename.slice(0, filename.lastIndexOf("/")) : "";
 
     // Determine site root URL if running on a web origin
     let siteBaseUrl = "";
@@ -3620,9 +3666,30 @@ Integrated Web Developer Workbench:
       siteBaseUrl = window.location.origin + window.location.pathname.replace(/\/tools\/code-tools.*$/, "/");
     }
 
-    // 1. Resolve and inline CSS stylesheets (<link rel="stylesheet">)
+    // Helper: Bundle CSS stylesheets recursively resolving @import
+    function bundleCss(cssPath, visited = new Set()) {
+      if (visited.has(cssPath)) return "";
+      visited.add(cssPath);
+      const file = findWorkspaceFile(cssPath);
+      if (!file) return "";
+      let css = file.content;
+      css = css.replace(/@import\s+(?:url\(['"]?|['"])([^'")]+)['"]?\)?;?/gi, (impMatch, impUrl) => {
+        const cleanImp = impUrl.trim();
+        if (cleanImp.startsWith("http://") || cleanImp.startsWith("https://") || cleanImp.startsWith("//") || cleanImp.startsWith("data:")) {
+          return impMatch;
+        }
+        const resolvedImp = resolveWorkspacePath(cleanImp, cssPath);
+        if (resolvedImp && findWorkspaceFile(resolvedImp)) {
+          return `/* @import ${cleanImp} */\n` + bundleCss(resolvedImp, visited);
+        }
+        return impMatch;
+      });
+      return css;
+    }
+
+    // 1. Resolve and replace CSS stylesheets (<link rel="stylesheet">)
     const linkRegex = /<link\s+([^>]*?)>/gi;
-    const linksToReplace = [];
+    const linksToProcess = [];
     let match;
     while ((match = linkRegex.exec(html)) !== null) {
       const fullTag = match[0];
@@ -3631,201 +3698,150 @@ Integrated Web Developer Workbench:
         const hrefMatch = attrs.match(/href=["']([^"']+)["']/i);
         if (hrefMatch) {
           const href = hrefMatch[1];
-          const resolved = resolveWorkspacePath(href, filename);
-          const file = findWorkspaceFile(resolved);
-          if (file) {
-            linksToReplace.push({ fullTag, href, path: file.path, content: file.content });
+          if (!href.startsWith("http://") && !href.startsWith("https://") && !href.startsWith("//") && !href.startsWith("data:") && !href.startsWith("blob:")) {
+            const cleanHref = href.split(/[?#]/)[0];
+            const resolved = resolveWorkspacePath(cleanHref, filename);
+            const file = findWorkspaceFile(resolved);
+            if (file) {
+              linksToProcess.push({ fullTag, href, path: file.path });
+            }
           }
         }
       }
     }
 
-    for (const item of linksToReplace) {
-      let cssContent = item.content;
-      // Inline any @import in the stylesheet
-      cssContent = cssContent.replace(/@import\s+(?:url\(['"]?|['"])([^'")]+)['"]?\)?;?/gi, (impMatch, impUrl) => {
-        const impResolved = resolveWorkspacePath(impUrl, item.path);
-        const impFile = findWorkspaceFile(impResolved);
-        if (impFile) {
-          return `/* @import ${impUrl} */\n${impFile.content}\n`;
-        }
-        return impMatch;
-      });
+    for (const item of linksToProcess) {
+      let bundledCss = bundleCss(item.path);
 
-      // If siteBaseUrl exists, adjust root-relative URLs like url('/fonts/...')
+      // Adjust root-relative URLs like url('/fonts/...') if running on http origin
       if (siteBaseUrl) {
-        cssContent = cssContent.replace(/url\(['"]?\/([^\/'")][^'")]+)['"]?\)/gi, `url('${siteBaseUrl}$1')`);
+        bundledCss = bundledCss.replace(/url\(['"]?\/([^\/'")][^'")]+)['"]?\)/gi, `url('${siteBaseUrl}$1')`);
       }
 
-      // Check if CSS references local fonts or images in fileHandles
+      // Check if CSS references local font or image assets in fileHandles
       if (state.fileHandles && state.fileHandles.size > 0) {
-        const urlMatches = cssContent.match(/url\(['"]?([^'")]+)['"]?\)/gi) || [];
+        const urlMatches = bundledCss.match(/url\(['"]?([^'")]+)['"]?\)/gi) || [];
         for (const uMatch of urlMatches) {
-          const rawUrl = uMatch.replace(/^url\(['"]?|['"]?\)$/gi, "");
-          if (!rawUrl.startsWith("data:") && !rawUrl.startsWith("http:") && !rawUrl.startsWith("https:") && !rawUrl.startsWith("//")) {
+          const rawUrl = uMatch.replace(/^url\(['"]?|['"]?\)$/gi, "").split(/[?#]/)[0];
+          if (!rawUrl.startsWith("data:") && !rawUrl.startsWith("http:") && !rawUrl.startsWith("https:") && !rawUrl.startsWith("//") && !rawUrl.startsWith("blob:")) {
             const resolvedAsset = resolveWorkspacePath(rawUrl, item.path);
             if (resolvedAsset && state.fileHandles.has(resolvedAsset)) {
               try {
                 const h = state.fileHandles.get(resolvedAsset);
                 const f = await h.getFile();
                 const bUrl = URL.createObjectURL(f);
-                cssContent = cssContent.split(uMatch).join(`url('${bUrl}')`);
+                state.activePreviewBlobs.push(bUrl);
+                bundledCss = bundledCss.split(uMatch).join(`url('${bUrl}')`);
               } catch (e) {}
             }
           }
         }
       }
 
-      const styleBlock = `<style data-source="${escapeHtml(item.href)}" data-path="${escapeHtml(item.path)}">\n${cssContent}\n</style>`;
-      html = html.replace(item.fullTag, styleBlock);
+      const safeCss = bundledCss.replace(/<\/style>/gi, "<\\/style>");
+      const styleBlock = `<style data-source="${escapeHtml(item.href)}" data-path="${escapeHtml(item.path)}">\n${safeCss}\n</style>`;
+      html = html.split(item.fullTag).join(styleBlock);
     }
 
-    // 2. Resolve and inline local scripts (<script src="..."></script>)
+    // 2. Resolve and replace local scripts with Blob URLs (<script src="...">)
     const scriptRegex = /<script\s+([^>]*?)>(?:[\s\S]*?<\/script>|)/gi;
-    const scriptsToReplace = [];
+    const scriptsToProcess = [];
     while ((match = scriptRegex.exec(html)) !== null) {
       const fullTag = match[0];
       const attrs = match[1];
       const srcMatch = attrs.match(/src=["']([^"']+)["']/i);
       if (srcMatch) {
         const src = srcMatch[1];
-        const resolved = resolveWorkspacePath(src, filename);
-        const file = findWorkspaceFile(resolved);
-        if (file) {
-          const cleanAttrs = attrs.replace(/\s*src=["'][^"']*["']/i, "");
-          scriptsToReplace.push({ fullTag, src, path: file.path, content: file.content, cleanAttrs });
-        }
-      }
-    }
-
-    for (const item of scriptsToReplace) {
-      const scriptBlock = `<script data-source="${escapeHtml(item.src)}" data-path="${escapeHtml(item.path)}"${item.cleanAttrs}>\n${item.content}\n</script>`;
-      html = html.replace(item.fullTag, scriptBlock);
-    }
-
-    // 3. Resolve images and icons from SVG or file handles
-    const assetRegex = /<(img|link)\s+([^>]*?)>/gi;
-    const assetsToReplace = [];
-    while ((match = assetRegex.exec(html)) !== null) {
-      const fullTag = match[0];
-      const tag = match[1].toLowerCase();
-      const attrs = match[2];
-      const attrName = tag === "link" ? "href" : "src";
-      const regex = new RegExp(`${attrName}=["']([^"']+)["']`, "i");
-      const attrMatch = attrs.match(regex);
-      if (attrMatch) {
-        const ref = attrMatch[1];
-        const resolved = resolveWorkspacePath(ref, filename);
-        if (resolved) {
+        if (!src.startsWith("http://") && !src.startsWith("https://") && !src.startsWith("//") && !src.startsWith("data:") && !src.startsWith("blob:")) {
+          const cleanSrc = src.split(/[?#]/)[0];
+          const resolved = resolveWorkspacePath(cleanSrc, filename);
           const file = findWorkspaceFile(resolved);
-          if (file && file.path.endsWith(".svg")) {
-            const svgData = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(file.content);
-            const newTag = fullTag.replace(regex, `${attrName}="${svgData}"`);
-            assetsToReplace.push({ fullTag, newTag });
-          } else if (state.fileHandles && state.fileHandles.has(resolved)) {
-            try {
-              const h = state.fileHandles.get(resolved);
-              const f = await h.getFile();
-              const bUrl = URL.createObjectURL(f);
-              const newTag = fullTag.replace(regex, `${attrName}="${bUrl}"`);
-              assetsToReplace.push({ fullTag, newTag });
-            } catch (e) {}
+          if (file) {
+            scriptsToProcess.push({ fullTag, src, path: file.path, content: file.content });
           }
         }
       }
     }
 
-    for (const item of assetsToReplace) {
-      html = html.replace(item.fullTag, item.newTag);
+    for (const item of scriptsToProcess) {
+      const jsBlob = new Blob([item.content], { type: "application/javascript" });
+      const jsBlobUrl = URL.createObjectURL(jsBlob);
+      state.activePreviewBlobs.push(jsBlobUrl);
+      const newTag = item.fullTag.replace(/src=["'][^"']+["']/i, `src="${jsBlobUrl}" data-original-src="${escapeHtml(item.src)}"`);
+      html = html.split(item.fullTag).join(newTag);
     }
 
-    // 4. Virtual file map for fetch & XMLHttpRequest interception
-    const virtualFiles = {};
-    for (const [k, v] of Object.entries(state.files)) {
-      if (typeof v === "string") {
-        virtualFiles[k] = v;
-        if (k.startsWith("/")) virtualFiles[k.slice(1)] = v;
-        if (currentDir && k.startsWith(currentDir + "/")) {
-          virtualFiles[k.slice(currentDir.length + 1)] = v;
-        }
-        const baseName = k.split("/").pop();
-        if (k.endsWith(".json") || k.endsWith(".config.json") || k.endsWith(".manifest") || k.endsWith(".xml")) {
-          virtualFiles[baseName] = v;
-          virtualFiles["./" + baseName] = v;
-          virtualFiles["../" + baseName] = v;
-          virtualFiles["../../" + baseName] = v;
+    // 3. Resolve local images & icons from SVG or file handles
+    const assetRegex = /<(img|link)\s+([^>]*?)>/gi;
+    const assetsToProcess = [];
+    while ((match = assetRegex.exec(html)) !== null) {
+      const fullTag = match[0];
+      const tag = match[1].toLowerCase();
+      const attrs = match[2];
+      const attrName = tag === "link" ? "href" : "src";
+      if (tag === "link" && /rel=["'](?:stylesheet)["']/i.test(attrs)) continue;
+      const regex = new RegExp(`${attrName}=["']([^"']+)["']`, "i");
+      const attrMatch = attrs.match(regex);
+      if (attrMatch) {
+        const ref = attrMatch[1];
+        if (!ref.startsWith("http://") && !ref.startsWith("https://") && !ref.startsWith("//") && !ref.startsWith("data:") && !ref.startsWith("blob:") && !ref.startsWith("#")) {
+          const cleanRef = ref.split(/[?#]/)[0];
+          const resolved = resolveWorkspacePath(cleanRef, filename);
+          if (resolved) {
+            const file = findWorkspaceFile(resolved);
+            if (file && file.path.endsWith(".svg")) {
+              const svgData = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(file.content);
+              const newTag = fullTag.replace(regex, `${attrName}="${svgData}"`);
+              assetsToProcess.push({ fullTag, newTag });
+            } else if (state.fileHandles && state.fileHandles.has(resolved)) {
+              try {
+                const h = state.fileHandles.get(resolved);
+                const f = await h.getFile();
+                const bUrl = URL.createObjectURL(f);
+                state.activePreviewBlobs.push(bUrl);
+                const newTag = fullTag.replace(regex, `${attrName}="${bUrl}"`);
+                assetsToProcess.push({ fullTag, newTag });
+              } catch (e) {}
+            } else if (siteBaseUrl) {
+              const newTag = fullTag.replace(regex, `${attrName}="${siteBaseUrl}${resolved}"`);
+              assetsToProcess.push({ fullTag, newTag });
+            }
+          }
         }
       }
     }
 
-    // 5. Virtual Server runtime script
-    const virtualServerScript = `
-<script id="__vsc_virtual_server_runtime__">
+    for (const item of assetsToProcess) {
+      html = html.split(item.fullTag).join(item.newTag);
+    }
+
+    // 4. Lightweight runtime script for fetch/XHR proxy and navigation
+    const virtualRuntimeScript = `
+<script id="__vsc_preview_runtime__">
 (function() {
   const CURRENT_FILE = ${JSON.stringify(filename)};
-  const VIRTUAL_FILES = ${JSON.stringify(virtualFiles)};
-  const SITE_BASE_URL = ${JSON.stringify(siteBaseUrl)};
+  const host = (window.parent && window.parent !== window) ? window.parent : (window.opener || null);
 
-  function getMime(path) {
-    const p = (path || '').toLowerCase().split('?')[0];
-    if (p.endsWith('.json')) return 'application/json';
-    if (p.endsWith('.js')) return 'application/javascript';
-    if (p.endsWith('.css')) return 'text/css';
-    if (p.endsWith('.html') || p.endsWith('.htm')) return 'text/html';
-    if (p.endsWith('.svg')) return 'image/svg+xml';
-    if (p.endsWith('.xml') || p.endsWith('.webmanifest')) return 'application/xml';
-    if (p.endsWith('.txt') || p.endsWith('.md')) return 'text/plain';
-    return 'application/octet-stream';
-  }
-
-  function resolveVirtualPath(url) {
-    if (!url || typeof url !== 'string') return null;
-    let clean = url.split(/[?#]/)[0];
-    if (clean.startsWith('http://') || clean.startsWith('https://') || clean.startsWith('//')) {
-      if (SITE_BASE_URL && clean.startsWith(SITE_BASE_URL)) {
-        clean = clean.slice(SITE_BASE_URL.length);
-      } else {
-        return null;
-      }
-    }
-    clean = clean.replace(/^\\/+/, '');
-    if (VIRTUAL_FILES[clean] !== undefined) return clean;
-    if (VIRTUAL_FILES['./' + clean] !== undefined) return './' + clean;
-
-    const parts = clean.split('/');
-    const resolved = [];
-    for (const part of parts) {
-      if (!part || part === '.') continue;
-      if (part === '..') {
-        if (resolved.length) resolved.pop();
-      } else {
-        resolved.push(part);
-      }
-    }
-    const norm = resolved.join('/');
-    if (VIRTUAL_FILES[norm] !== undefined) return norm;
-
-    const base = clean.split('/').pop();
-    if (VIRTUAL_FILES[base] !== undefined) return base;
-
-    return null;
-  }
-
-  // Intercept window.fetch for virtual workspace files
+  // Intercept window.fetch to request files from host workbench state
   const origFetch = window.fetch;
   window.fetch = async function(input, init) {
     let url = typeof input === 'string' ? input : (input && input.url ? input.url : '');
-    const virtualKey = resolveVirtualPath(url);
-    if (virtualKey !== null && VIRTUAL_FILES[virtualKey] !== undefined) {
-      const content = VIRTUAL_FILES[virtualKey];
-      return new Response(content, {
-        status: 200,
-        statusText: 'OK',
-        headers: new Headers({
-          'Content-Type': getMime(virtualKey),
-          'X-Virtual-Server': 'VSCode-Tools'
-        })
-      });
+    if (url && !url.startsWith('http://') && !url.startsWith('https://') && !url.startsWith('//') && !url.startsWith('data:') && !url.startsWith('blob:')) {
+      try {
+        if (host && host.__vsc_getVirtualFile) {
+          const vf = host.__vsc_getVirtualFile(url, CURRENT_FILE);
+          if (vf) {
+            return new Response(vf.content, {
+              status: 200,
+              statusText: 'OK',
+              headers: new Headers({
+                'Content-Type': vf.mime || 'application/json',
+                'X-Virtual-Server': 'VSCode-Tools'
+              })
+            });
+          }
+        }
+      } catch (e) {}
     }
     return origFetch.apply(this, arguments);
   };
@@ -3842,19 +3858,24 @@ Integrated Web Developer Workbench:
     };
     const origSend = xhr.send;
     xhr.send = function() {
-      const virtualKey = resolveVirtualPath(targetUrl);
-      if (virtualKey !== null && VIRTUAL_FILES[virtualKey] !== undefined) {
-        const content = VIRTUAL_FILES[virtualKey];
-        Object.defineProperty(xhr, 'status', { value: 200, writable: true });
-        Object.defineProperty(xhr, 'statusText', { value: 'OK', writable: true });
-        Object.defineProperty(xhr, 'responseText', { value: content, writable: true });
-        Object.defineProperty(xhr, 'response', { value: content, writable: true });
-        Object.defineProperty(xhr, 'readyState', { value: 4, writable: true });
-        setTimeout(() => {
-          if (typeof xhr.onreadystatechange === 'function') xhr.onreadystatechange();
-          if (typeof xhr.onload === 'function') xhr.onload();
-        }, 1);
-        return;
+      if (targetUrl && !targetUrl.startsWith('http://') && !targetUrl.startsWith('https://') && !targetUrl.startsWith('//') && !targetUrl.startsWith('data:') && !targetUrl.startsWith('blob:')) {
+        try {
+          if (host && host.__vsc_getVirtualFile) {
+            const vf = host.__vsc_getVirtualFile(targetUrl, CURRENT_FILE);
+            if (vf) {
+              Object.defineProperty(xhr, 'status', { value: 200, writable: true });
+              Object.defineProperty(xhr, 'statusText', { value: 'OK', writable: true });
+              Object.defineProperty(xhr, 'responseText', { value: vf.content, writable: true });
+              Object.defineProperty(xhr, 'response', { value: vf.content, writable: true });
+              Object.defineProperty(xhr, 'readyState', { value: 4, writable: true });
+              setTimeout(() => {
+                if (typeof xhr.onreadystatechange === 'function') xhr.onreadystatechange();
+                if (typeof xhr.onload === 'function') xhr.onload();
+              }, 1);
+              return;
+            }
+          }
+        } catch (e) {}
       }
       return origSend.apply(this, arguments);
     };
@@ -3866,47 +3887,46 @@ Integrated Web Developer Workbench:
     const a = e.target.closest('a');
     if (!a) return;
     const href = a.getAttribute('href');
-    if (!href || href.startsWith('#') || href.startsWith('javascript:') || href.startsWith('mailto:') || href.startsWith('tel:')) {
-      return;
-    }
-    if (href.startsWith('http://') || href.startsWith('https://') || href.startsWith('//')) {
+    if (!href || href.startsWith('#') || href.startsWith('javascript:') || href.startsWith('mailto:') || href.startsWith('tel:') || href.startsWith('http://') || href.startsWith('https://') || href.startsWith('//')) {
       return;
     }
     e.preventDefault();
     e.stopPropagation();
-    window.parent.postMessage({
-      type: 'VSC_PREVIEW_NAVIGATE',
-      href: href,
-      fromFile: CURRENT_FILE
-    }, '*');
+    try {
+      if (host) {
+        host.postMessage({ type: 'VSC_PREVIEW_NAVIGATE', href: href, fromFile: CURRENT_FILE }, '*');
+      }
+    } catch(err) {}
   }, true);
 
   // Pipe preview console logs to parent workbench terminal
-  const origLog = console.log;
-  const origWarn = console.warn;
-  const origError = console.error;
-  console.log = function(...args) {
-    origLog.apply(console, args);
-    try { window.parent.postMessage({ type: 'VSC_PREVIEW_LOG', level: 'info', msg: args.map(String).join(' ') }, '*'); } catch(e){}
-  };
-  console.warn = function(...args) {
-    origWarn.apply(console, args);
-    try { window.parent.postMessage({ type: 'VSC_PREVIEW_LOG', level: 'warn', msg: args.map(String).join(' ') }, '*'); } catch(e){}
-  };
-  console.error = function(...args) {
-    origError.apply(console, args);
-    try { window.parent.postMessage({ type: 'VSC_PREVIEW_LOG', level: 'error', msg: args.map(String).join(' ') }, '*'); } catch(e){}
-  };
+  if (host) {
+    const origLog = console.log;
+    const origWarn = console.warn;
+    const origError = console.error;
+    console.log = function(...args) {
+      origLog.apply(console, args);
+      try { host.postMessage({ type: 'VSC_PREVIEW_LOG', level: 'info', msg: args.map(String).join(' ') }, '*'); } catch(e){}
+    };
+    console.warn = function(...args) {
+      origWarn.apply(console, args);
+      try { host.postMessage({ type: 'VSC_PREVIEW_LOG', level: 'warn', msg: args.map(String).join(' ') }, '*'); } catch(e){}
+    };
+    console.error = function(...args) {
+      origError.apply(console, args);
+      try { host.postMessage({ type: 'VSC_PREVIEW_LOG', level: 'error', msg: args.map(String).join(' ') }, '*'); } catch(e){}
+    };
+  }
 })();
 </script>
 `;
 
     if (html.includes("<head>")) {
-      html = html.replace("<head>", `<head>\n${virtualServerScript}`);
+      html = html.replace("<head>", `<head>\n${virtualRuntimeScript}`);
     } else if (html.includes("<html>")) {
-      html = html.replace("<html>", `<html>\n<head>${virtualServerScript}</head>`);
+      html = html.replace("<html>", `<html>\n<head>${virtualRuntimeScript}</head>`);
     } else {
-      html = `${virtualServerScript}\n${html}`;
+      html = `${virtualRuntimeScript}\n${html}`;
     }
 
     return html;
@@ -3944,6 +3964,16 @@ Integrated Web Developer Workbench:
       content = await buildVirtualWebsite(resolvedTarget);
     }
 
+    // Revoke previous preview blobs if any
+    if (state.activePreviewBlobs && state.activePreviewBlobs.length > 0) {
+      for (const u of state.activePreviewBlobs) {
+        try { URL.revokeObjectURL(u); } catch (e) {}
+      }
+      state.activePreviewBlobs = [];
+    } else {
+      state.activePreviewBlobs = [];
+    }
+
     // Revoke previous blob if any
     if (state.servers[port] && state.servers[port].url) {
       try { URL.revokeObjectURL(state.servers[port].url); } catch (e) {}
@@ -3970,17 +4000,15 @@ Integrated Web Developer Workbench:
   Serving:   <b style="color:var(--vsc-turquoise)">${resolvedTarget}</b> (${content.length} bytes bundled)
   Local URL: <a href="${blobUrl}" target="_blank" style="color:var(--vsc-turquoise);text-decoration:underline">${displayUrl}</a>
   Status:    <span style="color:#98c379">● Active</span>
-  <span class="vsc-term-dim">Live virtual server active with inlined styles, scripts &amp; dynamic fetch proxy.</span>
+  <span class="vsc-term-dim">Live virtual server active with inlined styles, blob scripts &amp; dynamic fetch proxy.</span>
 `);
 
     // Open In-Workbench Live Preview Pane
     if (el.livePreview && el.previewFrame) {
       el.livePreview.classList.remove("hidden");
       if (el.workspaceArea) el.workspaceArea.classList.add("preview-active");
-      el.previewFrame.srcdoc = content;
-      try {
-        el.previewFrame.src = blobUrl;
-      } catch (e) {}
+      el.previewFrame.removeAttribute("srcdoc");
+      el.previewFrame.src = blobUrl;
       el.previewFrame.dataset.blobUrl = blobUrl;
       if (el.previewUrlText) el.previewUrlText.textContent = displayUrl;
     }
