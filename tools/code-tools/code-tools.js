@@ -9,118 +9,6 @@
 (function () {
   "use strict";
 
-  // --- INITIAL VIRTUAL WORKSPACE FILES ---
-  const DEFAULT_FILES = {
-    "scratchpad.js": `// Scratchpad — Test JavaScript snippets & algorithms directly.
-// Click '▶ Run' above or type 'run' in the terminal below!
-
-function calculateBandwidth(transfers) {
-  const totalBytes = transfers.reduce((sum, t) => sum + t.bytes, 0);
-  const totalSecs = transfers.reduce((sum, t) => sum + t.durationSec, 0);
-  const mbps = (totalBytes * 8) / (totalSecs * 1_000_000);
-  return {
-    transfersCount: transfers.length,
-    totalMB: (totalBytes / (1024 * 1024)).toFixed(2) + " MB",
-    avgThroughput: mbps.toFixed(2) + " Mbps"
-  };
-}
-
-const sampleData = [
-  { file: "payload.bin", bytes: 42_500_000, durationSec: 3.2 },
-  { file: "bundle.js", bytes: 1_250_000, durationSec: 0.15 },
-  { file: "telemetry.json", bytes: 850_000, durationSec: 0.08 }
-];
-
-console.log("=== BANDWIDTH CALCULATION ===");
-console.log(calculateBandwidth(sampleData));
-`,
-    "payload.json": `{
-  "api": "v2/telemetry",
-  "client": {
-    "agent": "xCONFLiCTiONx-VSCodeWorkbench",
-    "version": "4.2.0",
-    "environment": "production"
-  },
-  "metrics": {
-    "latencyMs": 14.8,
-    "uptime": 99.998,
-    "activeTunnels": [
-      { "id": "tun-01", "proto": "wireguard", "status": "active" },
-      { "id": "tun-02", "proto": "tls-sni", "status": "standby" }
-    ]
-  }
-}`,
-    "notes.md": `# Quick Engineer Notes
-- [x] Run DNS probe on edge cluster: \`dns cloudflare.com\`
-- [x] Decode JWT auth token: \`jwt <token>\`
-- [ ] Test API latency: \`curl https://httpbin.org/get\`
-- [ ] Verify regex match groups: \`regex "([a-z]+)-(\\d+)" "dev-402"\`
-- [ ] Calculate byte conversion: \`calc 1024 * 1024 * 450 bytes in gb\`
-`,
-    "api-test.http": `### Sample Live API Test
-GET https://httpbin.org/get
-Accept: application/json
-User-Agent: VSCodeTools/4.2
-`,
-    "mypage.html": `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Custom Served Page</title>
-  <!-- Link directly to portfolio css and custom styles -->
-  <link rel="stylesheet" href="../../css/main.css" />
-  <link rel="stylesheet" href="./code-tools.css" />
-  <style>
-    body {
-      background: #0f172a;
-      color: #f8fafc;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      padding: 2.5rem 1.5rem;
-      max-width: 800px;
-      margin: 0 auto;
-    }
-    .card {
-      background: rgba(30, 41, 59, 0.8);
-      border: 1px solid rgba(55, 145, 183, 0.3);
-      border-radius: 8px;
-      padding: 2rem;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-    }
-    .badge {
-      display: inline-block;
-      background: rgba(55, 145, 183, 0.15);
-      color: #3791B7;
-      font-weight: 700;
-      padding: 0.3rem 0.75rem;
-      border-radius: 9999px;
-      font-size: 0.85rem;
-      margin-bottom: 1rem;
-    }
-    button {
-      background: #3791B7;
-      color: #000;
-      font-weight: 700;
-      border: none;
-      padding: 0.6rem 1.25rem;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-  </style>
-</head>
-<body>
-  <div class="card">
-    <span class="badge">VIRTUAL SERVER: LIVE IN CHROME</span>
-    <h1 style="margin-top:0">Welcome to My Custom Page!</h1>
-    <p>This page was authored inside the VS Code Web Terminal and is being served live right in Chrome.</p>
-    <p>Connected to root portfolio styling &amp; client-side engine.</p>
-    <button onclick="console.log('Virtual Web Server connected!')">Test Interaction</button>
-  </div>
-</body>
-</html>
-`
-  };
-
   // --- COOKIE & PERSISTENT STORAGE HELPERS ---
   function getCookie(name) {
     const match = document.cookie.match(new RegExp("(^|;\\s*)(" + name + ")=([^;]*)"));
@@ -137,7 +25,7 @@ User-Agent: VSCodeTools/4.2
     files: {},
     fileShas: {}, // { filename: sha }
     modifiedFiles: new Set(),
-    activeFile: "scratchpad.js",
+    activeFile: null,
     openTabs: [], // Ordered list of open tab filenames
     commandHistory: [],
     historyIndex: -1,
@@ -159,26 +47,35 @@ User-Agent: VSCodeTools/4.2
     fileHandles: new Map()
   };
 
-  // Load persisted files or initialize defaults
+  // Load persisted user workspace or initialize clean empty workspace
   try {
     const saved = localStorage.getItem("vsc_workspace_files_v1");
     if (saved) {
-      state.files = JSON.parse(saved);
-      if (!state.files["mypage.html"]) {
-        state.files["mypage.html"] = DEFAULT_FILES["mypage.html"];
+      const parsed = JSON.parse(saved);
+      // Clean up old auto-seeded mock default files if user hasn't explicitly customized them
+      const oldDefaultKeys = ["scratchpad.js", "payload.json", "notes.md", "api-test.http", "mypage.html"];
+      const savedKeys = Object.keys(parsed);
+      const isOnlyOldDefaults = savedKeys.length > 0 &&
+        savedKeys.length <= oldDefaultKeys.length &&
+        savedKeys.every(k => oldDefaultKeys.includes(k)) &&
+        !localStorage.getItem("vsc_user_custom_workspace");
+
+      if (isOnlyOldDefaults) {
+        state.files = {};
+        localStorage.removeItem("vsc_workspace_files_v1");
+      } else {
+        state.files = parsed;
       }
     } else {
-      state.files = Object.assign({}, DEFAULT_FILES);
+      state.files = {};
     }
   } catch (e) {
-    state.files = Object.assign({}, DEFAULT_FILES);
+    state.files = {};
   }
 
   // Initialize open editor tabs
-  state.openTabs = Object.keys(state.files);
-  if (!state.openTabs.includes(state.activeFile)) {
-    state.activeFile = state.openTabs[0] || null;
-  }
+  state.openTabs = Object.keys(state.files).slice(0, 5);
+  state.activeFile = state.openTabs[0] || null;
 
   // --- DOM ELEMENT REFERENCES ---
   const el = {
@@ -188,6 +85,9 @@ User-Agent: VSCodeTools/4.2
     tabsBar: document.getElementById("vsc-tabs-bar"),
     breadcrumbsFile: document.getElementById("vsc-bread-file"),
     contextMenu: document.getElementById("vsc-context-menu"),
+    importFileInput: document.getElementById("vsc-import-file-input"),
+    btnImportBanner: document.getElementById("vsc-btn-import-banner"),
+    btnNewBanner: document.getElementById("vsc-btn-new-banner"),
     sashResizer: document.getElementById("vsc-sash-resizer"),
     terminalPanel: document.getElementById("vsc-terminal-panel"),
     termBody: document.getElementById("vsc-term-body"),
@@ -473,6 +373,7 @@ User-Agent: VSCodeTools/4.2
   // --- SAVE WORKSPACE HELPER ---
   function saveWorkspace() {
     try {
+      localStorage.setItem("vsc_user_custom_workspace", "1");
       localStorage.setItem("vsc_workspace_files_v1", JSON.stringify(state.files));
     } catch (e) {
       console.warn("Storage quota exceeded", e);
@@ -500,6 +401,22 @@ User-Agent: VSCodeTools/4.2
   }
 
   function openFile(filename) {
+    if (!filename) {
+      state.activeFile = null;
+      if (el.codeTextarea) {
+        el.codeTextarea.value = "";
+        el.codeTextarea.placeholder = "No open editor.\n\n• Press Ctrl+N to create a new file\n• Press Ctrl+O to open a local project folder\n• Press Ctrl+P for Command Palette\n• File > Import Workspace (JSON) to load an exported workspace";
+        el.codeTextarea.disabled = true;
+      }
+      if (el.breadcrumbsFile) {
+        el.breadcrumbsFile.textContent = "No file open";
+      }
+      updateGutter();
+      renderTabs();
+      renderSidebarLists();
+      return;
+    }
+
     if (!state.files[filename]) {
       state.files[filename] = `// ${filename}\n`;
       saveWorkspace();
@@ -1229,6 +1146,8 @@ User-Agent: VSCodeTools/4.2
     { id: "file_save", label: "File: Save Current File (Direct to Disk)", exec: () => saveCurrentFile() },
     { id: "file_save_all", label: "File: Save All Files", exec: () => { saveWorkspace(); termPrint("All files saved to browser storage.", "vsc-term-success"); } },
     { id: "file_export", label: "File: Export Workspace as JSON", exec: () => exportWorkspaceJSON() },
+    { id: "file_import", label: "File: Import Workspace from JSON", exec: () => triggerWorkspaceImport() },
+    { id: "file_clear_workspace", label: "File: Clear Workspace (Start Clean)", exec: () => clearWorkspace() },
     { id: "github_connect", label: "GitHub: Connect Repository & Personal Access Token", exec: () => openGitHubModal() },
     { id: "github_push", label: "Git: Commit and Push Changes to GitHub", exec: () => { if (el.btnGitPush) el.btnGitPush.click(); } },
     { id: "edit_find", label: "Edit: Find in Files", exec: () => { switchSidebarView("search"); if (el.searchQueryInput) el.searchQueryInput.focus(); } },
@@ -1288,7 +1207,126 @@ User-Agent: VSCodeTools/4.2
     document.body.appendChild(dlAnchor);
     dlAnchor.click();
     dlAnchor.remove();
+    showMessage("success", "Export Workspace", "Workspace exported as JSON file download.");
     termPrint("Workspace exported as JSON file download.", "vsc-term-success");
+  }
+
+  function importWorkspaceJSON(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          let filesToImport = {};
+
+          if (parsed && typeof parsed === "object") {
+            if (parsed.files && typeof parsed.files === "object") {
+              filesToImport = parsed.files;
+            } else if (parsed.workspace && typeof parsed.workspace === "object") {
+              filesToImport = parsed.workspace;
+            } else {
+              filesToImport = parsed;
+            }
+          }
+
+          const validFiles = {};
+          for (const [key, val] of Object.entries(filesToImport)) {
+            if (typeof val === "string") {
+              validFiles[key] = val;
+            } else if (typeof val === "object" && val !== null) {
+              validFiles[key] = JSON.stringify(val, null, 2);
+            }
+          }
+
+          const count = Object.keys(validFiles).length;
+          if (count === 0) {
+            showMessage("warning", "Import Workspace", "No valid files found in JSON file.");
+            termPrint("No valid files found in JSON.", "vsc-term-warn");
+            return resolve(false);
+          }
+
+          state.files = validFiles;
+          saveWorkspace();
+          state.modifiedFiles.clear();
+
+          // Set open tabs to first few files
+          const allKeys = Object.keys(state.files);
+          state.openTabs = allKeys.slice(0, 5);
+
+          const priority = ["index.html", "README.md", "package.json", "main.js"];
+          const toOpen = priority.find(p => state.files[p]) || allKeys[0];
+
+          renderSidebarLists();
+          renderTabs();
+          if (toOpen) {
+            openFile(toOpen);
+          } else {
+            renderTabs();
+          }
+
+          updateGitStatus();
+          refreshProblems();
+          updateWorkspaceUI();
+
+          const fName = file.name || "JSON backup";
+          showMessage("success", "Workspace Imported", `Successfully imported ${count} file(s) from "${fName}".`);
+          termPrint(`Workspace imported: ${count} file(s) loaded from '${fName}'.`, "vsc-term-success");
+          resolve(true);
+        } catch (err) {
+          showMessage("error", "Import Error", `Failed to parse workspace JSON: ${err.message}`);
+          termPrint(`Import error: ${err.message}`, "vsc-term-error");
+          reject(err);
+        }
+      };
+      reader.onerror = (err) => {
+        showMessage("error", "Read Error", "Could not read selected file.");
+        reject(err);
+      };
+      reader.readAsText(file);
+    });
+  }
+
+  function triggerWorkspaceImport() {
+    let input = document.getElementById("vsc-import-file-input");
+    if (!input) {
+      input = document.createElement("input");
+      input.type = "file";
+      input.id = "vsc-import-file-input";
+      input.accept = ".json,application/json";
+      input.style.display = "none";
+      document.body.appendChild(input);
+    }
+    input.onchange = (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (file) {
+        importWorkspaceJSON(file);
+      }
+      input.value = "";
+    };
+    input.click();
+  }
+
+  function clearWorkspace() {
+    state.files = {};
+    state.openTabs = [];
+    state.activeFile = null;
+    state.modifiedFiles.clear();
+    state.isLocalProject = false;
+    state.projectName = "";
+    localStorage.removeItem("vsc_workspace_files_v1");
+    localStorage.removeItem("vsc_user_custom_workspace");
+    if (el.codeTextarea) {
+      el.codeTextarea.value = "";
+      el.codeTextarea.placeholder = "No open editor.\n\n• Press Ctrl+N to create a new file\n• Press Ctrl+O to open a local project folder\n• Press Ctrl+P for Command Palette\n• File > Import Workspace (JSON) to load an exported workspace";
+      el.codeTextarea.disabled = true;
+    }
+    if (el.breadcrumbsFile) el.breadcrumbsFile.textContent = "No file open";
+    updateGutter();
+    renderTabs();
+    renderSidebarLists();
+    updateWorkspaceUI();
+    showMessage("info", "Workspace Cleared", "Workspace reset to a clean empty state.");
+    termPrint("Workspace cleared. Ready for new files or workspace import.", "vsc-term-info");
   }
 
   // --- MULTI-VIEW & TABS CONTROLLERS ---
@@ -1573,6 +1611,8 @@ User-Agent: VSCodeTools/4.2
       termPrint("All workspace files saved.", "vsc-term-success");
     });
     bindItem("vsc-item-export-zip", exportWorkspaceJSON);
+    bindItem("vsc-item-import-json", triggerWorkspaceImport);
+    bindItem("vsc-item-clear-workspace", clearWorkspace);
     bindItem("vsc-item-close-file", () => { if (state.activeFile) closeTab(state.activeFile); });
     bindItem("vsc-item-close-all", () => closeAllTabs());
 
@@ -2597,6 +2637,52 @@ Length: ${hex.length * 4} bits (${hex.length} hex chars)
       }
     },
 
+    workspace: {
+      desc: "Manage virtual workspace (export, import, clear, status)",
+      usage: "workspace <export|import|clear|status>",
+      exec: async (args) => {
+        const sub = (args[0] || "status").toLowerCase();
+        if (sub === "export") {
+          exportWorkspaceJSON();
+        } else if (sub === "import") {
+          termPrint("Opening file picker to import workspace JSON...", "vsc-term-info");
+          triggerWorkspaceImport();
+        } else if (sub === "clear" || sub === "clean") {
+          clearWorkspace();
+        } else {
+          const count = Object.keys(state.files).length;
+          const name = getWorkspaceName();
+          termPrintHTML(`
+<span class="vsc-term-info">Workspace: <b>${name}</b></span>
+Total files: ${count}
+Open tabs: ${state.openTabs.length}
+Mode: ${state.isLocalProject ? "Local Project (Disk)" : state.githubRepo ? "GitHub Synced" : "In-Browser Storage"}
+Subcommands:
+  workspace export   — Download workspace as JSON backup
+  workspace import   — Open file picker to import workspace JSON
+  workspace clear    — Reset to clean empty workspace
+`);
+        }
+      }
+    },
+
+    import: {
+      desc: "Import workspace from JSON file backup",
+      usage: "import",
+      exec: async () => {
+        termPrint("Opening file picker to import workspace JSON...", "vsc-term-info");
+        triggerWorkspaceImport();
+      }
+    },
+
+    export: {
+      desc: "Export workspace as JSON file download",
+      usage: "export",
+      exec: async () => {
+        exportWorkspaceJSON();
+      }
+    },
+
     sysinfo: {
       desc: "Full browser, operating system, hardware and environment telemetry dump",
       usage: "sysinfo",
@@ -3512,7 +3598,16 @@ Length: ${hex.length * 4} bits (${hex.length} hex chars)
     if (el.searchBar) el.searchBar.addEventListener("click", openCommandPalette);
     if (el.btnOpenFolder) el.btnOpenFolder.addEventListener("click", openLocalProjectFolder);
     if (el.btnOpenProjectBanner) el.btnOpenProjectBanner.addEventListener("click", openLocalProjectFolder);
+    if (el.btnImportBanner) el.btnImportBanner.addEventListener("click", triggerWorkspaceImport);
+    if (el.btnNewBanner) el.btnNewBanner.addEventListener("click", createNewFilePrompt);
     if (el.folderInput) el.folderInput.addEventListener("change", handleFileInputFolder);
+    if (el.importFileInput) {
+      el.importFileInput.addEventListener("change", (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (file) importWorkspaceJSON(file);
+        e.target.value = "";
+      });
+    }
     if (el.btnNewFile) {
       el.btnNewFile.addEventListener("click", async () => {
         const name = await promptInWorkbench("New File", "untitled.js", "filename.js");
@@ -3976,6 +4071,10 @@ Length: ${hex.length * 4} bits (${hex.length} hex chars)
           exec: () => createNewFilePrompt()
         },
         {
+          label: "Import Workspace (JSON)...",
+          exec: () => triggerWorkspaceImport()
+        },
+        {
           label: "Close All Tabs",
           disabled: state.openTabs.length === 0,
           exec: () => closeAllTabs()
@@ -4114,6 +4213,10 @@ Length: ${hex.length * 4} bits (${hex.length} hex chars)
           shortcut: "Ctrl+O",
           exec: () => openLocalProjectFolder()
         },
+        {
+          label: "Import Workspace (JSON)...",
+          exec: () => triggerWorkspaceImport()
+        },
         { separator: true },
         {
           label: "Refresh Explorer",
@@ -4122,6 +4225,11 @@ Length: ${hex.length * 4} bits (${hex.length} hex chars)
             renderTabs();
             showMessage("info", "Explorer", "Refreshed workspace file tree");
           }
+        },
+        {
+          label: "Clear Workspace",
+          disabled: Object.keys(state.files).length === 0,
+          exec: () => clearWorkspace()
         },
         {
           label: "Close All Tabs",

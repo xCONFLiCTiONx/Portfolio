@@ -61,6 +61,8 @@
                 <div class="vsc-dropdown-item" id="vsc-item-save-file"><span>Save</span><kbd>Ctrl+S</kbd></div>
                 <div class="vsc-dropdown-item" id="vsc-item-save-all"><span>Save All</span></div>
                 <div class="vsc-dropdown-item" id="vsc-item-export-zip"><span>Export Workspace (JSON)</span></div>
+                <div class="vsc-dropdown-item" id="vsc-item-import-json"><span>Import Workspace (JSON)...</span></div>
+                <div class="vsc-dropdown-item" id="vsc-item-clear-workspace"><span>Clear Workspace</span></div>
                 <div class="vsc-dropdown-divider"></div>
                 <div class="vsc-dropdown-item" id="vsc-item-close-file"><span>Close Editor</span><kbd>Ctrl+W</kbd></div>
                 <div class="vsc-dropdown-item" id="vsc-item-close-all"><span>Close All Editors</span><kbd>Ctrl+K W</kbd></div>
@@ -207,13 +209,22 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
                 <span id="vsc-workspace-label">workspace</span>
               </div>
-              <div id="vsc-open-project-container" style="padding:6px 10px">
+              <div id="vsc-open-project-container" style="padding:6px 10px;display:flex;flex-direction:column;gap:6px">
                 <button class="vsc-editor-btn" id="vsc-btn-open-project-banner" style="width:100%;display:flex;align-items:center;justify-content:center;gap:6px;background:rgba(55,145,183,0.1);border:1px solid rgba(55,145,183,0.35);color:var(--vsc-turquoise);font-weight:600;padding:6px">
-                  <span>📂</span><span>Open Project</span>
+                  <span>📂</span><span>Open Local Project</span>
                 </button>
+                <div style="display:flex;gap:6px">
+                  <button class="vsc-editor-btn" id="vsc-btn-import-banner" style="flex:1;display:flex;align-items:center;justify-content:center;gap:4px;padding:5px;font-size:11px" title="Import Workspace JSON backup">
+                    <span>📥</span><span>Import</span>
+                  </button>
+                  <button class="vsc-editor-btn" id="vsc-btn-new-banner" style="flex:1;display:flex;align-items:center;justify-content:center;gap:4px;padding:5px;font-size:11px" title="Create New File (Ctrl+N)">
+                    <span>➕</span><span>New File</span>
+                  </button>
+                </div>
               </div>
               <ul class="vsc-tree" id="vsc-workspace-files-list"></ul>
               <input type="file" id="vsc-folder-input" webkitdirectory directory multiple style="display:none" />
+              <input type="file" id="vsc-import-file-input" accept=".json,application/json" style="display:none" />
 
               <!-- DAILY CLI UTILITIES -->
               <div class="vsc-section-title" style="margin-top:12px">

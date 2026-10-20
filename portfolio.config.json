@@ -232,8 +232,8 @@
     },
     {
       "id": "code-tools",
-      "name": "VS Code Tools",
-      "description": "Visual Studio Code Web IDE and daily CLI developer workbench — features a resizable maximizable terminal, live HTTP/curl client, JWT inspector, DNS DoH resolver, crypto hasher, and JavaScript scratchpad.",
+      "name": "Code Tools",
+      "description": "Code Web IDE and daily CLI developer workbench — features a resizable maximizable terminal, live HTTP/curl client, JWT inspector, DNS DoH resolver, crypto hasher, and JavaScript scratchpad.",
       "path": "tools/code-tools/",
       "icon": "im im-tools",
       "category": "Developer Workbench",
