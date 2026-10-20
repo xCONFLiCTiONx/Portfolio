@@ -138,6 +138,7 @@ User-Agent: VSCodeTools/4.2
     fileShas: {}, // { filename: sha }
     modifiedFiles: new Set(),
     activeFile: "scratchpad.js",
+    openTabs: [], // Ordered list of open tab filenames
     commandHistory: [],
     historyIndex: -1,
     isMaximized: false,
@@ -173,6 +174,12 @@ User-Agent: VSCodeTools/4.2
     state.files = Object.assign({}, DEFAULT_FILES);
   }
 
+  // Initialize open editor tabs
+  state.openTabs = Object.keys(state.files);
+  if (!state.openTabs.includes(state.activeFile)) {
+    state.activeFile = state.openTabs[0] || null;
+  }
+
   // --- DOM ELEMENT REFERENCES ---
   const el = {
     app: document.getElementById("vscode-workbench"),
@@ -180,6 +187,7 @@ User-Agent: VSCodeTools/4.2
     gutter: document.getElementById("vsc-gutter"),
     tabsBar: document.getElementById("vsc-tabs-bar"),
     breadcrumbsFile: document.getElementById("vsc-bread-file"),
+    contextMenu: document.getElementById("vsc-context-menu"),
     sashResizer: document.getElementById("vsc-sash-resizer"),
     terminalPanel: document.getElementById("vsc-terminal-panel"),
     termBody: document.getElementById("vsc-term-body"),
@@ -447,8 +455,13 @@ User-Agent: VSCodeTools/4.2
       state.files[filename] = `// ${filename}\n`;
       saveWorkspace();
     }
+    if (!state.openTabs.includes(filename)) {
+      state.openTabs.push(filename);
+    }
     state.activeFile = filename;
     if (el.codeTextarea) {
+      el.codeTextarea.disabled = false;
+      el.codeTextarea.placeholder = "";
       el.codeTextarea.value = state.files[filename];
       updateGutter();
     }
@@ -462,19 +475,35 @@ User-Agent: VSCodeTools/4.2
   function renderTabs() {
     if (!el.tabsBar) return;
     el.tabsBar.innerHTML = "";
-    Object.keys(state.files).forEach((filename) => {
+    state.openTabs.forEach((filename) => {
       const tab = document.createElement("div");
       tab.className = `vsc-tab ${filename === state.activeFile ? "active" : ""}`;
+      tab.dataset.filename = filename;
 
       const iconSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`;
-      tab.innerHTML = `${iconSvg}<span>${filename}</span><span class="vsc-tab-close" title="Close">✕</span>`;
+      tab.innerHTML = `${iconSvg}<span>${filename}</span><span class="vsc-tab-close" title="Close (Ctrl+W)">✕</span>`;
 
       tab.addEventListener("click", (e) => {
         if (e.target.classList.contains("vsc-tab-close")) {
           e.stopPropagation();
-          closeFile(filename);
+          closeTab(filename);
         } else {
           openFile(filename);
+        }
+      });
+
+      tab.addEventListener("contextmenu", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        showTabContextMenu(e.clientX, e.clientY, filename);
+      });
+
+      // Middle click closes tab
+      tab.addEventListener("auxclick", (e) => {
+        if (e.button === 1) {
+          e.preventDefault();
+          e.stopPropagation();
+          closeTab(filename);
         }
       });
 
@@ -482,15 +511,69 @@ User-Agent: VSCodeTools/4.2
     });
   }
 
-  function closeFile(filename) {
-    const keys = Object.keys(state.files);
-    if (keys.length <= 1) return; // Keep at least one file
-    delete state.files[filename];
-    saveWorkspace();
+  function closeTab(filename) {
+    const idx = state.openTabs.indexOf(filename);
+    if (idx === -1) return;
+    state.openTabs.splice(idx, 1);
     if (state.activeFile === filename) {
-      state.activeFile = Object.keys(state.files)[0];
+      if (state.openTabs.length > 0) {
+        const nextIdx = Math.min(idx, state.openTabs.length - 1);
+        openFile(state.openTabs[nextIdx]);
+      } else {
+        state.activeFile = null;
+        if (el.codeTextarea) {
+          el.codeTextarea.value = "";
+          el.codeTextarea.placeholder = "No open editor.\nSelect a file from Explorer (Ctrl+B) or open Command Palette (Ctrl+P).";
+          el.codeTextarea.disabled = true;
+        }
+        if (el.breadcrumbsFile) el.breadcrumbsFile.textContent = "No file open";
+        updateGutter();
+        renderTabs();
+        renderSidebarLists();
+      }
+    } else {
+      renderTabs();
+      renderSidebarLists();
     }
-    openFile(state.activeFile);
+  }
+
+  function closeOtherTabs(filename) {
+    if (!state.openTabs.includes(filename)) return;
+    state.openTabs = [filename];
+    openFile(filename);
+    showMessage("info", "Tabs", `Closed other tabs. Active: ${filename}`);
+  }
+
+  function closeTabsToRight(filename) {
+    const idx = state.openTabs.indexOf(filename);
+    if (idx === -1) return;
+    state.openTabs = state.openTabs.slice(0, idx + 1);
+    if (!state.openTabs.includes(state.activeFile)) {
+      openFile(filename);
+    } else {
+      renderTabs();
+      renderSidebarLists();
+    }
+    showMessage("info", "Tabs", `Closed tabs to the right of ${filename}`);
+  }
+
+  function closeAllTabs() {
+    state.openTabs = [];
+    state.activeFile = null;
+    if (el.codeTextarea) {
+      el.codeTextarea.value = "";
+      el.codeTextarea.placeholder = "No open editor.\nSelect a file from Explorer (Ctrl+B) or open Command Palette (Ctrl+P).";
+      el.codeTextarea.disabled = true;
+    }
+    if (el.breadcrumbsFile) el.breadcrumbsFile.textContent = "No file open";
+    updateGutter();
+    renderTabs();
+    renderSidebarLists();
+    showMessage("info", "Tabs", "Closed all editor tabs");
+  }
+
+  function closeFile(filename) {
+    closeTab(filename);
   }
 
   function renderSidebarLists() {
@@ -498,17 +581,46 @@ User-Agent: VSCodeTools/4.2
     el.openEditorsList.innerHTML = "";
     el.workspaceFilesList.innerHTML = "";
 
+    // Open Editors (tabs currently open)
+    state.openTabs.forEach((filename) => {
+      const li = document.createElement("li");
+      li.className = `vsc-tree-item ${filename === state.activeFile ? "active" : ""}`;
+      li.dataset.filename = filename;
+      li.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span style="flex:1">${filename}</span><span class="vsc-tab-close" style="font-size:10px" title="Close">✕</span>`;
+
+      li.addEventListener("click", (e) => {
+        if (e.target.classList.contains("vsc-tab-close")) {
+          e.stopPropagation();
+          closeTab(filename);
+        } else {
+          openFile(filename);
+        }
+      });
+
+      li.addEventListener("contextmenu", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        showTabContextMenu(e.clientX, e.clientY, filename);
+      });
+
+      el.openEditorsList.appendChild(li);
+    });
+
+    // Workspace Files (all files)
     Object.keys(state.files).forEach((filename) => {
       const li = document.createElement("li");
       li.className = `vsc-tree-item ${filename === state.activeFile ? "active" : ""}`;
+      li.dataset.filename = filename;
       li.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>${filename}</span>`;
       li.addEventListener("click", () => openFile(filename));
 
-      el.openEditorsList.appendChild(li);
+      li.addEventListener("contextmenu", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        showExplorerItemContextMenu(e.clientX, e.clientY, filename);
+      });
 
-      const li2 = li.cloneNode(true);
-      li2.addEventListener("click", () => openFile(filename));
-      el.workspaceFilesList.appendChild(li2);
+      el.workspaceFilesList.appendChild(li);
     });
   }
 
@@ -678,6 +790,7 @@ User-Agent: VSCodeTools/4.2
     const priorityFiles = ["index.html", "README.md", "package.json", "portfolio.config.json"];
     const toOpen = priorityFiles.find(p => state.files[p]) || Object.keys(state.files)[0];
     if (toOpen) {
+      state.openTabs = [toOpen];
       openFile(toOpen);
     }
 
@@ -1055,6 +1168,9 @@ User-Agent: VSCodeTools/4.2
   const COMMAND_PALETTE_ITEMS = [
     { id: "view_sidebar", label: "View: Toggle Primary Sidebar", exec: () => { if (el.sidebar) el.sidebar.classList.toggle("collapsed"); if (el.actExplorer) el.actExplorer.classList.toggle("active"); } },
     { id: "view_terminal", label: "View: Toggle Terminal Panel", exec: () => toggleMaximizeTerminal() },
+    { id: "view_close_editor", label: "View: Close Active Editor (Ctrl+W)", exec: () => { if (state.activeFile) closeTab(state.activeFile); } },
+    { id: "view_close_all_editors", label: "View: Close All Editors (Ctrl+K W)", exec: () => closeAllTabs() },
+    { id: "view_close_other_editors", label: "View: Close Other Editors", exec: () => { if (state.activeFile) closeOtherTabs(state.activeFile); } },
     { id: "view_preview", label: "View: Toggle Live Preview", exec: () => { if (el.livePreview) el.livePreview.classList.toggle("hidden"); } },
     { id: "view_fullscreen", label: "View: Toggle Fullscreen", exec: () => { if (el.btnFullscreen) el.btnFullscreen.click(); } },
     { id: "file_new", label: "File: New File", exec: async () => { const name = await promptInWorkbench("New File", "new-file.js", "filename.js"); if (name) openFile(name); } },
@@ -1406,7 +1522,8 @@ User-Agent: VSCodeTools/4.2
       termPrint("All workspace files saved.", "vsc-term-success");
     });
     bindItem("vsc-item-export-zip", exportWorkspaceJSON);
-    bindItem("vsc-item-close-file", () => closeFile(state.activeFile));
+    bindItem("vsc-item-close-file", () => { if (state.activeFile) closeTab(state.activeFile); });
+    bindItem("vsc-item-close-all", () => closeAllTabs());
 
     bindItem("vsc-item-undo", () => {
       if (el.codeTextarea) document.execCommand("undo");
@@ -3669,30 +3786,614 @@ Length: ${hex.length * 4} bits (${hex.length} hex chars)
       });
     }
 
-    // Global Workbench Keyboard Shortcuts
+    // --- CONTEXT MENU ENGINE ---
+    let activeContextMenu = null;
+
+    function hideContextMenu() {
+      const menu = document.getElementById("vsc-context-menu");
+      if (menu) {
+        menu.style.display = "none";
+        menu.innerHTML = "";
+      }
+      activeContextMenu = null;
+    }
+
+    function showContextMenu(x, y, items) {
+      hideContextMenu();
+      const menu = document.getElementById("vsc-context-menu");
+      if (!menu) return;
+
+      items.forEach((item) => {
+        if (item.separator) {
+          const sep = document.createElement("div");
+          sep.className = "vsc-ctx-separator";
+          menu.appendChild(sep);
+          return;
+        }
+
+        const row = document.createElement("div");
+        row.className = `vsc-ctx-item ${item.disabled ? "disabled" : ""}`;
+
+        const label = document.createElement("span");
+        label.className = "vsc-ctx-label";
+        if (item.icon) {
+          label.innerHTML = `${item.icon}<span>${item.label}</span>`;
+        } else {
+          label.textContent = item.label;
+        }
+        row.appendChild(label);
+
+        if (item.shortcut) {
+          const sc = document.createElement("span");
+          sc.className = "vsc-ctx-shortcut";
+          sc.textContent = item.shortcut;
+          row.appendChild(sc);
+        }
+
+        row.addEventListener("click", (e) => {
+          e.stopPropagation();
+          hideContextMenu();
+          if (typeof item.exec === "function" && !item.disabled) {
+            item.exec();
+          }
+        });
+
+        menu.appendChild(row);
+      });
+
+      menu.style.display = "block";
+      menu.style.left = "0px";
+      menu.style.top = "0px";
+
+      const rect = menu.getBoundingClientRect();
+      const winW = window.innerWidth;
+      const winH = window.innerHeight;
+
+      let posX = x;
+      let posY = y;
+
+      if (posX + rect.width > winW - 8) {
+        posX = Math.max(8, winW - rect.width - 8);
+      }
+      if (posY + rect.height > winH - 8) {
+        posY = Math.max(8, winH - rect.height - 8);
+      }
+
+      menu.style.left = `${posX}px`;
+      menu.style.top = `${posY}px`;
+      activeContextMenu = menu;
+    }
+
+    function showTabContextMenu(x, y, filename) {
+      const tabIdx = state.openTabs.indexOf(filename);
+      const hasOthers = state.openTabs.length > 1;
+      const hasToRight = tabIdx >= 0 && tabIdx < state.openTabs.length - 1;
+
+      showContextMenu(x, y, [
+        {
+          label: "Close",
+          shortcut: "Ctrl+W",
+          exec: () => closeTab(filename)
+        },
+        {
+          label: "Close Others",
+          disabled: !hasOthers,
+          exec: () => closeOtherTabs(filename)
+        },
+        {
+          label: "Close to the Right",
+          disabled: !hasToRight,
+          exec: () => closeTabsToRight(filename)
+        },
+        {
+          label: "Close All",
+          shortcut: "Ctrl+K W",
+          exec: () => closeAllTabs()
+        },
+        { separator: true },
+        {
+          label: "Copy Filename",
+          exec: () => {
+            navigator.clipboard?.writeText(filename).catch(() => {});
+            showMessage("success", "Clipboard", `Copied "${filename}" to clipboard`);
+          }
+        },
+        {
+          label: "Copy Relative Path",
+          exec: () => {
+            const relPath = state.isLocalProject ? `${state.projectName}/${filename}` : filename;
+            navigator.clipboard?.writeText(relPath).catch(() => {});
+            showMessage("success", "Clipboard", `Copied path "${relPath}" to clipboard`);
+          }
+        },
+        {
+          label: "Reveal in Explorer",
+          exec: () => {
+            switchSidebarView("explorer");
+            if (el.sidebar && el.sidebar.classList.contains("collapsed")) {
+              el.sidebar.classList.remove("collapsed");
+            }
+          }
+        }
+      ]);
+    }
+
+    function showTabsBarEmptyContextMenu(x, y) {
+      showContextMenu(x, y, [
+        {
+          label: "New File...",
+          shortcut: "Ctrl+N",
+          exec: () => createNewFilePrompt()
+        },
+        {
+          label: "Close All Tabs",
+          disabled: state.openTabs.length === 0,
+          exec: () => closeAllTabs()
+        },
+        { separator: true },
+        {
+          label: "Open Project Folder on E:\\...",
+          shortcut: "Ctrl+O",
+          exec: () => openLocalProjectFolder()
+        }
+      ]);
+    }
+
+    function showEditorContextMenu(x, y) {
+      showContextMenu(x, y, [
+        {
+          label: "Command Palette...",
+          shortcut: "F1",
+          exec: () => openCommandPalette()
+        },
+        { separator: true },
+        {
+          label: "Run Script in Terminal",
+          shortcut: "Ctrl+Enter",
+          disabled: !state.activeFile,
+          exec: () => COMMANDS.run.exec([])
+        },
+        {
+          label: "Serve / Preview Page",
+          disabled: !state.activeFile,
+          exec: () => serveFile(state.activeFile, 3000, false)
+        },
+        {
+          label: "Format Document",
+          shortcut: "Alt+Shift+F",
+          disabled: !state.activeFile,
+          exec: () => {
+            if (el.btnFormat) el.btnFormat.click();
+          }
+        },
+        { separator: true },
+        {
+          label: "Cut",
+          shortcut: "Ctrl+X",
+          disabled: !el.codeTextarea || el.codeTextarea.selectionStart === el.codeTextarea.selectionEnd,
+          exec: () => document.execCommand("cut")
+        },
+        {
+          label: "Copy",
+          shortcut: "Ctrl+C",
+          disabled: !el.codeTextarea || el.codeTextarea.selectionStart === el.codeTextarea.selectionEnd,
+          exec: () => document.execCommand("copy")
+        },
+        {
+          label: "Paste",
+          shortcut: "Ctrl+V",
+          exec: async () => {
+            try {
+              const text = await navigator.clipboard.readText();
+              if (text && el.codeTextarea) {
+                const start = el.codeTextarea.selectionStart;
+                const end = el.codeTextarea.selectionEnd;
+                el.codeTextarea.setRangeText(text, start, end, "end");
+                el.codeTextarea.dispatchEvent(new Event("input"));
+              }
+            } catch (e) {
+              document.execCommand("paste");
+            }
+          }
+        },
+        {
+          label: "Select All",
+          shortcut: "Ctrl+A",
+          exec: () => {
+            if (el.codeTextarea) {
+              el.codeTextarea.focus();
+              el.codeTextarea.select();
+            }
+          }
+        },
+        { separator: true },
+        {
+          label: "Save File",
+          shortcut: "Ctrl+S",
+          disabled: !state.activeFile,
+          exec: () => saveCurrentFile()
+        }
+      ]);
+    }
+
+    function showTerminalContextMenu(x, y) {
+      showContextMenu(x, y, [
+        {
+          label: "Clear Terminal",
+          shortcut: "Ctrl+K",
+          exec: () => COMMANDS.clear.exec([])
+        },
+        {
+          label: state.isMaximized ? "Restore Panel Size" : "Maximize Panel Size",
+          shortcut: "Ctrl+`",
+          exec: () => toggleMaximizeTerminal()
+        },
+        { separator: true },
+        {
+          label: "Terminal Tab",
+          exec: () => switchTerminalTab("terminal")
+        },
+        {
+          label: "Messages Tab",
+          exec: () => switchTerminalTab("messages")
+        },
+        {
+          label: "Output Tab",
+          exec: () => switchTerminalTab("output")
+        },
+        {
+          label: "Virtual Server Tab",
+          exec: () => switchTerminalTab("server")
+        },
+        {
+          label: "Nano Editor Tab",
+          exec: () => switchTerminalTab("nano")
+        }
+      ]);
+    }
+
+    function showExplorerContextMenu(x, y) {
+      showContextMenu(x, y, [
+        {
+          label: "New File...",
+          shortcut: "Ctrl+N",
+          exec: () => createNewFilePrompt()
+        },
+        {
+          label: "Open Project Folder on E:\\...",
+          shortcut: "Ctrl+O",
+          exec: () => openLocalProjectFolder()
+        },
+        { separator: true },
+        {
+          label: "Refresh Explorer",
+          exec: () => {
+            renderSidebarLists();
+            renderTabs();
+            showMessage("info", "Explorer", "Refreshed workspace file tree");
+          }
+        },
+        {
+          label: "Close All Tabs",
+          disabled: state.openTabs.length === 0,
+          exec: () => closeAllTabs()
+        }
+      ]);
+    }
+
+    function showExplorerItemContextMenu(x, y, filename) {
+      const isOpen = state.openTabs.includes(filename);
+      const keys = Object.keys(state.files);
+
+      showContextMenu(x, y, [
+        {
+          label: "Open",
+          exec: () => openFile(filename)
+        },
+        {
+          label: "Close Tab",
+          disabled: !isOpen,
+          exec: () => closeTab(filename)
+        },
+        { separator: true },
+        {
+          label: "Copy Filename",
+          exec: () => {
+            navigator.clipboard?.writeText(filename).catch(() => {});
+            showMessage("success", "Clipboard", `Copied "${filename}" to clipboard`);
+          }
+        },
+        {
+          label: "Copy Relative Path",
+          exec: () => {
+            const relPath = state.isLocalProject ? `${state.projectName}/${filename}` : filename;
+            navigator.clipboard?.writeText(relPath).catch(() => {});
+            showMessage("success", "Clipboard", `Copied path "${relPath}" to clipboard`);
+          }
+        },
+        { separator: true },
+        {
+          label: "Delete from Workspace",
+          disabled: keys.length <= 1,
+          exec: () => {
+            closeTab(filename);
+            delete state.files[filename];
+            saveWorkspace();
+            renderSidebarLists();
+            showMessage("warning", "Workspace", `Deleted "${filename}" from workspace`);
+          }
+        }
+      ]);
+    }
+
+    function showGeneralContextMenu(x, y) {
+      showContextMenu(x, y, [
+        {
+          label: "Command Palette...",
+          shortcut: "Ctrl+P",
+          exec: () => openCommandPalette()
+        },
+        {
+          label: "Toggle Primary Sidebar",
+          shortcut: "Ctrl+B",
+          exec: () => {
+            if (el.sidebar) el.sidebar.classList.toggle("collapsed");
+          }
+        },
+        {
+          label: "Toggle Terminal Panel",
+          shortcut: "Ctrl+`",
+          exec: () => toggleMaximizeTerminal()
+        },
+        { separator: true },
+        {
+          label: "Open Project Folder on E:\\...",
+          shortcut: "Ctrl+O",
+          exec: () => openLocalProjectFolder()
+        },
+        {
+          label: "Open Settings...",
+          exec: () => {
+            if (el.settingsDialog && typeof el.settingsDialog.showModal === "function") {
+              el.settingsDialog.showModal();
+            }
+          }
+        }
+      ]);
+    }
+
+    async function createNewFilePrompt() {
+      const name = await promptInWorkbench("New File", "untitled.js", "filename.js");
+      if (name) {
+        openFile(name);
+        showMessage("success", "File Created", `Created and opened ${name}`);
+      }
+    }
+
+    // Intercept right-clicks on the entire workbench (Full Control)
+    if (el.app) {
+      el.app.addEventListener("contextmenu", (e) => {
+        e.preventDefault();
+
+        const tabEl = e.target.closest(".vsc-tab");
+        if (tabEl && tabEl.dataset.filename) {
+          showTabContextMenu(e.clientX, e.clientY, tabEl.dataset.filename);
+          return;
+        }
+
+        if (e.target.closest("#vsc-tabs-bar")) {
+          showTabsBarEmptyContextMenu(e.clientX, e.clientY);
+          return;
+        }
+
+        if (e.target.closest(".vsc-editor-content") || e.target.closest("#vsc-code-editor")) {
+          showEditorContextMenu(e.clientX, e.clientY);
+          return;
+        }
+
+        if (e.target.closest("#vsc-terminal-panel")) {
+          showTerminalContextMenu(e.clientX, e.clientY);
+          return;
+        }
+
+        if (e.target.closest("#vsc-sidebar")) {
+          showExplorerContextMenu(e.clientX, e.clientY);
+          return;
+        }
+
+        showGeneralContextMenu(e.clientX, e.clientY);
+      });
+    }
+
+    document.addEventListener("click", () => hideContextMenu());
+    window.addEventListener("blur", () => hideContextMenu());
+    window.addEventListener("resize", () => hideContextMenu());
+
+    // --- KEYBOARD SHORTCUTS & FULL CONTROL ---
+    let lastCtrlKTime = 0;
+
+    async function requestKeyboardLock() {
+      if (navigator.keyboard && typeof navigator.keyboard.lock === "function") {
+        try {
+          await navigator.keyboard.lock();
+        } catch (e) {}
+      }
+    }
+
+    if (el.app) {
+      el.app.addEventListener("click", () => {
+        if (document.fullscreenElement) {
+          requestKeyboardLock();
+        }
+      });
+    }
+
+    // Global Workbench Keyboard Shortcuts (Full Control)
     document.addEventListener("keydown", (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "p") {
+      // 1. Escape key handling
+      if (e.key === "Escape") {
+        if (activeContextMenu) {
+          e.preventDefault();
+          hideContextMenu();
+          return;
+        }
+        if (el.paletteDialog && el.paletteDialog.open) {
+          e.preventDefault();
+          closeCommandPalette();
+          return;
+        }
+        if (el.quickInputDialog && el.quickInputDialog.open) {
+          e.preventDefault();
+          el.quickInputDialog.close();
+          return;
+        }
+        if (state.isMaximized) {
+          e.preventDefault();
+          toggleMaximizeTerminal();
+          return;
+        }
+      }
+
+      // 2. F1: Command Palette
+      if (e.key === "F1") {
         e.preventDefault();
         openCommandPalette();
-      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
+        return;
+      }
+
+      const isModifier = e.ctrlKey || e.metaKey;
+      if (!isModifier) return;
+
+      const key = e.key.toLowerCase();
+
+      // Track Ctrl+K chord
+      if (key === "k") {
+        lastCtrlKTime = Date.now();
+        if (document.activeElement === el.termInput) {
+          e.preventDefault();
+          COMMANDS.clear.exec([]);
+          return;
+        }
+      }
+
+      // Ctrl+W: Close active tab, or Ctrl+Shift+W / Ctrl+K W: Close all tabs
+      if (key === "w") {
+        e.preventDefault();
+        e.stopPropagation();
+        const wasChord = (Date.now() - lastCtrlKTime < 1500);
+        lastCtrlKTime = 0;
+        if (e.shiftKey || wasChord) {
+          closeAllTabs();
+        } else if (state.activeFile) {
+          closeTab(state.activeFile);
+        }
+        return;
+      }
+
+      // Ctrl+P: Command Palette
+      if (key === "p") {
+        e.preventDefault();
+        openCommandPalette();
+        return;
+      }
+
+      // Ctrl+S: Save current file
+      if (key === "s") {
         e.preventDefault();
         saveCurrentFile();
-      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "o") {
+        return;
+      }
+
+      // Ctrl+O: Open local project folder
+      if (key === "o") {
         e.preventDefault();
         openLocalProjectFolder();
-      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "b") {
+        return;
+      }
+
+      // Ctrl+N: New file
+      if (key === "n") {
+        e.preventDefault();
+        createNewFilePrompt();
+        return;
+      }
+
+      // Ctrl+B: Toggle Sidebar
+      if (key === "b") {
         e.preventDefault();
         if (el.sidebar) el.sidebar.classList.toggle("collapsed");
-      } else if ((e.ctrlKey || e.metaKey) && e.key === "`") {
+        return;
+      }
+
+      // Ctrl+` or Ctrl+J: Toggle Terminal
+      if (key === "`" || key === "~" || key === "j") {
         e.preventDefault();
         toggleMaximizeTerminal();
-      } else if ((e.ctrlKey || e.metaKey) && e.key === "Enter" && !e.shiftKey) {
+        return;
+      }
+
+      // Ctrl+Tab / Ctrl+Shift+Tab: Cycle tabs
+      if (key === "tab") {
+        e.preventDefault();
+        if (state.openTabs.length > 1) {
+          const curIdx = state.openTabs.indexOf(state.activeFile);
+          const nextIdx = e.shiftKey
+            ? (curIdx - 1 + state.openTabs.length) % state.openTabs.length
+            : (curIdx + 1) % state.openTabs.length;
+          openFile(state.openTabs[nextIdx]);
+        }
+        return;
+      }
+
+      // Sidebar view shortcuts
+      if (e.shiftKey && key === "f") {
+        e.preventDefault();
+        switchSidebarView("search");
+        const sInput = document.getElementById("vsc-search-query-input");
+        if (sInput) { sInput.focus(); sInput.select(); }
+        return;
+      }
+
+      if (e.shiftKey && key === "e") {
+        e.preventDefault();
+        switchSidebarView("explorer");
+        return;
+      }
+
+      if (e.shiftKey && key === "g") {
+        e.preventDefault();
+        switchSidebarView("git");
+        return;
+      }
+
+      if (e.shiftKey && key === "d") {
+        e.preventDefault();
+        switchSidebarView("debug");
+        return;
+      }
+
+      if (e.shiftKey && key === "x") {
+        e.preventDefault();
+        switchSidebarView("extensions");
+        return;
+      }
+
+      // Run code shortcut
+      if (key === "enter" && !e.shiftKey) {
         if (document.activeElement === el.codeTextarea) {
           e.preventDefault();
           COMMANDS.run.exec([]);
+          return;
         }
       }
-    });
+
+      // Format code shortcut
+      if (e.altKey && e.shiftKey && key === "f") {
+        e.preventDefault();
+        if (el.btnFormat) el.btnFormat.click();
+        return;
+      }
+    }, { capture: true });
 
     // Mobile quickbar buttons
     document.querySelectorAll(".vsc-mobile-key").forEach((btn) => {

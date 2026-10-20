@@ -1633,3 +1633,68 @@ dialog.vsc-dialog::backdrop {
 
 
 
+
+/* Custom VS Code Themed Context Menu */
+.vsc-context-menu {
+  position: fixed;
+  z-index: 99999;
+  min-width: 220px;
+  background: #1e1e1e;
+  border: 1px solid var(--vsc-border);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.75), 0 0 1px rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  padding: 4px 0;
+  font-family: var(--vsc-font-ui);
+  font-size: 12px;
+  color: var(--vsc-fg-primary);
+  user-select: none;
+  backdrop-filter: blur(8px);
+}
+
+.vsc-ctx-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 14px;
+  cursor: pointer;
+  gap: 16px;
+  transition: background 0.08s ease, color 0.08s ease;
+}
+
+.vsc-ctx-item:hover,
+.vsc-ctx-item.active {
+  background: var(--vsc-turquoise);
+  color: #000000;
+}
+
+.vsc-ctx-item:hover .vsc-ctx-shortcut,
+.vsc-ctx-item.active .vsc-ctx-shortcut {
+  color: rgba(0, 0, 0, 0.75);
+}
+
+.vsc-ctx-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  white-space: nowrap;
+}
+
+.vsc-ctx-shortcut {
+  font-family: var(--vsc-font-code);
+  font-size: 10px;
+  color: var(--vsc-fg-muted);
+  white-space: nowrap;
+}
+
+.vsc-ctx-separator {
+  height: 1px;
+  background: var(--vsc-border);
+  margin: 4px 0;
+}
+
+.vsc-ctx-item.disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  pointer-events: none;
+}
