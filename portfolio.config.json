@@ -184,6 +184,21 @@
         "sidebar": false,
         "footer": true
       }
+    },
+    {
+      "id": "zero-hour",
+      "name": "Zero Hour",
+      "description": "Develop smarter with AI directly in your browser — simply engage the Chat or AI tool to examine your project and get instant insights.",
+      "path": "tools/zero-hour/",
+      "icon": "im im-shield",
+      "category": "Zero Hour",
+      "enabled": true,
+      "githubUrl": "https://github.com/xCONFLiCTiONx/Portfolio/blob/main/tools/zero-hour/index.html",
+      "layout": {
+        "header": true,
+        "sidebar": false,
+        "footer": true
+      }
     }
   ]
 }
