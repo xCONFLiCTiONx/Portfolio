@@ -820,12 +820,15 @@
     // Attach click listeners to all isometric nodes
     svgContainer.querySelectorAll("[data-node]").forEach(el => {
       el.addEventListener("click", () => {
+        if (window.getSelection && window.getSelection().toString().trim().length > 0) return;
         const nodeId = el.getAttribute("data-node");
         if (nodeId && sc.nodes[nodeId]) {
           SoundFX.play("click");
-          state.selectedNodeId = nodeId;
-          renderIsometricNetwork();
-          renderNodeInspector();
+          if (state.selectedNodeId !== nodeId) {
+            state.selectedNodeId = nodeId;
+            renderIsometricNetwork();
+            renderNodeInspector();
+          }
         }
       });
     });
@@ -943,6 +946,7 @@
 
     listEl.querySelectorAll(".zh-obj-item").forEach(item => {
       item.onclick = () => {
+        if (window.getSelection && window.getSelection().toString().trim().length > 0) return;
         const cid = item.getAttribute("data-cid");
         openChallengeModal(cid);
       };
@@ -978,6 +982,7 @@
 
     grid.querySelectorAll(".zh-challenge-card").forEach(card => {
       card.onclick = () => {
+        if (window.getSelection && window.getSelection().toString().trim().length > 0) return;
         SoundFX.play("click");
         openChallengeModal(card.getAttribute("data-cid"));
       };
@@ -1331,6 +1336,7 @@
       mount.querySelector("#zh-logs-back").onclick = () => switchNavigation("OVERVIEW");
       mount.querySelectorAll("tbody tr").forEach(tr => {
         tr.onclick = () => {
+          if (window.getSelection && window.getSelection().toString().trim().length > 0) return;
           const lid = tr.getAttribute("data-logid");
           state.flaggedLogs[lid] = !state.flaggedLogs[lid];
           SoundFX.play("scan");
@@ -1380,7 +1386,10 @@
       mount.querySelector("#zh-open-report-btn").onclick = () => openIncidentReportModal();
       mount.querySelector("#zh-chal-back").onclick = () => switchNavigation("OVERVIEW");
       mount.querySelectorAll(".zh-challenge-card").forEach(c => {
-        c.onclick = () => openChallengeModal(c.getAttribute("data-cid"));
+        c.onclick = () => {
+          if (window.getSelection && window.getSelection().toString().trim().length > 0) return;
+          openChallengeModal(c.getAttribute("data-cid"));
+        };
       });
       return;
     }

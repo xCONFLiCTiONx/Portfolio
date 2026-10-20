@@ -122,7 +122,13 @@ body[data-tool-id="zero-hour"].zh-fullscreen-mode #zero-hour-app {
   display: grid;
   grid-template-columns: 230px 1fr;
   overflow: hidden;
-  user-select: none;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+#zero-hour-app ::selection {
+  background: rgba(0, 229, 255, 0.32);
+  color: #ffffff;
 }
 
 /* Subtle tactical grid & scanlines */
@@ -583,7 +589,8 @@ body[data-tool-id="zero-hour"].zh-fullscreen-mode #zero-hour-app {
   flex-direction: column;
   justify-content: space-between;
   overflow: hidden;
-  user-select: none;
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 /* Interactive SVG/Canvas Isometric Map Container */
