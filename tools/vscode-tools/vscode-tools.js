@@ -61,6 +61,63 @@ console.log(calculateBandwidth(sampleData));
 GET https://httpbin.org/get
 Accept: application/json
 User-Agent: VSCodeTools/4.2
+`,
+    "mypage.html": `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Custom Served Page</title>
+  <!-- Link directly to portfolio css and custom styles -->
+  <link rel="stylesheet" href="../../css/main.css" />
+  <link rel="stylesheet" href="./vscode-tools.css" />
+  <style>
+    body {
+      background: #0f172a;
+      color: #f8fafc;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      padding: 2.5rem 1.5rem;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .card {
+      background: rgba(30, 41, 59, 0.8);
+      border: 1px solid rgba(0, 240, 255, 0.3);
+      border-radius: 8px;
+      padding: 2rem;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+    .badge {
+      display: inline-block;
+      background: rgba(0, 240, 255, 0.15);
+      color: #00f0ff;
+      font-weight: 700;
+      padding: 0.3rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.85rem;
+      margin-bottom: 1rem;
+    }
+    button {
+      background: #00f0ff;
+      color: #000;
+      font-weight: 700;
+      border: none;
+      padding: 0.6rem 1.25rem;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <span class="badge">VIRTUAL SERVER: LIVE IN CHROME</span>
+    <h1 style="margin-top:0">Welcome to My Custom Page!</h1>
+    <p>This page was authored inside the VS Code Web Terminal and is being served live right in Chrome.</p>
+    <p>Connected to root portfolio styling &amp; client-side engine.</p>
+    <button onclick="alert('Virtual Web Server connected!')">Test Interaction</button>
+  </div>
+</body>
+</html>
 `
   };
 
@@ -71,9 +128,12 @@ User-Agent: VSCodeTools/4.2
     commandHistory: [],
     historyIndex: -1,
     isMaximized: false,
-    savedPanelHeight: 320,
+    savedPanelHeight: 280,
     activeShell: "powershell",
-    activeTab: "terminal"
+    activeTab: "terminal",
+    servers: {}, // { port: { file, url, pid, startedAt } }
+    nanoActive: false,
+    nanoCurrentFile: ""
   };
 
   // Load persisted files or initialize defaults
@@ -81,6 +141,9 @@ User-Agent: VSCodeTools/4.2
     const saved = localStorage.getItem("vsc_workspace_files_v1");
     if (saved) {
       state.files = JSON.parse(saved);
+      if (!state.files["mypage.html"]) {
+        state.files["mypage.html"] = DEFAULT_FILES["mypage.html"];
+      }
     } else {
       state.files = Object.assign({}, DEFAULT_FILES);
     }
@@ -103,6 +166,7 @@ User-Agent: VSCodeTools/4.2
     promptTag: document.getElementById("vsc-prompt-tag"),
     btnMaximize: document.getElementById("vsc-btn-maximize"),
     btnRun: document.getElementById("vsc-btn-run"),
+    btnPreview: document.getElementById("vsc-btn-preview"),
     btnFormat: document.getElementById("vsc-btn-format"),
     btnSave: document.getElementById("vsc-btn-save"),
     btnClear: document.getElementById("vsc-btn-clear"),
@@ -112,7 +176,32 @@ User-Agent: VSCodeTools/4.2
     workspaceFilesList: document.getElementById("vsc-workspace-files-list"),
     statusLnCol: document.getElementById("vsc-status-lncol"),
     sidebar: document.getElementById("vsc-sidebar"),
-    actExplorer: document.getElementById("vsc-act-explorer")
+    actExplorer: document.getElementById("vsc-act-explorer"),
+
+    // GNU nano elements
+    nanoContainer: document.getElementById("vsc-nano-container"),
+    nanoEditor: document.getElementById("vsc-nano-editor"),
+    nanoFilename: document.getElementById("vsc-nano-filename"),
+    nanoStatus: document.getElementById("vsc-nano-status"),
+    nanoBtnSave: document.getElementById("vsc-nano-btn-save"),
+    nanoBtnExit: document.getElementById("vsc-nano-btn-exit"),
+
+    // Live Server preview elements
+    livePreview: document.getElementById("vsc-live-preview"),
+    previewFrame: document.getElementById("vsc-preview-iframe"),
+    previewUrlText: document.getElementById("vsc-preview-url-text"),
+    previewBtnReload: document.getElementById("vsc-preview-btn-reload"),
+    previewBtnDesktop: document.getElementById("vsc-preview-btn-desktop"),
+    previewBtnTablet: document.getElementById("vsc-preview-btn-tablet"),
+    previewBtnMobile: document.getElementById("vsc-preview-btn-mobile"),
+    previewBtnExternal: document.getElementById("vsc-preview-btn-external"),
+    previewBtnClose: document.getElementById("vsc-preview-btn-close"),
+
+    // Ports view elements
+    tabPorts: document.getElementById("vsc-tab-ports"),
+    portsPanel: document.getElementById("vsc-ports-panel"),
+    portsTbody: document.getElementById("vsc-ports-tbody"),
+    portsCount: document.getElementById("vsc-ports-count")
   };
 
   // --- SAVE WORKSPACE HELPER ---
@@ -278,6 +367,149 @@ User-Agent: VSCodeTools/4.2
     }
   }
 
+  // --- GNU NANO IN-TERMINAL TEXT EDITOR ---
+  function openNano(filename) {
+    if (!el.nanoContainer || !el.nanoEditor) return;
+    state.nanoActive = true;
+    state.nanoCurrentFile = filename;
+
+    if (!state.files[filename]) {
+      state.files[filename] = "";
+      if (el.nanoStatus) el.nanoStatus.textContent = "[New File]";
+    } else {
+      const lineCount = state.files[filename].split("\n").length;
+      if (el.nanoStatus) el.nanoStatus.textContent = `[Read ${lineCount} lines]`;
+    }
+
+    if (el.nanoFilename) el.nanoFilename.textContent = `File: ${filename}`;
+    el.nanoEditor.value = state.files[filename];
+    el.nanoContainer.style.display = "flex";
+    el.nanoEditor.focus();
+  }
+
+  function closeNano(save = true) {
+    if (!state.nanoActive) return;
+    if (save && el.nanoEditor && state.nanoCurrentFile) {
+      state.files[state.nanoCurrentFile] = el.nanoEditor.value;
+      saveWorkspace();
+      if (state.activeFile === state.nanoCurrentFile && el.codeTextarea) {
+        el.codeTextarea.value = state.files[state.nanoCurrentFile];
+        updateGutter();
+      }
+      renderSidebarLists();
+      renderTabs();
+    }
+
+    state.nanoActive = false;
+    if (el.nanoContainer) el.nanoContainer.style.display = "none";
+    if (el.termInput) el.termInput.focus();
+    termPrint(`[ Exited nano. ${save ? "Saved " + state.nanoCurrentFile : "Changes discarded."} ]`, "vsc-term-info");
+    scrollTermToBottom();
+  }
+
+  // --- LIVE VIRTUAL WEB SERVER ENGINE (SERVE & PREVIEW) ---
+  function serveFile(filename, customPort = 3000, openInChrome = false) {
+    if (!state.files[filename]) {
+      termPrint(`Cannot serve: file '${filename}' does not exist in workspace.`, "vsc-term-error");
+      return;
+    }
+
+    const port = parseInt(customPort, 10) || 3000;
+    let content = state.files[filename];
+
+    // Auto-resolve root asset links for live rendering
+    // Resolves ../../css/main.css and ./vscode-tools.css to accessible site assets
+    content = content.replace(/href=["']\.\.\/\.\.\/css\/main\.css["']/gi, 'href="../../css/main.css"');
+    content = content.replace(/href=["']\.\/vscode-tools\.css["']/gi, 'href="./vscode-tools.css"');
+    content = content.replace(/src=["']\.\.\/\.\.\/js\/framework\.js["']/gi, 'src="../../js/framework.js"');
+
+    // Create a live Blob URL
+    const blob = new Blob([content], { type: "text/html" });
+    const blobUrl = URL.createObjectURL(blob);
+
+    state.servers[port] = {
+      port,
+      file: filename,
+      url: blobUrl,
+      pid: Math.floor(Math.random() * 8000) + 1024,
+      startedAt: Date.now()
+    };
+
+    renderPortsTable();
+
+    const displayUrl = `http://localhost:${port}/${filename}`;
+    termPrintHTML(`
+<span class="vsc-term-success">[VIRTUAL HTTP SERVER READY]</span>
+  Port:      <b style="color:var(--vsc-turquoise)">${port}</b> (PID: ${state.servers[port].pid})
+  Serving:   <b style="color:var(--vsc-turquoise)">${filename}</b> (${content.length} bytes)
+  Local URL: <a href="${blobUrl}" target="_blank" style="color:var(--vsc-turquoise);text-decoration:underline">${displayUrl}</a>
+  Status:    <span style="color:#98c379">● Active</span>
+  <span class="vsc-term-dim">Opening live preview pane... Use 'kill ${port}' to stop.</span>
+`);
+
+    // Open In-Workbench Live Preview Pane
+    if (el.livePreview && el.previewFrame) {
+      el.livePreview.classList.remove("hidden");
+      el.previewFrame.src = blobUrl;
+      if (el.previewUrlText) el.previewUrlText.textContent = displayUrl;
+    }
+
+    // Also open in real Chrome window/tab if requested
+    if (openInChrome) {
+      window.open(blobUrl, "_blank");
+    }
+  }
+
+  function stopServer(port) {
+    const p = parseInt(port, 10);
+    if (!state.servers[p]) {
+      termPrint(`No active virtual server running on port ${p}.`, "vsc-term-warn");
+      return;
+    }
+    try {
+      URL.revokeObjectURL(state.servers[p].url);
+    } catch (e) {}
+    delete state.servers[p];
+    renderPortsTable();
+    termPrint(`Virtual server on port ${p} stopped.`, "vsc-term-info");
+  }
+
+  function renderPortsTable() {
+    if (!el.portsTbody) return;
+    const ports = Object.keys(state.servers);
+
+    if (el.portsCount) {
+      if (ports.length > 0) {
+        el.portsCount.style.display = "inline-block";
+        el.portsCount.textContent = ports.length;
+      } else {
+        el.portsCount.style.display = "none";
+      }
+    }
+
+    if (ports.length === 0) {
+      el.portsTbody.innerHTML = `<tr><td colspan="5" style="color:var(--vsc-fg-muted);text-align:center;padding:20px">No virtual servers currently running. Use <code style="color:var(--vsc-turquoise)">serve &lt;filename&gt;</code> to spin one up.</td></tr>`;
+      return;
+    }
+
+    el.portsTbody.innerHTML = "";
+    ports.forEach((p) => {
+      const s = state.servers[p];
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td><span class="vsc-ports-badge">${s.port}</span></td>
+        <td>node (PID ${s.pid})</td>
+        <td><b>${s.file}</b></td>
+        <td><a href="${s.url}" target="_blank" style="color:var(--vsc-turquoise);text-decoration:underline">http://localhost:${s.port}/${s.file}</a></td>
+        <td>
+          <button class="vsc-editor-btn" style="display:inline-block" onclick="window.open('${s.url}', '_blank')">Open ↗</button>
+          <button class="vsc-editor-btn" style="display:inline-block;color:#e06c75;border-color:#e06c75" onclick="document.getElementById('vsc-term-input').value='kill ${s.port}'; document.getElementById('vsc-term-input').focus()">Kill</button>
+        </td>
+      `;
+      el.portsTbody.appendChild(tr);
+    });
+  }
+
   // --- TERMINAL PRINTING & LOGGING HELPERS ---
   function termPrint(text, cssClass = "") {
     if (!el.termHistory) return;
@@ -321,6 +553,12 @@ User-Agent: VSCodeTools/4.2
 <span class="vsc-term-info">=== VS CODE TOOLS // DAILY DEVELOPER CLI SUITE ===</span>
 <span class="vsc-term-dim">All utilities run client-side with native Web APIs &amp; real live network probes.</span>
 
+<span class="vsc-prompt-tag">[HARDWARE, OS &amp; BROWSER EXPOSURE]</span>
+  <b class="vsc-term-success">sysinfo</b> / <b class="vsc-term-success">env</b>                Exhaustive browser, OS, hardware, cores &amp; sensor dump
+  <b class="vsc-term-success">gpu</b>                                Inspect WebGL/WebGPU unmasked renderer, vendor &amp; shaders
+  <b class="vsc-term-success">sensors</b>                            Real-time battery, network link type, memory &amp; sensors
+  <b class="vsc-term-success">storage</b>                            Storage quota estimate, usage in MB/GB &amp; persistence
+
 <span class="vsc-prompt-tag">[NETWORK &amp; DIAGNOSTICS]</span>
   <b class="vsc-term-success">curl</b> &lt;url&gt; [-X POST] [-d 'data']  Make real live HTTP requests with TTFB latency
   <b class="vsc-term-success">myip</b>                              Inspect real public IP, ISP, ASN &amp; Geo-location
@@ -328,6 +566,12 @@ User-Agent: VSCodeTools/4.2
   <b class="vsc-term-success">ping</b> &lt;host&gt;                         Measure HTTP round-trip latency &amp; reachable status
   <b class="vsc-term-success">webrtc</b>                            Probe WebRTC STUN candidate leak status
   <b class="vsc-term-success">speedtest</b>                         Measure real downlink throughput &amp; transfer speed
+
+<span class="vsc-prompt-tag">[VIRTUAL SERVER &amp; LIVE BROWSER SERVING]</span>
+  <b class="vsc-term-success">serve</b> &lt;file&gt; [-p port] [-o]        Serve page live on virtual localhost &amp; open in Chrome
+  <b class="vsc-term-success">preview</b> [filename]                 Open in-workbench live browser preview pane
+  <b class="vsc-term-success">ports</b>                             List running virtual HTTP servers and active ports
+  <b class="vsc-term-success">kill</b> &lt;port&gt;                        Stop virtual server running on specified port
 
 <span class="vsc-prompt-tag">[CODE, DATA &amp; CRYPTO]</span>
   <b class="vsc-term-success">jwt</b> &lt;token&gt;                         Decode JWT header, payload &amp; expiry countdown
@@ -343,6 +587,7 @@ User-Agent: VSCodeTools/4.2
   <b class="vsc-term-success">timestamp</b> [epoch]                   Unix timestamp converter (UTC, Local, Relative)
 
 <span class="vsc-prompt-tag">[EDITOR &amp; WORKSPACE]</span>
+  <b class="vsc-term-success">nano</b> &lt;filename&gt;                     In-terminal GNU nano text editor (save with ^O, exit ^X)
   <b class="vsc-term-success">run</b> / <b class="vsc-term-success">eval</b> [code]                   Execute active editor snippet or JS expression
   <b class="vsc-term-success">ls</b> / <b class="vsc-term-success">dir</b>                            List files in your virtual dev-vault workspace
   <b class="vsc-term-success">open</b> &lt;filename&gt;                     Open or create a file in the VS Code editor
@@ -950,12 +1195,191 @@ Length: ${hex.length * 4} bits (${hex.length} hex chars)
         }
         termPrint(state.files[args[0]]);
       }
+    },
+
+    sysinfo: {
+      desc: "Full browser, operating system, hardware and environment telemetry dump",
+      usage: "sysinfo",
+      exec: async () => {
+        termPrint("Harvesting hardware, browser & OS telemetry...", "vsc-term-dim");
+        const t = await getSystemTelemetry();
+        termPrintHTML(t);
+      }
+    },
+
+    nano: {
+      desc: "In-terminal text editor (edit and save files directly in the terminal)",
+      usage: "nano <filename>",
+      exec: async (args) => {
+        if (!args[0]) {
+          termPrint("Usage: nano <filename>", "vsc-term-warn");
+          return;
+        }
+        openNano(args[0]);
+      }
+    },
+
+    serve: {
+      desc: "Serve an HTML file live on virtual localhost port & launch browser preview",
+      usage: "serve <filename> [-p port] [-o]",
+      exec: async (args) => {
+        if (!args[0]) {
+          termPrint("Usage: serve <filename> [-p port] [-o (open in real Chrome window)]\nExample: serve mypage.html -p 3000 -o", "vsc-term-warn");
+          return;
+        }
+        const file = args[0];
+        let port = 3000;
+        let openChrome = false;
+        for (let i = 1; i < args.length; i++) {
+          if (args[i] === "-p" && args[i + 1]) {
+            port = parseInt(args[i + 1], 10) || 3000;
+            i++;
+          } else if (args[i] === "-o") {
+            openChrome = true;
+          }
+        }
+        serveFile(file, port, openChrome);
+      }
+    },
+
+    preview: {
+      desc: "Preview active HTML file in live server preview pane",
+      usage: "preview [filename]",
+      exec: async (args) => {
+        const file = args[0] || state.activeFile;
+        serveFile(file, 3000, false);
+      }
+    },
+
+    ports: {
+      desc: "List active virtual HTTP web servers",
+      usage: "ports",
+      exec: async () => {
+        const ports = Object.keys(state.servers);
+        if (ports.length === 0) {
+          termPrint("No virtual HTTP servers currently running. Use 'serve <filename>' to start one.", "vsc-term-info");
+          return;
+        }
+        let out = `<span class="vsc-term-success">ACTIVE VIRTUAL SERVERS:</span>\n`;
+        ports.forEach((p) => {
+          const s = state.servers[p];
+          out += `  Port ${s.port} (PID ${s.pid}) -> <b style="color:var(--vsc-turquoise)">${s.file}</b> | <a href="${s.url}" target="_blank" style="color:var(--vsc-turquoise);text-decoration:underline">http://localhost:${s.port}/${s.file}</a>\n`;
+        });
+        termPrintHTML(out);
+      }
+    },
+
+    kill: {
+      desc: "Stop a running virtual HTTP server on specified port",
+      usage: "kill <port>",
+      exec: async (args) => {
+        if (!args[0]) {
+          termPrint("Usage: kill <port>", "vsc-term-warn");
+          return;
+        }
+        stopServer(args[0]);
+      }
+    },
+
+    gpu: {
+      desc: "Inspect WebGL and GPU hardware renderer capabilities & shader limits",
+      usage: "gpu",
+      exec: async () => {
+        try {
+          const canvas = document.createElement("canvas");
+          const gl = canvas.getContext("webgl2") || canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+          if (!gl) {
+            termPrint("WebGL is not supported or hardware acceleration is disabled.", "vsc-term-error");
+            return;
+          }
+          const debugInfo = gl.getExtension("WEBGL_debug_renderer_info");
+          const vendor = debugInfo ? gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL) : gl.getParameter(gl.VENDOR);
+          const renderer = debugInfo ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER);
+          const maxTexture = gl.getParameter(gl.MAX_TEXTURE_SIZE);
+          const maxCubeMap = gl.getParameter(gl.MAX_CUBE_MAP_TEXTURE_SIZE);
+          const maxRenderbuffer = gl.getParameter(gl.MAX_RENDERBUFFER_SIZE);
+          const webgpuSupported = "gpu" in navigator;
+
+          termPrintHTML(`
+<span class="vsc-term-success">GRAPHICS &amp; GPU HARDWARE TELEMETRY:</span>
+  Renderer:       <b style="color:var(--vsc-turquoise)">${renderer}</b>
+  Vendor:         ${vendor}
+  WebGL Version:  ${gl.getParameter(gl.VERSION)}
+  Shading Lang:   ${gl.getParameter(gl.SHADING_LANGUAGE_VERSION)}
+  WebGPU Support: ${webgpuSupported ? "<b style='color:#98c379'>Available</b>" : "<span style='color:#e06c75'>Unsupported / Disabled</span>"}
+  Max Texture:    ${maxTexture} x ${maxTexture} px
+  Max Cube Map:   ${maxCubeMap} x ${maxCubeMap} px
+  Max Renderbuf:  ${maxRenderbuffer} px
+`);
+        } catch (e) {
+          termPrint(`GPU inspection failed: ${e.message}`, "vsc-term-error");
+        }
+      }
+    },
+
+    sensors: {
+      desc: "Real-time battery, network, memory, and sensor state",
+      usage: "sensors",
+      exec: async () => {
+        let batteryInfo = "Not exposed";
+        if (navigator.getBattery) {
+          try {
+            const b = await navigator.getBattery();
+            batteryInfo = `${Math.round(b.level * 100)}% (${b.charging ? "Charging" : "Discharging"})`;
+          } catch (e) {}
+        }
+        const conn = navigator.connection;
+        const connInfo = conn ? `${conn.effectiveType?.toUpperCase()} | Downlink: ${conn.downlink} Mbps | RTT: ${conn.rtt}ms` : "Standard";
+        const mem = navigator.deviceMemory ? `${navigator.deviceMemory} GB+ RAM` : "Restricted";
+
+        termPrintHTML(`
+<span class="vsc-term-success">DEVICE SENSORS &amp; TELEMETRY:</span>
+  Battery:        <b style="color:var(--vsc-turquoise)">${batteryInfo}</b>
+  Network Link:   ${connInfo}
+  Device Memory:  ${mem}
+  Touch Points:   ${navigator.maxTouchPoints}
+  Orientation:    ${screen.orientation ? screen.orientation.type : "N/A"}
+`);
+      }
+    },
+
+    storage: {
+      desc: "Storage quota, usage estimates and persistent storage permissions",
+      usage: "storage",
+      exec: async () => {
+        if (!navigator.storage || !navigator.storage.estimate) {
+          termPrint("StorageManager API not supported.", "vsc-term-warn");
+          return;
+        }
+        try {
+          const est = await navigator.storage.estimate();
+          const persisted = navigator.storage.persisted ? await navigator.storage.persisted() : false;
+          const usedMB = ((est.usage || 0) / (1024 * 1024)).toFixed(2);
+          const quotaMB = ((est.quota || 0) / (1024 * 1024)).toFixed(2);
+          const quotaGB = ((est.quota || 0) / (1024 * 1024 * 1024)).toFixed(2);
+          const pct = est.quota ? (((est.usage || 0) / est.quota) * 100).toFixed(2) : 0;
+
+          termPrintHTML(`
+<span class="vsc-term-success">BROWSER STORAGE ESTIMATE:</span>
+  Usage:       <b style="color:var(--vsc-turquoise)">${usedMB} MB</b> of ${quotaGB} GB (${pct}%)
+  Quota Total: ${quotaMB} MB
+  Persistent:  ${persisted ? "<b style='color:#98c379'>Granted</b>" : "<span style='color:#e5c07b'>Transient</span>"}
+`);
+        } catch (e) {
+          termPrint(`Storage query failed: ${e.message}`, "vsc-term-error");
+        }
+      }
     }
   };
 
   COMMANDS.dir = COMMANDS.ls;
   COMMANDS.eval = COMMANDS.run;
   COMMANDS.node = COMMANDS.run;
+  COMMANDS.env = COMMANDS.sysinfo;
+  COMMANDS.os = COMMANDS.sysinfo;
+  COMMANDS.telemetry = COMMANDS.sysinfo;
+  COMMANDS.browser = COMMANDS.sysinfo;
+  COMMANDS.stop = COMMANDS.kill;
 
   // --- TAB KEY AUTOCOMPLETION ---
   function handleTabCompletion(e) {
@@ -1045,6 +1469,122 @@ Length: ${hex.length * 4} bits (${hex.length} hex chars)
       cur = cur[p];
     }
     return cur;
+  }
+
+  // --- HARDWARE, BROWSER & OS TELEMETRY HARVESTER ---
+  async function getSystemTelemetry() {
+    let out = `<span class="vsc-term-success">=== SYSTEM &amp; BROWSER EXPOSURE REPORT ===</span>\n`;
+
+    // 1. OS & Architecture (Including High-Entropy Client Hints)
+    const ua = navigator.userAgent;
+    let platform = navigator.platform || "Unknown";
+    let arch = "x86";
+    let bitness = "64";
+    let osVersion = "";
+    let model = "";
+
+    if (navigator.userAgentData) {
+      platform = navigator.userAgentData.platform || platform;
+      try {
+        const hints = await navigator.userAgentData.getHighEntropyValues([
+          "architecture",
+          "bitness",
+          "model",
+          "platformVersion",
+          "fullVersionList"
+        ]);
+        if (hints.architecture) arch = hints.architecture;
+        if (hints.bitness) bitness = hints.bitness;
+        if (hints.platformVersion) osVersion = ` (Build ${hints.platformVersion})`;
+        if (hints.model) model = ` [Model: ${hints.model}]`;
+      } catch (e) {}
+    }
+
+    out += `\n<span class="vsc-prompt-tag">[OPERATING SYSTEM &amp; PLATFORM]</span>\n`;
+    out += `  OS Platform:   <b style="color:var(--vsc-turquoise)">${platform}${osVersion}</b>${model}\n`;
+    out += `  Architecture:  ${arch} (${bitness}-bit)\n`;
+    out += `  User Agent:    ${ua.slice(0, 75)}...\n`;
+    out += `  Languages:     ${navigator.languages ? navigator.languages.join(", ") : navigator.language}\n`;
+    out += `  Timezone:      ${Intl.DateTimeFormat().resolvedOptions().timeZone} (UTC${(new Date().getTimezoneOffset() / -60 >= 0 ? "+" : "") + new Date().getTimezoneOffset() / -60})\n`;
+
+    // 2. Hardware: CPU Cores, Memory, Battery, Touch
+    const cores = navigator.hardwareConcurrency || "N/A";
+    const memory = navigator.deviceMemory ? `${navigator.deviceMemory} GB RAM` : "Restricted / Protected";
+    const touch = navigator.maxTouchPoints || 0;
+
+    let battery = "API Not Supported / Restricted";
+    if (navigator.getBattery) {
+      try {
+        const b = await navigator.getBattery();
+        battery = `${Math.round(b.level * 100)}% [${b.charging ? "Charging" : "Discharging"}]`;
+      } catch (e) {}
+    }
+
+    out += `\n<span class="vsc-prompt-tag">[HARDWARE &amp; SENSORS]</span>\n`;
+    out += `  CPU Logical:   <b style="color:var(--vsc-turquoise)">${cores} Cores</b>\n`;
+    out += `  Device RAM:    ${memory}\n`;
+    out += `  Battery State: ${battery}\n`;
+    out += `  Touch Points:  ${touch} point(s)\n`;
+
+    // 3. Display, Viewport, HDR, Wide Color
+    const scr = window.screen;
+    const dpr = window.devicePixelRatio || 1;
+    const p3 = window.matchMedia && window.matchMedia("(color-gamut: p3)").matches;
+    const hdr = window.matchMedia && window.matchMedia("(dynamic-range: high)").matches;
+
+    out += `\n<span class="vsc-prompt-tag">[DISPLAY &amp; GRAPHICS VIEWPORT]</span>\n`;
+    out += `  Physical Res:  ${scr.width} x ${scr.height} px (Depth: ${scr.colorDepth}-bit)\n`;
+    out += `  Available Res: ${scr.availWidth} x ${scr.availHeight} px\n`;
+    out += `  Window Inner:  ${window.innerWidth} x ${window.innerHeight} px (DPR: ${dpr.toFixed(2)})\n`;
+    out += `  Color Gamut:   ${p3 ? "<b style='color:#98c379'>Display-P3 Wide Color</b>" : "Standard sRGB"}\n`;
+    out += `  Dynamic Range: ${hdr ? "<b style='color:#98c379'>High Dynamic Range (HDR)</b>" : "SDR"}\n`;
+
+    // 4. GPU & WebGL / WebGPU
+    try {
+      const canvas = document.createElement("canvas");
+      const gl = canvas.getContext("webgl2") || canvas.getContext("webgl");
+      if (gl) {
+        const dbg = gl.getExtension("WEBGL_debug_renderer_info");
+        const renderer = dbg ? gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER);
+        const vendor = dbg ? gl.getParameter(dbg.UNMASKED_VENDOR_WEBGL) : gl.getParameter(gl.VENDOR);
+        const maxTex = gl.getParameter(gl.MAX_TEXTURE_SIZE);
+        out += `\n<span class="vsc-prompt-tag">[GPU &amp; HARDWARE DRIVER]</span>\n`;
+        out += `  GPU Renderer:  <b style="color:var(--vsc-turquoise)">${renderer}</b>\n`;
+        out += `  GPU Vendor:    ${vendor}\n`;
+        out += `  Max Texture:   ${maxTex} x ${maxTex} px\n`;
+        out += `  WebGPU State:  ${"gpu" in navigator ? "<b style='color:#98c379'>Supported</b>" : "Disabled"}\n`;
+      }
+    } catch (e) {}
+
+    // 5. Network & Connection
+    const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    if (conn) {
+      out += `\n<span class="vsc-prompt-tag">[NETWORK ADAPTER INTERFACE]</span>\n`;
+      out += `  Link Type:     ${conn.effectiveType ? conn.effectiveType.toUpperCase() : "N/A"}\n`;
+      out += `  Downlink:      <b style="color:var(--vsc-turquoise)">${conn.downlink || 0} Mbps</b>\n`;
+      out += `  RTT Latency:   ${conn.rtt || 0} ms\n`;
+      out += `  Data Saver:    ${conn.saveData ? "Active" : "Disabled"}\n`;
+    }
+
+    // 6. Storage Quota
+    if (navigator.storage && navigator.storage.estimate) {
+      try {
+        const est = await navigator.storage.estimate();
+        const used = ((est.usage || 0) / (1024 * 1024)).toFixed(2);
+        const quota = ((est.quota || 0) / (1024 * 1024 * 1024)).toFixed(2);
+        out += `\n<span class="vsc-prompt-tag">[PERSISTENT STORAGE QUOTA]</span>\n`;
+        out += `  Storage Quota: ${used} MB used of ${quota} GB available\n`;
+      } catch (e) {}
+    }
+
+    // 7. Security Isolation
+    out += `\n<span class="vsc-prompt-tag">[SECURITY &amp; RUNTIME ISOLATION]</span>\n`;
+    out += `  Cross-Origin:  ${window.crossOriginIsolated ? "Isolated" : "Standard"}\n`;
+    out += `  SharedArray:   ${typeof SharedArrayBuffer !== "undefined" ? "Enabled" : "Disabled"}\n`;
+    out += `  WebAssembly:   ${typeof WebAssembly !== "undefined" ? "Native V8 Enabled" : "Disabled"}\n`;
+    out += `  ServiceWorker: ${"serviceWorker" in navigator ? "Supported" : "Unsupported"}\n`;
+
+    return out;
   }
 
   // --- EVENT LISTENERS INITIALIZATION ---
@@ -1205,6 +1745,109 @@ Length: ${hex.length * 4} bits (${hex.length} hex chars)
         el.sidebar.classList.toggle("collapsed");
         el.actExplorer.classList.toggle("active");
       });
+    }
+
+    // Preview / Serve button in editor toolbar
+    if (el.btnPreview) {
+      el.btnPreview.addEventListener("click", () => {
+        serveFile(state.activeFile, 3000, false);
+      });
+    }
+
+    // GNU Nano editor buttons & keyboard shortcuts
+    if (el.nanoBtnSave) {
+      el.nanoBtnSave.addEventListener("click", () => {
+        if (el.nanoEditor && state.nanoCurrentFile) {
+          state.files[state.nanoCurrentFile] = el.nanoEditor.value;
+          saveWorkspace();
+          if (state.activeFile === state.nanoCurrentFile && el.codeTextarea) {
+            el.codeTextarea.value = state.files[state.nanoCurrentFile];
+            updateGutter();
+          }
+          const lines = el.nanoEditor.value.split("\n").length;
+          if (el.nanoStatus) el.nanoStatus.textContent = `[ Wrote ${lines} lines ]`;
+          renderSidebarLists();
+          renderTabs();
+        }
+      });
+    }
+
+    if (el.nanoBtnExit) {
+      el.nanoBtnExit.addEventListener("click", () => closeNano(true));
+    }
+
+    if (el.nanoEditor) {
+      el.nanoEditor.addEventListener("keydown", (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "o") {
+          e.preventDefault();
+          if (el.nanoBtnSave) el.nanoBtnSave.click();
+        } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "x") {
+          e.preventDefault();
+          closeNano(true);
+        }
+      });
+    }
+
+    // Live Server Preview Controls
+    if (el.previewBtnClose && el.livePreview) {
+      el.previewBtnClose.addEventListener("click", () => {
+        el.livePreview.classList.add("hidden");
+      });
+    }
+
+    if (el.previewBtnReload && el.previewFrame) {
+      el.previewBtnReload.addEventListener("click", () => {
+        const curSrc = el.previewFrame.src;
+        el.previewFrame.src = "";
+        setTimeout(() => { el.previewFrame.src = curSrc; }, 50);
+      });
+    }
+
+    if (el.previewBtnDesktop && el.previewFrame) {
+      el.previewBtnDesktop.addEventListener("click", () => {
+        el.previewFrame.className = "vsc-preview-frame";
+      });
+    }
+
+    if (el.previewBtnTablet && el.previewFrame) {
+      el.previewBtnTablet.addEventListener("click", () => {
+        el.previewFrame.className = "vsc-preview-frame tablet";
+      });
+    }
+
+    if (el.previewBtnMobile && el.previewFrame) {
+      el.previewBtnMobile.addEventListener("click", () => {
+        el.previewFrame.className = "vsc-preview-frame mobile";
+      });
+    }
+
+    if (el.previewBtnExternal && el.previewFrame) {
+      el.previewBtnExternal.addEventListener("click", () => {
+        if (el.previewFrame.src) {
+          window.open(el.previewFrame.src, "_blank");
+        }
+      });
+    }
+
+    // Ports Tab click handling
+    if (el.tabPorts && el.portsPanel && el.termBody) {
+      el.tabPorts.addEventListener("click", () => {
+        document.querySelectorAll(".vsc-term-tab").forEach(t => t.classList.remove("active"));
+        el.tabPorts.classList.add("active");
+        el.termBody.style.display = "none";
+        el.portsPanel.classList.add("active");
+        renderPortsTable();
+      });
+
+      const termTab = document.querySelector(".vsc-term-tab");
+      if (termTab) {
+        termTab.addEventListener("click", () => {
+          document.querySelectorAll(".vsc-term-tab").forEach(t => t.classList.remove("active"));
+          termTab.classList.add("active");
+          el.portsPanel.classList.remove("active");
+          el.termBody.style.display = "flex";
+        });
+      }
     }
 
     // Initialize resizer

@@ -44,27 +44,45 @@
   --scrollbar-track: #121212;
 }
 
+html,
+body[data-tool-id="vscode-tools"] {
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
 body[data-tool-id="vscode-tools"] {
   background-color: var(--vsc-bg-app) !important;
   color: var(--vsc-fg-primary);
-  margin: 0;
-  padding: 0;
-  overflow-x: hidden;
+  display: flex !important;
+  flex-direction: column !important;
   user-select: text;
 }
 
 body[data-tool-id="vscode-tools"] header.site-header {
+  flex-shrink: 0 !important;
   margin-bottom: 0 !important;
   background: var(--vsc-bg-title) !important;
   border-bottom: 1px solid var(--vsc-border) !important;
 }
 
+body[data-tool-id="vscode-tools"] footer.site-footer {
+  display: none !important;
+}
+
 body[data-tool-id="vscode-tools"] main.container {
+  flex: 1 1 0% !important;
   max-width: 100% !important;
   width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
   padding: 0 !important;
   margin: 0 !important;
-  display: block !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
 }
 
 body[data-tool-id="vscode-tools"].vsc-fullscreen header.site-header,
@@ -103,19 +121,21 @@ body[data-tool-id="vscode-tools"].vsc-fullscreen footer.site-footer {
 #vscode-workbench {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 54px);
-  min-height: 600px;
+  flex: 1 1 0%;
+  height: 100% !important;
+  max-height: 100% !important;
+  min-height: 0 !important;
   background-color: var(--vsc-bg-app);
   color: var(--vsc-fg-primary);
   font-family: var(--vsc-font-ui);
   position: relative;
   overflow: hidden;
-  border-bottom: 1px solid var(--vsc-border);
+  border-bottom: none;
 }
 
 body[data-tool-id="vscode-tools"].vsc-fullscreen #vscode-workbench {
-  height: 100vh;
-  min-height: 100vh;
+  height: 100dvh !important;
+  max-height: 100dvh !important;
 }
 
 /* 1. TOP TITLEBAR */
@@ -961,4 +981,250 @@ body[data-tool-id="vscode-tools"].vsc-fullscreen #vscode-workbench {
     display: flex;
   }
 }
+
+/* ==========================================================================
+   GNU NANO IN-TERMINAL TEXT EDITOR
+   ========================================================================== */
+.vsc-nano-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  background-color: #0d0d0d;
+  color: #f0f0f0;
+  font-family: var(--vsc-font-code);
+  font-size: 13px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+}
+
+.vsc-nano-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #ffffff;
+  color: #000000;
+  padding: 2px 10px;
+  font-weight: 700;
+  font-size: 11px;
+  flex-shrink: 0;
+}
+
+.vsc-nano-filename {
+  color: #000;
+}
+
+.vsc-nano-status {
+  color: #333;
+}
+
+.vsc-nano-editor {
+  flex: 1;
+  width: 100%;
+  background: #0d0d0d;
+  color: #ffffff;
+  border: none;
+  outline: none;
+  resize: none;
+  padding: 8px 10px;
+  font-family: var(--vsc-font-code);
+  font-size: 13px;
+  line-height: 1.45;
+  white-space: pre;
+  tab-size: 2;
+  overflow: auto;
+}
+
+.vsc-nano-shortcuts {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 4px 8px;
+  background-color: #000000;
+  border-top: 1px solid #222222;
+  padding: 6px 10px;
+  font-size: 11px;
+  flex-shrink: 0;
+}
+
+.vsc-nano-btn {
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  text-align: left;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--vsc-font-code);
+}
+
+.vsc-nano-btn:hover {
+  background: rgba(0, 240, 255, 0.2);
+  color: var(--vsc-turquoise);
+}
+
+.vsc-nano-key {
+  color: var(--vsc-turquoise);
+  font-weight: 700;
+}
+
+/* ==========================================================================
+   LIVE SERVER BROWSER PREVIEW & PORTS
+   ========================================================================== */
+.vsc-live-preview {
+  position: absolute;
+  top: 36px;
+  left: 300px;
+  right: 0;
+  bottom: 24px;
+  background: #181818;
+  border-left: 1px solid var(--vsc-border);
+  display: flex;
+  flex-direction: column;
+  z-index: 40;
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.7);
+  transition: transform 0.2s ease;
+}
+
+.vsc-live-preview.hidden {
+  display: none !important;
+}
+
+.vsc-preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 38px;
+  background: #141414;
+  border-bottom: 1px solid var(--vsc-border);
+  padding: 0 10px;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.vsc-preview-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.vsc-preview-btn {
+  background: transparent;
+  border: 1px solid var(--vsc-border);
+  color: var(--vsc-fg-secondary);
+  border-radius: 3px;
+  padding: 3px 6px;
+  cursor: pointer;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.vsc-preview-btn:hover {
+  background: var(--vsc-bg-hover);
+  color: var(--vsc-turquoise);
+  border-color: var(--vsc-turquoise);
+}
+
+.vsc-preview-address {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  background: #0d0d0d;
+  border: 1px solid var(--vsc-border);
+  border-radius: 4px;
+  padding: 3px 10px;
+  font-family: var(--vsc-font-code);
+  font-size: 12px;
+  color: var(--vsc-turquoise);
+  gap: 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.vsc-preview-viewport-wrap {
+  flex: 1;
+  background: #0a0a0a;
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  overflow: hidden;
+  position: relative;
+}
+
+.vsc-preview-frame {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: #ffffff;
+  transition: width 0.2s ease;
+}
+
+.vsc-preview-frame.mobile {
+  width: 375px;
+  box-shadow: 0 0 24px rgba(0, 0, 0, 0.8);
+  border-left: 1px solid var(--vsc-border);
+  border-right: 1px solid var(--vsc-border);
+}
+
+.vsc-preview-frame.tablet {
+  width: 768px;
+  box-shadow: 0 0 24px rgba(0, 0, 0, 0.8);
+  border-left: 1px solid var(--vsc-border);
+  border-right: 1px solid var(--vsc-border);
+}
+
+/* Ports Panel View */
+.vsc-ports-panel {
+  flex: 1;
+  padding: 14px;
+  overflow-y: auto;
+  font-size: 12px;
+  display: none;
+}
+
+.vsc-ports-panel.active {
+  display: block;
+}
+
+.vsc-ports-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.vsc-ports-table th {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--vsc-border);
+  color: var(--vsc-fg-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 10px;
+}
+
+.vsc-ports-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  color: var(--vsc-fg-secondary);
+}
+
+.vsc-ports-badge {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 10px;
+  background: rgba(0, 240, 255, 0.15);
+  color: var(--vsc-turquoise);
+  font-family: var(--vsc-font-code);
+  font-weight: 700;
+}
+
 

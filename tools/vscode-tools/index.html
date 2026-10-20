@@ -174,6 +174,21 @@
                 <span>Crypto Hasher</span>
                 <span class="vsc-tool-chip">hash</span>
               </li>
+              <li class="vsc-tree-item" onclick="document.getElementById('vsc-term-input').value='sysinfo'; document.getElementById('vsc-term-input').focus()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                <span>OS &amp; Browser Telemetry</span>
+                <span class="vsc-tool-chip">sysinfo</span>
+              </li>
+              <li class="vsc-tree-item" onclick="document.getElementById('vsc-term-input').value='nano mypage.html'; document.getElementById('vsc-term-input').focus()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                <span>Terminal Nano Editor</span>
+                <span class="vsc-tool-chip">nano</span>
+              </li>
+              <li class="vsc-tree-item" onclick="document.getElementById('vsc-term-input').value='serve mypage.html'; document.getElementById('vsc-term-input').focus()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                <span>Live Web Server</span>
+                <span class="vsc-tool-chip">serve</span>
+              </li>
             </ul>
           </div>
         </aside>
@@ -196,6 +211,10 @@
                 <button class="vsc-editor-btn run" id="vsc-btn-run" title="Run Script in Terminal (Ctrl+Enter)">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
                   <span>Run</span>
+                </button>
+                <button class="vsc-editor-btn" id="vsc-btn-preview" title="Serve and Preview Active Page (http://localhost:3000)">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+                  <span>Serve / Preview</span>
                 </button>
                 <button class="vsc-editor-btn" id="vsc-btn-format" title="Format JSON / Code">
                   <span>Format</span>
@@ -244,8 +263,9 @@
                   <span>Problems</span>
                   <span class="vsc-term-badge">0</span>
                 </div>
-                <div class="vsc-term-tab" role="tab" aria-selected="false">
+                <div class="vsc-term-tab" id="vsc-tab-ports" role="tab" aria-selected="false">
                   <span>Ports</span>
+                  <span class="vsc-term-badge" id="vsc-ports-count" style="display:none">0</span>
                 </div>
                 <div class="vsc-term-tab" role="tab" aria-selected="false">
                   <span>Debug Console</span>
@@ -300,6 +320,50 @@
               </div>
             </div>
 
+            <!-- In-Terminal Ports View (When Ports tab clicked or 'ports' run) -->
+            <div class="vsc-ports-panel vsc-scrollable" id="vsc-ports-panel">
+              <table class="vsc-ports-table">
+                <thead>
+                  <tr>
+                    <th>Port</th>
+                    <th>Process</th>
+                    <th>Target Resource</th>
+                    <th>Address</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="vsc-ports-tbody">
+                  <tr>
+                    <td colspan="5" style="color:var(--vsc-fg-muted);text-align:center;padding:20px">No virtual servers currently running. Use <code style="color:var(--vsc-turquoise)">serve &lt;filename&gt;</code> to spin one up.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- In-Terminal GNU Nano Text Editor -->
+            <div class="vsc-nano-container" id="vsc-nano-container" style="display:none">
+              <div class="vsc-nano-topbar">
+                <span>GNU nano 7.2</span>
+                <span class="vsc-nano-filename" id="vsc-nano-filename">File: new-file.html</span>
+                <span class="vsc-nano-status" id="vsc-nano-status">[New File]</span>
+              </div>
+              <textarea class="vsc-nano-editor vsc-scrollable" id="vsc-nano-editor" spellcheck="false"></textarea>
+              <div class="vsc-nano-shortcuts">
+                <button class="vsc-nano-btn" id="vsc-nano-btn-help"><span class="vsc-nano-key">^G</span> Get Help</button>
+                <button class="vsc-nano-btn" id="vsc-nano-btn-save"><span class="vsc-nano-key">^O</span> WriteOut</button>
+                <button class="vsc-nano-btn" id="vsc-nano-btn-where"><span class="vsc-nano-key">^W</span> Where Is</button>
+                <button class="vsc-nano-btn" id="vsc-nano-btn-cut"><span class="vsc-nano-key">^K</span> Cut Text</button>
+                <button class="vsc-nano-btn" id="vsc-nano-btn-justify"><span class="vsc-nano-key">^J</span> Justify</button>
+                <button class="vsc-nano-btn" id="vsc-nano-btn-pos"><span class="vsc-nano-key">^C</span> Cur Pos</button>
+                <button class="vsc-nano-btn" id="vsc-nano-btn-exit"><span class="vsc-nano-key">^X</span> Exit</button>
+                <button class="vsc-nano-btn" id="vsc-nano-btn-read"><span class="vsc-nano-key">^R</span> Read File</button>
+                <button class="vsc-nano-btn" id="vsc-nano-btn-replace"><span class="vsc-nano-key">^\</span> Replace</button>
+                <button class="vsc-nano-btn" id="vsc-nano-btn-paste"><span class="vsc-nano-key">^U</span> Paste</button>
+                <button class="vsc-nano-btn" id="vsc-nano-btn-spell"><span class="vsc-nano-key">^T</span> To Spell</button>
+                <button class="vsc-nano-btn" id="vsc-nano-btn-next"><span class="vsc-nano-key">^V</span> Next Page</button>
+              </div>
+            </div>
+
             <!-- Mobile Quickbar (For Phone Breaks & Touch Navigation) -->
             <div class="vsc-mobile-quickbar" aria-label="Mobile Terminal Helper Keys">
               <button class="vsc-mobile-key" data-key="Tab">Tab ⇥</button>
@@ -314,6 +378,30 @@
               <button class="vsc-mobile-key" data-key="~">~</button>
             </div>
           </section>
+          <!-- In-Workbench Live Web Server Preview Pane -->
+          <div class="vsc-live-preview hidden" id="vsc-live-preview">
+            <header class="vsc-preview-header">
+              <div class="vsc-preview-nav">
+                <button class="vsc-preview-btn" id="vsc-preview-btn-reload" title="Reload Page">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                </button>
+              </div>
+              <div class="vsc-preview-address">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                <span id="vsc-preview-url-text">http://localhost:3000/mypage.html</span>
+              </div>
+              <div class="vsc-preview-nav">
+                <button class="vsc-preview-btn" id="vsc-preview-btn-desktop" title="Desktop View (100%)">Desktop</button>
+                <button class="vsc-preview-btn" id="vsc-preview-btn-tablet" title="Tablet View (768px)">Tablet</button>
+                <button class="vsc-preview-btn" id="vsc-preview-btn-mobile" title="Mobile Phone View (375px)">Mobile</button>
+                <button class="vsc-preview-btn" id="vsc-preview-btn-external" title="Open in Chrome Window / New Tab">Open in Chrome ↗</button>
+                <button class="vsc-preview-btn" id="vsc-preview-btn-close" title="Close Preview">✕</button>
+              </div>
+            </header>
+            <div class="vsc-preview-viewport-wrap">
+              <iframe class="vsc-preview-frame" id="vsc-preview-iframe" title="Live Page Preview"></iframe>
+            </div>
+          </div>
         </main>
       </div>
 
