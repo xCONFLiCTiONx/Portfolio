@@ -311,11 +311,13 @@ body[data-tool-id="code-tools"].vsc-fullscreen #vscode-workbench {
 .vsc-act-btn svg {
   width: 22px;
   height: 22px;
+  pointer-events: none;
 }
 
 /* 2B. SIDEBAR */
 .vsc-sidebar {
   width: 260px;
+  min-width: 0;
   background-color: var(--vsc-bg-sidebar);
   border-right: 1px solid var(--vsc-border);
   display: flex;
@@ -326,8 +328,11 @@ body[data-tool-id="code-tools"].vsc-fullscreen #vscode-workbench {
 }
 
 .vsc-sidebar.collapsed {
-  width: 0;
-  border-right: none;
+  width: 0 !important;
+  min-width: 0 !important;
+  border-right: none !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
 }
 
 .vsc-sidebar-header {
@@ -1007,10 +1012,15 @@ body[data-tool-id="code-tools"].vsc-fullscreen #vscode-workbench {
     z-index: 500 !important;
     box-shadow: 4px 0 24px rgba(0, 0, 0, 0.85) !important;
     background: #181818 !important;
+    display: flex !important;
+    flex-direction: column !important;
   }
 
   .vsc-sidebar.collapsed {
     display: none !important;
+    width: 0 !important;
+    min-width: 0 !important;
+    pointer-events: none !important;
   }
 
   /* Compact editor actions on mobile */

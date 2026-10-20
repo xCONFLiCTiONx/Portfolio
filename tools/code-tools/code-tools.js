@@ -153,6 +153,7 @@
     shellSelect: document.getElementById("vsc-shell-select"),
     openEditorsList: document.getElementById("vsc-open-editors-list"),
     workspaceFilesList: document.getElementById("vsc-workspace-files-list"),
+    workspaceArea: document.getElementById("vsc-workspace-area"),
     statusLnCol: document.getElementById("vsc-status-lncol"),
     sidebar: document.getElementById("vsc-sidebar"),
     sidebarTitle: document.getElementById("vsc-sidebar-title"),
@@ -565,6 +566,15 @@
     }
     renderTabs();
     renderSidebarLists();
+
+    // On mobile, auto-close floating sidebar drawer when a file is opened
+    if (window.innerWidth <= 768 && el.sidebar && !el.sidebar.classList.contains("collapsed")) {
+      el.sidebar.classList.add("collapsed");
+      document.querySelectorAll(".vsc-act-btn").forEach(b => {
+        if (b !== el.actAccounts && b !== el.actSettings) b.classList.remove("active");
+      });
+      state.activeSidebarView = null;
+    }
   }
 
   function renderTabs() {
@@ -1437,7 +1447,7 @@
 
   // --- COMMAND PALETTE ENGINE ---
   const COMMAND_PALETTE_ITEMS = [
-    { id: "view_sidebar", label: "View: Toggle Primary Sidebar", exec: () => { if (el.sidebar) el.sidebar.classList.toggle("collapsed"); if (el.actExplorer) el.actExplorer.classList.toggle("active"); } },
+    { id: "view_sidebar", label: "View: Toggle Primary Sidebar", exec: () => toggleExplorerSidebar() },
     { id: "view_terminal", label: "View: Toggle Terminal Panel", exec: () => toggleMaximizeTerminal() },
     { id: "view_close_editor", label: "View: Close Active Editor (Ctrl+W)", exec: () => { if (state.activeFile) closeTab(state.activeFile); } },
     { id: "view_close_all_editors", label: "View: Close All Editors (Ctrl+K W)", exec: () => closeAllTabs() },
@@ -1686,23 +1696,53 @@
   }
 
   // --- MULTI-VIEW & TABS CONTROLLERS ---
-  function switchSidebarView(viewId) {
-    const isCurrentActive = state.activeSidebarView === viewId;
-    const isCollapsed = el.sidebar && el.sidebar.classList.contains("collapsed");
-
-    // If clicking the currently active view and sidebar is open, collapse sidebar (Standard VS Code behavior)
-    if (isCurrentActive && !isCollapsed) {
-      if (el.sidebar) el.sidebar.classList.add("collapsed");
+  function toggleExplorerSidebar() {
+    if (!el.sidebar) return;
+    const isShowing = !el.sidebar.classList.contains("collapsed");
+    if (isShowing) {
+      // If currently showing, hide it
+      el.sidebar.classList.add("collapsed");
       document.querySelectorAll(".vsc-act-btn").forEach(b => {
         if (b !== el.actAccounts && b !== el.actSettings) b.classList.remove("active");
       });
+      state.activeSidebarView = null;
+    } else {
+      // If currently hidden, open it and show Explorer
+      el.sidebar.classList.remove("collapsed");
+      document.querySelectorAll(".vsc-sidebar-view").forEach(v => v.classList.remove("active"));
+      document.querySelectorAll(".vsc-act-btn").forEach(b => {
+        if (b !== el.actAccounts && b !== el.actSettings) b.classList.remove("active");
+      });
+      const expView = document.getElementById("vsc-view-explorer");
+      if (expView) expView.classList.add("active");
+      if (el.actExplorer) el.actExplorer.classList.add("active");
+      if (el.sidebarTitle) el.sidebarTitle.textContent = "Explorer";
+      state.activeSidebarView = "explorer";
+    }
+  }
+
+  function switchSidebarView(viewId) {
+    if (!el.sidebar) return;
+    if (viewId === "explorer") {
+      toggleExplorerSidebar();
+      return;
+    }
+
+    const isShowing = !el.sidebar.classList.contains("collapsed");
+    const isCurrentActive = state.activeSidebarView === viewId;
+
+    // If clicking the currently active view and sidebar is open, collapse sidebar
+    if (isShowing && isCurrentActive) {
+      el.sidebar.classList.add("collapsed");
+      document.querySelectorAll(".vsc-act-btn").forEach(b => {
+        if (b !== el.actAccounts && b !== el.actSettings) b.classList.remove("active");
+      });
+      state.activeSidebarView = null;
       return;
     }
 
     // Otherwise expand sidebar and switch to selected view
-    if (el.sidebar) {
-      el.sidebar.classList.remove("collapsed");
-    }
+    el.sidebar.classList.remove("collapsed");
     const viewMap = {
       explorer: { view: document.getElementById("vsc-view-explorer"), btn: el.actExplorer, title: "Explorer" },
       search: { view: document.getElementById("vsc-view-search"), btn: el.actSearch, title: "Search" },
@@ -1721,6 +1761,31 @@
       if (viewMap[viewId].btn) viewMap[viewId].btn.classList.add("active");
       if (el.sidebarTitle) el.sidebarTitle.textContent = viewMap[viewId].title;
       state.activeSidebarView = viewId;
+    }
+  }
+
+  function initResponsiveSidebar() {
+    const isMobile = window.innerWidth <= 768;
+    if (isMobile) {
+      // By default on mobile, sidebar should NOT be showing
+      if (el.sidebar) el.sidebar.classList.add("collapsed");
+      if (el.actExplorer) el.actExplorer.classList.remove("active");
+      document.querySelectorAll(".vsc-act-btn").forEach(b => {
+        if (b !== el.actAccounts && b !== el.actSettings) b.classList.remove("active");
+      });
+      state.activeSidebarView = null;
+    } else {
+      // By default on desktop, sidebar should be showing
+      if (el.sidebar) el.sidebar.classList.remove("collapsed");
+      document.querySelectorAll(".vsc-sidebar-view").forEach(v => v.classList.remove("active"));
+      document.querySelectorAll(".vsc-act-btn").forEach(b => {
+        if (b !== el.actAccounts && b !== el.actSettings) b.classList.remove("active");
+      });
+      const expView = document.getElementById("vsc-view-explorer");
+      if (expView) expView.classList.add("active");
+      if (el.actExplorer) el.actExplorer.classList.add("active");
+      if (el.sidebarTitle) el.sidebarTitle.textContent = "Explorer";
+      state.activeSidebarView = "explorer";
     }
   }
 
@@ -2105,7 +2170,7 @@
     });
 
     bindItem("vsc-item-toggle-sidebar", () => {
-      if (el.sidebar) el.sidebar.classList.toggle("collapsed");
+      toggleExplorerSidebar();
     });
     bindItem("vsc-item-toggle-term", toggleMaximizeTerminal);
     bindItem("vsc-item-toggle-preview", () => {
@@ -4331,13 +4396,22 @@ Subcommands:
     initMenuDropdowns();
 
     // Activity Bar View Switchers
-    if (el.actExplorer) el.actExplorer.addEventListener("click", () => switchSidebarView("explorer"));
+    if (el.actExplorer) el.actExplorer.addEventListener("click", toggleExplorerSidebar);
     if (el.actSearch) el.actSearch.addEventListener("click", () => switchSidebarView("search"));
     if (el.actGit) el.actGit.addEventListener("click", () => switchSidebarView("git"));
     if (el.actDebug) el.actDebug.addEventListener("click", () => switchSidebarView("debug"));
     if (el.actExtensions) el.actExtensions.addEventListener("click", () => switchSidebarView("extensions"));
     if (el.actAccounts) el.actAccounts.addEventListener("click", openGitHubModal);
     if (el.actSettings) el.actSettings.addEventListener("click", openSettingsModal);
+
+    // Auto-close floating drawer on mobile when clicking workspace area
+    if (el.workspaceArea) {
+      el.workspaceArea.addEventListener("click", () => {
+        if (window.innerWidth <= 768 && el.sidebar && !el.sidebar.classList.contains("collapsed")) {
+          toggleExplorerSidebar();
+        }
+      });
+    }
 
     // Titlebar & Searchbar
     if (el.searchBar) el.searchBar.addEventListener("click", openCommandPalette);
@@ -5241,7 +5315,7 @@ Subcommands:
           label: "Toggle Primary Sidebar",
           shortcut: "Ctrl+B",
           exec: () => {
-            if (el.sidebar) el.sidebar.classList.toggle("collapsed");
+            toggleExplorerSidebar();
           }
         },
         {
@@ -5425,7 +5499,7 @@ Subcommands:
       // Ctrl+B: Toggle Sidebar
       if (key === "b") {
         e.preventDefault();
-        if (el.sidebar) el.sidebar.classList.toggle("collapsed");
+        toggleExplorerSidebar();
         return;
       }
 
@@ -5694,6 +5768,7 @@ Subcommands:
 
   // --- BOOTSTRAP WORKBENCH ---
   function init() {
+    initResponsiveSidebar();
     applySettings();
     updateWorkspaceUI();
     renderTabs();
