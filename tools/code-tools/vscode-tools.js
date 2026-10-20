@@ -70,7 +70,7 @@ User-Agent: VSCodeTools/4.2
   <title>Custom Served Page</title>
   <!-- Link directly to portfolio css and custom styles -->
   <link rel="stylesheet" href="../../css/main.css" />
-  <link rel="stylesheet" href="./vscode-tools.css" />
+  <link rel="stylesheet" href="./code-tools.css" />
   <style>
     body {
       background: #0f172a;
@@ -644,7 +644,7 @@ User-Agent: VSCodeTools/4.2
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>App</title>
   <link rel="stylesheet" href="../../css/main.css" />
-  <link rel="stylesheet" href="./vscode-tools.css" />
+  <link rel="stylesheet" href="./code-tools.css" />
 </head>
 <body>
   <h1>App Live Preview</h1>
@@ -1270,9 +1270,9 @@ Integrated Web Developer Workbench:
     let content = state.files[filename];
 
     // Auto-resolve root asset links for live rendering
-    // Resolves ../../css/main.css and ./vscode-tools.css to accessible site assets
+    // Resolves ../../css/main.css and ./code-tools.css to accessible site assets
     content = content.replace(/href=["']\.\.\/\.\.\/css\/main\.css["']/gi, 'href="../../css/main.css"');
-    content = content.replace(/href=["']\.\/vscode-tools\.css["']/gi, 'href="./vscode-tools.css"');
+    content = content.replace(/href=["']\.\/code-tools\.css["']/gi, 'href="./code-tools.css"');
     content = content.replace(/src=["']\.\.\/\.\.\/js\/framework\.js["']/gi, 'src="../../js/framework.js"');
 
     // Create a live Blob URL

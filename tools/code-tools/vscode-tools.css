@@ -45,7 +45,7 @@
 }
 
 html,
-body[data-tool-id="vscode-tools"] {
+body[data-tool-id="code-tools"] {
   height: 100dvh !important;
   max-height: 100dvh !important;
   margin: 0 !important;
@@ -53,7 +53,7 @@ body[data-tool-id="vscode-tools"] {
   overflow: hidden !important;
 }
 
-body[data-tool-id="vscode-tools"] {
+body[data-tool-id="code-tools"] {
   background-color: var(--vsc-bg-app) !important;
   color: var(--vsc-fg-primary);
   display: flex !important;
@@ -61,18 +61,18 @@ body[data-tool-id="vscode-tools"] {
   user-select: text;
 }
 
-body[data-tool-id="vscode-tools"] header.site-header {
+body[data-tool-id="code-tools"] header.site-header {
   flex-shrink: 0 !important;
   margin-bottom: 0 !important;
   background: var(--vsc-bg-title) !important;
   border-bottom: 1px solid var(--vsc-border) !important;
 }
 
-body[data-tool-id="vscode-tools"] footer.site-footer {
+body[data-tool-id="code-tools"] footer.site-footer {
   display: none !important;
 }
 
-body[data-tool-id="vscode-tools"] main.container {
+body[data-tool-id="code-tools"] main.container {
   flex: 1 1 0% !important;
   max-width: 100% !important;
   width: 100% !important;
@@ -85,8 +85,8 @@ body[data-tool-id="vscode-tools"] main.container {
   overflow: hidden !important;
 }
 
-body[data-tool-id="vscode-tools"].vsc-fullscreen header.site-header,
-body[data-tool-id="vscode-tools"].vsc-fullscreen footer.site-footer {
+body[data-tool-id="code-tools"].vsc-fullscreen header.site-header,
+body[data-tool-id="code-tools"].vsc-fullscreen footer.site-footer {
   display: none !important;
 }
 
@@ -133,7 +133,7 @@ body[data-tool-id="vscode-tools"].vsc-fullscreen footer.site-footer {
   border-bottom: none;
 }
 
-body[data-tool-id="vscode-tools"].vsc-fullscreen #vscode-workbench {
+body[data-tool-id="code-tools"].vsc-fullscreen #vscode-workbench {
   height: 100dvh !important;
   max-height: 100dvh !important;
 }
