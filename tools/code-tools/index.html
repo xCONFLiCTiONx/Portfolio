@@ -134,6 +134,8 @@
                 <div class="vsc-dropdown-item" id="vsc-item-cmd-palette"><span>Command Palette...</span><kbd>Ctrl+Shift+P</kbd></div>
                 <div class="vsc-dropdown-item" id="vsc-item-gh-docs"><span>GitHub Setup Guide</span></div>
                 <div class="vsc-dropdown-item" id="vsc-item-about-tool"><span>About VS Code Tools</span></div>
+                <div class="vsc-dropdown-divider"></div>
+                <div class="vsc-dropdown-item" id="vsc-item-reset-data" style="color:#f44336"><span>Clear Workspace Data (Keep Token &amp; Settings)...</span></div>
               </div>
             </div>
           </nav>
@@ -754,6 +756,13 @@
             <button type="button" class="vsc-editor-btn" id="vsc-setting-btn-toggle-token" title="Show / Hide Token" style="padding:6px 10px">👁</button>
           </div>
           <span style="font-size:10px;color:var(--vsc-fg-muted)">Remembered across browser sessions via localStorage and secure cookies.</span>
+        </div>
+        <div class="vsc-input-group" style="margin-top:6px;border-top:1px solid #232323;padding-top:10px">
+          <label class="vsc-input-label" style="color:#e06c75">Reset &amp; Maintenance:</label>
+          <button type="button" class="vsc-editor-btn" id="vsc-btn-reset-data" style="color:#f44336;border-color:#5c2323;align-self:flex-start">
+            Clear Workspace Data (Keep Token &amp; Settings)...
+          </button>
+          <span style="font-size:10px;color:var(--vsc-fg-muted)">Cleans all cached workspace files and reloads to a fresh interface. Keeps your GitHub token and settings intact.</span>
         </div>
       </div>
       <div class="vsc-dialog-footer">

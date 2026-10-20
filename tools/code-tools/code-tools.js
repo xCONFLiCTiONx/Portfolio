@@ -231,6 +231,8 @@
     settingBtnToggleToken: document.getElementById("vsc-setting-btn-toggle-token"),
     settingsBtnClose: document.getElementById("vsc-settings-btn-close"),
     settingsBtnSave: document.getElementById("vsc-settings-btn-save"),
+    btnResetData: document.getElementById("vsc-btn-reset-data"),
+    itemResetData: document.getElementById("vsc-item-reset-data"),
 
     // Quick Input Dialog (In-page prompt)
     quickInputDialog: document.getElementById("vsc-quickinput-dialog"),
@@ -376,6 +378,62 @@
         el.quickInputInput.focus();
         el.quickInputInput.select();
       }
+    });
+  }
+
+  function confirmInWorkbench(title, message) {
+    return new Promise((resolve) => {
+      if (!el.quickInputDialog) {
+        resolve(window.confirm ? window.confirm(message.replace(/<[^>]+>/g, "")) : true);
+        return;
+      }
+
+      if (el.quickInputTitle) el.quickInputTitle.textContent = title.toUpperCase();
+      if (el.quickInputLabel) el.quickInputLabel.innerHTML = message;
+      if (el.quickInputInput) el.quickInputInput.style.display = "none";
+
+      let isDone = false;
+      const finish = (val) => {
+        if (isDone) return;
+        isDone = true;
+        cleanup();
+        if (el.quickInputInput) el.quickInputInput.style.display = "";
+        try { el.quickInputDialog.close(); } catch (e) {}
+        resolve(val);
+      };
+
+      const onKeyDown = (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          finish(true);
+        } else if (e.key === "Escape") {
+          e.preventDefault();
+          finish(false);
+        }
+      };
+
+      const onOkClick = () => finish(true);
+      const onCancelClick = () => finish(false);
+      const onBackdropClick = (e) => {
+        if (e.target === el.quickInputDialog) finish(false);
+      };
+
+      const cleanup = () => {
+        if (el.quickInputInput) el.quickInputInput.removeEventListener("keydown", onKeyDown);
+        if (el.quickInputBtnOk) el.quickInputBtnOk.removeEventListener("click", onOkClick);
+        if (el.quickInputBtnCancel) el.quickInputBtnCancel.removeEventListener("click", onCancelClick);
+        if (el.quickInputBtnClose) el.quickInputBtnClose.removeEventListener("click", onCancelClick);
+        el.quickInputDialog.removeEventListener("click", onBackdropClick);
+      };
+
+      if (el.quickInputInput) el.quickInputInput.addEventListener("keydown", onKeyDown);
+      if (el.quickInputBtnOk) el.quickInputBtnOk.addEventListener("click", onOkClick);
+      if (el.quickInputBtnCancel) el.quickInputBtnCancel.addEventListener("click", onCancelClick);
+      if (el.quickInputBtnClose) el.quickInputBtnClose.addEventListener("click", onCancelClick);
+      el.quickInputDialog.addEventListener("click", onBackdropClick);
+
+      el.quickInputDialog.showModal();
+      if (el.quickInputBtnOk) el.quickInputBtnOk.focus();
     });
   }
 
@@ -1328,7 +1386,8 @@
     { id: "term_clear", label: "Terminal: Clear Console", exec: () => COMMANDS.clear.exec([]) },
     { id: "server_preview", label: "Live Server: Preview Active Page (localhost:3000)", exec: () => serveFile(state.activeFile, 3000, false) },
     { id: "settings_open", label: "Preferences: Open Settings", exec: () => openSettingsModal() },
-    { id: "problems_open", label: "Problems: Show Workspace Diagnostics", exec: () => switchTerminalTab("problems") }
+    { id: "problems_open", label: "Problems: Show Workspace Diagnostics", exec: () => switchTerminalTab("problems") },
+    { id: "help_reset_data", label: "Help: Clear Workspace Data (Keep Token & Settings)", exec: () => resetWorkspaceData() }
   ];
 
   function openCommandPalette() {
@@ -1499,6 +1558,57 @@
     updateWorkspaceUI();
     showMessage("info", "Workspace Cleared", "Workspace reset to a clean empty state.");
     termPrint("Workspace cleared. Ready for new files or workspace import.", "vsc-term-info");
+  }
+
+  async function resetWorkspaceData() {
+    const ok = await confirmInWorkbench(
+      "Reset Workspace Data",
+      "Are you sure you want to clean this workspace?<br><br>• All cached workspace files and changes will be wiped.<br>• <b>Your GitHub token and settings will be preserved</b>.<br>• The page will reload with a fresh, clean interface."
+    );
+    if (!ok) return;
+
+    // 1. Preserve GitHub Token and Settings in memory
+    const token = state.githubToken || getStoredToken();
+    const settings = localStorage.getItem("vsc_workbench_settings");
+    const nanoSettings = localStorage.getItem("vsc_nano_settings");
+
+    // 2. Wipe workspace files, cached repo, cloned file SHAs, and command history
+    try {
+      localStorage.removeItem("vsc_workspace_files_v1");
+      localStorage.removeItem("vsc_user_custom_workspace");
+      localStorage.removeItem("vsc_gh_file_shas");
+      localStorage.removeItem("vsc_gh_repo");
+      localStorage.removeItem("vsc_gh_branch");
+      localStorage.removeItem("vsc_command_history");
+      setCookie("gh_repo", "", -1);
+      setCookie("gh_branch", "", -1);
+    } catch (e) {}
+
+    // 3. Clear IndexedDB project directory handles if any
+    try {
+      const dbs = ["vsc_projects_db", "dev_workbench_fs"];
+      dbs.forEach(db => {
+        try { indexedDB.deleteDatabase(db); } catch (e) {}
+      });
+    } catch (e) {}
+
+    // 4. Re-lock and restore the preserved token and settings
+    if (token) {
+      persistToken(token);
+    }
+    if (settings) {
+      try { localStorage.setItem("vsc_workbench_settings", settings); } catch (e) {}
+    }
+    if (nanoSettings) {
+      try { localStorage.setItem("vsc_nano_settings", nanoSettings); } catch (e) {}
+    }
+
+    termPrint("Workspace data cleared. GitHub token & settings safely preserved. Reloading...", "vsc-term-success");
+    showMessage("success", "RESET COMPLETE", "Workspace data cleared. Reloading clean interface...");
+
+    setTimeout(() => {
+      window.location.reload();
+    }, 500);
   }
 
   // --- MULTI-VIEW & TABS CONTROLLERS ---
@@ -1970,6 +2080,7 @@ Integrated Web Developer Workbench:
 - Full developer command suite (CURL, DNS, JWT, Regex, Nano, SysInfo)
 `);
     });
+    bindItem("vsc-item-reset-data", resetWorkspaceData);
   }
 
   // --- SASH RESIZER DRAG LOGIC (MOUSE & TOUCH VIA POINTER EVENTS) ---
@@ -2546,8 +2657,21 @@ Integrated Web Developer Workbench:
   <b class="vsc-term-success">cat</b> &lt;filename&gt;                      Print file contents directly to the terminal
   <b class="vsc-term-success">format</b>                              Format code/JSON in the active editor tab
   <b class="vsc-term-success">clear</b>                               Clear the terminal output screen
+  <b class="vsc-term-success">reset</b> / <b class="vsc-term-success">clear-data</b>                      Clean workspace files &amp; reload fresh (keeps token &amp; settings safe)
 `);
       }
+    },
+
+    reset: {
+      desc: "Clean cached workspace files and reload clean interface (preserves GitHub token & settings)",
+      usage: "reset",
+      exec: async () => resetWorkspaceData()
+    },
+
+    "clear-data": {
+      desc: "Clean cached workspace files and reload clean interface (preserves GitHub token & settings)",
+      usage: "clear-data",
+      exec: async () => resetWorkspaceData()
     },
 
     clear: {
@@ -4445,6 +4569,19 @@ Subcommands:
     if (el.settingsDialog) {
       el.settingsDialog.addEventListener("click", (e) => {
         if (e.target === el.settingsDialog) el.settingsDialog.close();
+      });
+    }
+
+    // Reset Data action buttons
+    if (el.btnResetData) {
+      el.btnResetData.addEventListener("click", () => {
+        if (el.settingsDialog && el.settingsDialog.open) el.settingsDialog.close();
+        resetWorkspaceData();
+      });
+    }
+    if (el.itemResetData) {
+      el.itemResetData.addEventListener("click", () => {
+        resetWorkspaceData();
       });
     }
 
