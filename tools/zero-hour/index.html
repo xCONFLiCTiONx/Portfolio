@@ -187,24 +187,36 @@
         <div class="zh-overview-grid" id="zh-view-OVERVIEW">
           <!-- CENTER 3D ISOMETRIC NETWORK TOPOLOGY STAGE -->
           <section class="zh-panel zh-map-stage" aria-label="Interactive Isometric Network Topology">
-            <!-- Top-Left Network Overview HUD -->
-            <div class="zh-net-hud">
-              <div class="zh-net-hud-title">NETWORK OVERVIEW</div>
-              <div class="zh-net-stat-row">
-                <span>⚙ Subnets</span>
-                <span class="val">4</span>
+            <!-- Top-Left Network Overview HUD (Collapsible) -->
+            <div class="zh-net-hud" id="zh-net-hud">
+              <div class="zh-net-hud-header" id="zh-net-hud-header" role="button" tabindex="0" aria-expanded="true" aria-controls="zh-net-hud-body" title="Toggle Network Overview">
+                <div class="zh-net-hud-title">NETWORK OVERVIEW</div>
+                <div class="zh-net-hud-pill-summary" id="zh-net-hud-summary">
+                  <span>⚙ 4</span>
+                  <span>▣ 12</span>
+                  <span class="pill-alert">▲ <span id="zh-net-stat-alerts-pill">3</span></span>
+                </div>
+                <button class="zh-net-hud-toggle-btn" id="zh-net-hud-toggle" aria-label="Minimize / Expand Network Overview" title="Minimize / Expand Overview">
+                  <span class="zh-net-hud-toggle-icon" id="zh-net-hud-toggle-icon">−</span>
+                </button>
               </div>
-              <div class="zh-net-stat-row">
-                <span>▣ Hosts</span>
-                <span class="val">12</span>
-              </div>
-              <div class="zh-net-stat-row">
-                <span>☍ Open Ports</span>
-                <span class="val">28</span>
-              </div>
-              <div class="zh-net-stat-row alert">
-                <span>▲ Alerts</span>
-                <span class="val" id="zh-net-stat-alerts">3</span>
+              <div class="zh-net-hud-body" id="zh-net-hud-body">
+                <div class="zh-net-stat-row">
+                  <span>⚙ Subnets</span>
+                  <span class="val">4</span>
+                </div>
+                <div class="zh-net-stat-row">
+                  <span>▣ Hosts</span>
+                  <span class="val">12</span>
+                </div>
+                <div class="zh-net-stat-row">
+                  <span>☍ Open Ports</span>
+                  <span class="val">28</span>
+                </div>
+                <div class="zh-net-stat-row alert">
+                  <span>▲ Alerts</span>
+                  <span class="val" id="zh-net-stat-alerts">3</span>
+                </div>
               </div>
             </div>
 

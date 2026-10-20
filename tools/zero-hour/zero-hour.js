@@ -786,6 +786,8 @@
     const alertsCount = Object.values(sc.nodes).filter(n => n.status === "compromised" && !n.isolated).length;
     const netStatAlerts = document.getElementById("zh-net-stat-alerts");
     if (netStatAlerts) netStatAlerts.textContent = String(alertsCount);
+    const netStatAlertsPill = document.getElementById("zh-net-stat-alerts-pill");
+    if (netStatAlertsPill) netStatAlertsPill.textContent = String(alertsCount);
   }
 
   // Render the 3D Isometric Network Map SVG with live procedural states
@@ -1885,6 +1887,68 @@
         if (e.target === backdrop) backdrop.classList.remove("open");
       });
     }
+
+    // Wire Collapsible Network Overview HUD
+    const netHud = document.getElementById("zh-net-hud");
+    const netHudHeader = document.getElementById("zh-net-hud-header");
+    const netHudToggle = document.getElementById("zh-net-hud-toggle");
+    const netHudToggleIcon = document.getElementById("zh-net-hud-toggle-icon");
+
+    function syncNetHudUI() {
+      if (!netHud || !netHudToggleIcon) return;
+      const isMobile = window.innerWidth <= 900;
+      const isExpanded = isMobile
+        ? netHud.classList.contains("expanded")
+        : !netHud.classList.contains("collapsed");
+
+      if (netHudHeader) netHudHeader.setAttribute("aria-expanded", String(isExpanded));
+      if (netHudToggle) netHudToggle.setAttribute("aria-expanded", String(isExpanded));
+      netHudToggleIcon.textContent = isExpanded ? "−" : "+";
+    }
+
+    function toggleNetHud(e) {
+      if (e) {
+        e.stopPropagation();
+        e.preventDefault();
+      }
+      if (!netHud) return;
+      if (typeof SoundFX !== "undefined" && SoundFX.play) SoundFX.play("click");
+      const isMobile = window.innerWidth <= 900;
+      if (isMobile) {
+        netHud.classList.toggle("expanded");
+      } else {
+        netHud.classList.toggle("collapsed");
+      }
+      syncNetHudUI();
+    }
+
+    if (netHudHeader) {
+      netHudHeader.addEventListener("click", toggleNetHud);
+      netHudHeader.addEventListener("keydown", e => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          toggleNetHud(e);
+        }
+      });
+    }
+
+    if (netHudToggle) {
+      netHudToggle.addEventListener("click", toggleNetHud);
+    }
+
+    // Dismiss expanded mobile HUD when tapping anywhere on the canvas
+    const isoViewport = document.getElementById("zh-iso-map-Mount");
+    if (isoViewport) {
+      isoViewport.addEventListener("click", () => {
+        if (window.innerWidth <= 900 && netHud && netHud.classList.contains("expanded")) {
+          netHud.classList.remove("expanded");
+          syncNetHudUI();
+        }
+      });
+    }
+
+    window.addEventListener("resize", syncNetHudUI);
+    syncNetHudUI();
 
     // Restore saved cookie state if available, otherwise generate a fresh procedural operation
     restoreOrStartOperation();
