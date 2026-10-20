@@ -936,6 +936,23 @@ User-Agent: VSCodeTools/4.2
       el.debugHistory.appendChild(inputEntry);
     }
 
+    // Try zero-eval safe math parser first (completely immune to CSP restrictions)
+    try {
+      const calcVal = safeCalculate(trimmed);
+      if (calcVal !== undefined && !Number.isNaN(calcVal)) {
+        if (el.debugHistory) {
+          const outEntry = document.createElement("div");
+          outEntry.className = "vsc-term-line";
+          outEntry.innerHTML = `<span style="color:#98c379">&lt; </span><span style="color:#fff">${calcVal}</span>`;
+          el.debugHistory.appendChild(outEntry);
+          el.debugHistory.scrollTop = el.debugHistory.scrollHeight;
+        }
+        return;
+      }
+    } catch (ignore) {
+      // Not a pure calculation, continue to sandboxed runner
+    }
+
     try {
       const result = await executeSandboxedScript(`return (${trimmed});`);
       if (el.debugHistory) {
@@ -3364,9 +3381,15 @@ Length: ${hex.length * 4} bits (${hex.length} hex chars)
 
     if (el.previewBtnReload && el.previewFrame) {
       el.previewBtnReload.addEventListener("click", () => {
+        const curDoc = el.previewFrame.srcdoc;
         const curSrc = el.previewFrame.src;
-        el.previewFrame.src = "";
-        setTimeout(() => { el.previewFrame.src = curSrc; }, 50);
+        if (curDoc) {
+          el.previewFrame.srcdoc = "";
+          setTimeout(() => { el.previewFrame.srcdoc = curDoc; }, 50);
+        } else {
+          el.previewFrame.src = "";
+          setTimeout(() => { el.previewFrame.src = curSrc; }, 50);
+        }
       });
     }
 
@@ -3390,8 +3413,9 @@ Length: ${hex.length * 4} bits (${hex.length} hex chars)
 
     if (el.previewBtnExternal && el.previewFrame) {
       el.previewBtnExternal.addEventListener("click", () => {
-        if (el.previewFrame.src) {
-          window.open(el.previewFrame.src, "_blank");
+        const targetUrl = el.previewFrame.dataset.blobUrl || el.previewFrame.src;
+        if (targetUrl) {
+          window.open(targetUrl, "_blank");
         }
       });
     }
