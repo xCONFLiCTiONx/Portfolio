@@ -214,6 +214,21 @@
         "sidebar": false,
         "footer": true
       }
+    },
+    {
+      "id": "blackbox",
+      "name": "BlackBox Shell",
+      "description": "Progressive CLI diagnostic workbench — discover hidden tools, run live network/DNS/WebRTC probes, and solve morphing kernel & routing faults.",
+      "path": "tools/blackbox/",
+      "icon": "im im-computer",
+      "category": "CLI Workbench",
+      "enabled": true,
+      "githubUrl": "https://github.com/xCONFLiCTiONx/Portfolio/blob/main/tools/blackbox/index.html",
+      "layout": {
+        "header": true,
+        "sidebar": false,
+        "footer": true
+      }
     }
   ]
 }

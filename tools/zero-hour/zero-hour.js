@@ -1719,11 +1719,43 @@
       });
     });
 
-    // Wire Terminal Input & History
+    // Wire Terminal Input, Tab Autocomplete & History
     const termInput = document.getElementById("zh-term-input");
+    const ZH_COMMANDS = [
+      "help", "nmap", "grep", "cat", "ps", "netstat",
+      "john", "hashcat", "wireshark", "pcap", "dig",
+      "openssl", "whois", "isolate", "report", "reroll", "clear"
+    ];
+    const ZH_ARGS = [
+      "-sV", "10.10.1.0/24", "10.10.2.0/24", "10.10.3.0/24", "10.10.4.0/24",
+      "suspicious", "access.log", "/var/backups/creds.dump", "-tulnp",
+      "WEB", "DB", "DEV", "ADMIN", "CORE"
+    ];
     if (termInput) {
       termInput.addEventListener("keydown", e => {
-        if (e.key === "Enter") {
+        if (e.key === "Tab") {
+          e.preventDefault();
+          const raw = termInput.value;
+          const parts = raw.split(/\s+/);
+          if (parts.length <= 1 && !raw.endsWith(" ")) {
+            const p = (parts[0] || "").toLowerCase();
+            const matches = ZH_COMMANDS.filter(c => c.startsWith(p));
+            if (matches.length === 1) {
+              termInput.value = matches[0] + " ";
+            } else if (matches.length > 1) {
+              printTerminalLine(matches.join("   "), "color:#94b8d7");
+            }
+          } else {
+            const last = raw.endsWith(" ") ? "" : parts[parts.length - 1];
+            const matches = ZH_ARGS.filter(a => a.toLowerCase().startsWith(last.toLowerCase()));
+            if (matches.length === 1) {
+              const prefix = raw.endsWith(" ") ? parts.filter(Boolean) : parts.slice(0, -1);
+              termInput.value = [...prefix, matches[0]].join(" ") + " ";
+            } else if (matches.length > 1) {
+              printTerminalLine(matches.join("   "), "color:#94b8d7");
+            }
+          }
+        } else if (e.key === "Enter") {
           const val = termInput.value;
           termInput.value = "";
           runTerminalCommand(val);

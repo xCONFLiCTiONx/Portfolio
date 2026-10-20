@@ -1,0 +1,639 @@
+/* ==========================================================================
+   BLACKBOX // PROGRESSIVE TERMINAL WORKBENCH & ANOMALY ENGINE
+   Inspired by bash.ws + Real-World Systems / Crypto / Network Engineering
+   Morphs appearance, layout accents, telemetry, and problem on every solve.
+   ========================================================================== */
+
+:root {
+  color-scheme: dark;
+}
+
+body[data-tool-id="blackbox"] {
+  background-color: #05070a !important;
+  color: #e2e8f0;
+  overflow-x: hidden;
+}
+
+body[data-tool-id="blackbox"] header.site-header {
+  margin-bottom: 0 !important;
+  background: rgba(5, 8, 14, 0.94) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+body[data-tool-id="blackbox"] main.container {
+  max-width: 100% !important;
+  width: 100% !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  display: block !important;
+}
+
+body[data-tool-id="blackbox"].bb-fullscreen header.site-header,
+body[data-tool-id="blackbox"].bb-fullscreen footer.site-footer {
+  display: none !important;
+}
+
+/* ==========================================================================
+   8 DYNAMIC ARCHITECTURAL THEMES (EVERY SOLVE MORPHS THE ENTIRE UI)
+   ========================================================================== */
+
+/* 1. PHOSPHOR AMBER — Legacy AIX / Mainframe Kernel */
+#blackbox-app[data-theme="amber-crt"] {
+  --bb-bg: #0b0700;
+  --bb-bg-2: #140d02;
+  --bb-panel: rgba(22, 14, 2, 0.92);
+  --bb-panel-alt: rgba(32, 20, 3, 0.95);
+  --bb-primary: #ffb000;
+  --bb-primary-bright: #ffd166;
+  --bb-secondary: #ff7b00;
+  --bb-border: rgba(255, 176, 0, 0.32);
+  --bb-border-strong: rgba(255, 176, 0, 0.75);
+  --bb-text: #ffe8b3;
+  --bb-muted: #b38622;
+  --bb-danger: #ff3b30;
+  --bb-success: #34d399;
+  --bb-radius: 2px;
+  --bb-font-mono: "JetBrains Mono", "Cascadia Code", "Consolas", monospace;
+  --bb-font-head: "Courier New", "JetBrains Mono", monospace;
+  --scrollbar-thumb: #664600;
+  --scrollbar-track: #0b0700;
+}
+
+/* 2. ARCTIC ICE — Optical BGP Routing Core */
+#blackbox-app[data-theme="arctic-ice"] {
+  --bb-bg: #040911;
+  --bb-bg-2: #081221;
+  --bb-panel: rgba(9, 20, 36, 0.9);
+  --bb-panel-alt: rgba(13, 29, 51, 0.94);
+  --bb-primary: #38bdf8;
+  --bb-primary-bright: #bae6fd;
+  --bb-secondary: #818cf8;
+  --bb-border: rgba(56, 189, 248, 0.28);
+  --bb-border-strong: rgba(56, 189, 248, 0.72);
+  --bb-text: #f0f9ff;
+  --bb-muted: #6488a8;
+  --bb-danger: #f43f5e;
+  --bb-success: #2dd4bf;
+  --bb-radius: 10px;
+  --bb-font-mono: "Fira Code", "JetBrains Mono", "Consolas", monospace;
+  --bb-font-head: "Montserrat", "Inter", system-ui, sans-serif;
+  --scrollbar-thumb: #0c4a6e;
+  --scrollbar-track: #040911;
+}
+
+/* 3. MATRIX EMERALD — Zero-Knowledge Cryptographic Enclave */
+#blackbox-app[data-theme="emerald-vault"] {
+  --bb-bg: #020a05;
+  --bb-bg-2: #04140b;
+  --bb-panel: rgba(5, 22, 12, 0.92);
+  --bb-panel-alt: rgba(8, 32, 18, 0.95);
+  --bb-primary: #10b981;
+  --bb-primary-bright: #6ee7b7;
+  --bb-secondary: #059669;
+  --bb-border: rgba(16, 185, 129, 0.3);
+  --bb-border-strong: rgba(52, 211, 153, 0.75);
+  --bb-text: #d1fae5;
+  --bb-muted: #4b8b6f;
+  --bb-danger: #fb7185;
+  --bb-success: #4ade80;
+  --bb-radius: 4px;
+  --bb-font-mono: "JetBrains Mono", "Consolas", monospace;
+  --bb-font-head: "JetBrains Mono", monospace;
+  --scrollbar-thumb: #065f46;
+  --scrollbar-track: #020a05;
+}
+
+/* 4. CRIMSON OPS — Industrial SCADA & Thermal Reactor PLC */
+#blackbox-app[data-theme="crimson-scada"] {
+  --bb-bg: #0c0406;
+  --bb-bg-2: #17070b;
+  --bb-panel: rgba(26, 8, 13, 0.92);
+  --bb-panel-alt: rgba(38, 11, 18, 0.95);
+  --bb-primary: #f43f5e;
+  --bb-primary-bright: #fda4af;
+  --bb-secondary: #fb923c;
+  --bb-border: rgba(244, 63, 94, 0.32);
+  --bb-border-strong: rgba(251, 113, 133, 0.78);
+  --bb-text: #ffe4e6;
+  --bb-muted: #9f5866;
+  --bb-danger: #ffaa00;
+  --bb-success: #10b981;
+  --bb-radius: 0px;
+  --bb-font-mono: "Cascadia Code", "Consolas", monospace;
+  --bb-font-head: "Montserrat", sans-serif;
+  --scrollbar-thumb: #881337;
+  --scrollbar-track: #0c0406;
+}
+
+/* 5. VIOLET SYNTH — Distributed Tensor Consensus Cluster */
+#blackbox-app[data-theme="violet-tensor"] {
+  --bb-bg: #070410;
+  --bb-bg-2: #100824;
+  --bb-panel: rgba(18, 10, 38, 0.9);
+  --bb-panel-alt: rgba(26, 15, 54, 0.94);
+  --bb-primary: #a855f7;
+  --bb-primary-bright: #e9d5ff;
+  --bb-secondary: #ec4899;
+  --bb-border: rgba(168, 85, 247, 0.32);
+  --bb-border-strong: rgba(192, 132, 252, 0.78);
+  --bb-text: #f3e8ff;
+  --bb-muted: #8668a8;
+  --bb-danger: #f43f5e;
+  --bb-success: #34d399;
+  --bb-radius: 12px;
+  --bb-font-mono: "JetBrains Mono", "Consolas", monospace;
+  --bb-font-head: "Inter", system-ui, sans-serif;
+  --scrollbar-thumb: #581c87;
+  --scrollbar-track: #070410;
+}
+
+/* 6. COBALT BLUEPRINT — Orbital Downlink & Telemetry Array */
+#blackbox-app[data-theme="cobalt-orbital"] {
+  --bb-bg: #030b1c;
+  --bb-bg-2: #071636;
+  --bb-panel: rgba(8, 24, 58, 0.9);
+  --bb-panel-alt: rgba(12, 34, 82, 0.94);
+  --bb-primary: #60a5fa;
+  --bb-primary-bright: #dbeafe;
+  --bb-secondary: #38bdf8;
+  --bb-border: rgba(96, 165, 250, 0.35);
+  --bb-border-strong: rgba(147, 197, 253, 0.8);
+  --bb-text: #eff6ff;
+  --bb-muted: #6f94c6;
+  --bb-danger: #f87171;
+  --bb-success: #34d399;
+  --bb-radius: 6px;
+  --bb-font-mono: "Consolas", "JetBrains Mono", monospace;
+  --bb-font-head: "Montserrat", sans-serif;
+  --scrollbar-thumb: #1d4ed8;
+  --scrollbar-track: #030b1c;
+}
+
+/* 7. GRAPHITE GOLD — Sovereign Clearing & WAL Ledger Engine */
+#blackbox-app[data-theme="graphite-gold"] {
+  --bb-bg: #09090b;
+  --bb-bg-2: #121216;
+  --bb-panel: rgba(20, 20, 25, 0.94);
+  --bb-panel-alt: rgba(28, 28, 35, 0.96);
+  --bb-primary: #eab308;
+  --bb-primary-bright: #fef08a;
+  --bb-secondary: #f59e0b;
+  --bb-border: rgba(234, 179, 8, 0.3);
+  --bb-border-strong: rgba(250, 204, 21, 0.78);
+  --bb-text: #fafafa;
+  --bb-muted: #8c8c9a;
+  --bb-danger: #ef4444;
+  --bb-success: #22c55e;
+  --bb-radius: 4px;
+  --bb-font-mono: "JetBrains Mono", "Consolas", monospace;
+  --bb-font-head: "Montserrat", sans-serif;
+  --scrollbar-thumb: #713f12;
+  --scrollbar-track: #09090b;
+}
+
+/* 8. ACID BIO — Atmospheric Scrubber & Bio-Containment Kernel */
+#blackbox-app[data-theme="acid-bio"] {
+  --bb-bg: #060a03;
+  --bb-bg-2: #0d1606;
+  --bb-panel: rgba(14, 24, 7, 0.92);
+  --bb-panel-alt: rgba(21, 36, 10, 0.95);
+  --bb-primary: #84cc16;
+  --bb-primary-bright: #d9f99d;
+  --bb-secondary: #22c55e;
+  --bb-border: rgba(132, 204, 22, 0.32);
+  --bb-border-strong: rgba(163, 230, 53, 0.78);
+  --bb-text: #ecfccb;
+  --bb-muted: #6c8c3c;
+  --bb-danger: #fb7185;
+  --bb-success: #4ade80;
+  --bb-radius: 8px;
+  --bb-font-mono: "JetBrains Mono", "Consolas", monospace;
+  --bb-font-head: "Montserrat", sans-serif;
+  --scrollbar-thumb: #3f6212;
+  --scrollbar-track: #060a03;
+}
+
+/* ==========================================================================
+   SCROLLBARS & FULL TEXT SELECTION
+   ========================================================================== */
+html,
+body[data-tool-id="blackbox"],
+#blackbox-app,
+#blackbox-app * {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb, #1e293b) var(--scrollbar-track, #05070a);
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+@supports not (scrollbar-color: auto) {
+  #blackbox-app::-webkit-scrollbar,
+  #blackbox-app *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  #blackbox-app::-webkit-scrollbar-thumb,
+  #blackbox-app *::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb, #1e293b);
+    border-radius: 4px;
+  }
+  #blackbox-app::-webkit-scrollbar-track,
+  #blackbox-app *::-webkit-scrollbar-track {
+    background: var(--scrollbar-track, #05070a);
+  }
+}
+
+#blackbox-app ::selection {
+  background: var(--bb-primary);
+  color: #020408;
+}
+
+/* ==========================================================================
+   APP SHELL & VIEW TRANSITION MORPHING
+   ========================================================================== */
+#blackbox-app {
+  position: relative;
+  width: 100%;
+  min-height: calc(100vh - 62px);
+  background:
+    radial-gradient(circle at 70% 20%, color-mix(in srgb, var(--bb-primary) 12%, transparent) 0%, transparent 55%),
+    linear-gradient(180deg, var(--bb-bg) 0%, var(--bb-bg-2) 100%);
+  color: var(--bb-text);
+  font-family: var(--bb-font-mono);
+  font-size: 13px;
+  line-height: 1.5;
+  padding: 16px 20px 24px;
+  transition: background 0.45s ease, color 0.35s ease;
+}
+
+#blackbox-app:fullscreen,
+#blackbox-app:-webkit-full-screen,
+body[data-tool-id="blackbox"].bb-fullscreen #blackbox-app {
+  width: 100vw;
+  height: 100dvh;
+  min-height: 100dvh;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Subtle architectural grid background */
+#blackbox-app::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--bb-primary) 4%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--bb-primary) 4%, transparent) 1px, transparent 1px);
+  background-size: 32px 32px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.bb-shell-wrap {
+  position: relative;
+  z-index: 2;
+  max-width: 1560px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ==========================================================================
+   TOP SYSTEM STATUS & TELEMETRY BAR
+   ========================================================================== */
+.bb-topbar {
+  background: var(--bb-panel);
+  border: 1px solid var(--bb-border);
+  border-radius: var(--bb-radius);
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
+}
+
+.bb-sys-id {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.bb-status-beacon {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--bb-danger);
+  box-shadow: 0 0 14px var(--bb-danger);
+  animation: bbPulse 1.6s ease-in-out infinite;
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+.bb-status-beacon.nominal {
+  background: var(--bb-success);
+  box-shadow: 0 0 16px var(--bb-success);
+  animation: none;
+}
+
+@keyframes bbPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(0.82); opacity: 0.45; }
+}
+
+.bb-sys-title {
+  font-family: var(--bb-font-head);
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  color: var(--bb-primary-bright);
+  text-transform: uppercase;
+}
+
+.bb-sys-sub {
+  font-size: 11.5px;
+  color: var(--bb-muted);
+}
+
+.bb-top-metrics {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.bb-pill {
+  background: var(--bb-panel-alt);
+  border: 1px solid var(--bb-border);
+  border-radius: var(--bb-radius);
+  padding: 5px 11px;
+  font-size: 11.5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--bb-text);
+}
+
+.bb-pill strong {
+  color: var(--bb-primary-bright);
+}
+
+.bb-btn {
+  background: color-mix(in srgb, var(--bb-primary) 14%, transparent);
+  border: 1px solid var(--bb-border-strong);
+  color: var(--bb-primary-bright);
+  border-radius: var(--bb-radius);
+  padding: 6px 12px;
+  font-family: var(--bb-font-mono);
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s ease, opacity 0.15s ease, background 0.15s ease;
+}
+
+.bb-btn:hover {
+  background: color-mix(in srgb, var(--bb-primary) 28%, transparent);
+  transform: translateY(-1px);
+}
+
+/* ==========================================================================
+   MAIN WORKSPACE GRID: HIDDEN MODULE RACK (LEFT) + TERMINAL & TELEMETRY (RIGHT)
+   ========================================================================== */
+.bb-main-grid {
+  display: grid;
+  grid-template-columns: 310px 1fr;
+  gap: 14px;
+  align-items: start;
+}
+
+.bb-card {
+  background: var(--bb-panel);
+  border: 1px solid var(--bb-border);
+  border-radius: var(--bb-radius);
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.55);
+  overflow: hidden;
+}
+
+.bb-card-header {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--bb-border);
+  background: color-mix(in srgb, var(--bb-primary) 8%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--bb-font-head);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--bb-primary-bright);
+}
+
+/* Left Column: Progressive Discovered Tools & Live System Telemetry */
+.bb-left-col {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.bb-telemetry-box {
+  padding: 14px;
+}
+
+.bb-symptom-banner {
+  background: color-mix(in srgb, var(--bb-danger) 12%, transparent);
+  border-left: 3px solid var(--bb-danger);
+  padding: 9px 11px;
+  font-size: 11.5px;
+  color: var(--bb-text);
+  margin-bottom: 12px;
+}
+
+.bb-symptom-banner.resolved {
+  background: color-mix(in srgb, var(--bb-success) 15%, transparent);
+  border-left-color: var(--bb-success);
+}
+
+.bb-stage-track {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-top: 10px;
+}
+
+.bb-stage-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 9px;
+  border-radius: var(--bb-radius);
+  background: var(--bb-panel-alt);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 11px;
+}
+
+.bb-stage-row.done {
+  border-color: var(--bb-success);
+  color: var(--bb-success);
+}
+
+.bb-stage-row.active {
+  border-color: var(--bb-primary);
+  color: var(--bb-primary-bright);
+}
+
+/* Discovered Binaries / Modules Rack (Starts Hidden!) */
+.bb-modules-list {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.bb-empty-rack {
+  padding: 18px 12px;
+  text-align: center;
+  color: var(--bb-muted);
+  font-size: 11.5px;
+  border: 1px dashed var(--bb-border);
+  border-radius: var(--bb-radius);
+}
+
+.bb-module-item {
+  background: var(--bb-panel-alt);
+  border: 1px solid var(--bb-border);
+  border-radius: var(--bb-radius);
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+  @starting-style {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+}
+
+.bb-module-item:hover {
+  border-color: var(--bb-primary-bright);
+  transform: translateX(2px);
+}
+
+.bb-module-cmd {
+  color: var(--bb-primary-bright);
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.bb-module-desc {
+  color: var(--bb-muted);
+  font-size: 10.5px;
+}
+
+/* ==========================================================================
+   RIGHT COLUMN: BASH.WS-STYLE INTERACTIVE SHELL & LIVE DIAGNOSTIC DRAWER
+   ========================================================================== */
+.bb-terminal-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 620px;
+  max-height: calc(100vh - 175px);
+}
+
+.bb-term-tabbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  background: rgba(0, 0, 0, 0.45);
+  border-bottom: 1px solid var(--bb-border);
+}
+
+.bb-term-dots {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.bb-term-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--bb-border-strong);
+}
+
+.bb-term-body {
+  flex: 1;
+  padding: 16px 18px;
+  overflow-y: auto;
+  font-family: var(--bb-font-mono);
+  font-size: 13px;
+  line-height: 1.58;
+  background: rgba(2, 4, 8, 0.72);
+}
+
+.bb-line {
+  margin-bottom: 4px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.bb-prompt-str {
+  color: var(--bb-primary);
+  font-weight: 700;
+}
+
+.bb-path-str {
+  color: var(--bb-secondary);
+  font-weight: 700;
+}
+
+.bb-input-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 16px;
+  background: var(--bb-panel-alt);
+  border-top: 1px solid var(--bb-border-strong);
+}
+
+.bb-cmd-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #ffffff;
+  font-family: var(--bb-font-mono);
+  font-size: 13.5px;
+  caret-color: var(--bb-primary-bright);
+}
+
+/* Resolution / Morph Banner inside Terminal */
+.bb-morph-box {
+  margin: 12px 0;
+  padding: 14px 16px;
+  border: 1px solid var(--bb-success);
+  background: color-mix(in srgb, var(--bb-success) 12%, rgba(0, 0, 0, 0.8));
+  border-radius: var(--bb-radius);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+@media (max-width: 980px) {
+  .bb-main-grid {
+    grid-template-columns: 1fr;
+  }
+  .bb-terminal-card {
+    max-height: none;
+    min-height: 500px;
+  }
+}
