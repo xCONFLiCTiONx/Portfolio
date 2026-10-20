@@ -20,3 +20,4 @@ Website: https://xconflictionx.cc
 - [/tools/warp-test](https://xconflictionx.cc/tools/warp-test)
 - [/tools/zero-hour](https://xconflictionx.cc/tools/zero-hour)
 - [/tools/blackbox](https://xconflictionx.cc/tools/blackbox)
+- [/tools/vscode-tools](https://xconflictionx.cc/tools/vscode-tools)

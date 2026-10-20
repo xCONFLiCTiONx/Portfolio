@@ -229,6 +229,21 @@
         "sidebar": false,
         "footer": true
       }
+    },
+    {
+      "id": "vscode-tools",
+      "name": "VS Code Tools",
+      "description": "Visual Studio Code Web IDE and daily CLI developer workbench — features a resizable maximizable terminal, live HTTP/curl client, JWT inspector, DNS DoH resolver, crypto hasher, and JavaScript scratchpad.",
+      "path": "tools/vscode-tools/",
+      "icon": "im im-tools",
+      "category": "Developer Workbench",
+      "enabled": true,
+      "githubUrl": "https://github.com/xCONFLiCTiONx/Portfolio/blob/main/tools/vscode-tools/index.html",
+      "layout": {
+        "header": true,
+        "sidebar": false,
+        "footer": true
+      }
     }
   ]
 }
