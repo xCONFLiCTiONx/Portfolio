@@ -188,7 +188,7 @@
     {
       "id": "zero-hour",
       "name": "Zero Hour",
-      "description": "Develop smarter with AI directly in your browser — simply engage the Chat or AI tool to examine your project and get instant insights.",
+      "description": "Interactive cybersecurity escape room and incident simulator — investigate logs, scan 3D networks, crack hashes, and contain live breaches.",
       "path": "tools/zero-hour/",
       "icon": "im im-shield",
       "category": "Zero Hour",

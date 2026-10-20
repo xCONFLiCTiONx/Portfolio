@@ -480,8 +480,9 @@
   }
 
   // =========================================================================
-  // 4. APPLICATION STATE & PERSISTENCE
+  // 4. APPLICATION STATE & COOKIE PERSISTENCE
   // =========================================================================
+  const COOKIE_NAME = "zh_cookie_save_v1";
   const STORAGE_KEY = "zh_procedural_state_v1";
 
   let state = {
@@ -490,6 +491,9 @@
     activeNav: "OVERVIEW",
     challengePage: 0, // cycles through 8 challenges in groups of 3 on Overview
     xp: 0,
+    highScore: 0,
+    lifetimeXp: 0,
+    opsCompleted: 0,
     timerSeconds: 0,
     timerEnabled: true,
     scanlines: true,
@@ -505,22 +509,133 @@
     }
   };
 
-  function saveState() {
+  function writeCookie(name, value, maxAgeSeconds = 31536000) {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({
-        seed: state.scenario.seed,
-        difficulty: state.scenario.difficulty,
-        solvedIds: state.scenario.challenges.filter(c => c.solved).map(c => c.id),
-        isolatedNodes: Object.keys(state.scenario.nodes).filter(k => state.scenario.nodes[k].isolated),
-        xp: state.xp,
-        timerSeconds: state.timerSeconds,
-        timerEnabled: state.timerEnabled,
-        scanlines: state.scanlines,
-        achievements: state.achievements
-      }));
+      const encoded = encodeURIComponent(JSON.stringify(value));
+      document.cookie = `${name}=${encoded}; max-age=${maxAgeSeconds}; path=/; SameSite=Lax`;
+    } catch (e) {
+      // Ignore cookie write errors
+    }
+  }
+
+  function readCookie(name) {
+    try {
+      const prefix = name + "=";
+      const parts = (document.cookie || "").split(";");
+      for (let i = 0; i < parts.length; i++) {
+        const c = parts[i].trim();
+        if (c.indexOf(prefix) === 0) {
+          return JSON.parse(decodeURIComponent(c.substring(prefix.length)));
+        }
+      }
+    } catch (e) {
+      // Fallback to null on malformed cookie
+    }
+    return null;
+  }
+
+  function saveState() {
+    if (!state.scenario) return;
+    if (state.xp > state.highScore) {
+      state.highScore = state.xp;
+    }
+
+    const payload = {
+      seed: state.scenario.seed,
+      difficulty: state.scenario.difficulty,
+      solvedIds: state.scenario.challenges.filter(c => c.solved).map(c => c.id),
+      isolatedNodes: Object.keys(state.scenario.nodes).filter(k => state.scenario.nodes[k].isolated),
+      flaggedLogs: state.flaggedLogs || {},
+      selectedNodeId: state.selectedNodeId || "WEB",
+      xp: state.xp,
+      highScore: state.highScore,
+      lifetimeXp: state.lifetimeXp,
+      opsCompleted: state.opsCompleted,
+      timerSeconds: state.timerSeconds,
+      timerEnabled: state.timerEnabled,
+      scanlines: state.scanlines,
+      sfxEnabled: SoundFX.enabled,
+      cmdHistory: (state.cmdHistory || []).slice(-15),
+      achievements: state.achievements
+    };
+
+    writeCookie(COOKIE_NAME, payload, 31536000);
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
     } catch (e) {
       // Ignore storage quota errors
     }
+  }
+
+  function loadSavedPayload() {
+    const fromCookie = readCookie(COOKIE_NAME);
+    if (fromCookie && fromCookie.seed) return fromCookie;
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && parsed.seed) return parsed;
+      }
+    } catch (e) {
+      // Ignore parse errors
+    }
+    return null;
+  }
+
+  function restoreOrStartOperation() {
+    const saved = loadSavedPayload();
+    if (!saved || !saved.seed) {
+      startNewOperation();
+      return;
+    }
+
+    const sc = generateProceduralScenario(saved.seed, saved.difficulty || "Beginner");
+    // Restore solved challenges
+    if (Array.isArray(saved.solvedIds)) {
+      sc.challenges.forEach(ch => {
+        if (saved.solvedIds.includes(ch.id)) ch.solved = true;
+      });
+    }
+    // Restore isolated firewall nodes
+    if (Array.isArray(saved.isolatedNodes)) {
+      saved.isolatedNodes.forEach(nid => {
+        if (sc.nodes[nid]) sc.nodes[nid].isolated = true;
+      });
+    }
+
+    state.scenario = sc;
+    state.selectedNodeId = saved.selectedNodeId && sc.nodes[saved.selectedNodeId] ? saved.selectedNodeId : "WEB";
+    state.flaggedLogs = saved.flaggedLogs || {};
+    state.xp = typeof saved.xp === "number" ? saved.xp : 0;
+    state.highScore = typeof saved.highScore === "number" ? Math.max(saved.highScore, state.xp) : state.xp;
+    state.lifetimeXp = typeof saved.lifetimeXp === "number" ? Math.max(saved.lifetimeXp, state.xp) : state.xp;
+    state.opsCompleted = typeof saved.opsCompleted === "number" ? saved.opsCompleted : 0;
+    state.timerSeconds = typeof saved.timerSeconds === "number" ? saved.timerSeconds : 0;
+    state.timerEnabled = saved.timerEnabled !== false;
+    state.scanlines = saved.scanlines !== false;
+    if (typeof saved.sfxEnabled === "boolean") SoundFX.enabled = saved.sfxEnabled;
+    if (Array.isArray(saved.cmdHistory)) {
+      state.cmdHistory = saved.cmdHistory;
+      state.cmdIndex = state.cmdHistory.length;
+    }
+    if (saved.achievements && typeof saved.achievements === "object") {
+      state.achievements = Object.assign(state.achievements, saved.achievements);
+    }
+
+    const app = document.getElementById("zero-hour-app");
+    if (app) app.classList.toggle("zh-scanlines", state.scanlines);
+
+    renderAll();
+    clearTerminal();
+    printTerminalLine("================================================================", "color:#00e5ff");
+    printTerminalLine(" PROJECT ZERO HOUR // SESSION RESTORED FROM BROWSER COOKIES", "color:#34d399;font-weight:700");
+    printTerminalLine(
+      ` OPERATION: ${sc.op.code} — ${sc.op.title.toUpperCase()} [SEED #${sc.seed}] | HIGH SCORE: ${state.highScore} XP | CAREER: ${state.lifetimeXp} XP`,
+      "color:#fbbf24"
+    );
+    printTerminalLine("================================================================", "color:#00e5ff");
+    printTerminalLine("Type `help` for commands, or click `↻ New Breach` anytime for a new procedural scenario.");
+    runTerminalCommand("nmap -sV " + sc.nodes[state.selectedNodeId].subnet, true);
   }
 
   function startNewOperation(customSeed, customDiff, announceInTerm = true) {
@@ -531,13 +646,7 @@
     state.xp = 0;
     state.timerSeconds = 0;
     state.flaggedLogs = {};
-    state.achievements = {
-      first_blood: false,
-      log_analyzer: false,
-      network_detective: false,
-      crypto_breaker: false,
-      full_compromise: false
-    };
+    // Note: High Score, Lifetime XP, Ops Completed, and unlocked Achievements persist across operations!
     saveState();
     renderAll();
 
@@ -564,6 +673,13 @@
 
     ch.solved = true;
     state.xp += ch.xp;
+    state.lifetimeXp += ch.xp;
+    if (state.xp > state.highScore) {
+      state.highScore = state.xp;
+    }
+    if (challengeId === "c8") {
+      state.opsCompleted += 1;
+    }
     SoundFX.play("unlock");
 
     printTerminalLine(
@@ -638,6 +754,8 @@
     const segsEl = document.getElementById("zh-progress-segs");
     const progText = document.getElementById("zh-progress-text");
     const xpEl = document.getElementById("zh-xp-val");
+    const highEl = document.getElementById("zh-highscore-val");
+    const highPill = document.getElementById("zh-highscore-pill");
 
     if (codeEl) codeEl.textContent = sc.op.code + " // SEED #" + sc.seed;
     if (titleEl) titleEl.textContent = sc.op.title;
@@ -645,6 +763,10 @@
     if (diffEl) diffEl.textContent = sc.difficulty;
     if (progText) progText.textContent = `${solvedCount} / ${totalCount}`;
     if (xpEl) xpEl.textContent = `${state.xp} XP`;
+    if (highEl) highEl.textContent = `HIGH: ${state.highScore} XP`;
+    if (highPill) {
+      highPill.title = `Saved in Cookies — High Score: ${state.highScore} XP | Career Total: ${state.lifetimeXp} XP | Operations Completed: ${state.opsCompleted}`;
+    }
 
     if (segsEl) {
       let html = "";
@@ -1049,6 +1171,7 @@
     if (!silentPrompt) {
       state.cmdHistory.push(cmdStr);
       state.cmdIndex = state.cmdHistory.length;
+      saveState();
       printTerminalHTML(
         `<span class="zh-term-prompt-user">root@zerohour:~#</span> <span class="zh-term-cmd">${escapeHtml(cmdStr)}</span>`
       );
@@ -1193,6 +1316,7 @@
       if (node.isolated && (targetKey === sc.pivot.pivotNode || targetKey === "WEB" || targetKey === "INTERNET")) {
         solveChallenge("c7", "Isolated compromised host " + node.label + " at firewall");
       } else {
+        saveState();
         renderAll();
       }
       return;
@@ -1344,6 +1468,7 @@
           if (lid === "L-06") solveChallenge("c2", "Flagged reverse shell socket log L-06");
           if (lid === "L-08") solveChallenge("c3", "Flagged lateral SSH pivot log L-08");
           if (lid === "L-09") solveChallenge("c5", "Flagged DNS exfiltration log L-09");
+          saveState();
           renderSubViews();
         };
       });
@@ -1397,12 +1522,30 @@
     if (nav === "NETWORK" || nav === "TERMINAL" || nav === "SETTINGS") {
       mount.innerHTML = `
         <div class="zh-panel" style="padding:18px;">
-          <h3 style="color:var(--zh-cyan);font-family:var(--zh-font-display);margin:0 0 12px;">COMMAND CENTER SETTINGS & PROCEDURAL GENERATOR</h3>
-          <p style="color:var(--zh-text-Sub);margin-bottom:16px;">Customize your simulation environment or generate a fresh procedural cyber breach with a new threat actor, exploit chain, and network pivot path.</p>
-          <div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:20px;">
+          <h3 style="color:var(--zh-cyan);font-family:var(--zh-font-display);margin:0 0 12px;">COMMAND CENTER SETTINGS & COOKIE SAVE DATA</h3>
+          <p style="color:var(--zh-text-Sub);margin-bottom:16px;">Your High Score, Career XP, unlocked Achievements, active operation seed, firewall states, and command history are automatically stored in browser cookies (<code>${COOKIE_NAME}</code>).</p>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:18px;">
+            <div class="zh-challenge-card" style="min-height:auto;">
+              <h4>🏆 High Score</h4>
+              <div style="font-family:var(--zh-font-mono);font-size:20px;font-weight:800;color:#fbbf24;">${state.highScore} XP</div>
+              <span style="font-size:11px;color:var(--zh-text-Sub);">Best Operation Score</span>
+            </div>
+            <div class="zh-challenge-card" style="min-height:auto;">
+              <h4>★ Career Total XP</h4>
+              <div style="font-family:var(--zh-font-mono);font-size:20px;font-weight:800;color:var(--zh-cyan-bright);">${state.lifetimeXp} XP</div>
+              <span style="font-size:11px;color:var(--zh-text-Sub);">Cumulative Across All Breaches</span>
+            </div>
+            <div class="zh-challenge-card" style="min-height:auto;">
+              <h4>✓ Operations Cleared</h4>
+              <div style="font-family:var(--zh-font-mono);font-size:20px;font-weight:800;color:#34d399;">${state.opsCompleted}</div>
+              <span style="font-size:11px;color:var(--zh-text-Sub);">Signed Incident Reports</span>
+            </div>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:10px;">
             <button class="zh-btn-primary" id="zh-set-reroll">Generate New Procedural Operation</button>
             <button class="zh-icon-btn" id="zh-set-sfx">Audio SFX: ${SoundFX.enabled ? "ON" : "OFF"}</button>
             <button class="zh-icon-btn" id="zh-set-scanlines">CRT Scanlines: ${state.scanlines ? "ON" : "OFF"}</button>
+            <button class="zh-icon-btn" id="zh-set-reset-cookie" style="border-color:rgba(255,42,95,0.5);color:#ff8da3;">Reset Saved Cookie & Career Data</button>
             <button class="zh-icon-btn" id="zh-set-back">Return to Overview</button>
           </div>
         </div>
@@ -1413,6 +1556,7 @@
       };
       mount.querySelector("#zh-set-sfx").onclick = () => {
         SoundFX.enabled = !SoundFX.enabled;
+        saveState();
         renderSubViews();
       };
       mount.querySelector("#zh-set-scanlines").onclick = () => {
@@ -1420,6 +1564,24 @@
         const app = document.getElementById("zero-hour-app");
         if (app) app.classList.toggle("zh-scanlines", state.scanlines);
         saveState();
+        renderSubViews();
+      };
+      mount.querySelector("#zh-set-reset-cookie").onclick = () => {
+        writeCookie(COOKIE_NAME, {}, 0);
+        try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+        state.highScore = 0;
+        state.lifetimeXp = 0;
+        state.opsCompleted = 0;
+        state.cmdHistory = [];
+        state.achievements = {
+          first_blood: false,
+          log_analyzer: false,
+          network_detective: false,
+          crypto_breaker: false,
+          full_compromise: false
+        };
+        startNewOperation();
+        showToast("Cookie & Career Data Reset");
         renderSubViews();
       };
       mount.querySelector("#zh-set-back").onclick = () => switchNavigation("OVERVIEW");
@@ -1692,8 +1854,8 @@
       });
     }
 
-    // Always generate a fresh experience on load so every visit is a new procedural breach!
-    startNewOperation();
+    // Restore saved cookie state if available, otherwise generate a fresh procedural operation
+    restoreOrStartOperation();
   }
 
   if (document.readyState === "loading") {
