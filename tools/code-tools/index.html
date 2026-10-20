@@ -330,8 +330,26 @@
                 </div>
               </div>
               <div class="vsc-input-group">
-                <label class="vsc-input-label">Commit Message:</label>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+                  <label class="vsc-input-label" style="margin-bottom:0">Commit Message:</label>
+                  <button type="button" class="vsc-editor-btn vsc-git-gen-btn" id="vsc-btn-git-gen-msg" title="Generate conventional commit message from changed workspace files (Ctrl+Alt+G)">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+                    </svg>
+                    <span>✨ Generate</span>
+                  </button>
+                </div>
                 <textarea class="vsc-commit-input" id="vsc-git-commit-msg" placeholder="feat: update workspace files"></textarea>
+                <!-- Conventional Commits quick type selector & style variants -->
+                <div class="vsc-git-presets-bar" id="vsc-git-presets-bar">
+                  <button type="button" class="vsc-chip-btn" data-type="feat" title="Feature (feat: ...)">feat</button>
+                  <button type="button" class="vsc-chip-btn" data-type="fix" title="Bug Fix (fix: ...)">fix</button>
+                  <button type="button" class="vsc-chip-btn" data-type="docs" title="Documentation (docs: ...)">docs</button>
+                  <button type="button" class="vsc-chip-btn" data-type="style" title="Styling &amp; Formatting (style: ...)">style</button>
+                  <button type="button" class="vsc-chip-btn" data-type="refactor" title="Refactor (refactor: ...)">refactor</button>
+                  <button type="button" class="vsc-chip-btn" data-type="chore" title="Maintenance / Config (chore: ...)">chore</button>
+                </div>
+                <div id="vsc-git-gen-status" class="vsc-git-gen-status" style="display:none"></div>
                 <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap">
                   <button class="vsc-editor-btn run" id="vsc-btn-git-push" style="flex:1;min-width:120px">Commit &amp; Push</button>
                   <button class="vsc-editor-btn" id="vsc-btn-git-pull" style="flex:1;min-width:100px;color:var(--vsc-turquoise);border-color:var(--vsc-turquoise)" title="Pull latest changes from GitHub">
@@ -802,6 +820,17 @@
             <button type="button" class="vsc-editor-btn vsc-token-toggle-btn" id="vsc-setting-btn-toggle-token" title="Show / Hide Token" aria-label="Show / Hide Token">👁</button>
           </div>
           <span style="font-size:10px;color:var(--vsc-fg-muted)">Remembered across browser sessions via localStorage and secure cookies.</span>
+        </div>
+        <div class="vsc-input-group" style="margin-top:6px;border-top:1px solid #232323;padding-top:10px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <label class="vsc-input-label" for="vsc-setting-gemini-key">Gemini AI API Key (Optional):</label>
+            <span id="vsc-setting-gemini-status" style="font-size:10px;color:var(--vsc-fg-muted)">Optional</span>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center">
+            <input type="password" class="vsc-modal-input" id="vsc-setting-gemini-key" placeholder="AIzaSy... (optional for AI commit generation)" style="flex:1" autocomplete="off" />
+            <button type="button" class="vsc-editor-btn vsc-token-toggle-btn" id="vsc-setting-btn-toggle-gemini" title="Show / Hide Key" aria-label="Show / Hide Key">👁</button>
+          </div>
+          <span style="font-size:10px;color:var(--vsc-fg-muted)">If configured, AI commit generation uses Google Gemini 2.5 Flash. Otherwise, the intelligent built-in Conventional Commits engine runs automatically.</span>
         </div>
         <div class="vsc-input-group" style="margin-top:6px;border-top:1px solid #232323;padding-top:10px">
           <label class="vsc-input-label" style="color:#e06c75">Reset &amp; Maintenance:</label>

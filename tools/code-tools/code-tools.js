@@ -85,7 +85,10 @@
     projectName: "",
     cachedRepos: null,
     projectDirHandle: null,
-    fileHandles: new Map()
+    fileHandles: new Map(),
+    baselineFiles: {},
+    geminiApiKey: localStorage.getItem("vsc_gemini_api_key") || "",
+    lastCommitGen: null
   };
 
   // Load persisted user workspace or initialize clean empty workspace
@@ -113,6 +116,9 @@
   } catch (e) {
     state.files = {};
   }
+
+  // Initialize baseline snapshot for diffing & commit message analysis
+  state.baselineFiles = { ...state.files };
 
   // Restore saved file SHAs for GitHub Contents API
   try {
@@ -239,6 +245,9 @@
     settingGhToken: document.getElementById("vsc-setting-gh-token"),
     settingGhStatus: document.getElementById("vsc-setting-gh-status"),
     settingBtnToggleToken: document.getElementById("vsc-setting-btn-toggle-token"),
+    settingGeminiKey: document.getElementById("vsc-setting-gemini-key"),
+    settingGeminiStatus: document.getElementById("vsc-setting-gemini-status"),
+    settingBtnToggleGemini: document.getElementById("vsc-setting-btn-toggle-gemini"),
     settingsBtnClose: document.getElementById("vsc-settings-btn-close"),
     settingsBtnSave: document.getElementById("vsc-settings-btn-save"),
     btnResetData: document.getElementById("vsc-btn-reset-data"),
@@ -288,6 +297,9 @@
     btnOpenGhModal: document.getElementById("vsc-btn-open-gh-modal"),
     btnDisconnectGh: document.getElementById("vsc-btn-disconnect-gh"),
     gitCommitMsg: document.getElementById("vsc-git-commit-msg"),
+    btnGitGenMsg: document.getElementById("vsc-btn-git-gen-msg"),
+    gitGenStatus: document.getElementById("vsc-git-gen-status"),
+    gitPresetsBar: document.getElementById("vsc-git-presets-bar"),
     btnGitPush: document.getElementById("vsc-btn-git-push"),
     btnGitPull: document.getElementById("vsc-btn-git-pull"),
     gitChangesList: document.getElementById("vsc-git-changes-list")
@@ -922,6 +934,7 @@
               if (file.size < 1_500_000) {
                 const text = await file.text();
                 state.files[path] = text;
+                state.baselineFiles[path] = text;
                 state.fileHandles.set(path, entry);
                 loadedCount++;
               }
@@ -1015,6 +1028,7 @@
       const reader = new FileReader();
       reader.onload = (event) => {
         state.files[relPath] = event.target.result;
+        state.baselineFiles[relPath] = event.target.result;
         loaded++;
         if (loaded === 1) {
           openFile(relPath);
@@ -1387,6 +1401,7 @@
           if (fData.content) {
             const decoded = decodeURIComponent(escape(atob(fData.content.replace(/\s/g, ""))));
             state.files[item.path] = decoded;
+            state.baselineFiles[item.path] = decoded;
             state.fileShas[item.path] = fData.sha;
             loaded++;
             if (onProgress) onProgress(loaded, fileBlobs.length, item.path);
@@ -1471,6 +1486,7 @@
         state.fileShas[path] = resJson.content.sha;
       }
       state.modifiedFiles.delete(path);
+      state.baselineFiles[path] = content;
       results.push(path);
     }
 
@@ -1566,6 +1582,7 @@
           if (fData.content) {
             const decoded = decodeURIComponent(escape(atob(fData.content.replace(/\s/g, ""))));
             state.files[item.path] = decoded;
+            state.baselineFiles[item.path] = decoded;
             state.fileShas[item.path] = fData.sha;
             state.modifiedFiles.delete(item.path);
             pulledFiles.push(item.path);
@@ -1657,6 +1674,345 @@
     }
   }
 
+  // --- COMMIT MESSAGE GENERATOR ENGINE (CONVENTIONAL COMMITS & OPTIONAL GEMINI AI) ---
+  const CONVENTIONAL_TYPES = {
+    feat: { label: "feat", emoji: "✨", desc: "A new feature or enhancement" },
+    fix: { label: "fix", emoji: "🐛", desc: "A bug fix or error resolution" },
+    docs: { label: "docs", emoji: "📝", desc: "Documentation changes only" },
+    style: { label: "style", emoji: "💄", desc: "Formatting, missing semi-colons, CSS styles" },
+    refactor: { label: "refactor", emoji: "♻️", desc: "A code change that neither fixes a bug nor adds a feature" },
+    perf: { label: "perf", emoji: "⚡", desc: "A code change that improves performance" },
+    test: { label: "test", emoji: "✅", desc: "Adding missing tests or correcting existing tests" },
+    chore: { label: "chore", emoji: "🔧", desc: "Build process, auxiliary tools or dependencies" },
+    build: { label: "build", emoji: "📦", desc: "Changes affecting build system or external dependencies" },
+    ci: { label: "ci", emoji: "👷", desc: "Changes to CI/CD configuration files and scripts" }
+  };
+
+  function extractScopeFromFiles(files = []) {
+    if (!files || files.length === 0) return "workspace";
+    if (files.length === 1) {
+      const f = files[0];
+      const parts = f.split(/[\/\\]/);
+      if (parts.length > 1) {
+        return parts[parts.length - 2] || parts[0];
+      }
+      const name = parts[0].toLowerCase();
+      if (name.includes("package")) return "deps";
+      if (name.includes("config")) return "config";
+      if (name.includes("readme") || name.includes("license")) return "docs";
+      if (name.includes("manifest") || name.includes("sw.js")) return "pwa";
+      if (name.includes("index") || name.includes(".html")) return "ui";
+      return name.replace(/\.[^.]+$/, "");
+    }
+
+    const folderTokens = files.map(f => {
+      const parts = f.split(/[\/\\]/);
+      return parts.length > 1 ? parts.slice(0, -1).join("/") : "";
+    });
+
+    const first = folderTokens[0];
+    if (first && folderTokens.every(f => f === first)) {
+      const sub = first.split("/").pop();
+      return sub || first;
+    }
+
+    if (files.every(f => f.startsWith("tools/"))) return "tools";
+    if (files.every(f => f.endsWith(".css") || f.includes("css/"))) return "styles";
+    if (files.every(f => f.endsWith(".md"))) return "docs";
+    return "workspace";
+  }
+
+  function analyzeChanges(files = []) {
+    const fileList = (files && files.length > 0) ? files.slice() : Array.from(state.modifiedFiles);
+    if (fileList.length === 0 && state.activeFile) {
+      fileList.push(state.activeFile);
+    }
+
+    let detectedType = "feat";
+    const scope = extractScopeFromFiles(fileList);
+    const highlights = [];
+
+    const isAllDocs = fileList.length > 0 && fileList.every(f => f.endsWith(".md") || f.endsWith(".txt") || f.toLowerCase().includes("readme") || f.toLowerCase().includes("license"));
+    const isAllStyles = fileList.length > 0 && fileList.every(f => f.endsWith(".css") || f.endsWith(".scss") || f.endsWith(".less") || f.includes("css/"));
+    const isAllTests = fileList.length > 0 && fileList.every(f => f.includes("test") || f.includes("spec"));
+    const isAllConfig = fileList.length > 0 && fileList.every(f => f.endsWith(".json") || f.startsWith(".") || f.includes("config") || f.includes("wrangler"));
+
+    if (isAllDocs) detectedType = "docs";
+    else if (isAllStyles) detectedType = "style";
+    else if (isAllTests) detectedType = "test";
+    else if (isAllConfig) detectedType = "chore";
+
+    let hasFixKeyword = false;
+    let hasPerfKeyword = false;
+    let hasRefactorKeyword = false;
+    const addedFunctions = [];
+    const addedUiElements = [];
+
+    fileList.slice(0, 8).forEach(file => {
+      const current = state.files[file] || "";
+      const base = state.baselineFiles[file] || "";
+      let newText = current;
+      let diffSummary = "";
+
+      if (base && current !== base) {
+        const baseLines = new Set(base.split("\n").map(l => l.trim()));
+        const addedLines = current.split("\n")
+          .map(l => l.trim())
+          .filter(l => l.length > 0 && !baseLines.has(l));
+        newText = addedLines.join("\n");
+        diffSummary = `+${addedLines.length} lines`;
+      }
+
+      if (/\b(fix|bug|issue|error|prevent|patch|catch|exception|nullcheck|undefined)\b/i.test(newText)) {
+        hasFixKeyword = true;
+      }
+      if (/\b(perf|optimize|cache|caching|throttle|debounce|latency)\b/i.test(newText)) {
+        hasPerfKeyword = true;
+      }
+      if (/\b(refactor|cleanup|clean up|modularize|deprecate|remove dead)\b/i.test(newText)) {
+        hasRefactorKeyword = true;
+      }
+
+      const fnMatches = newText.match(/(?:function\s+([a-zA-Z0-9_$]+)|(?:const|let|var)\s+([a-zA-Z0-9_$]+)\s*=\s*(?:async\s*)?\()/g);
+      if (fnMatches) {
+        fnMatches.slice(0, 2).forEach(m => {
+          const fnName = m.replace(/^function\s+/, "").replace(/^(?:const|let|var)\s+/, "").split(/\s*=/)[0].trim();
+          if (fnName && !addedFunctions.includes(fnName)) addedFunctions.push(fnName);
+        });
+      }
+
+      const idMatches = newText.match(/id=["']([a-zA-Z0-9_-]+)["']/g);
+      if (idMatches) {
+        idMatches.slice(0, 2).forEach(m => {
+          const id = m.replace(/^id=["']|["']$/g, "");
+          if (id && !addedUiElements.includes(id)) addedUiElements.push(id);
+        });
+      }
+
+      highlights.push({
+        file,
+        diffSummary: diffSummary || "modified"
+      });
+    });
+
+    if (detectedType === "feat") {
+      if (hasFixKeyword && !addedFunctions.length) {
+        detectedType = "fix";
+      } else if (hasPerfKeyword) {
+        detectedType = "perf";
+      } else if (hasRefactorKeyword && !addedFunctions.length) {
+        detectedType = "refactor";
+      }
+    }
+
+    let subject = "";
+    if (addedFunctions.length > 0) {
+      const fnList = addedFunctions.slice(0, 2).join(" and ");
+      subject = `implement ${fnList}`;
+    } else if (addedUiElements.length > 0) {
+      const uiClean = addedUiElements[0].replace(/^vsc-btn-|^vsc-/, "").replace(/-/g, " ");
+      subject = `add ${uiClean} controls`;
+    } else if (isAllStyles) {
+      subject = `refine responsive layout and styling`;
+    } else if (isAllDocs) {
+      subject = `update documentation and references`;
+    } else if (isAllConfig) {
+      subject = `update configuration and project settings`;
+    } else if (fileList.length === 1) {
+      const baseName = fileList[0].split(/[\/\\]/).pop();
+      subject = `update ${baseName}`;
+    } else if (fileList.length > 1) {
+      subject = `update ${scope} and workspace components`;
+    } else {
+      subject = `update workspace files`;
+    }
+
+    return {
+      type: detectedType,
+      scope,
+      subject,
+      highlights,
+      fileList
+    };
+  }
+
+  async function generateCommitWithGemini(apiKey, analysis) {
+    const diffContext = analysis.fileList.map(f => {
+      const content = state.files[f] || "";
+      const base = state.baselineFiles[f] || "";
+      let diffSample = "";
+      if (base && content !== base) {
+        const baseLines = new Set(base.split("\n").map(l => l.trim()));
+        const added = content.split("\n").map(l => l.trim()).filter(l => l && !baseLines.has(l));
+        diffSample = added.slice(0, 15).join("\n");
+      } else {
+        diffSample = content.slice(0, 300);
+      }
+      return `File: ${f}\nDiff Sample:\n${diffSample}`;
+    }).join("\n---\n");
+
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+    const prompt = `You are an expert Git version control assistant. Generate a single Conventional Commit message for the following code changes.\n\nRules:\n- Format MUST be: <type>(<scope>): <subject in present imperative tense>\n- Allowed types: feat, fix, docs, style, refactor, perf, test, chore\n- Subject line MUST be under 72 characters\n- Followed by an optional blank line and 2-3 short bullet points summarizing changes\n- Do NOT include markdown code blocks, backticks, or quotes. Output ONLY the raw commit message.\n\nChanged Files:\n${diffContext}`;
+
+    const res = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature: 0.2,
+          maxOutputTokens: 250
+        }
+      })
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error?.message || `Gemini API returned status ${res.status}`);
+    }
+
+    const data = await res.json();
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+    if (!text) throw new Error("Empty response from Gemini API");
+
+    return text.replace(/^```[a-z]*\n?/i, "").replace(/\n?```$/i, "").trim();
+  }
+
+  async function generateCommitMessage(options = {}) {
+    const fileList = options.files || Array.from(state.modifiedFiles);
+    if (fileList.length === 0 && state.activeFile) {
+      fileList.push(state.activeFile);
+    }
+
+    const analysis = analyzeChanges(fileList);
+    const chosenType = options.type || analysis.type;
+    const scope = options.scope || analysis.scope;
+    let subject = analysis.subject;
+    const apiKey = (options.apiKey !== undefined ? options.apiKey : (state.geminiApiKey || localStorage.getItem("vsc_gemini_api_key") || "")).trim();
+
+    let primaryMessage = "";
+    let provider = "heuristic";
+
+    if (apiKey && fileList.length > 0 && !options.skipAi) {
+      try {
+        const aiMsg = await generateCommitWithGemini(apiKey, analysis);
+        if (aiMsg) {
+          primaryMessage = aiMsg;
+          provider = "gemini";
+        }
+      } catch (e) {
+        console.warn("Gemini commit message generation failed, falling back to heuristic:", e);
+      }
+    }
+
+    if (!primaryMessage) {
+      const scopePart = scope ? `(${scope})` : "";
+      primaryMessage = `${chosenType}${scopePart}: ${subject}`;
+    }
+
+    const conventionalMsg = primaryMessage.split("\n")[0];
+    const bulletPoints = analysis.highlights.map(h => `- ${h.file}: ${h.diffSummary}`).join("\n");
+    const detailedMsg = `${conventionalMsg}\n\n${bulletPoints || "- synchronize workspace modifications"}`;
+    const conciseMsg = subject.charAt(0).toUpperCase() + subject.slice(1);
+    const emojiMap = {
+      feat: "✨", fix: "🐛", docs: "📝", style: "💄",
+      refactor: "♻️", perf: "⚡", test: "✅", chore: "🔧",
+      build: "📦", ci: "👷"
+    };
+    const emoji = emojiMap[chosenType] || "🚀";
+    const emojiMsg = `${emoji} ${conventionalMsg}`;
+
+    const result = {
+      message: primaryMessage,
+      provider,
+      type: chosenType,
+      scope,
+      subject,
+      filesAnalyzed: fileList,
+      variants: {
+        conventional: conventionalMsg,
+        detailed: detailedMsg,
+        concise: conciseMsg,
+        emoji: emojiMsg
+      }
+    };
+
+    state.lastCommitGen = result;
+    return result;
+  }
+
+  async function generateCommitMessageUI(preferredType = null) {
+    if (!el.gitCommitMsg) return;
+
+    if (el.btnGitGenMsg) {
+      el.btnGitGenMsg.disabled = true;
+      el.btnGitGenMsg.innerHTML = `<span style="display:inline-block;animation:spin 1s linear infinite">⚡</span> <span>Analyzing...</span>`;
+    }
+
+    try {
+      const res = await generateCommitMessage({ type: preferredType });
+      el.gitCommitMsg.value = res.message;
+
+      // Update active type chip
+      if (el.gitPresetsBar) {
+        el.gitPresetsBar.querySelectorAll(".vsc-chip-btn").forEach(btn => {
+          btn.classList.toggle("active", btn.dataset.type === res.type);
+        });
+      }
+
+      // Show status and variant links
+      if (el.gitGenStatus) {
+        el.gitGenStatus.style.display = "block";
+        const badgeColor = res.provider === "gemini" ? "var(--vsc-turquoise)" : "#98c379";
+        const badgeText = res.provider === "gemini" ? "Gemini 2.5 Flash" : "Heuristic Conventional Engine";
+        const fileCountText = res.filesAnalyzed.length > 0
+          ? `${res.filesAnalyzed.length} file${res.filesAnalyzed.length === 1 ? '' : 's'}`
+          : "Workspace default";
+
+        el.gitGenStatus.innerHTML = `
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;flex-wrap:wrap;gap:2px">
+            <span style="color:${badgeColor};font-weight:600">✓ ${badgeText} (${fileCountText})</span>
+            <div style="display:flex;gap:4px;align-items:center">
+              <a href="#" class="vsc-gen-variant-link" data-v="conventional" title="Standard conventional commit">Conventional</a>
+              <span style="color:var(--vsc-fg-muted)">·</span>
+              <a href="#" class="vsc-gen-variant-link" data-v="detailed" title="Include modified files bullet points">Detailed</a>
+              <span style="color:var(--vsc-fg-muted)">·</span>
+              <a href="#" class="vsc-gen-variant-link" data-v="concise" title="Short sentence">Concise</a>
+              <span style="color:var(--vsc-fg-muted)">·</span>
+              <a href="#" class="vsc-gen-variant-link" data-v="emoji" title="With Gitmoji">Emoji</a>
+            </div>
+          </div>
+        `;
+
+        el.gitGenStatus.querySelectorAll(".vsc-gen-variant-link").forEach(a => {
+          a.addEventListener("click", (e) => {
+            e.preventDefault();
+            const variant = a.dataset.v;
+            if (res.variants && res.variants[variant]) {
+              el.gitCommitMsg.value = res.variants[variant];
+              showMessage("info", "COMMIT STYLE", `Switched commit style to ${variant}.`, false);
+            }
+          });
+        });
+      }
+
+      showMessage("success", "COMMIT GENERATOR", `Generated commit message (${res.provider}): "${res.variants.conventional}"`, false);
+      termPrint(`[Git] Generated commit message (${res.provider}): "${res.variants.conventional}"`, "vsc-term-info");
+    } catch (err) {
+      showMessage("error", "COMMIT GENERATOR", `Generation error: ${err.message}`);
+    } finally {
+      if (el.btnGitGenMsg) {
+        el.btnGitGenMsg.disabled = false;
+        el.btnGitGenMsg.innerHTML = `
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+          </svg>
+          <span>✨ Generate</span>
+        `;
+      }
+    }
+  }
+
   // --- SNIPPETS INSERTION API ---
   window.insertSnippet = function (type) {
     let snippet = "";
@@ -1731,6 +2087,7 @@
     { id: "github_pull", label: "Git: Pull Latest Changes from GitHub", exec: () => { if (el.btnGitPull) el.btnGitPull.click(); } },
     { id: "github_push", label: "Git: Commit and Push Changes to GitHub", exec: () => { if (el.btnGitPush) el.btnGitPush.click(); } },
     { id: "github_sync", label: "Git: Synchronize (Pull & Push) with GitHub", exec: () => syncWithGitHub() },
+    { id: "git_generate_commit_msg", label: "Git: Generate Commit Message (AI / Conventional)", exec: () => { switchSidebarView("git"); generateCommitMessageUI(); } },
     { id: "edit_find", label: "Edit: Find in Files", exec: () => { switchSidebarView("search"); if (el.searchQueryInput) el.searchQueryInput.focus(); } },
     { id: "edit_format", label: "Format Document", exec: () => { if (el.btnFormat) el.btnFormat.click(); } },
     { id: "term_run", label: "Terminal: Run Active Script", exec: () => COMMANDS.run.exec([]) },
@@ -2125,6 +2482,19 @@
       el.settingGhStatus.style.color = state.githubToken ? "#98c379" : "var(--vsc-fg-muted)";
     }
 
+    if (el.settingGeminiKey) {
+      el.settingGeminiKey.value = state.geminiApiKey || "";
+      el.settingGeminiKey.type = "password";
+    }
+    if (el.settingBtnToggleGemini) {
+      el.settingBtnToggleGemini.textContent = "👁";
+      el.settingBtnToggleGemini.title = "Show Key";
+    }
+    if (el.settingGeminiStatus) {
+      el.settingGeminiStatus.textContent = state.geminiApiKey ? "✓ API Key Configured" : "Optional (Conventional Heuristic active)";
+      el.settingGeminiStatus.style.color = state.geminiApiKey ? "#98c379" : "var(--vsc-fg-muted)";
+    }
+
     el.settingsDialog.showModal();
   }
 
@@ -2154,6 +2524,17 @@
         } else {
           githubAuth("");
         }
+      }
+    }
+
+    // Save optional Gemini API Key for commit generation
+    if (el.settingGeminiKey) {
+      const gVal = el.settingGeminiKey.value.trim();
+      state.geminiApiKey = gVal;
+      if (gVal) {
+        localStorage.setItem("vsc_gemini_api_key", gVal);
+      } else {
+        localStorage.removeItem("vsc_gemini_api_key");
       }
     }
 
@@ -3114,8 +3495,11 @@ Integrated Web Developer Workbench:
   <b class="vsc-term-success">timestamp</b> [epoch]                   Unix timestamp converter (UTC, Local, Relative)
 
 <span class="vsc-prompt-tag">[GITHUB &amp; GIT CLOUD REPO SYNC]</span>
+  <b class="vsc-term-success">github gen-msg</b> / <b class="vsc-term-success">git gen-msg</b>    Generate AI / Conventional commit message from changed files
   <b class="vsc-term-success">github pull</b> / <b class="vsc-term-success">git pull</b>         Pull latest changes from remote GitHub repo
-  <b class="vsc-term-success">github push</b> [commit message]        Commit &amp; push changed files to GitHub repo
+  <b class="vsc-term-success">github push</b> [commit message]        Commit &amp; push changed files to GitHub repo (auto-generates msg)
+  <b class="vsc-term-success">git commit</b> [-m "msg" | -g]          Stage and commit locally with message or auto-generator
+  <b class="vsc-term-success">git diff</b>                            Inspect changed files and line delta counts
   <b class="vsc-term-success">github sync</b> / <b class="vsc-term-success">git sync</b>         Synchronize (pull remote changes then push local commits)
   <b class="vsc-term-success">github</b> auth &lt;token&gt;                 Authenticate with GitHub PAT (syncs across PC &amp; phone)
   <b class="vsc-term-success">github</b> clone &lt;repo&gt; [branch]        Fetch file tree and load real files into workspace
@@ -3978,10 +4362,33 @@ Subcommands:
     },
 
     github: {
-      desc: "GitHub integration: pull changes, push commits, sync, clone repo trees, auth, and view status",
-      usage: "github <pull|push|sync|clone|auth|token|repos|status|logout> [args...]",
+      desc: "GitHub integration: pull changes, push commits, sync, clone repo trees, gen-msg, auth, and view status",
+      usage: "github <pull|push|sync|clone|gen-msg|auth|token|repos|status|logout> [args...]",
       exec: async (args) => {
         const sub = (args[0] || "status").toLowerCase();
+
+        if (sub === "gen-msg" || sub === "generate") {
+          termPrint("Analyzing changed workspace files & git status...", "vsc-term-dim");
+          try {
+            const gen = await generateCommitMessage();
+            termPrintHTML(`
+<span class="vsc-term-success">GENERATED COMMIT MESSAGE (${gen.provider.toUpperCase()}):</span>
+  <b style="color:var(--vsc-turquoise)">${escapeHtml(gen.message)}</b>
+
+<span class="vsc-term-dim">Style variants:</span>
+  Conventional: ${escapeHtml(gen.variants.conventional)}
+  Detailed:     ${escapeHtml(gen.variants.detailed.replace(/\n/g, ' '))}
+  Concise:      ${escapeHtml(gen.variants.concise)}
+  Emoji:        ${escapeHtml(gen.variants.emoji)}
+`);
+            if (el.gitCommitMsg) el.gitCommitMsg.value = gen.message;
+            switchSidebarView("git");
+            showMessage("success", "COMMIT MSG", `Generated: "${gen.variants.conventional}"`);
+          } catch (err) {
+            termPrint(`Commit message generation failed: ${err.message}`, "vsc-term-error");
+          }
+          return;
+        }
 
         if (sub === "token") {
           const newToken = args[1];
@@ -4060,13 +4467,22 @@ Subcommands:
         } else if (sub === "sync") {
           await syncWithGitHub();
         } else if (sub === "push") {
-          const commitMsg = args.slice(1).join(" ") || "feat: update workspace files via VS Code Tools";
+          let commitMsg = args.slice(1).join(" ");
+          if (!commitMsg) {
+            commitMsg = (el.gitCommitMsg && el.gitCommitMsg.value.trim());
+          }
+          if (!commitMsg) {
+            const autoGen = await generateCommitMessage();
+            commitMsg = autoGen.message;
+            termPrint(`Auto-generated commit message (${autoGen.provider}): "${commitMsg}"`, "vsc-term-info");
+          }
           termPrint(`Pushing ${state.modifiedFiles.size} changed file(s) to ${state.githubRepo}...`, "vsc-term-info");
           try {
             const pushRes = await githubPush(commitMsg);
             if (pushRes.pushedFiles && pushRes.pushedFiles.length > 0) {
               termPrint(`Successfully pushed commit: "${commitMsg}"`, "vsc-term-success");
               pushRes.pushedFiles.forEach(f => termPrint(`  + ${f}`, "vsc-term-dim"));
+              if (el.gitCommitMsg) el.gitCommitMsg.value = "";
             } else {
               termPrint(pushRes.message || "Working tree clean. Nothing to push.", "vsc-term-info");
             }
@@ -4098,6 +4514,61 @@ Subcommands:
   Cookies:     ${getCookie("gh_pat") ? "gh_pat present (cross-device sync)" : "None"}
 `);
         }
+      }
+    }
+  };
+
+  COMMANDS.git = {
+    desc: "Git version control operations: status, diff, commit, push, pull, and gen-msg",
+    usage: "git <status|commit|push|pull|diff|gen-msg> [args...]",
+    exec: async (args) => {
+      const sub = (args[0] || "status").toLowerCase();
+      if (sub === "gen-msg" || sub === "generate") {
+        return COMMANDS.github.exec(["gen-msg", ...args.slice(1)]);
+      } else if (sub === "commit") {
+        let msg = "";
+        const mIdx = args.indexOf("-m");
+        if (mIdx !== -1 && args[mIdx + 1]) {
+          msg = args.slice(mIdx + 1).join(" ").replace(/^["']|["']$/g, "");
+        } else if (args.includes("--generate") || args.includes("-g")) {
+          const gen = await generateCommitMessage();
+          msg = gen.message;
+          termPrint(`Auto-generated commit message (${gen.provider}): "${msg}"`, "vsc-term-info");
+        } else {
+          msg = (el.gitCommitMsg && el.gitCommitMsg.value.trim());
+          if (!msg) {
+            const gen = await generateCommitMessage();
+            msg = gen.message;
+            termPrint(`No commit message provided. Auto-generated: "${msg}"`, "vsc-term-info");
+          }
+        }
+        if (el.gitCommitMsg) el.gitCommitMsg.value = msg;
+        termPrintHTML(`<span class="vsc-term-success">COMMITTED LOCALLY:</span> <b style="color:var(--vsc-turquoise)">${escapeHtml(msg)}</b>`);
+        termPrint("Ready to push to remote repository with 'git push' or 'github push'.", "vsc-term-dim");
+      } else if (sub === "push") {
+        return COMMANDS.github.exec(["push", ...args.slice(1)]);
+      } else if (sub === "pull") {
+        return COMMANDS.github.exec(["pull", ...args.slice(1)]);
+      } else if (sub === "status") {
+        return COMMANDS.github.exec(["status", ...args.slice(1)]);
+      } else if (sub === "diff") {
+        const changed = Array.from(state.modifiedFiles);
+        if (changed.length === 0) {
+          termPrint("Working tree clean, no local changes.", "vsc-term-dim");
+          return;
+        }
+        termPrintHTML(`<span class="vsc-term-info">=== LOCAL GIT DIFF (${changed.length} file${changed.length === 1 ? '' : 's'}) ===</span>`);
+        changed.forEach(file => {
+          const curr = state.files[file] || "";
+          const base = state.baselineFiles[file] || "";
+          const currLines = curr.split("\n").length;
+          const baseLines = base ? base.split("\n").length : 0;
+          const diffLines = currLines - baseLines;
+          const diffSign = diffLines >= 0 ? `+${diffLines}` : `${diffLines}`;
+          termPrint(`  ${file} [${diffSign} lines, ${currLines} total]`, "vsc-term-dim");
+        });
+      } else {
+        return COMMANDS.github.exec(args);
       }
     }
   };
@@ -4860,6 +5331,45 @@ Subcommands:
 
     // Git view buttons
     if (el.btnOpenGhModal) el.btnOpenGhModal.addEventListener("click", openGitHubModal);
+
+    if (el.btnGitGenMsg) {
+      el.btnGitGenMsg.addEventListener("click", () => generateCommitMessageUI());
+    }
+
+    if (el.gitPresetsBar) {
+      el.gitPresetsBar.addEventListener("click", (e) => {
+        const chip = e.target.closest(".vsc-chip-btn");
+        if (!chip) return;
+        const type = chip.dataset.type;
+        el.gitPresetsBar.querySelectorAll(".vsc-chip-btn").forEach(c => c.classList.remove("active"));
+        chip.classList.add("active");
+
+        const currVal = (el.gitCommitMsg ? el.gitCommitMsg.value.trim() : "");
+        if (!currVal) {
+          generateCommitMessageUI(type);
+          return;
+        }
+
+        const convMatch = currVal.match(/^([a-zA-Z0-9_-]+)(\([^)]+\))?:\s*(.*)$/s);
+        if (convMatch) {
+          const scope = convMatch[2] || "";
+          const rest = convMatch[3] || "";
+          el.gitCommitMsg.value = `${type}${scope}: ${rest}`;
+        } else {
+          el.gitCommitMsg.value = `${type}: ${currVal}`;
+        }
+      });
+    }
+
+    if (el.settingBtnToggleGemini && el.settingGeminiKey) {
+      el.settingBtnToggleGemini.addEventListener("click", () => {
+        const isPw = el.settingGeminiKey.type === "password";
+        el.settingGeminiKey.type = isPw ? "text" : "password";
+        el.settingBtnToggleGemini.textContent = isPw ? "🙈" : "👁";
+        el.settingBtnToggleGemini.title = isPw ? "Hide Key" : "Show Key";
+      });
+    }
+
     if (el.btnGitPush) {
       el.btnGitPush.addEventListener("click", async () => {
         if (!state.githubToken) {
@@ -4870,7 +5380,12 @@ Subcommands:
           openGitHubModal("Please select a target GitHub repository to commit & push changes.");
           return;
         }
-        const msg = (el.gitCommitMsg && el.gitCommitMsg.value.trim()) || "feat: update workspace files via VS Code Tools";
+        let msg = (el.gitCommitMsg && el.gitCommitMsg.value.trim());
+        if (!msg) {
+          const autoGen = await generateCommitMessage();
+          msg = autoGen.message;
+          termPrint(`Auto-generated commit message (${autoGen.provider}): "${msg}"`, "vsc-term-info");
+        }
         termPrint(`Pushing ${state.modifiedFiles.size} changed file(s) to GitHub (${state.githubRepo})...`, "vsc-term-info");
         try {
           const res = await githubPush(msg);
@@ -6011,6 +6526,14 @@ Subcommands:
         return;
       }
 
+      // Ctrl+Alt+G: Generate commit message
+      if (e.altKey && key === "g") {
+        e.preventDefault();
+        switchSidebarView("git");
+        generateCommitMessageUI();
+        return;
+      }
+
       if (e.shiftKey && key === "d") {
         e.preventDefault();
         switchSidebarView("debug");
@@ -6126,7 +6649,9 @@ Subcommands:
           return;
         }
         const fileToPush = state.activeFile;
-        const msg = await promptInWorkbench("Commit Message", `feat: update ${fileToPush || "workspace files"}`, "Commit message");
+        const autoGen = await generateCommitMessage({ files: fileToPush ? [fileToPush] : [] });
+        const defaultMsg = autoGen.message || `feat: update ${fileToPush || "workspace files"}`;
+        const msg = await promptInWorkbench("Commit Message", defaultMsg, "Commit message");
         if (!msg) return;
         termPrint(`Pushing changes to GitHub (${state.githubRepo})...`, "vsc-term-info");
         try {
