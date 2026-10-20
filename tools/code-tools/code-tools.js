@@ -6098,11 +6098,7 @@ Subcommands:
     // Run & Debug view
     if (el.btnDebugRun) {
       el.btnDebugRun.addEventListener("click", () => {
-        const isHtml = state.activeFile && (state.activeFile.toLowerCase().endsWith(".html") || state.activeFile.toLowerCase().endsWith(".htm"));
-        const isMd = state.activeFile && (state.activeFile.toLowerCase().endsWith(".md") || state.activeFile.toLowerCase().endsWith(".markdown"));
-        if (!isHtml && !isMd) {
-          switchTerminalTab("debug");
-        }
+        switchTerminalTab("debug");
         COMMANDS.run.exec([]);
       });
     }
