@@ -1,4 +1,4 @@
-const CACHE_NAME = 'portfolio-v27';
+const CACHE_NAME = 'portfolio-v28';
 
 const ASSETS = [
   './',
@@ -165,7 +165,7 @@ self.addEventListener('fetch', event => {
   // --------------------------------------------------------
   // Never cache config files (.json) - Always Network First
   // --------------------------------------------------------
-  if (url.pathname.endsWith('.json') || url.pathname.includes('portfolio.config.json')) {
+  if (url.pathname.endsWith('.json') || url.pathname.includes('portfolio.config.json') || url.pathname.includes('code-tools')) {
     event.respondWith(
       fetch(request)
         .then(response => {

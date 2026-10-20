@@ -4714,9 +4714,25 @@ Length: ${hex.length * 4} bits (${hex.length} hex chars)
     },
 
     run: {
-      desc: "Execute JavaScript code in isolated sandbox and print console output",
-      usage: "run [optional code]",
+      desc: "Execute active file, JavaScript code, or serve HTML in live preview",
+      usage: "run [optional file or code]",
       exec: async (args) => {
+        const target = (args[0] && state.files[args[0]] ? args[0] : "") || state.activeFile || "";
+
+        // If running an HTML file, launch live web server & preview
+        if (target && (target.toLowerCase().endsWith(".html") || target.toLowerCase().endsWith(".htm") || (state.files[target] && state.files[target].trim().toLowerCase().startsWith("<!doctype html")))) {
+          termPrint(`Serving '${target}' in live preview...`, "vsc-term-info");
+          await serveFile(target, state.currentServingPort || 3000, false);
+          return;
+        }
+
+        // If running a Markdown file, open Markdown preview
+        if (target && (target.toLowerCase().endsWith(".md") || target.toLowerCase().endsWith(".markdown"))) {
+          termPrint(`Opening Markdown preview for '${target}'...`, "vsc-term-info");
+          showMarkdownPreview(target);
+          return;
+        }
+
         let code = args.join(" ");
         if (!code && el.codeTextarea) {
           code = el.codeTextarea.value;
@@ -6082,7 +6098,11 @@ Subcommands:
     // Run & Debug view
     if (el.btnDebugRun) {
       el.btnDebugRun.addEventListener("click", () => {
-        switchTerminalTab("debug");
+        const isHtml = state.activeFile && (state.activeFile.toLowerCase().endsWith(".html") || state.activeFile.toLowerCase().endsWith(".htm"));
+        const isMd = state.activeFile && (state.activeFile.toLowerCase().endsWith(".md") || state.activeFile.toLowerCase().endsWith(".markdown"));
+        if (!isHtml && !isMd) {
+          switchTerminalTab("debug");
+        }
         COMMANDS.run.exec([]);
       });
     }
