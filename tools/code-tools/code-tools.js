@@ -3892,7 +3892,7 @@ Length: ${hex.length * 4} bits (${hex.length} hex chars)
 <span class="vsc-term-info">Visual Studio Code Tools [Version 4.2.0-web]</span>
 <span class="vsc-term-dim">(c) DevStudio Web. Pitch Black &amp; Turquoise Workspace.</span>
 Type <b style="color:var(--vsc-turquoise)">help</b> to see all daily diagnostic, network, crypto, and code tools.
-Local Disk: Click <b style="color:var(--vsc-turquoise)">📂 Open Project on E:\\</b> or press <b style="color:var(--vsc-turquoise)">Ctrl+O</b> to edit files directly on your drive.
+Local Disk: Click <b style="color:var(--vsc-turquoise)">📂 Open Project\\</b> or press <b style="color:var(--vsc-turquoise)">Ctrl+O</b> to edit files directly on your drive.
 ${state.githubRepo ? `Remote: <b style="color:var(--vsc-turquoise)">${state.githubRepo}@${state.githubBranch}</b> connected.` : "GitHub: Type <b style=\"color:var(--vsc-turquoise)\">github auth &lt;token&gt;</b> or click Accounts to sync real files."}
 `);
   }
