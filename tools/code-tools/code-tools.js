@@ -17,7 +17,47 @@
 
   function setCookie(name, val, days = 365) {
     const maxAge = days * 86400;
-    document.cookie = `${name}=${encodeURIComponent(val)}; max-age=${maxAge}; path=/; SameSite=Lax`;
+    const isHttps = window.location.protocol === "https:";
+    const secureFlag = isHttps ? "; Secure" : "";
+    document.cookie = `${name}=${encodeURIComponent(val)}; max-age=${maxAge}; path=/; SameSite=Lax${secureFlag}`;
+  }
+
+  function getStoredToken() {
+    try {
+      const fromLs = localStorage.getItem("vsc_gh_token");
+      if (fromLs && fromLs.trim()) return fromLs.trim();
+    } catch (e) {}
+    try {
+      const fromCookie = getCookie("gh_pat");
+      if (fromCookie && fromCookie.trim()) return fromCookie.trim();
+    } catch (e) {}
+    try {
+      const fromSs = sessionStorage.getItem("vsc_gh_token");
+      if (fromSs && fromSs.trim()) return fromSs.trim();
+    } catch (e) {}
+    return "";
+  }
+
+  function persistToken(token) {
+    if (!token) {
+      try { localStorage.removeItem("vsc_gh_token"); } catch (e) {}
+      try { sessionStorage.removeItem("vsc_gh_token"); } catch (e) {}
+      setCookie("gh_pat", "", -1);
+      return;
+    }
+    const clean = token.trim();
+    try { localStorage.setItem("vsc_gh_token", clean); } catch (e) {}
+    try { sessionStorage.setItem("vsc_gh_token", clean); } catch (e) {}
+    setCookie("gh_pat", clean, 365);
+  }
+
+  function maskToken(token) {
+    if (!token) return "";
+    const clean = token.trim();
+    if (clean.length <= 8) return "••••••••";
+    const prefix = clean.startsWith("ghp_") ? "ghp_" : clean.startsWith("github_pat_") ? "github_pat_" : clean.slice(0, 4);
+    const suffix = clean.slice(-4);
+    return `${prefix}••••••••${suffix}`;
   }
 
   // --- APPLICATION STATE ---
@@ -37,7 +77,7 @@
     servers: {}, // { port: { file, url, pid, startedAt } }
     nanoActive: false,
     nanoCurrentFile: "",
-    githubToken: getCookie("gh_pat") || localStorage.getItem("vsc_gh_token") || "",
+    githubToken: getStoredToken(),
     githubRepo: getCookie("gh_repo") || localStorage.getItem("vsc_gh_repo") || "",
     githubBranch: getCookie("gh_branch") || localStorage.getItem("vsc_gh_branch") || "main",
     githubUser: null,
@@ -167,6 +207,11 @@
     ghRepoInput: document.getElementById("vsc-gh-repo-input"),
     ghBranchInput: document.getElementById("vsc-gh-branch-input"),
     ghBtnConnect: document.getElementById("vsc-gh-btn-connect"),
+    ghBtnSaveToken: document.getElementById("vsc-gh-btn-save-token"),
+    ghBtnDisconnect: document.getElementById("vsc-gh-btn-disconnect"),
+    ghBtnToggleToken: document.getElementById("vsc-gh-btn-toggle-token"),
+    ghRememberToken: document.getElementById("vsc-gh-remember-token"),
+    ghSavedBadge: document.getElementById("vsc-gh-saved-badge"),
     ghBtnClose: document.getElementById("vsc-gh-btn-close"),
     ghBtnCancel: document.getElementById("vsc-gh-btn-cancel"),
     ghStatusMsg: document.getElementById("vsc-gh-status-msg"),
@@ -174,6 +219,9 @@
     settingFontSize: document.getElementById("vsc-setting-fontsize"),
     settingTabSize: document.getElementById("vsc-setting-tabsize"),
     settingWordWrap: document.getElementById("vsc-setting-wordwrap"),
+    settingGhToken: document.getElementById("vsc-setting-gh-token"),
+    settingGhStatus: document.getElementById("vsc-setting-gh-status"),
+    settingBtnToggleToken: document.getElementById("vsc-setting-btn-toggle-token"),
     settingsBtnClose: document.getElementById("vsc-settings-btn-close"),
     settingsBtnSave: document.getElementById("vsc-settings-btn-save"),
 
@@ -217,7 +265,9 @@
 
     // Git view elements
     gitRepoDisplay: document.getElementById("vsc-git-repo-display"),
+    gitAuthIndicator: document.getElementById("vsc-git-auth-indicator"),
     btnOpenGhModal: document.getElementById("vsc-btn-open-gh-modal"),
+    btnDisconnectGh: document.getElementById("vsc-btn-disconnect-gh"),
     gitCommitMsg: document.getElementById("vsc-git-commit-msg"),
     btnGitPush: document.getElementById("vsc-btn-git-push"),
     gitChangesList: document.getElementById("vsc-git-changes-list")
@@ -857,10 +907,45 @@
     if (el.statusSyncText) {
       el.statusSyncText.textContent = `0 \u2193  ${modCount} \u2191`;
     }
+
+    // Git view auth status indicator in sidebar
+    if (el.gitAuthIndicator) {
+      if (state.githubUser && state.githubUser.login) {
+        el.gitAuthIndicator.textContent = `@${state.githubUser.login}`;
+        el.gitAuthIndicator.style.background = "rgba(55,145,183,0.18)";
+        el.gitAuthIndicator.style.color = "var(--vsc-turquoise)";
+      } else if (state.githubToken) {
+        el.gitAuthIndicator.textContent = "Token Saved";
+        el.gitAuthIndicator.style.background = "rgba(152,195,121,0.18)";
+        el.gitAuthIndicator.style.color = "#98c379";
+      } else {
+        el.gitAuthIndicator.textContent = "Not Connected";
+        el.gitAuthIndicator.style.background = "#1e1e1e";
+        el.gitAuthIndicator.style.color = "var(--vsc-fg-muted)";
+      }
+    }
+
+    if (el.btnOpenGhModal) {
+      if (state.githubToken) {
+        el.btnOpenGhModal.textContent = state.githubUser && state.githubUser.login
+          ? `Account: @${state.githubUser.login}`
+          : "Manage GitHub Token";
+        el.btnOpenGhModal.title = "Manage saved GitHub credentials and connected repository";
+      } else {
+        el.btnOpenGhModal.textContent = "Connect GitHub Token";
+        el.btnOpenGhModal.title = "Enter and remember GitHub Personal Access Token";
+      }
+    }
+
+    if (el.btnDisconnectGh) {
+      el.btnDisconnectGh.style.display = state.githubToken ? "inline-flex" : "none";
+    }
+
     if (el.gitRepoDisplay) {
       if (state.githubRepo) {
-        el.gitRepoDisplay.textContent = `${state.githubRepo} (${branch})`;
-        el.gitRepoDisplay.style.color = "var(--vsc-turquoise)";
+        el.gitRepoDisplay.innerHTML = `<span style="color:var(--vsc-turquoise);font-weight:600">${state.githubRepo}</span> <span style="color:var(--vsc-fg-muted)">(${branch})</span>`;
+      } else if (state.githubToken) {
+        el.gitRepoDisplay.innerHTML = `<span style="color:#98c379">✓ Token Active</span> <span style="color:var(--vsc-fg-muted)">(${maskToken(state.githubToken)})</span>`;
       } else {
         el.gitRepoDisplay.textContent = "No remote repo connected";
         el.gitRepoDisplay.style.color = "var(--vsc-fg-secondary)";
@@ -929,33 +1014,61 @@
   }
 
   // --- GITHUB REST API ENGINE ---
-  async function githubAuth(token) {
+  async function githubAuth(token, shouldPersist = true) {
     if (!token) {
       state.githubToken = "";
       state.githubUser = null;
-      setCookie("gh_pat", "", -1);
-      localStorage.removeItem("vsc_gh_token");
+      persistToken("");
       updateGitStatus();
       return { success: false, message: "Logged out / token cleared." };
     }
+
+    const cleanToken = token.trim();
+    state.githubToken = cleanToken;
+    if (shouldPersist) {
+      persistToken(cleanToken);
+    }
+    updateGitStatus();
+
     try {
+      // 1. Try /user endpoint (Classic PATs and Fine-Grained with User Profile scope)
       const res = await fetch("https://api.github.com/user", {
         headers: {
-          "Authorization": `Bearer ${token}`,
+          "Authorization": `Bearer ${cleanToken}`,
           "Accept": "application/vnd.github.v3+json"
         }
       });
-      if (!res.ok) {
-        throw new Error(`GitHub Auth Failed (${res.status} ${res.statusText})`);
+
+      if (res.ok) {
+        const user = await res.json();
+        state.githubUser = user;
+        updateGitStatus();
+        return { success: true, user, method: "user" };
       }
-      const user = await res.json();
-      state.githubToken = token;
-      state.githubUser = user;
-      setCookie("gh_pat", token, 365);
-      localStorage.setItem("vsc_gh_token", token);
-      updateGitStatus();
-      return { success: true, user };
+
+      // 2. Fine-grained tokens without read:user scope return 401 or 403 on /user
+      // Check /rate_limit endpoint which works for all authenticated tokens
+      if (res.status === 401 || res.status === 403) {
+        const rlRes = await fetch("https://api.github.com/rate_limit", {
+          headers: {
+            "Authorization": `Bearer ${cleanToken}`,
+            "Accept": "application/vnd.github.v3+json"
+          }
+        });
+        if (rlRes.ok) {
+          const rlData = await rlRes.json();
+          const limit = rlData.resources?.core?.limit || 0;
+          if (limit > 60) {
+            state.githubUser = { login: "Fine-Grained PAT", name: "GitHub User" };
+            updateGitStatus();
+            return { success: true, user: state.githubUser, method: "fine-grained" };
+          }
+        }
+      }
+
+      throw new Error(`GitHub Auth Failed (${res.status} ${res.statusText})`);
     } catch (err) {
+      updateGitStatus();
       return { success: false, message: err.message };
     }
   }
@@ -1413,6 +1526,22 @@
       if (saved.tabSize && el.settingTabSize) el.settingTabSize.value = saved.tabSize;
       if (saved.wordWrap && el.settingWordWrap) el.settingWordWrap.value = saved.wordWrap;
     } catch (e) {}
+
+    if (el.settingGhToken) {
+      el.settingGhToken.value = state.githubToken || "";
+      el.settingGhToken.type = "password";
+    }
+    if (el.settingBtnToggleToken) {
+      el.settingBtnToggleToken.textContent = "👁";
+      el.settingBtnToggleToken.title = "Show Token";
+    }
+    if (el.settingGhStatus) {
+      el.settingGhStatus.textContent = state.githubToken
+        ? (state.githubUser ? `✓ Saved (@${state.githubUser.login})` : "✓ Token Saved")
+        : "Not Set";
+      el.settingGhStatus.style.color = state.githubToken ? "#98c379" : "var(--vsc-fg-muted)";
+    }
+
     el.settingsDialog.showModal();
   }
 
@@ -1433,6 +1562,18 @@
       el.statusSpaces.textContent = `Spaces: ${ts}`;
     }
 
+    // Save token from settings if changed
+    if (el.settingGhToken) {
+      const tokVal = el.settingGhToken.value.trim();
+      if (tokVal !== state.githubToken) {
+        if (tokVal) {
+          githubAuth(tokVal);
+        } else {
+          githubAuth("");
+        }
+      }
+    }
+
     try {
       localStorage.setItem("vsc_workbench_settings", JSON.stringify({ fontSize: fs, tabSize: ts, wordWrap: ww }));
     } catch (e) {}
@@ -1440,7 +1581,30 @@
 
   function openGitHubModal() {
     if (!el.githubDialog) return;
-    if (el.ghTokenInput) el.ghTokenInput.value = state.githubToken;
+    if (el.ghTokenInput) {
+      el.ghTokenInput.value = state.githubToken || "";
+      el.ghTokenInput.type = "password";
+    }
+    if (el.ghBtnToggleToken) {
+      el.ghBtnToggleToken.textContent = "👁";
+      el.ghBtnToggleToken.title = "Show Token";
+    }
+    if (el.ghSavedBadge) {
+      if (state.githubToken) {
+        el.ghSavedBadge.style.display = "inline-block";
+        el.ghSavedBadge.textContent = state.githubUser && state.githubUser.login
+          ? `✓ Saved (@${state.githubUser.login})`
+          : `✓ Saved (${maskToken(state.githubToken)})`;
+      } else {
+        el.ghSavedBadge.style.display = "none";
+      }
+    }
+    if (el.ghBtnDisconnect) {
+      el.ghBtnDisconnect.style.display = state.githubToken ? "inline-flex" : "none";
+    }
+    if (el.ghRememberToken) {
+      el.ghRememberToken.checked = true;
+    }
     if (el.ghRepoInput) el.ghRepoInput.value = state.githubRepo;
     if (el.ghBranchInput) el.ghBranchInput.value = state.githubBranch || "main";
     if (el.ghStatusMsg) el.ghStatusMsg.textContent = "";
@@ -3142,10 +3306,35 @@ Subcommands:
     },
 
     github: {
-      desc: "GitHub integration: auth, clone repo trees, push commits, and view status",
-      usage: "github <auth|clone|push|repos|status|logout> [args...]",
+      desc: "GitHub integration: auth, remember tokens, clone repo trees, push commits, and view status",
+      usage: "github <token|auth|clone|push|repos|status|logout> [args...]",
       exec: async (args) => {
         const sub = (args[0] || "status").toLowerCase();
+
+        if (sub === "token") {
+          const newToken = args[1];
+          if (newToken) {
+            termPrint("Saving & verifying GitHub token...", "vsc-term-dim");
+            const authRes = await githubAuth(newToken);
+            termPrint(`GitHub token saved and remembered across sessions! (${maskToken(newToken)})`, "vsc-term-success");
+            if (authRes.success && authRes.user) {
+              termPrint(`Authenticated as @${authRes.user.login}`, "vsc-term-info");
+            }
+          } else {
+            if (state.githubToken) {
+              termPrintHTML(`
+<span class="vsc-term-success">SAVED GITHUB TOKEN:</span>
+  Token:      <b style="color:var(--vsc-turquoise)">${maskToken(state.githubToken)}</b>
+  Status:     ${state.githubUser ? `<span style="color:#98c379">Authenticated as @${state.githubUser.login}</span>` : "Remembered (Stored locally)"}
+  Storage:    localStorage, sessionStorage & secure cookies
+  Change:     github token &lt;new_pat&gt; or github logout
+`);
+            } else {
+              termPrint("No GitHub token currently saved. Use: github auth <token> or github token <token>", "vsc-term-warn");
+            }
+          }
+          return;
+        }
 
         if (sub === "auth") {
           const token = args[1] || await promptInWorkbench("GitHub Token", "", "ghp_... or github_pat_...");
@@ -3153,14 +3342,15 @@ Subcommands:
             termPrint("GitHub auth requires a token: github auth <token>", "vsc-term-warn");
             return;
           }
-          termPrint("Authenticating with GitHub API...", "vsc-term-dim");
+          termPrint("Authenticating & saving token to browser storage...", "vsc-term-dim");
           const authRes = await githubAuth(token);
           if (authRes.success) {
             termPrint(`Authenticated successfully as ${authRes.user.login} (${authRes.user.name || "GitHub User"})!`, "vsc-term-success");
-            showMessage("success", "GITHUB AUTH", `Logged in as ${authRes.user.login} (${authRes.user.name || "User"}). PAT saved to cookies.`);
+            termPrint(`Token remembered in browser storage: ${maskToken(token)}`, "vsc-term-info");
+            showMessage("success", "GITHUB AUTH", `Logged in as @${authRes.user.login}. PAT saved and remembered.`);
           } else {
-            termPrint(`Authentication failed: ${authRes.message}`, "vsc-term-error");
-            showMessage("error", "GITHUB AUTH FAILED", authRes.message);
+            termPrint(`Token saved locally (${maskToken(token)}), but GitHub verification warning: ${authRes.message}`, "vsc-term-warn");
+            showMessage("warning", "GITHUB AUTH", `Token saved locally, but GitHub returned: ${authRes.message}`);
           }
         } else if (sub === "clone") {
           const repo = args[1] || await promptInWorkbench("Clone Repository", "", "owner/repo");
@@ -4048,6 +4238,84 @@ Subcommands:
         if (e.target === el.githubDialog) el.githubDialog.close();
       });
     }
+
+    if (el.ghBtnToggleToken && el.ghTokenInput) {
+      el.ghBtnToggleToken.addEventListener("click", () => {
+        const isPass = el.ghTokenInput.type === "password";
+        el.ghTokenInput.type = isPass ? "text" : "password";
+        el.ghBtnToggleToken.textContent = isPass ? "🔒" : "👁";
+        el.ghBtnToggleToken.title = isPass ? "Hide Token" : "Show Token";
+      });
+    }
+
+    if (el.settingBtnToggleToken && el.settingGhToken) {
+      el.settingBtnToggleToken.addEventListener("click", () => {
+        const isPass = el.settingGhToken.type === "password";
+        el.settingGhToken.type = isPass ? "text" : "password";
+        el.settingBtnToggleToken.textContent = isPass ? "🔒" : "👁";
+        el.settingBtnToggleToken.title = isPass ? "Hide Token" : "Show Token";
+      });
+    }
+
+    if (el.ghTokenInput) {
+      el.ghTokenInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          const repo = el.ghRepoInput && el.ghRepoInput.value.trim();
+          if (repo) {
+            if (el.ghBtnConnect) el.ghBtnConnect.click();
+          } else {
+            if (el.ghBtnSaveToken) el.ghBtnSaveToken.click();
+          }
+        }
+      });
+    }
+
+    if (el.ghBtnSaveToken) {
+      el.ghBtnSaveToken.addEventListener("click", async () => {
+        const token = (el.ghTokenInput && el.ghTokenInput.value.trim()) || state.githubToken;
+        if (!token) {
+          if (el.ghStatusMsg) el.ghStatusMsg.innerHTML = `<span style="color:#f44336">Please enter a GitHub Personal Access Token.</span>`;
+          return;
+        }
+        if (el.ghStatusMsg) el.ghStatusMsg.innerHTML = `<span style="color:var(--vsc-turquoise)">Saving &amp; verifying token...</span>`;
+        const remember = !el.ghRememberToken || el.ghRememberToken.checked;
+        const authRes = await githubAuth(token, remember);
+        if (authRes.success && authRes.user) {
+          if (el.ghStatusMsg) el.ghStatusMsg.innerHTML = `<span style="color:#98c379">✓ Token saved &amp; remembered as @${authRes.user.login}!</span>`;
+          termPrint(`GitHub token saved and remembered for @${authRes.user.login} (${maskToken(token)})`, "vsc-term-success");
+          showMessage("success", "GITHUB TOKEN", `Token remembered for @${authRes.user.login}. Automatically persisted across sessions.`);
+        } else {
+          if (el.ghStatusMsg) el.ghStatusMsg.innerHTML = `<span style="color:#98c379">✓ Token saved in browser storage (${maskToken(token)})</span>`;
+          termPrint(`GitHub token saved in local browser storage (${maskToken(token)}). Note: ${authRes.message}`, "vsc-term-info");
+          showMessage("info", "GITHUB TOKEN", `Token saved in local storage (${maskToken(token)}).`);
+        }
+        setTimeout(() => {
+          if (el.githubDialog && el.githubDialog.open) el.githubDialog.close();
+        }, 900);
+      });
+    }
+
+    const handleGhDisconnect = async () => {
+      await githubAuth("");
+      if (el.ghTokenInput) el.ghTokenInput.value = "";
+      if (el.ghRepoInput) el.ghRepoInput.value = "";
+      if (el.settingGhToken) el.settingGhToken.value = "";
+      state.githubRepo = "";
+      try { localStorage.removeItem("vsc_gh_repo"); } catch(e){}
+      setCookie("gh_repo", "", -1);
+      updateGitStatus();
+      if (el.ghStatusMsg) el.ghStatusMsg.innerHTML = `<span style="color:var(--vsc-fg-secondary)">Logged out. Token and repo cleared.</span>`;
+      termPrint("Logged out from GitHub. Token cleared from cookies and local storage.", "vsc-term-info");
+      showMessage("info", "GITHUB LOGOUT", "Logged out. Token removed from device.");
+      setTimeout(() => {
+        if (el.githubDialog && el.githubDialog.open) el.githubDialog.close();
+      }, 700);
+    };
+
+    if (el.ghBtnDisconnect) el.ghBtnDisconnect.addEventListener("click", handleGhDisconnect);
+    if (el.btnDisconnectGh) el.btnDisconnectGh.addEventListener("click", handleGhDisconnect);
+
     if (el.ghBtnConnect) {
       el.ghBtnConnect.addEventListener("click", async () => {
         const token = (el.ghTokenInput && el.ghTokenInput.value.trim()) || state.githubToken;
@@ -4060,13 +4328,24 @@ Subcommands:
         }
 
         if (el.ghStatusMsg) el.ghStatusMsg.innerHTML = `<span style="color:var(--vsc-turquoise)">Verifying token...</span>`;
-        const authRes = await githubAuth(token);
+        const remember = !el.ghRememberToken || el.ghRememberToken.checked;
+        const authRes = await githubAuth(token, remember);
         if (!authRes.success) {
           if (el.ghStatusMsg) el.ghStatusMsg.innerHTML = `<span style="color:#f44336">${authRes.message}</span>`;
           return;
         }
 
         if (repo) {
+          state.githubRepo = repo;
+          state.githubBranch = branch;
+          try {
+            localStorage.setItem("vsc_gh_repo", repo);
+            localStorage.setItem("vsc_gh_branch", branch);
+          } catch(e){}
+          setCookie("gh_repo", repo, 365);
+          setCookie("gh_branch", branch, 365);
+          updateGitStatus();
+
           if (el.ghStatusMsg) el.ghStatusMsg.innerHTML = `<span style="color:var(--vsc-turquoise)">Loading repository ${repo}...</span>`;
           try {
             const cloneRes = await githubCloneRepo(repo, branch, (cur, total, path) => {
@@ -5081,7 +5360,7 @@ Subcommands:
 <span class="vsc-term-dim">(c) DevStudio Web. Pitch Black &amp; Turquoise Workspace.</span>
 Type <b style="color:var(--vsc-turquoise)">help</b> to see all daily diagnostic, network, crypto, and code tools.
 Local Disk: Click <b style="color:var(--vsc-turquoise)">📂 Open Project</b> or press <b style="color:var(--vsc-turquoise)">Ctrl+O</b> to edit files directly on your drive.
-${state.githubRepo ? `Remote: <b style="color:var(--vsc-turquoise)">${state.githubRepo}@${state.githubBranch}</b> connected.` : "GitHub: Type <b style=\"color:var(--vsc-turquoise)\">github auth &lt;token&gt;</b> or click Accounts to sync real files."}
+${state.githubToken ? `GitHub: <b style="color:#98c379">✓ Token Connected &amp; Remembered</b> (${state.githubUser && state.githubUser.login ? '@' + state.githubUser.login : maskToken(state.githubToken)}) ${state.githubRepo ? `| Remote: <b style="color:var(--vsc-turquoise)">${state.githubRepo}@${state.githubBranch}</b>` : ""}` : "GitHub: Type <b style=\"color:var(--vsc-turquoise)\">github auth &lt;token&gt;</b> or click Accounts to sync."}
 `);
   }
 

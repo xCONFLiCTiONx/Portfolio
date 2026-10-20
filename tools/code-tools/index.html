@@ -303,9 +303,15 @@
           <div class="vsc-sidebar-view" id="vsc-view-git">
             <div class="vsc-git-view-wrap">
               <div class="vsc-git-status-card">
-                <span style="font-weight:700;color:var(--vsc-turquoise)">GitHub Integration</span>
-                <span id="vsc-git-repo-display" style="color:var(--vsc-fg-secondary)">No remote repo connected</span>
-                <button class="vsc-editor-btn" id="vsc-btn-open-gh-modal" style="margin-top:6px">Connect GitHub Token</button>
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                  <span style="font-weight:700;color:var(--vsc-turquoise)">GitHub Integration</span>
+                  <span id="vsc-git-auth-indicator" style="font-size:10px;padding:2px 6px;border-radius:3px;background:#1e1e1e;color:var(--vsc-fg-muted)">Not Connected</span>
+                </div>
+                <div id="vsc-git-repo-display" style="color:var(--vsc-fg-secondary);font-size:11px">No remote repo connected</div>
+                <div style="display:flex;gap:6px;margin-top:6px">
+                  <button class="vsc-editor-btn" id="vsc-btn-open-gh-modal" style="flex:1">Connect GitHub Token</button>
+                  <button class="vsc-editor-btn" id="vsc-btn-disconnect-gh" style="display:none;color:#f44336;border-color:#5c2323" title="Disconnect GitHub Token">Log Out</button>
+                </div>
               </div>
               <div class="vsc-input-group">
                 <label class="vsc-input-label">Commit Message:</label>
@@ -673,22 +679,33 @@
       </div>
       <div class="vsc-dialog-body">
         <div class="vsc-input-group">
-          <label class="vsc-input-label">GitHub Personal Access Token (PAT):</label>
-          <input type="password" class="vsc-modal-input" id="vsc-gh-token-input" placeholder="ghp_... or github_pat_..." />
-          <span style="font-size:10px;color:var(--vsc-fg-muted)">Saved securely in browser cookies &amp; localStorage for persistent sync across PC &amp; Android phone.</span>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <label class="vsc-input-label" for="vsc-gh-token-input">GitHub Personal Access Token (PAT):</label>
+            <span id="vsc-gh-saved-badge" style="font-size:10px;color:#98c379;display:none;font-weight:600">✓ Token Remembered</span>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center;position:relative">
+            <input type="password" class="vsc-modal-input" id="vsc-gh-token-input" placeholder="ghp_... or github_pat_..." style="flex:1" autocomplete="off" />
+            <button type="button" class="vsc-editor-btn" id="vsc-gh-btn-toggle-token" title="Show / Hide Token" style="padding:6px 10px">👁</button>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:2px">
+            <input type="checkbox" id="vsc-gh-remember-token" checked style="accent-color:var(--vsc-turquoise);cursor:pointer" />
+            <label for="vsc-gh-remember-token" style="font-size:11px;color:var(--vsc-fg-secondary);cursor:pointer">Remember token on this device (localStorage &amp; cookies)</label>
+          </div>
         </div>
         <div class="vsc-input-group">
-          <label class="vsc-input-label">Target Repository (owner/repo):</label>
+          <label class="vsc-input-label" for="vsc-gh-repo-input">Target Repository (owner/repo):</label>
           <input type="text" class="vsc-modal-input" id="vsc-gh-repo-input" placeholder="e.g. xCONFLiCTiONx/Portfolio" />
         </div>
         <div class="vsc-input-group">
-          <label class="vsc-input-label">Branch (default: main):</label>
+          <label class="vsc-input-label" for="vsc-gh-branch-input">Branch (default: main):</label>
           <input type="text" class="vsc-modal-input" id="vsc-gh-branch-input" placeholder="main" value="main" />
         </div>
         <div id="vsc-gh-status-msg" style="font-size:11px;min-height:16px;"></div>
       </div>
       <div class="vsc-dialog-footer">
+        <button class="vsc-editor-btn" id="vsc-gh-btn-disconnect" style="margin-right:auto;display:none;color:#f44336;border-color:#5c2323">Clear / Log Out</button>
         <button class="vsc-editor-btn" id="vsc-gh-btn-cancel">Cancel</button>
+        <button class="vsc-editor-btn" id="vsc-gh-btn-save-token" title="Save and remember token without cloning repo">Save Token</button>
         <button class="vsc-editor-btn run" id="vsc-gh-btn-connect">Connect &amp; Load Repo</button>
       </div>
     </dialog>
@@ -722,6 +739,17 @@
             <option value="off">Off (Horizontal Scroll)</option>
             <option value="on" selected>On (Wrap lines)</option>
           </select>
+        </div>
+        <div class="vsc-input-group" style="margin-top:6px;border-top:1px solid #232323;padding-top:10px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <label class="vsc-input-label" for="vsc-setting-gh-token">GitHub Personal Access Token (PAT):</label>
+            <span id="vsc-setting-gh-status" style="font-size:10px;color:var(--vsc-fg-muted)">Persisted locally</span>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center">
+            <input type="password" class="vsc-modal-input" id="vsc-setting-gh-token" placeholder="ghp_... or github_pat_..." style="flex:1" autocomplete="off" />
+            <button type="button" class="vsc-editor-btn" id="vsc-setting-btn-toggle-token" title="Show / Hide Token" style="padding:6px 10px">👁</button>
+          </div>
+          <span style="font-size:10px;color:var(--vsc-fg-muted)">Remembered across browser sessions via localStorage and secure cookies.</span>
         </div>
       </div>
       <div class="vsc-dialog-footer">
