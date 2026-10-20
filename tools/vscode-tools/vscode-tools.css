@@ -1,0 +1,963 @@
+/* ==========================================================================
+   VS CODE TOOLS — Web IDE & Daily CLI Developer Workbench
+   Theme: Pitch Black (#121212), Crisp White (#FFFFFF), Accent Turquoise (#00F0FF / #4EC9B0)
+   Exact Visual Studio Code Aesthetic + Drag Resizer + Panel Maximizer + Real Utilities
+   ========================================================================== */
+
+:root {
+  color-scheme: dark;
+  --vsc-bg-app: #121212;
+  --vsc-bg-title: #141414;
+  --vsc-bg-activity: #181818;
+  --vsc-bg-sidebar: #181818;
+  --vsc-bg-editor: #1e1e1e;
+  --vsc-bg-panel: #181818;
+  --vsc-bg-input: #121212;
+  --vsc-bg-status: #121212;
+  --vsc-bg-hover: rgba(255, 255, 255, 0.06);
+  --vsc-bg-active: rgba(0, 240, 255, 0.12);
+
+  --vsc-fg-primary: #ffffff;
+  --vsc-fg-secondary: #cccccc;
+  --vsc-fg-muted: #858585;
+  --vsc-fg-subtle: #555555;
+
+  /* Vibrant VS Code Turquoise / Cyan Accent */
+  --vsc-turquoise: #00f0ff;
+  --vsc-turquoise-dark: #00adb5;
+  --vsc-turquoise-soft: #4ec9b0;
+  --vsc-turquoise-glow: rgba(0, 240, 255, 0.25);
+
+  --vsc-border: #2a2a2a;
+  --vsc-border-focus: #00f0ff;
+
+  --vsc-syntax-keyword: #00f0ff;
+  --vsc-syntax-string: #98c379;
+  --vsc-syntax-number: #d19a66;
+  --vsc-syntax-func: #61afef;
+  --vsc-syntax-comment: #6a737d;
+
+  --vsc-font-code: "Cascadia Code", "JetBrains Mono", "Consolas", "Fira Code", monospace;
+  --vsc-font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+  --scrollbar-thumb: #333333;
+  --scrollbar-track: #121212;
+}
+
+body[data-tool-id="vscode-tools"] {
+  background-color: var(--vsc-bg-app) !important;
+  color: var(--vsc-fg-primary);
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  user-select: text;
+}
+
+body[data-tool-id="vscode-tools"] header.site-header {
+  margin-bottom: 0 !important;
+  background: var(--vsc-bg-title) !important;
+  border-bottom: 1px solid var(--vsc-border) !important;
+}
+
+body[data-tool-id="vscode-tools"] main.container {
+  max-width: 100% !important;
+  width: 100% !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  display: block !important;
+}
+
+body[data-tool-id="vscode-tools"].vsc-fullscreen header.site-header,
+body[data-tool-id="vscode-tools"].vsc-fullscreen footer.site-footer {
+  display: none !important;
+}
+
+/* ==========================================================================
+   SCROLLBAR (Modern Web Guidance: customize-scrollbar-color-and-thickness)
+   ========================================================================== */
+.vsc-scrollable {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+@supports not (scrollbar-color: auto) {
+  .vsc-scrollable::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  .vsc-scrollable::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+  }
+  .vsc-scrollable::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 4px;
+  }
+  .vsc-scrollable::-webkit-scrollbar-thumb:hover {
+    background: var(--vsc-turquoise-dark);
+  }
+}
+
+/* ==========================================================================
+   VS CODE WORKBENCH FRAME
+   ========================================================================== */
+#vscode-workbench {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 54px);
+  min-height: 600px;
+  background-color: var(--vsc-bg-app);
+  color: var(--vsc-fg-primary);
+  font-family: var(--vsc-font-ui);
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid var(--vsc-border);
+}
+
+body[data-tool-id="vscode-tools"].vsc-fullscreen #vscode-workbench {
+  height: 100vh;
+  min-height: 100vh;
+}
+
+/* 1. TOP TITLEBAR */
+.vsc-titlebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 36px;
+  background-color: var(--vsc-bg-title);
+  border-bottom: 1px solid var(--vsc-border);
+  padding: 0 10px;
+  font-size: 12px;
+  color: var(--vsc-fg-secondary);
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.vsc-titlebar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.vsc-logo {
+  color: var(--vsc-turquoise);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.vsc-logo svg {
+  width: 18px;
+  height: 18px;
+}
+
+.vsc-menu-bar {
+  display: flex;
+  gap: 8px;
+}
+
+.vsc-menu-item {
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 3px;
+  color: var(--vsc-fg-secondary);
+}
+
+.vsc-menu-item:hover {
+  background: var(--vsc-bg-hover);
+  color: #fff;
+}
+
+.vsc-searchbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--vsc-bg-input);
+  border: 1px solid var(--vsc-border);
+  border-radius: 4px;
+  padding: 3px 12px;
+  width: 380px;
+  max-width: 40vw;
+  font-size: 11px;
+  color: var(--vsc-fg-muted);
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.vsc-searchbar:hover {
+  border-color: var(--vsc-turquoise);
+  color: var(--vsc-fg-secondary);
+}
+
+.vsc-searchbar kbd {
+  margin-left: auto;
+  font-family: var(--vsc-font-code);
+  font-size: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 1px 4px;
+  border-radius: 3px;
+  color: var(--vsc-turquoise);
+}
+
+.vsc-titlebar-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.vsc-title-btn {
+  background: transparent;
+  border: none;
+  color: var(--vsc-fg-muted);
+  padding: 4px 6px;
+  border-radius: 3px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.vsc-title-btn:hover {
+  background: var(--vsc-bg-hover);
+  color: var(--vsc-turquoise);
+}
+
+/* 2. MAIN BODY (ACTIVITY BAR + SIDEBAR + WORKSPACE) */
+.vsc-main-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+/* 2A. ACTIVITY BAR */
+.vsc-activity-bar {
+  width: 48px;
+  background-color: var(--vsc-bg-activity);
+  border-right: 1px solid var(--vsc-border);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.vsc-activity-top,
+.vsc-activity-bottom {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.vsc-act-btn {
+  width: 100%;
+  height: 44px;
+  background: transparent;
+  border: none;
+  color: var(--vsc-fg-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  transition: color 0.15s ease;
+}
+
+.vsc-act-btn:hover {
+  color: #fff;
+}
+
+.vsc-act-btn.active {
+  color: #fff;
+}
+
+.vsc-act-btn.active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 6px;
+  bottom: 6px;
+  width: 2px;
+  background-color: var(--vsc-turquoise);
+  box-shadow: 0 0 8px var(--vsc-turquoise);
+}
+
+.vsc-act-btn svg {
+  width: 22px;
+  height: 22px;
+}
+
+/* 2B. SIDEBAR */
+.vsc-sidebar {
+  width: 260px;
+  background-color: var(--vsc-bg-sidebar);
+  border-right: 1px solid var(--vsc-border);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  overflow: hidden;
+  transition: width 0.2s ease;
+}
+
+.vsc-sidebar.collapsed {
+  width: 0;
+  border-right: none;
+}
+
+.vsc-sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px 6px 14px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  color: var(--vsc-fg-secondary);
+  text-transform: uppercase;
+}
+
+.vsc-sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 20px;
+}
+
+.vsc-section-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--vsc-fg-muted);
+  cursor: pointer;
+  user-select: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.vsc-section-title:hover {
+  color: var(--vsc-fg-secondary);
+}
+
+.vsc-section-title svg {
+  width: 12px;
+  height: 12px;
+  transition: transform 0.15s ease;
+}
+
+.vsc-section-title.collapsed svg {
+  transform: rotate(-90deg);
+}
+
+.vsc-tree {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.vsc-tree-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px 5px 24px;
+  font-size: 12px;
+  color: var(--vsc-fg-secondary);
+  cursor: pointer;
+  border-left: 2px solid transparent;
+}
+
+.vsc-tree-item:hover {
+  background: var(--vsc-bg-hover);
+  color: #fff;
+}
+
+.vsc-tree-item.active {
+  background: var(--vsc-bg-hover);
+  color: #fff;
+  border-left-color: var(--vsc-turquoise);
+}
+
+.vsc-tree-item svg {
+  width: 14px;
+  height: 14px;
+  color: var(--vsc-turquoise-soft);
+  flex-shrink: 0;
+}
+
+.vsc-tool-chip {
+  margin-left: auto;
+  font-size: 10px;
+  color: var(--vsc-turquoise);
+  background: rgba(0, 240, 255, 0.1);
+  padding: 1px 5px;
+  border-radius: 3px;
+  border: 1px solid rgba(0, 240, 255, 0.2);
+}
+
+/* 2C. WORKSPACE AREA (CONTAINER QUERY AWARE) */
+.vsc-workspace-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: var(--vsc-bg-editor);
+  position: relative;
+  container-type: inline-size;
+}
+
+/* 3. EDITOR AREA */
+.vsc-editor-panel {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--vsc-bg-editor);
+  min-height: 80px;
+  flex: 1;
+}
+
+/* Editor Tabs */
+.vsc-tabs-bar {
+  display: flex;
+  align-items: center;
+  background: var(--vsc-bg-title);
+  border-bottom: 1px solid var(--vsc-border);
+  overflow-x: auto;
+  user-select: none;
+}
+
+.vsc-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  font-size: 12px;
+  color: var(--vsc-fg-muted);
+  background: var(--vsc-bg-title);
+  border-right: 1px solid var(--vsc-border);
+  border-top: 2px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.vsc-tab:hover {
+  color: var(--vsc-fg-primary);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.vsc-tab.active {
+  color: #ffffff;
+  background: var(--vsc-bg-editor);
+  border-top-color: var(--vsc-turquoise);
+  box-shadow: 0 -2px 8px var(--vsc-turquoise-glow);
+}
+
+.vsc-tab svg {
+  width: 14px;
+  height: 14px;
+  color: var(--vsc-turquoise-soft);
+}
+
+.vsc-tab-close {
+  padding: 2px;
+  border-radius: 3px;
+  color: var(--vsc-fg-muted);
+}
+
+.vsc-tab-close:hover {
+  background: var(--vsc-bg-hover);
+  color: #fff;
+}
+
+/* Breadcrumbs & Toolbar */
+.vsc-editor-subbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 14px;
+  background: var(--vsc-bg-editor);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  font-size: 11px;
+  color: var(--vsc-fg-muted);
+}
+
+.vsc-breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.vsc-breadcrumbs span {
+  color: var(--vsc-fg-secondary);
+}
+
+.vsc-breadcrumbs span.active {
+  color: var(--vsc-turquoise);
+  font-weight: 600;
+}
+
+.vsc-editor-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.vsc-editor-btn {
+  background: transparent;
+  border: 1px solid var(--vsc-border);
+  color: var(--vsc-fg-secondary);
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 3px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s ease;
+}
+
+.vsc-editor-btn:hover {
+  background: var(--vsc-bg-hover);
+  border-color: var(--vsc-turquoise);
+  color: var(--vsc-turquoise);
+}
+
+.vsc-editor-btn.run {
+  background: rgba(0, 240, 255, 0.1);
+  border-color: var(--vsc-turquoise);
+  color: var(--vsc-turquoise);
+  font-weight: 600;
+}
+
+.vsc-editor-btn.run:hover {
+  background: var(--vsc-turquoise);
+  color: #000;
+}
+
+/* Editor Body */
+.vsc-editor-content {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+  position: relative;
+  font-family: var(--vsc-font-code);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.vsc-gutter {
+  width: 44px;
+  padding: 10px 8px 10px 0;
+  text-align: right;
+  color: var(--vsc-fg-subtle);
+  user-select: none;
+  background: var(--vsc-bg-editor);
+  border-right: 1px solid rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.vsc-code-textarea {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  background: var(--vsc-bg-editor);
+  color: var(--vsc-fg-primary);
+  border: none;
+  outline: none;
+  resize: none;
+  padding: 10px 14px;
+  font-family: var(--vsc-font-code);
+  font-size: 13px;
+  line-height: 1.5;
+  tab-size: 2;
+  white-space: pre;
+  overflow: auto;
+}
+
+.vsc-code-textarea:focus {
+  outline: none;
+}
+
+/* ==========================================================================
+   4. SASH RESIZER (BETWEEN EDITOR AND TERMINAL)
+   Pull up or down to resize, exactly like in VS Code!
+   ========================================================================== */
+.vsc-sash-resizer {
+  height: 6px;
+  background: transparent;
+  cursor: row-resize;
+  position: relative;
+  z-index: 20;
+  flex-shrink: 0;
+  transition: background-color 0.15s ease;
+  touch-action: none; /* PointerEvent capture for mobile touch drag */
+}
+
+.vsc-sash-resizer:hover,
+.vsc-sash-resizer.dragging {
+  background: var(--vsc-turquoise);
+  box-shadow: 0 0 10px var(--vsc-turquoise);
+}
+
+.vsc-sash-resizer::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--vsc-border);
+}
+
+/* ==========================================================================
+   5. BOTTOM TERMINAL PANEL (MAXIMIZABLE VIA BUTTON ON RIGHT)
+   ========================================================================== */
+.vsc-terminal-panel {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--vsc-bg-panel);
+  border-top: 1px solid var(--vsc-border);
+  height: 320px; /* Default height */
+  min-height: 40px;
+  position: relative;
+  overflow: hidden;
+  transition: height 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Maximized State: Terminal fills 100% of workspace! */
+.vsc-terminal-panel.maximized {
+  height: 100% !important;
+  border-top: none;
+}
+
+/* Terminal Header */
+.vsc-term-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 34px;
+  background: var(--vsc-bg-panel);
+  border-bottom: 1px solid var(--vsc-border);
+  padding: 0 10px;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.vsc-term-tabs {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.vsc-term-tab {
+  color: var(--vsc-fg-muted);
+  cursor: pointer;
+  position: relative;
+  padding: 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.vsc-term-tab:hover {
+  color: var(--vsc-fg-secondary);
+}
+
+.vsc-term-tab.active {
+  color: #ffffff;
+}
+
+.vsc-term-tab.active::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: var(--vsc-turquoise);
+  box-shadow: 0 0 8px var(--vsc-turquoise);
+}
+
+.vsc-term-badge {
+  font-size: 9px;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--vsc-turquoise);
+  padding: 1px 4px;
+  border-radius: 8px;
+}
+
+/* Terminal Action Toolbar (Right Side: Dropdown + Maximize button + Controls) */
+.vsc-term-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.vsc-shell-select {
+  background: var(--vsc-bg-input);
+  border: 1px solid var(--vsc-border);
+  color: var(--vsc-fg-secondary);
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  outline: none;
+  cursor: pointer;
+}
+
+.vsc-shell-select:focus {
+  border-color: var(--vsc-turquoise);
+}
+
+.vsc-term-btn {
+  background: transparent;
+  border: none;
+  color: var(--vsc-fg-muted);
+  padding: 4px;
+  border-radius: 3px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.vsc-term-btn:hover {
+  background: var(--vsc-bg-hover);
+  color: var(--vsc-turquoise);
+}
+
+.vsc-term-btn.active {
+  color: var(--vsc-turquoise);
+  background: rgba(0, 240, 255, 0.1);
+}
+
+.vsc-term-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Terminal Output Area */
+.vsc-term-body {
+  flex: 1;
+  background-color: var(--vsc-bg-panel);
+  padding: 8px 12px;
+  overflow-y: auto;
+  font-family: var(--vsc-font-code);
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--vsc-fg-primary);
+  display: flex;
+  flex-direction: column;
+}
+
+.vsc-term-history {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  user-select: text;
+}
+
+.vsc-term-line {
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+.vsc-line-cmd {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #fff;
+  font-weight: 600;
+  margin-top: 6px;
+}
+
+.vsc-prompt-tag {
+  color: var(--vsc-turquoise);
+  user-select: none;
+}
+
+.vsc-term-success {
+  color: #98c379;
+}
+
+.vsc-term-error {
+  color: #e06c75;
+}
+
+.vsc-term-info {
+  color: var(--vsc-turquoise);
+}
+
+.vsc-term-warn {
+  color: #e5c07b;
+}
+
+.vsc-term-dim {
+  color: var(--vsc-fg-muted);
+}
+
+/* Terminal Input Row */
+.vsc-input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  padding-bottom: 6px;
+}
+
+.vsc-prompt-str {
+  color: var(--vsc-turquoise);
+  font-weight: 600;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.vsc-term-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #ffffff;
+  font-family: var(--vsc-font-code);
+  font-size: 13px;
+  caret-color: var(--vsc-turquoise);
+  padding: 0;
+  margin: 0;
+}
+
+/* Mobile Quickbar for Terminal (Phone break ergonomics) */
+.vsc-mobile-quickbar {
+  display: none;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 6px;
+  background: var(--vsc-bg-title);
+  border-top: 1px solid var(--vsc-border);
+  overflow-x: auto;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.vsc-mobile-key {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--vsc-border);
+  color: var(--vsc-fg-secondary);
+  font-family: var(--vsc-font-code);
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.vsc-mobile-key:active {
+  background: var(--vsc-turquoise);
+  color: #000;
+}
+
+/* 6. BOTTOM STATUS BAR */
+.vsc-statusbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 24px;
+  background-color: var(--vsc-bg-status);
+  border-top: 1px solid var(--vsc-border);
+  padding: 0 10px;
+  font-size: 11px;
+  color: var(--vsc-fg-muted);
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.vsc-status-left,
+.vsc-status-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.vsc-status-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  color: var(--vsc-fg-secondary);
+}
+
+.vsc-status-item:hover {
+  color: var(--vsc-turquoise);
+}
+
+.vsc-status-item.accent {
+  color: var(--vsc-turquoise);
+  font-weight: 600;
+}
+
+.vsc-status-item svg {
+  width: 12px;
+  height: 12px;
+}
+
+/* Live pulse beacon */
+.vsc-pulse-beacon {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--vsc-turquoise);
+  box-shadow: 0 0 6px var(--vsc-turquoise);
+  display: inline-block;
+  animation: vscPulse 2s infinite ease-in-out;
+}
+
+@keyframes vscPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vsc-pulse-beacon {
+    animation: none;
+    opacity: 0.9;
+  }
+}
+
+/* ==========================================================================
+   CONTAINER QUERIES & RESPONSIVE DESIGN (Modern Web Guidance: size-aware-styling)
+   ========================================================================== */
+@container (max-width: 680px) {
+  .vsc-searchbar {
+    display: none;
+  }
+  .vsc-menu-bar {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .vsc-sidebar {
+    position: absolute;
+    left: 48px;
+    top: 36px;
+    bottom: 24px;
+    z-index: 50;
+    box-shadow: 4px 0 16px rgba(0, 0, 0, 0.6);
+  }
+
+  .vsc-searchbar {
+    width: 160px;
+  }
+
+  .vsc-mobile-quickbar {
+    display: flex;
+  }
+}
