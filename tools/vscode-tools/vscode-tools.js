@@ -923,19 +923,18 @@ Length: ${hex.length * 4} bits (${hex.length} hex chars)
     },
 
     calc: {
-      desc: "Programmer calculator: math, bitwise ops, hex/bin conversions & byte units",
+      desc: "Programmer calculator: math, bitwise ops, hex/bin conversions & byte units (100% CSP safe, no eval)",
       usage: "calc <expression>",
       exec: async (args) => {
         const expr = args.join(" ");
         if (!expr) {
-          termPrint("Usage: calc <expression>\nExamples: calc 0xFF + 0b1010 | calc 1024 * 1024 * 50", "vsc-term-warn");
+          termPrint("Usage: calc <expression>\nExamples: calc 0xFF + 0b1010 | calc 1024 * 1024 * 50 | calc sqrt(144) + pow(2, 8)", "vsc-term-warn");
           return;
         }
 
         try {
-          // Safe sanitized math evaluator
-          const sanitized = expr.replace(/[^0-9a-fA-FxXoObB+\-*/%&|^~()<><<>>.\s]/g, "");
-          const result = Function(`"use strict"; return (${sanitized})`)();
+          // Zero-eval, CSP-safe recursive-descent math & bitwise parser
+          const result = safeCalculate(expr);
 
           if (typeof result !== "number" || isNaN(result)) {
             termPrint("Invalid calculation result.", "vsc-term-error");
@@ -1117,7 +1116,7 @@ Length: ${hex.length * 4} bits (${hex.length} hex chars)
     },
 
     run: {
-      desc: "Execute JavaScript code from active editor or argument and print console output",
+      desc: "Execute JavaScript code in isolated sandbox and print console output",
       usage: "run [optional code]",
       exec: async (args) => {
         let code = args.join(" ");
@@ -1125,36 +1124,24 @@ Length: ${hex.length * 4} bits (${hex.length} hex chars)
           code = el.codeTextarea.value;
         }
 
-        termPrint(`Executing JavaScript in isolated scope...`, "vsc-term-dim");
-
-        // Intercept console.log inside the run execution
-        const logs = [];
-        const originalLog = console.log;
-        const originalWarn = console.warn;
-        const originalError = console.error;
+        termPrint(`Executing JavaScript in isolated sandbox...`, "vsc-term-dim");
 
         try {
-          console.log = (...a) => logs.push({ type: "log", msg: a.map(formatLogItem).join(" ") });
-          console.warn = (...a) => logs.push({ type: "warn", msg: a.map(formatLogItem).join(" ") });
-          console.error = (...a) => logs.push({ type: "error", msg: a.map(formatLogItem).join(" ") });
+          const res = await executeSandboxedScript(code);
+          if (res.logs && res.logs.length > 0) {
+            res.logs.forEach((item) => {
+              const cls = item.type === "error" ? "vsc-term-error" : item.type === "warn" ? "vsc-term-warn" : "";
+              termPrint(item.msg, cls);
+            });
+          }
 
-          const fn = new Function(code);
-          const result = fn();
-
-          logs.forEach((item) => {
-            const cls = item.type === "error" ? "vsc-term-error" : item.type === "warn" ? "vsc-term-warn" : "";
-            termPrint(item.msg, cls);
-          });
-
-          if (result !== undefined) {
-            termPrintHTML(`<span class="vsc-term-success">RETURN:</span> ${escapeHtml(JSON.stringify(result, null, 2))}`);
+          if (res.error) {
+            termPrint(`Runtime Error: ${res.error}`, "vsc-term-error");
+          } else if (res.result !== undefined) {
+            termPrintHTML(`<span class="vsc-term-success">RETURN:</span> ${escapeHtml(JSON.stringify(res.result, null, 2))}`);
           }
         } catch (e) {
-          termPrint(`Runtime Error: ${e.stack || e.message}`, "vsc-term-error");
-        } finally {
-          console.log = originalLog;
-          console.warn = originalWarn;
-          console.error = originalError;
+          termPrint(`Execution failed: ${e.message}`, "vsc-term-error");
         }
       }
     },
@@ -1469,6 +1456,302 @@ Length: ${hex.length * 4} bits (${hex.length} hex chars)
       cur = cur[p];
     }
     return cur;
+  }
+
+  // --- ZERO-EVAL CSP-COMPLIANT MATHEMATICAL & BITWISE PARSER ---
+  function safeCalculate(input) {
+    let pos = 0;
+    const str = input.trim();
+
+    function peek() { return str[pos]; }
+    function consume() { return str[pos++]; }
+    function skipWhitespace() {
+      while (pos < str.length && /\s/.test(str[pos])) pos++;
+    }
+
+    function parsePrimary() {
+      skipWhitespace();
+      if (pos >= str.length) throw new Error("Unexpected end of expression");
+
+      // Parentheses
+      if (peek() === "(") {
+        consume();
+        const val = parseBitwiseOr();
+        skipWhitespace();
+        if (consume() !== ")") throw new Error("Expected ')'");
+        return val;
+      }
+
+      // Unary operators (+, -, ~)
+      if (peek() === "+" || peek() === "-" || peek() === "~") {
+        const op = consume();
+        const val = parsePrimary();
+        if (op === "+") return +val;
+        if (op === "-") return -val;
+        if (op === "~") return ~val;
+      }
+
+      // Hexadecimal (0x...)
+      if (peek() === "0" && (str[pos + 1] === "x" || str[pos + 1] === "X")) {
+        pos += 2;
+        const start = pos;
+        while (pos < str.length && /[0-9a-fA-F]/.test(str[pos])) pos++;
+        if (pos === start) throw new Error("Invalid hex literal");
+        return parseInt(str.slice(start, pos), 16);
+      }
+
+      // Binary (0b...)
+      if (peek() === "0" && (str[pos + 1] === "b" || str[pos + 1] === "B")) {
+        pos += 2;
+        const start = pos;
+        while (pos < str.length && /[01]/.test(str[pos])) pos++;
+        if (pos === start) throw new Error("Invalid binary literal");
+        return parseInt(str.slice(start, pos), 2);
+      }
+
+      // Octal (0o...)
+      if (peek() === "0" && (str[pos + 1] === "o" || str[pos + 1] === "O")) {
+        pos += 2;
+        const start = pos;
+        while (pos < str.length && /[0-7]/.test(str[pos])) pos++;
+        if (pos === start) throw new Error("Invalid octal literal");
+        return parseInt(str.slice(start, pos), 8);
+      }
+
+      // Decimal numbers
+      if (/[0-9.]/.test(peek())) {
+        const start = pos;
+        let hasDot = false;
+        while (pos < str.length && (/[0-9]/.test(str[pos]) || (str[pos] === "." && !hasDot))) {
+          if (str[pos] === ".") hasDot = true;
+          pos++;
+        }
+        return parseFloat(str.slice(start, pos));
+      }
+
+      // Math functions & constants
+      if (/[a-zA-Z_]/.test(peek())) {
+        const start = pos;
+        while (pos < str.length && /[a-zA-Z0-9_]/.test(str[pos])) pos++;
+        const name = str.slice(start, pos).toUpperCase();
+        if (name === "PI") return Math.PI;
+        if (name === "E") return Math.E;
+
+        skipWhitespace();
+        if (peek() === "(") {
+          consume();
+          const args = [];
+          skipWhitespace();
+          if (peek() !== ")") {
+            while (true) {
+              args.push(parseBitwiseOr());
+              skipWhitespace();
+              if (peek() === ",") { consume(); }
+              else if (peek() === ")") { consume(); break; }
+              else throw new Error("Expected ',' or ')' in function arguments");
+            }
+          } else {
+            consume();
+          }
+
+          const fnMap = {
+            ABS: Math.abs, SQRT: Math.sqrt, ROUND: Math.round,
+            FLOOR: Math.floor, CEIL: Math.ceil, MIN: Math.min,
+            MAX: Math.max, POW: Math.pow, LOG: Math.log, SIN: Math.sin, COS: Math.cos
+          };
+          if (fnMap[name]) return fnMap[name](...args);
+          throw new Error("Unknown function: " + name);
+        }
+        throw new Error("Unknown identifier: " + name);
+      }
+
+      throw new Error("Unexpected character: '" + peek() + "'");
+    }
+
+    function parseExponent() {
+      let left = parsePrimary();
+      skipWhitespace();
+      if (str.slice(pos, pos + 2) === "**") {
+        pos += 2;
+        const right = parseExponent();
+        return Math.pow(left, right);
+      }
+      return left;
+    }
+
+    function parseMultiplicative() {
+      let left = parseExponent();
+      while (true) {
+        skipWhitespace();
+        if (peek() === "*" && str[pos + 1] !== "*") {
+          consume();
+          left *= parseExponent();
+        } else if (peek() === "/") {
+          consume();
+          const divisor = parseExponent();
+          if (divisor === 0) throw new Error("Division by zero");
+          left /= divisor;
+        } else if (peek() === "%") {
+          consume();
+          left %= parseExponent();
+        } else {
+          break;
+        }
+      }
+      return left;
+    }
+
+    function parseAdditive() {
+      let left = parseMultiplicative();
+      while (true) {
+        skipWhitespace();
+        if (peek() === "+") {
+          consume();
+          left += parseMultiplicative();
+        } else if (peek() === "-") {
+          consume();
+          left -= parseMultiplicative();
+        } else {
+          break;
+        }
+      }
+      return left;
+    }
+
+    function parseShift() {
+      let left = parseAdditive();
+      while (true) {
+        skipWhitespace();
+        if (str.slice(pos, pos + 3) === ">>>") {
+          pos += 3;
+          left = left >>> parseAdditive();
+        } else if (str.slice(pos, pos + 2) === ">>") {
+          pos += 2;
+          left = left >> parseAdditive();
+        } else if (str.slice(pos, pos + 2) === "<<") {
+          pos += 2;
+          left = left << parseAdditive();
+        } else {
+          break;
+        }
+      }
+      return left;
+    }
+
+    function parseBitwiseAnd() {
+      let left = parseShift();
+      while (true) {
+        skipWhitespace();
+        if (peek() === "&" && str[pos + 1] !== "&") {
+          consume();
+          left = left & parseShift();
+        } else {
+          break;
+        }
+      }
+      return left;
+    }
+
+    function parseBitwiseXor() {
+      let left = parseBitwiseAnd();
+      while (true) {
+        skipWhitespace();
+        if (peek() === "^") {
+          consume();
+          left = left ^ parseBitwiseAnd();
+        } else {
+          break;
+        }
+      }
+      return left;
+    }
+
+    function parseBitwiseOr() {
+      let left = parseBitwiseXor();
+      while (true) {
+        skipWhitespace();
+        if (peek() === "|" && str[pos + 1] !== "|") {
+          consume();
+          left = left | parseBitwiseXor();
+        } else {
+          break;
+        }
+      }
+      return left;
+    }
+
+    const result = parseBitwiseOr();
+    skipWhitespace();
+    if (pos < str.length) throw new Error("Unexpected trailing characters: '" + str.slice(pos) + "'");
+    return result;
+  }
+
+  // --- ISOLATED SANDBOX RUNNER FOR USER SCRIPTS ---
+  function executeSandboxedScript(code) {
+    return new Promise((resolve) => {
+      const channel = new MessageChannel();
+      const iframe = document.createElement("iframe");
+      iframe.style.display = "none";
+      iframe.sandbox = "allow-scripts"; // Isolated origin without host CSP restrictions
+
+      let finished = false;
+      const cleanup = () => {
+        if (!finished) {
+          finished = true;
+          try { document.body.removeChild(iframe); } catch (e) {}
+        }
+      };
+
+      channel.port1.onmessage = (event) => {
+        cleanup();
+        resolve(event.data || {});
+      };
+
+      const runnerHtml = `<!DOCTYPE html><html><body><script>
+        window.addEventListener('message', function(e) {
+          var port = e.ports[0];
+          var logs = [];
+          var origLog = console.log, origWarn = console.warn, origErr = console.error;
+          console.log = function() {
+            var args = Array.prototype.slice.call(arguments);
+            logs.push({ type: 'log', msg: args.map(function(x) { return typeof x === 'object' ? JSON.stringify(x) : String(x); }).join(' ') });
+          };
+          console.warn = function() {
+            var args = Array.prototype.slice.call(arguments);
+            logs.push({ type: 'warn', msg: args.map(function(x) { return typeof x === 'object' ? JSON.stringify(x) : String(x); }).join(' ') });
+          };
+          console.error = function() {
+            var args = Array.prototype.slice.call(arguments);
+            logs.push({ type: 'error', msg: args.map(function(x) { return typeof x === 'object' ? JSON.stringify(x) : String(x); }).join(' ') });
+          };
+          try {
+            var res = (new Function(e.data))();
+            port.postMessage({ success: true, logs: logs, result: res });
+          } catch(err) {
+            port.postMessage({ success: false, logs: logs, error: err.message });
+          }
+        });
+      <\/script></body></html>`;
+
+      iframe.srcdoc = runnerHtml;
+      iframe.onload = () => {
+        try {
+          iframe.contentWindow.postMessage(code, "*", [channel.port2]);
+        } catch (err) {
+          cleanup();
+          resolve({ success: false, logs: [], error: err.message });
+        }
+      };
+
+      document.body.appendChild(iframe);
+
+      setTimeout(() => {
+        if (!finished) {
+          cleanup();
+          resolve({ success: false, logs: [], error: "Execution timed out (5s limit)" });
+        }
+      }, 5000);
+    });
   }
 
   // --- HARDWARE, BROWSER & OS TELEMETRY HARVESTER ---
