@@ -541,6 +541,25 @@ header.site-header {
     color: #8b949e;
 }
 
+/* Advertisement Unit
+ * ------------------------------------------------------------------- */
+.site-ad-container {
+    width: 100%;
+    margin: 0 auto 2.5rem auto;
+    text-align: center;
+    clear: both;
+}
+
+.site-ad-container iframe {
+    max-width: 100%;
+}
+
+@media (max-width: 768px) {
+    .site-ad-container iframe {
+        width: 100% !important;
+    }
+}
+
 /* Footer
  * ------------------------------------------------------------------- */
 footer.site-footer {

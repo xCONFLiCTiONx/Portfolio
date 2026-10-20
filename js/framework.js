@@ -124,6 +124,66 @@
 
         return configPromise;
     }
+    let cachedAdsHtml = null;
+    let adsPromise = null;
+
+    /**
+     * Normalizes relative protocols for local file execution
+     */
+    function normalizeAdProtocols(html) {
+        if (!html) return '';
+        if (window.location.protocol === 'file:' && html.includes('src="//')) {
+            return html.replace(/src=(['"])(\/\/)/g, 'src=$1https://');
+        }
+        return html;
+    }
+
+    /**
+     * Loads ads.config.html template snippet
+     */
+    async function getAdsSnippet(config) {
+        if (cachedAdsHtml !== null) return cachedAdsHtml;
+        if (adsPromise) return adsPromise;
+
+        adsPromise = (async () => {
+            const rootPrefix = getRootPrefix();
+            const templateFile = config?.ads?.template || 'ads.config.html';
+            const cleanTemplate = templateFile.replace(/^\//, '');
+            const adUrls = [
+                rootPrefix + cleanTemplate,
+                './' + cleanTemplate,
+                '../' + cleanTemplate,
+                '../../' + cleanTemplate
+            ];
+
+            for (const url of adUrls) {
+                try {
+                    const res = await fetch(url, { cache: 'no-cache' });
+                    if (res.ok) {
+                        const html = await res.text();
+                        if (html && html.trim()) {
+                            cachedAdsHtml = normalizeAdProtocols(html.trim());
+                            return cachedAdsHtml;
+                        }
+                    }
+                } catch (e) {
+                    // Try next fallback
+                }
+            }
+
+            // Fallback default snippet matching ads.config.html
+            cachedAdsHtml = normalizeAdProtocols(`<!-- BEGIN AADS AD UNIT 2459260 -->
+<div id="frame" style="width: 100%;margin: auto;position: relative; z-index: 99998;">
+          <iframe data-aa='2459260' src='//acceptable.a-ads.com/2459260/?size=Adaptive'
+                            style='border:0; padding:0; width:70%; height:auto; overflow:hidden;display: block;margin: auto'></iframe>
+        </div>
+<!-- END AADS AD UNIT 2459260 -->`);
+            return cachedAdsHtml;
+        })();
+
+        return adsPromise;
+    }
+
 
     /**
      * Detect current page's tool metadata and layout configuration
@@ -150,16 +210,19 @@
         const metaHeader = document.querySelector('meta[name="portfolio-layout-header"]')?.getAttribute('content');
         const metaSidebar = document.querySelector('meta[name="portfolio-layout-sidebar"]')?.getAttribute('content');
         const metaFooter = document.querySelector('meta[name="portfolio-layout-footer"]')?.getAttribute('content');
+        const metaAds = document.querySelector('meta[name="portfolio-layout-ads"]')?.getAttribute('content');
 
         const layout = {
             header: matchedTool?.layout?.header ?? true,
             sidebar: matchedTool?.layout?.sidebar ?? true,
-            footer: matchedTool?.layout?.footer ?? true
+            footer: matchedTool?.layout?.footer ?? true,
+            ads: matchedTool?.layout?.ads ?? (config?.ads?.enabled ?? true)
         };
 
         if (metaHeader !== null && metaHeader !== undefined) layout.header = metaHeader === 'true';
         if (metaSidebar !== null && metaSidebar !== undefined) layout.sidebar = metaSidebar === 'true';
         if (metaFooter !== null && metaFooter !== undefined) layout.footer = metaFooter === 'true';
+        if (metaAds !== null && metaAds !== undefined) layout.ads = metaAds === 'true';
 
         return { tool: matchedTool, layout };
     }
@@ -261,9 +324,22 @@
     }
 
     /**
-     * Renders Footer component
+     * Executes any dynamic script tags present inside an ad template
      */
-    function renderFooter(config) {
+    function executeAdScripts(container) {
+        if (!container) return;
+        container.querySelectorAll('#site-ad-container script').forEach(oldScript => {
+            const newScript = document.createElement('script');
+            Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+            newScript.textContent = oldScript.textContent;
+            oldScript.parentNode.replaceChild(newScript, oldScript);
+        });
+    }
+
+    /**
+     * Renders Footer component with central ad template
+     */
+    function renderFooter(config, adsHtml) {
         let footerEl = document.querySelector('footer.site-footer');
         if (!footerEl) {
             footerEl = document.createElement('footer');
@@ -272,17 +348,48 @@
         }
 
         const currentYear = new Date().getFullYear();
+        const existingP = footerEl.querySelector('p');
+        const copyrightHtml = existingP ? existingP.outerHTML : `<p>&copy; ${currentYear} <span class="user-name-js">${config.site.name}</span>. Built with code and conviction.</p>`;
+
+        const adMarkup = (adsHtml && adsHtml.trim())
+            ? `<div id="site-ad-container" class="site-ad-container">${adsHtml}</div>`
+            : '';
+
         footerEl.innerHTML = `
+            ${adMarkup}
             <div class="container" style="display: block;">
-                <p>&copy; ${currentYear} <span class="user-name-js">${config.site.name}</span>. Built with code and conviction.</p>
+                ${copyrightHtml}
             </div>
         `;
+
+        executeAdScripts(footerEl);
+    }
+
+    /**
+     * Renders standalone Ad unit if footer is disabled
+     */
+    function renderStandaloneAds(adsHtml) {
+        if (!adsHtml || !adsHtml.trim()) return;
+        let adEl = document.getElementById('site-ad-container');
+        if (!adEl) {
+            adEl = document.createElement('div');
+            adEl.id = 'site-ad-container';
+            adEl.className = 'site-ad-container';
+            const mainEl = document.querySelector('main.container') || document.querySelector('main');
+            if (mainEl && mainEl.parentNode) {
+                mainEl.parentNode.insertBefore(adEl, mainEl.nextSibling);
+            } else {
+                document.body.appendChild(adEl);
+            }
+        }
+        adEl.innerHTML = adsHtml;
+        executeAdScripts(adEl);
     }
 
     /**
      * Applies Authoritative Layout rules for Header, Sidebar, Footer independent booleans
      */
-    function applyLayout(config) {
+    function applyLayout(config, adsHtml) {
         const { layout } = resolvePageLayout(config);
 
         // Header
@@ -308,14 +415,17 @@
             document.body.classList.add('no-sidebar');
         }
 
-        // Footer
+        // Footer & Ads
         const footerEl = document.querySelector('footer.site-footer');
         if (layout.footer) {
-            renderFooter(config);
+            renderFooter(config, layout.ads ? adsHtml : null);
             document.body.classList.remove('no-footer');
         } else {
             if (footerEl) footerEl.style.display = 'none';
             document.body.classList.add('no-footer');
+            if (layout.ads) {
+                renderStandaloneAds(adsHtml);
+            }
         }
     }
 
@@ -344,7 +454,8 @@
     async function initFramework() {
         ensureMainCssLoaded();
         const config = await getPortfolioConfig();
-        applyLayout(config);
+        const adsHtml = await getAdsSnippet(config);
+        applyLayout(config, adsHtml);
         populateIdentity(config);
         return config;
     }
@@ -355,6 +466,9 @@
         toRelativeUrl,
         getConfig: getPortfolioConfig,
         init: initFramework,
+        getAdsSnippet,
+        renderFooter,
+        renderStandaloneAds,
         resolvePageLayout
     };
 

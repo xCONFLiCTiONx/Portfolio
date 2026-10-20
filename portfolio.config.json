@@ -245,5 +245,9 @@
         "footer": false
       }
     }
-  ]
+  ],
+  "ads": {
+    "enabled": true,
+    "template": "ads.config.html"
+  }
 }
