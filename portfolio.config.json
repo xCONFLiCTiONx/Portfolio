@@ -240,7 +240,7 @@
       "enabled": true,
       "githubUrl": "https://github.com/xCONFLiCTiONx/Portfolio/blob/main/tools/vscode-tools/index.html",
       "layout": {
-        "header": true,
+        "header": false,
         "sidebar": false,
         "footer": false
       }
