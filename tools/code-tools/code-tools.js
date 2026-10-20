@@ -1,7 +1,7 @@
 /**
  * ============================================================================
  * VS CODE TOOLS — Web IDE & Daily CLI Developer Workbench
- * Theme: Pitch Black (#121212), Crisp White (#FFFFFF), Accent Turquoise (#3791B7)
+ * Theme: Pitch Black (#121212), Crisp White (#FFFFFF), Accent Turquoise (#00F0FF)
  * Non-Fiction, Real-Life Daily Utilities for Web, Network, Crypto & Scripting
  * ============================================================================
  */
@@ -82,15 +82,15 @@ User-Agent: VSCodeTools/4.2
     }
     .card {
       background: rgba(30, 41, 59, 0.8);
-      border: 1px solid rgba(55, 145, 183, 0.3);
+      border: 1px solid rgba(0, 240, 255, 0.3);
       border-radius: 8px;
       padding: 2rem;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     }
     .badge {
       display: inline-block;
-      background: rgba(55, 145, 183, 0.15);
-      color: #3791B7;
+      background: rgba(0, 240, 255, 0.15);
+      color: #00f0ff;
       font-weight: 700;
       padding: 0.3rem 0.75rem;
       border-radius: 9999px;
@@ -98,7 +98,7 @@ User-Agent: VSCodeTools/4.2
       margin-bottom: 1rem;
     }
     button {
-      background: #3791B7;
+      background: #00f0ff;
       color: #000;
       font-weight: 700;
       border: none;
@@ -114,7 +114,7 @@ User-Agent: VSCodeTools/4.2
     <h1 style="margin-top:0">Welcome to My Custom Page!</h1>
     <p>This page was authored inside the VS Code Web Terminal and is being served live right in Chrome.</p>
     <p>Connected to root portfolio styling &amp; client-side engine.</p>
-    <button onclick="console.log('Virtual Web Server connected!')">Test Interaction</button>
+    <button onclick="alert('Virtual Web Server connected!')">Test Interaction</button>
   </div>
 </body>
 </html>
@@ -1518,7 +1518,7 @@ Token is securely synced across Chrome PC and mobile via persistent cookie and s
     bindItem("vsc-item-about-tool", () => {
       termPrintHTML(`
 <span class="vsc-term-info">Visual Studio Code Tools for Web — Version 4.2.0</span>
-Pitch Black (#121212), Crisp White (#FFFFFF), Turquoise Accent (#3791B7).
+Pitch Black (#121212), Crisp White (#FFFFFF), Turquoise Accent (#00F0FF).
 Integrated Web Developer Workbench:
 - Real GitHub API sync (Pull trees, edit in browser, push commits)
 - Localhost Virtual Web Server with responsive preview
@@ -2241,7 +2241,7 @@ Length: ${hex.length * 4} bits (${hex.length} hex chars)
       exec: async (args) => {
         const input = args.join(" ").trim();
         if (!input) {
-          termPrint("Usage: color #3791B7", "vsc-term-warn");
+          termPrint("Usage: color #00f0ff", "vsc-term-warn");
           return;
         }
 
@@ -3647,6 +3647,14 @@ Length: ${hex.length * 4} bits (${hex.length} hex chars)
     if (nanoRead && el.nanoEditor) {
       nanoRead.addEventListener("click", async () => {
         const fn = await promptInWorkbench("Read file into nano", Object.keys(state.files)[0], "Filename");
+        if (fn && state.files[fn]) {
+          const pos = el.nanoEditor.selectionStart;
+          el.nanoEditor.value = el.nanoEditor.value.substring(0, pos) + state.files[fn] + el.nanoEditor.value.substring(pos);
+          if (el.nanoStatus) el.nanoStatus.textContent = `[Inserted ${fn}]`;
+        }
+      });
+    }
+        const fn = prompt("File to read into nano:", Object.keys(state.files)[0]);
         if (fn && state.files[fn]) {
           const pos = el.nanoEditor.selectionStart;
           el.nanoEditor.value = el.nanoEditor.value.substring(0, pos) + state.files[fn] + el.nanoEditor.value.substring(pos);
