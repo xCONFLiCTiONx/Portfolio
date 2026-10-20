@@ -524,7 +524,14 @@ body[data-tool-id="code-tools"].vsc-fullscreen #vscode-workbench {
 .vsc-editor-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  overflow-x: auto;
+  max-width: 100%;
+  scrollbar-width: none;
+}
+
+.vsc-editor-actions::-webkit-scrollbar {
+  display: none;
 }
 
 .vsc-editor-btn {
@@ -1080,17 +1087,43 @@ body[data-tool-id="code-tools"].vsc-fullscreen #vscode-workbench {
    ========================================================================== */
 .vsc-live-preview {
   position: absolute;
-  top: 36px;
-  left: 300px;
+  top: 0;
+  left: 45%;
   right: 0;
-  bottom: 24px;
+  bottom: 0;
   background: #181818;
   border-left: 1px solid var(--vsc-border);
   display: flex;
   flex-direction: column;
-  z-index: 40;
+  z-index: 45;
   box-shadow: -4px 0 20px rgba(0, 0, 0, 0.7);
   transition: transform 0.2s ease;
+}
+
+@media (max-width: 768px) {
+  .vsc-live-preview {
+    left: 0 !important;
+    top: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    z-index: 100 !important;
+  }
+  .vsc-preview-header {
+    height: 42px;
+    padding: 0 8px;
+  }
+  #vsc-preview-btn-desktop,
+  #vsc-preview-btn-tablet,
+  #vsc-preview-btn-mobile {
+    display: none;
+  }
+  .vsc-breadcrumbs {
+    display: none;
+  }
+  .vsc-editor-subbar {
+    padding: 4px 6px;
+    gap: 6px;
+  }
 }
 
 .vsc-live-preview.hidden {

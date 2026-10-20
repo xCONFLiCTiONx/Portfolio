@@ -97,6 +97,7 @@
     btnMaximize: document.getElementById("vsc-btn-maximize"),
     btnRun: document.getElementById("vsc-btn-run"),
     btnPreview: document.getElementById("vsc-btn-preview"),
+    btnPreviewMd: document.getElementById("vsc-btn-preview-md"),
     btnFormat: document.getElementById("vsc-btn-format"),
     btnSave: document.getElementById("vsc-btn-save"),
     btnClear: document.getElementById("vsc-btn-clear"),
@@ -411,6 +412,9 @@
       if (el.breadcrumbsFile) {
         el.breadcrumbsFile.textContent = "No file open";
       }
+      if (el.btnPreviewMd) {
+        el.btnPreviewMd.style.display = "none";
+      }
       updateGutter();
       renderTabs();
       renderSidebarLists();
@@ -425,6 +429,12 @@
       state.openTabs.push(filename);
     }
     state.activeFile = filename;
+
+    const isMd = filename.toLowerCase().endsWith(".md") || filename.toLowerCase().endsWith(".markdown");
+    if (el.btnPreviewMd) {
+      el.btnPreviewMd.style.display = isMd ? "inline-flex" : "none";
+    }
+
     if (el.codeTextarea) {
       el.codeTextarea.disabled = false;
       el.codeTextarea.placeholder = "";
@@ -1140,6 +1150,7 @@
     { id: "view_close_all_editors", label: "View: Close All Editors (Ctrl+K W)", exec: () => closeAllTabs() },
     { id: "view_close_other_editors", label: "View: Close Other Editors", exec: () => { if (state.activeFile) closeOtherTabs(state.activeFile); } },
     { id: "view_preview", label: "View: Toggle Live Preview", exec: () => { if (el.livePreview) el.livePreview.classList.toggle("hidden"); } },
+    { id: "markdown_preview", label: "Markdown: Open Preview (Ctrl+Shift+V)", exec: () => previewMarkdown(state.activeFile) },
     { id: "view_fullscreen", label: "View: Toggle Fullscreen", exec: () => { if (el.btnFullscreen) el.btnFullscreen.click(); } },
     { id: "file_new", label: "File: New File", exec: async () => { const name = await promptInWorkbench("New File", "new-file.js", "filename.js"); if (name) openFile(name); } },
     { id: "file_open_project", label: "File: Open Local Folder / Project", exec: () => openLocalProjectFolder() },
@@ -1842,6 +1853,265 @@ Integrated Web Developer Workbench:
     scrollTermToBottom();
   }
 
+  // --- MARKDOWN RENDERER & PREVIEW ENGINE ---
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  function renderMarkdownToHTML(md) {
+    if (!md) return "<p><i>Empty markdown document</i></p>";
+
+    const codeBlocks = [];
+    // 1. Extract fenced code blocks first so inner content is untouched
+    let text = md.replace(/```([a-zA-Z0-9_\-\.]*)\n([\s\S]*?)```/g, (match, lang, code) => {
+      const idx = codeBlocks.length;
+      const safeCode = escapeHtml(code.trimEnd());
+      const langBadge = lang ? `<div class="md-code-lang">${escapeHtml(lang)}</div>` : "";
+      codeBlocks.push(`<div class="md-code-block">${langBadge}<pre><code>${safeCode}</code></pre></div>`);
+      return `%%CODEBLOCK_${idx}%%`;
+    });
+
+    // 2. Extract inline code
+    const inlineCodes = [];
+    text = text.replace(/`([^`\n]+)`/g, (match, code) => {
+      const idx = inlineCodes.length;
+      inlineCodes.push(`<code class="md-inline-code">${escapeHtml(code)}</code>`);
+      return `%%INLINECODE_${idx}%%`;
+    });
+
+    // 3. Horizontal rules
+    text = text.replace(/^(?:---|\*\*\*|___)\s*$/gm, "<hr class=\"md-hr\" />");
+
+    // 4. Headings (H1 to H6)
+    text = text.replace(/^######\s+(.+)$/gm, "<h6>$1</h6>");
+    text = text.replace(/^#####\s+(.+)$/gm, "<h5>$1</h5>");
+    text = text.replace(/^####\s+(.+)$/gm, "<h4>$1</h4>");
+    text = text.replace(/^###\s+(.+)$/gm, "<h3>$1</h3>");
+    text = text.replace(/^##\s+(.+)$/gm, "<h2>$1</h2>");
+    text = text.replace(/^#\s+(.+)$/gm, "<h1>$1</h1>");
+
+    // 5. Blockquotes
+    text = text.replace(/^\>\s+(.+)$/gm, "<blockquote class=\"md-blockquote\"><p>$1</p></blockquote>");
+
+    // 6. Tables with responsive wrappers
+    text = text.replace(/((?:^\|.+?\|(?:\r?\n|$))+)/gm, (tableMatch) => {
+      const rows = tableMatch.trim().split("\n").filter(r => r.trim().startsWith("|"));
+      if (rows.length < 2) return tableMatch;
+      const isDelimiter = (r) => /^\|[\s\-:|]+\|$/.test(r.trim());
+      let html = '<div class="md-table-wrap"><table class="md-table">';
+
+      if (rows.length >= 2 && isDelimiter(rows[1])) {
+        const headers = rows[0].split("|").slice(1, -1).map(c => `<th>${c.trim()}</th>`).join("");
+        html += `<thead><tr>${headers}</tr></thead><tbody>`;
+        for (let i = 2; i < rows.length; i++) {
+          const cells = rows[i].split("|").slice(1, -1).map(c => `<td>${c.trim()}</td>`).join("");
+          html += `<tr>${cells}</tr>`;
+        }
+        html += '</tbody>';
+      } else {
+        html += '<tbody>';
+        for (let i = 0; i < rows.length; i++) {
+          const cells = rows[i].split("|").slice(1, -1).map(c => `<td>${c.trim()}</td>`).join("");
+          html += `<tr>${cells}</tr>`;
+        }
+        html += '</tbody>';
+      }
+      html += '</table></div>';
+      return html;
+    });
+
+    // 7. Task list items (interactive styled checkboxes)
+    text = text.replace(/^\s*[-*]\s+\[x\]\s+(.+)$/gm, '<li class="md-task-item"><input type="checkbox" checked disabled /> <span>$1</span></li>');
+    text = text.replace(/^\s*[-*]\s+\[ \]\s+(.+)$/gm, '<li class="md-task-item"><input type="checkbox" disabled /> <span>$1</span></li>');
+
+    // 8. Unordered lists
+    text = text.replace(/^\s*[-*+]\s+(.+)$/gm, "<li>$1</li>");
+    text = text.replace(/((?:<li[\s\S]*?<\/li>\n?)+)/g, '<ul class="md-list">$1</ul>');
+
+    // 9. Ordered lists
+    text = text.replace(/^\s*(\d+)\.\s+(.+)$/gm, "<li>$2</li>");
+
+    // 10. Links and Images
+    text = text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img class="md-img" src="$2" alt="$1" />');
+    text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a class="md-link" href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+
+    // 11. Emphasis & Formatting
+    text = text.replace(/\*\*\*(.+?)\*\*\*/g, "<strong><em>$1</em></strong>");
+    text = text.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+    text = text.replace(/__(.+?)__/g, "<strong>$1</strong>");
+    text = text.replace(/\*([^\*\n]+)\*/g, "<em>$1</em>");
+    text = text.replace(/_([^_\n]+)_/g, "<em>$1</em>");
+    text = text.replace(/~~(.+?)~~/g, "<del>$1</del>");
+
+    // 12. Paragraphs
+    text = text.split("\n\n").map(para => {
+      const p = para.trim();
+      if (!p) return "";
+      if (p.startsWith("<h") || p.startsWith("<div") || p.startsWith("<pre") ||
+          p.startsWith("<blockquote") || p.startsWith("<ul") || p.startsWith("<ol") ||
+          p.startsWith("<table") || p.startsWith("<hr")) {
+        return p;
+      }
+      return `<p>${p.replace(/\n/g, "<br/>")}</p>`;
+    }).join("\n");
+
+    // 13. Restore inline code
+    inlineCodes.forEach((codeHtml, idx) => {
+      text = text.replace(new RegExp(`%%INLINECODE_${idx}%%`, "g"), codeHtml);
+    });
+
+    // 14. Restore fenced code blocks
+    codeBlocks.forEach((blockHtml, idx) => {
+      text = text.replace(new RegExp(`%%CODEBLOCK_${idx}%%`, "g"), blockHtml);
+    });
+
+    return text;
+  }
+
+  function buildMarkdownDocument(mdContent, filename = "Preview") {
+    const renderedBody = renderMarkdownToHTML(mdContent);
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <title>${escapeHtml(filename)} — Markdown Preview</title>
+  <style>
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 24px 20px 48px;
+      background: #0d1117;
+      color: #c9d1d9;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+      word-wrap: break-word;
+      -webkit-font-smoothing: antialiased;
+      -webkit-overflow-scrolling: touch;
+    }
+    @media (max-width: 600px) {
+      body { padding: 16px 12px 40px; font-size: 13px; }
+    }
+    h1, h2, h3, h4, h5, h6 {
+      color: #f0f6fc;
+      margin-top: 24px;
+      margin-bottom: 12px;
+      font-weight: 600;
+      line-height: 1.25;
+    }
+    h1 { font-size: 1.85rem; border-bottom: 1px solid #21262d; padding-bottom: 0.3em; }
+    h2 { font-size: 1.4rem; border-bottom: 1px solid #21262d; padding-bottom: 0.3em; }
+    h3 { font-size: 1.15rem; }
+    h4 { font-size: 1.0rem; }
+    p { margin-top: 0; margin-bottom: 16px; }
+    a, .md-link { color: #3791B7; text-decoration: none; }
+    a:hover, .md-link:hover { text-decoration: underline; }
+    .md-inline-code {
+      font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+      font-size: 85%;
+      padding: 0.2em 0.4em;
+      margin: 0;
+      background: rgba(110, 118, 129, 0.4);
+      border-radius: 4px;
+      color: #e6edf3;
+    }
+    .md-code-block {
+      position: relative;
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      margin: 16px 0;
+      overflow: hidden;
+    }
+    .md-code-lang {
+      position: absolute;
+      top: 6px;
+      right: 10px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #3791B7;
+      background: rgba(55, 145, 183, 0.15);
+      padding: 2px 6px;
+      border-radius: 3px;
+    }
+    .md-code-block pre {
+      margin: 0;
+      padding: 16px;
+      overflow-x: auto;
+      font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+      font-size: 12px;
+      line-height: 1.45;
+      color: #e6edf3;
+      -webkit-overflow-scrolling: touch;
+    }
+    .md-blockquote {
+      margin: 16px 0;
+      padding: 0 1em;
+      color: #8b949e;
+      border-left: 0.25em solid #3791B7;
+      background: rgba(55, 145, 183, 0.05);
+      border-radius: 0 4px 4px 0;
+    }
+    .md-blockquote p { margin: 8px 0; }
+    .md-hr { height: 0.25em; padding: 0; margin: 24px 0; background-color: #30363d; border: 0; }
+    .md-table-wrap {
+      width: 100%;
+      overflow-x: auto;
+      margin: 16px 0;
+      -webkit-overflow-scrolling: touch;
+    }
+    .md-table { border-spacing: 0; border-collapse: collapse; width: 100%; font-size: 13px; }
+    .md-table th, .md-table td { padding: 8px 12px; border: 1px solid #30363d; }
+    .md-table th { font-weight: 600; background: #161b22; color: #f0f6fc; }
+    .md-table tr:nth-child(2n) { background: rgba(110, 118, 129, 0.1); }
+    .md-list { padding-left: 2em; margin-top: 0; margin-bottom: 16px; }
+    .md-list li { margin: 4px 0; }
+    .md-task-item {
+      list-style-type: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-left: -1.4em;
+    }
+    .md-task-item input[type="checkbox"] { accent-color: #3791B7; width: 16px; height: 16px; margin: 0; }
+    .md-img { max-width: 100%; box-sizing: content-box; border-radius: 6px; border: 1px solid #30363d; }
+  </style>
+</head>
+<body>
+  ${renderedBody}
+</body>
+</html>`;
+  }
+
+  function previewMarkdown(filename) {
+    const fn = filename || state.activeFile;
+    if (!fn || !state.files[fn]) {
+      showMessage("warning", "Markdown Preview", "No markdown file is currently open.");
+      return;
+    }
+
+    const mdContent = state.files[fn];
+    const docHtml = buildMarkdownDocument(mdContent, fn);
+
+    if (el.livePreview && el.previewFrame) {
+      el.livePreview.classList.remove("hidden");
+      el.previewFrame.srcdoc = docHtml;
+      if (el.previewUrlText) {
+        el.previewUrlText.innerHTML = `📖 <b>Markdown Preview:</b> ${escapeHtml(fn)}`;
+      }
+    }
+    showMessage("info", "Markdown Preview", `Previewing "${fn}" in side pane`);
+  }
+
   // --- LIVE VIRTUAL WEB SERVER ENGINE (SERVE & PREVIEW) ---
   function serveFile(filename, customPort = 3000, openInChrome = false) {
     if (!state.files[filename]) {
@@ -1851,12 +2121,17 @@ Integrated Web Developer Workbench:
 
     const port = parseInt(customPort, 10) || 3000;
     let content = state.files[filename];
+    const isMarkdown = filename.toLowerCase().endsWith(".md") || filename.toLowerCase().endsWith(".markdown");
 
-    // Auto-resolve root asset links for live rendering
-    // Resolves ../../css/main.css and ./code-tools.css to accessible site assets
-    content = content.replace(/href=["']\.\.\/\.\.\/css\/main\.css["']/gi, 'href="../../css/main.css"');
-    content = content.replace(/href=["']\.\/code-tools\.css["']/gi, 'href="./code-tools.css"');
-    content = content.replace(/src=["']\.\.\/\.\.\/js\/framework\.js["']/gi, 'src="../../js/framework.js"');
+    if (isMarkdown) {
+      content = buildMarkdownDocument(content, filename);
+    } else {
+      // Auto-resolve root asset links for live rendering
+      // Resolves ../../css/main.css and ./code-tools.css to accessible site assets
+      content = content.replace(/href=["']\.\.\/\.\.\/css\/main\.css["']/gi, 'href="../../css/main.css"');
+      content = content.replace(/href=["']\.\/code-tools\.css["']/gi, 'href="./code-tools.css"');
+      content = content.replace(/src=["']\.\.\/\.\.\/js\/framework\.js["']/gi, 'src="../../js/framework.js"');
+    }
 
     // Create a live Blob URL
     const blob = new Blob([content], { type: "text/html" });
@@ -2680,6 +2955,15 @@ Subcommands:
       usage: "export",
       exec: async () => {
         exportWorkspaceJSON();
+      }
+    },
+
+    md: {
+      desc: "Render and preview Markdown file in live preview pane",
+      usage: "md [filename]",
+      exec: async (args) => {
+        const fn = args[0] || state.activeFile;
+        previewMarkdown(fn);
       }
     },
 
@@ -4013,8 +4297,19 @@ Subcommands:
       const tabIdx = state.openTabs.indexOf(filename);
       const hasOthers = state.openTabs.length > 1;
       const hasToRight = tabIdx >= 0 && tabIdx < state.openTabs.length - 1;
+      const isMd = filename.toLowerCase().endsWith(".md") || filename.toLowerCase().endsWith(".markdown");
 
-      showContextMenu(x, y, [
+      const items = [];
+      if (isMd) {
+        items.push({
+          label: "Open Markdown Preview",
+          shortcut: "Ctrl+Shift+V",
+          exec: () => previewMarkdown(filename)
+        });
+        items.push({ separator: true });
+      }
+
+      items.push(
         {
           label: "Close",
           shortcut: "Ctrl+W",
@@ -4060,7 +4355,9 @@ Subcommands:
             }
           }
         }
-      ]);
+      );
+
+      showContextMenu(x, y, items);
     }
 
     function showTabsBarEmptyContextMenu(x, y) {
@@ -4089,13 +4386,26 @@ Subcommands:
     }
 
     function showEditorContextMenu(x, y) {
-      showContextMenu(x, y, [
+      const isMd = state.activeFile && (state.activeFile.endsWith(".md") || state.activeFile.endsWith(".markdown"));
+      const items = [
         {
           label: "Command Palette...",
           shortcut: "F1",
           exec: () => openCommandPalette()
         },
-        { separator: true },
+        { separator: true }
+      ];
+
+      if (isMd) {
+        items.push({
+          label: "Open Markdown Preview",
+          shortcut: "Ctrl+Shift+V",
+          exec: () => previewMarkdown(state.activeFile)
+        });
+        items.push({ separator: true });
+      }
+
+      items.push(
         {
           label: "Run Script in Terminal",
           shortcut: "Ctrl+Enter",
@@ -4162,7 +4472,8 @@ Subcommands:
           disabled: !state.activeFile,
           exec: () => saveCurrentFile()
         }
-      ]);
+      );
+      showContextMenu(x, y, items);
     }
 
     function showTerminalContextMenu(x, y) {
@@ -4536,6 +4847,16 @@ Subcommands:
         return;
       }
 
+      // Markdown Preview shortcut: Ctrl+Shift+V
+      if (e.shiftKey && key === "v") {
+        const isMd = state.activeFile && (state.activeFile.toLowerCase().endsWith(".md") || state.activeFile.toLowerCase().endsWith(".markdown"));
+        if (isMd) {
+          e.preventDefault();
+          previewMarkdown(state.activeFile);
+          return;
+        }
+      }
+
       // Run code shortcut
       if (key === "enter" && !e.shiftKey) {
         if (document.activeElement === el.codeTextarea) {
@@ -4601,6 +4922,13 @@ Subcommands:
     if (el.btnPreview) {
       el.btnPreview.addEventListener("click", () => {
         serveFile(state.activeFile, 3000, false);
+      });
+    }
+
+    // Markdown Preview button in editor toolbar
+    if (el.btnPreviewMd) {
+      el.btnPreviewMd.addEventListener("click", () => {
+        previewMarkdown(state.activeFile);
       });
     }
 
