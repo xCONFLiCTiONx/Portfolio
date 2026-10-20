@@ -1,6 +1,6 @@
 /* ==========================================================================
    VS CODE TOOLS — Web IDE & Daily CLI Developer Workbench
-   Theme: Pitch Black (#121212), Crisp White (#FFFFFF), Accent Turquoise (#00F0FF / #4EC9B0)
+   Theme: Pitch Black (#121212), Crisp White (#FFFFFF), Accent Turquoise (#3791B7)
    Exact Visual Studio Code Aesthetic + Drag Resizer + Panel Maximizer + Real Utilities
    ========================================================================== */
 
@@ -15,23 +15,24 @@
   --vsc-bg-input: #121212;
   --vsc-bg-status: #121212;
   --vsc-bg-hover: rgba(255, 255, 255, 0.06);
-  --vsc-bg-active: rgba(0, 240, 255, 0.12);
+  --vsc-bg-active: rgba(55, 145, 183, 0.15);
 
   --vsc-fg-primary: #ffffff;
   --vsc-fg-secondary: #cccccc;
   --vsc-fg-muted: #858585;
   --vsc-fg-subtle: #555555;
 
-  /* Vibrant VS Code Turquoise / Cyan Accent */
-  --vsc-turquoise: #00f0ff;
-  --vsc-turquoise-dark: #00adb5;
-  --vsc-turquoise-soft: #4ec9b0;
-  --vsc-turquoise-glow: rgba(0, 240, 255, 0.25);
+  /* Custom Tech Blue Accent #3791B7 */
+  --vsc-turquoise: #3791B7;
+  --vsc-accent: #3791B7;
+  --vsc-turquoise-dark: #2a7291;
+  --vsc-turquoise-soft: #4ba7d0;
+  --vsc-turquoise-glow: rgba(55, 145, 183, 0.35);
 
   --vsc-border: #2a2a2a;
-  --vsc-border-focus: #00f0ff;
+  --vsc-border-focus: #3791B7;
 
-  --vsc-syntax-keyword: #00f0ff;
+  --vsc-syntax-keyword: #3791B7;
   --vsc-syntax-string: #98c379;
   --vsc-syntax-number: #d19a66;
   --vsc-syntax-func: #61afef;
@@ -413,10 +414,10 @@ body[data-tool-id="code-tools"].vsc-fullscreen #vscode-workbench {
   margin-left: auto;
   font-size: 10px;
   color: var(--vsc-turquoise);
-  background: rgba(0, 240, 255, 0.1);
+  background: rgba(55, 145, 183, 0.1);
   padding: 1px 5px;
   border-radius: 3px;
-  border: 1px solid rgba(0, 240, 255, 0.2);
+  border: 1px solid rgba(55, 145, 183, 0.2);
 }
 
 /* 2C. WORKSPACE AREA (CONTAINER QUERY AWARE) */
@@ -547,7 +548,7 @@ body[data-tool-id="code-tools"].vsc-fullscreen #vscode-workbench {
 }
 
 .vsc-editor-btn.run {
-  background: rgba(0, 240, 255, 0.1);
+  background: rgba(55, 145, 183, 0.1);
   border-color: var(--vsc-turquoise);
   color: var(--vsc-turquoise);
   font-weight: 600;
@@ -757,7 +758,7 @@ body[data-tool-id="code-tools"].vsc-fullscreen #vscode-workbench {
 
 .vsc-term-btn.active {
   color: var(--vsc-turquoise);
-  background: rgba(0, 240, 255, 0.1);
+  background: rgba(55, 145, 183, 0.1);
 }
 
 .vsc-term-btn svg {
@@ -1065,7 +1066,7 @@ body[data-tool-id="code-tools"].vsc-fullscreen #vscode-workbench {
 }
 
 .vsc-nano-btn:hover {
-  background: rgba(0, 240, 255, 0.2);
+  background: rgba(55, 145, 183, 0.2);
   color: var(--vsc-turquoise);
 }
 
@@ -1221,7 +1222,7 @@ body[data-tool-id="code-tools"].vsc-fullscreen #vscode-workbench {
   padding: 2px 6px;
   border-radius: 3px;
   font-size: 10px;
-  background: rgba(0, 240, 255, 0.15);
+  background: rgba(55, 145, 183, 0.15);
   color: var(--vsc-turquoise);
   font-family: var(--vsc-font-code);
   font-weight: 700;
@@ -1311,7 +1312,7 @@ dialog.vsc-dialog::backdrop {
   top: 10%;
   max-width: 620px;
   border-color: var(--vsc-turquoise);
-  box-shadow: 0 0 20px rgba(0, 240, 255, 0.25);
+  box-shadow: 0 0 20px rgba(55, 145, 183, 0.25);
 }
 
 .vsc-palette-input-wrap {
@@ -1363,7 +1364,7 @@ dialog.vsc-dialog::backdrop {
   font-family: var(--vsc-font-code);
   font-size: 10px;
   color: var(--vsc-turquoise);
-  background: rgba(0, 240, 255, 0.1);
+  background: rgba(55, 145, 183, 0.1);
   padding: 1px 5px;
   border-radius: 3px;
 }
@@ -1545,6 +1546,89 @@ dialog.vsc-dialog::backdrop {
 
 .vsc-debug-console-panel.active {
   display: flex;
+}
+
+/* Color-coded message cards in Messages console tab */
+.vsc-msg-card {
+  padding: 8px 12px;
+  border-radius: 4px;
+  border-left: 3px solid var(--vsc-turquoise);
+  background: rgba(255, 255, 255, 0.03);
+  font-family: var(--vsc-font-code);
+  font-size: 12px;
+  line-height: 1.45;
+  transition: background 0.15s ease;
+  margin-bottom: 6px;
+}
+
+.vsc-msg-card:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.vsc-msg-card.info {
+  border-left-color: var(--vsc-turquoise);
+  background: rgba(55, 145, 183, 0.08);
+}
+
+.vsc-msg-card.success {
+  border-left-color: #98c379;
+  background: rgba(152, 195, 121, 0.08);
+}
+
+.vsc-msg-card.warning {
+  border-left-color: #e5c07b;
+  background: rgba(229, 192, 123, 0.08);
+}
+
+.vsc-msg-card.error {
+  border-left-color: #f44336;
+  background: rgba(244, 67, 54, 0.1);
+}
+
+.vsc-msg-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.vsc-msg-tag {
+  font-weight: 700;
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.vsc-msg-card.info .vsc-msg-tag {
+  background: rgba(55, 145, 183, 0.25);
+  color: var(--vsc-turquoise);
+}
+
+.vsc-msg-card.success .vsc-msg-tag {
+  background: rgba(152, 195, 121, 0.25);
+  color: #98c379;
+}
+
+.vsc-msg-card.warning .vsc-msg-tag {
+  background: rgba(229, 192, 123, 0.25);
+  color: #e5c07b;
+}
+
+.vsc-msg-card.error .vsc-msg-tag {
+  background: rgba(244, 67, 54, 0.25);
+  color: #f44336;
+}
+
+.vsc-msg-time {
+  font-size: 10px;
+  color: var(--vsc-fg-muted);
+}
+
+.vsc-msg-text {
+  color: var(--vsc-fg-primary);
+  word-break: break-word;
 }
 
 

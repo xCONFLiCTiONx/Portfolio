@@ -1,7 +1,7 @@
 /**
  * ============================================================================
  * VS CODE TOOLS — Web IDE & Daily CLI Developer Workbench
- * Theme: Pitch Black (#121212), Crisp White (#FFFFFF), Accent Turquoise (#00F0FF)
+ * Theme: Pitch Black (#121212), Crisp White (#FFFFFF), Accent Turquoise (#3791B7)
  * Non-Fiction, Real-Life Daily Utilities for Web, Network, Crypto & Scripting
  * ============================================================================
  */
@@ -82,15 +82,15 @@ User-Agent: VSCodeTools/4.2
     }
     .card {
       background: rgba(30, 41, 59, 0.8);
-      border: 1px solid rgba(0, 240, 255, 0.3);
+      border: 1px solid rgba(55, 145, 183, 0.3);
       border-radius: 8px;
       padding: 2rem;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     }
     .badge {
       display: inline-block;
-      background: rgba(0, 240, 255, 0.15);
-      color: #00f0ff;
+      background: rgba(55, 145, 183, 0.15);
+      color: #3791B7;
       font-weight: 700;
       padding: 0.3rem 0.75rem;
       border-radius: 9999px;
@@ -98,7 +98,7 @@ User-Agent: VSCodeTools/4.2
       margin-bottom: 1rem;
     }
     button {
-      background: #00f0ff;
+      background: #3791B7;
       color: #000;
       font-weight: 700;
       border: none;
@@ -114,7 +114,7 @@ User-Agent: VSCodeTools/4.2
     <h1 style="margin-top:0">Welcome to My Custom Page!</h1>
     <p>This page was authored inside the VS Code Web Terminal and is being served live right in Chrome.</p>
     <p>Connected to root portfolio styling &amp; client-side engine.</p>
-    <button onclick="alert('Virtual Web Server connected!')">Test Interaction</button>
+    <button onclick="console.log('Virtual Web Server connected!')">Test Interaction</button>
   </div>
 </body>
 </html>
@@ -228,10 +228,15 @@ User-Agent: VSCodeTools/4.2
 
     // Terminal views & tabs
     tabTerm: document.getElementById("vsc-tab-term"),
+    tabMessages: document.getElementById("vsc-tab-messages"),
     tabOutput: document.getElementById("vsc-tab-output"),
     tabProblems: document.getElementById("vsc-tab-problems"),
     tabPorts: document.getElementById("vsc-tab-ports"),
     tabDebug: document.getElementById("vsc-tab-debug"),
+    messagesPanel: document.getElementById("vsc-messages-panel"),
+    messagesHistory: document.getElementById("vsc-messages-history"),
+    messagesCount: document.getElementById("vsc-messages-count"),
+    btnClearMessages: document.getElementById("vsc-btn-clear-messages"),
     outputPanel: document.getElementById("vsc-output-panel"),
     outputHistory: document.getElementById("vsc-output-history"),
     problemsPanel: document.getElementById("vsc-problems-panel"),
@@ -262,6 +267,15 @@ User-Agent: VSCodeTools/4.2
     settingWordWrap: document.getElementById("vsc-setting-wordwrap"),
     settingsBtnClose: document.getElementById("vsc-settings-btn-close"),
     settingsBtnSave: document.getElementById("vsc-settings-btn-save"),
+
+    // Quick Input Dialog (In-page prompt)
+    quickInputDialog: document.getElementById("vsc-quickinput-dialog"),
+    quickInputTitle: document.getElementById("vsc-quickinput-title"),
+    quickInputLabel: document.getElementById("vsc-quickinput-label"),
+    quickInputInput: document.getElementById("vsc-quickinput-input"),
+    quickInputBtnClose: document.getElementById("vsc-quickinput-btn-close"),
+    quickInputBtnCancel: document.getElementById("vsc-quickinput-btn-cancel"),
+    quickInputBtnOk: document.getElementById("vsc-quickinput-btn-ok"),
 
     // Titlebar & Searchbar
     searchBar: document.querySelector(".vsc-searchbar"),
@@ -299,6 +313,105 @@ User-Agent: VSCodeTools/4.2
     btnGitPush: document.getElementById("vsc-btn-git-push"),
     gitChangesList: document.getElementById("vsc-git-changes-list")
   };
+
+  // --- IN-PAGE COLOR-CODED MESSAGES & QUICK INPUT (NO PROMPT / ZERO FULLSCREEN LOSS) ---
+  let messagesCount = 0;
+
+  function showMessage(type = "info", title = "SYSTEM", text = "", autoSwitch = true) {
+    if (!el.messagesHistory) return;
+    messagesCount++;
+    if (el.messagesCount) {
+      el.messagesCount.textContent = messagesCount;
+      el.messagesCount.style.display = "inline-block";
+    }
+
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+    const card = document.createElement("div");
+    card.className = `vsc-msg-card ${type}`;
+    const escaped = String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    card.innerHTML = `
+      <div class="vsc-msg-header">
+        <span class="vsc-msg-tag">${type.toUpperCase()}</span>
+        <span class="vsc-msg-time">${timeStr} \u2014 ${title}</span>
+      </div>
+      <div class="vsc-msg-text">${escaped}</div>
+    `;
+
+    el.messagesHistory.appendChild(card);
+    if (el.messagesPanel) {
+      el.messagesPanel.scrollTop = el.messagesPanel.scrollHeight;
+    }
+
+    if (autoSwitch) {
+      switchTerminalTab("messages");
+      if (el.terminalPanel && el.terminalPanel.offsetHeight < 70) {
+        el.terminalPanel.style.height = `${state.savedPanelHeight || 180}px`;
+      }
+    }
+  }
+
+  function promptInWorkbench(title, defaultValue = "", placeholder = "") {
+    return new Promise((resolve) => {
+      if (!el.quickInputDialog) {
+        resolve(defaultValue);
+        return;
+      }
+
+      if (el.quickInputTitle) el.quickInputTitle.textContent = title.toUpperCase();
+      if (el.quickInputLabel) el.quickInputLabel.textContent = `${title}:`;
+      if (el.quickInputInput) {
+        el.quickInputInput.value = defaultValue;
+        el.quickInputInput.placeholder = placeholder || "Enter text...";
+      }
+
+      let isDone = false;
+      const finish = (val) => {
+        if (isDone) return;
+        isDone = true;
+        cleanup();
+        try { el.quickInputDialog.close(); } catch (e) {}
+        resolve(val);
+      };
+
+      const onKeyDown = (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          finish(el.quickInputInput.value);
+        } else if (e.key === "Escape") {
+          e.preventDefault();
+          finish(null);
+        }
+      };
+
+      const onOkClick = () => finish(el.quickInputInput ? el.quickInputInput.value : "");
+      const onCancelClick = () => finish(null);
+      const onBackdropClick = (e) => {
+        if (e.target === el.quickInputDialog) finish(null);
+      };
+
+      const cleanup = () => {
+        if (el.quickInputInput) el.quickInputInput.removeEventListener("keydown", onKeyDown);
+        if (el.quickInputBtnOk) el.quickInputBtnOk.removeEventListener("click", onOkClick);
+        if (el.quickInputBtnCancel) el.quickInputBtnCancel.removeEventListener("click", onCancelClick);
+        if (el.quickInputBtnClose) el.quickInputBtnClose.removeEventListener("click", onCancelClick);
+        el.quickInputDialog.removeEventListener("click", onBackdropClick);
+      };
+
+      if (el.quickInputInput) el.quickInputInput.addEventListener("keydown", onKeyDown);
+      if (el.quickInputBtnOk) el.quickInputBtnOk.addEventListener("click", onOkClick);
+      if (el.quickInputBtnCancel) el.quickInputBtnCancel.addEventListener("click", onCancelClick);
+      if (el.quickInputBtnClose) el.quickInputBtnClose.addEventListener("click", onCancelClick);
+      el.quickInputDialog.addEventListener("click", onBackdropClick);
+
+      el.quickInputDialog.showModal();
+      if (el.quickInputInput) {
+        el.quickInputInput.focus();
+        el.quickInputInput.select();
+      }
+    });
+  }
 
   // --- SAVE WORKSPACE HELPER ---
   function saveWorkspace() {
@@ -449,9 +562,11 @@ User-Agent: VSCodeTools/4.2
         updateGitStatus();
         refreshProblems();
         termPrint(`Saved to disk: ${filename} (Local Drive)`, "vsc-term-success");
+        showMessage("success", "SAVED TO DISK", `Directly written to local file: ${filename}`);
         return;
       } catch (err) {
         termPrint(`Disk write error (${filename}): ${err.message}`, "vsc-term-error");
+        showMessage("error", "DISK SAVE FAILED", `Could not save ${filename}: ${err.message}`);
       }
     }
 
@@ -472,9 +587,11 @@ User-Agent: VSCodeTools/4.2
         updateGitStatus();
         refreshProblems();
         termPrint(`Created & saved on disk: ${filename}`, "vsc-term-success");
+        showMessage("success", "CREATED ON DISK", `New file created and saved: ${filename}`);
         return;
       } catch (err) {
         termPrint(`Disk create error: ${err.message}`, "vsc-term-error");
+        showMessage("error", "DISK CREATE FAILED", err.message);
       }
     }
 
@@ -482,6 +599,7 @@ User-Agent: VSCodeTools/4.2
     updateGitStatus();
     refreshProblems();
     termPrint(`Saved ${filename} to browser storage.`, "vsc-term-success");
+    showMessage("info", "SAVED TO WORKSPACE", `Saved ${filename} to browser persistent storage.`);
   }
 
   async function loadLocalDirectory(dirHandle) {
@@ -939,7 +1057,7 @@ User-Agent: VSCodeTools/4.2
     { id: "view_terminal", label: "View: Toggle Terminal Panel", exec: () => toggleMaximizeTerminal() },
     { id: "view_preview", label: "View: Toggle Live Preview", exec: () => { if (el.livePreview) el.livePreview.classList.toggle("hidden"); } },
     { id: "view_fullscreen", label: "View: Toggle Fullscreen", exec: () => { if (el.btnFullscreen) el.btnFullscreen.click(); } },
-    { id: "file_new", label: "File: New File", exec: () => { const name = prompt("Enter new filename:", "new-file.js"); if (name) openFile(name); } },
+    { id: "file_new", label: "File: New File", exec: async () => { const name = await promptInWorkbench("New File", "new-file.js", "filename.js"); if (name) openFile(name); } },
     { id: "file_open_project", label: "File: Open Local Folder / Project (E:\\ Drive)...", exec: () => openLocalProjectFolder() },
     { id: "file_save", label: "File: Save Current File (Direct to Disk)", exec: () => saveCurrentFile() },
     { id: "file_save_all", label: "File: Save All Files", exec: () => { saveWorkspace(); termPrint("All files saved to browser storage.", "vsc-term-success"); } },
@@ -1035,6 +1153,7 @@ User-Agent: VSCodeTools/4.2
   function switchTerminalTab(tabId) {
     const tabs = {
       terminal: { tab: el.tabTerm, panel: el.termBody },
+      messages: { tab: el.tabMessages, panel: el.messagesPanel },
       output: { tab: el.tabOutput, panel: el.outputPanel },
       problems: { tab: el.tabProblems, panel: el.problemsPanel },
       ports: { tab: el.tabPorts, panel: el.portsPanel },
@@ -1043,6 +1162,7 @@ User-Agent: VSCodeTools/4.2
 
     document.querySelectorAll(".vsc-term-tab").forEach(t => t.classList.remove("active"));
     if (el.termBody) el.termBody.style.display = "none";
+    if (el.messagesPanel) el.messagesPanel.style.display = "none";
     if (el.outputPanel) el.outputPanel.style.display = "none";
     if (el.problemsPanel) el.problemsPanel.style.display = "none";
     if (el.portsPanel) el.portsPanel.classList.remove("active");
@@ -1058,6 +1178,10 @@ User-Agent: VSCodeTools/4.2
         }
       }
       state.activeTab = tabId;
+      if (tabId === "messages" && el.messagesCount) {
+        // Subtle acknowledgment of reading messages
+        el.messagesCount.style.opacity = "0.6";
+      }
       if (tabId === "ports") renderPortsTable();
       if (tabId === "problems") refreshProblems();
       if (tabId === "debug" && el.debugInput) el.debugInput.focus();
@@ -1268,8 +1392,8 @@ User-Agent: VSCodeTools/4.2
       }
     };
 
-    bindItem("vsc-item-new-file", () => {
-      const name = prompt("Enter new filename:", "untitled.js");
+    bindItem("vsc-item-new-file", async () => {
+      const name = await promptInWorkbench("New File", "untitled.js", "filename.js");
       if (name) openFile(name);
     });
     bindItem("vsc-item-open-folder", openLocalProjectFolder);
@@ -1352,8 +1476,8 @@ User-Agent: VSCodeTools/4.2
     });
 
     bindItem("vsc-item-go-file", openCommandPalette);
-    bindItem("vsc-item-go-line", () => {
-      const ln = prompt("Go to line number:");
+    bindItem("vsc-item-go-line", async () => {
+      const ln = await promptInWorkbench("Go to Line", "", "Enter line number");
       if (ln && el.codeTextarea) {
         const lineNum = parseInt(ln, 10);
         const lines = el.codeTextarea.value.split("\n");
@@ -1394,7 +1518,7 @@ Token is securely synced across Chrome PC and mobile via persistent cookie and s
     bindItem("vsc-item-about-tool", () => {
       termPrintHTML(`
 <span class="vsc-term-info">Visual Studio Code Tools for Web — Version 4.2.0</span>
-Pitch Black (#121212), Crisp White (#FFFFFF), Turquoise Accent (#00F0FF).
+Pitch Black (#121212), Crisp White (#FFFFFF), Turquoise Accent (#3791B7).
 Integrated Web Developer Workbench:
 - Real GitHub API sync (Pull trees, edit in browser, push commits)
 - Localhost Virtual Web Server with responsive preview
@@ -2117,7 +2241,7 @@ Length: ${hex.length * 4} bits (${hex.length} hex chars)
       exec: async (args) => {
         const input = args.join(" ").trim();
         if (!input) {
-          termPrint("Usage: color #00f0ff", "vsc-term-warn");
+          termPrint("Usage: color #3791B7", "vsc-term-warn");
           return;
         }
 
@@ -2485,7 +2609,7 @@ Length: ${hex.length * 4} bits (${hex.length} hex chars)
         const sub = (args[0] || "status").toLowerCase();
 
         if (sub === "auth") {
-          const token = args[1] || prompt("Enter GitHub Personal Access Token (PAT):");
+          const token = args[1] || await promptInWorkbench("GitHub Token", "", "ghp_... or github_pat_...");
           if (!token) {
             termPrint("GitHub auth requires a token: github auth <token>", "vsc-term-warn");
             return;
@@ -2494,12 +2618,13 @@ Length: ${hex.length * 4} bits (${hex.length} hex chars)
           const authRes = await githubAuth(token);
           if (authRes.success) {
             termPrint(`Authenticated successfully as ${authRes.user.login} (${authRes.user.name || "GitHub User"})!`, "vsc-term-success");
-            termPrint(`Token saved to cookie (gh_pat) and local storage for cross-device sync.`, "vsc-term-info");
+            showMessage("success", "GITHUB AUTH", `Logged in as ${authRes.user.login} (${authRes.user.name || "User"}). PAT saved to cookies.`);
           } else {
             termPrint(`Authentication failed: ${authRes.message}`, "vsc-term-error");
+            showMessage("error", "GITHUB AUTH FAILED", authRes.message);
           }
         } else if (sub === "clone") {
-          const repo = args[1] || prompt("Enter repository (owner/repo):");
+          const repo = args[1] || await promptInWorkbench("Clone Repository", "", "owner/repo");
           const branch = args[2] || "main";
           if (!repo) {
             termPrint("Usage: github clone <owner/repo> [branch]", "vsc-term-warn");
@@ -3222,8 +3347,8 @@ Length: ${hex.length * 4} bits (${hex.length} hex chars)
     if (el.btnOpenProjectBanner) el.btnOpenProjectBanner.addEventListener("click", openLocalProjectFolder);
     if (el.folderInput) el.folderInput.addEventListener("change", handleFileInputFolder);
     if (el.btnNewFile) {
-      el.btnNewFile.addEventListener("click", () => {
-        const name = prompt("Enter new filename:", "untitled.js");
+      el.btnNewFile.addEventListener("click", async () => {
+        const name = await promptInWorkbench("New File", "untitled.js", "filename.js");
         if (name) openFile(name);
       });
     }
@@ -3285,10 +3410,18 @@ Length: ${hex.length * 4} bits (${hex.length} hex chars)
 
     // Terminal Tabs
     if (el.tabTerm) el.tabTerm.addEventListener("click", () => switchTerminalTab("terminal"));
+    if (el.tabMessages) el.tabMessages.addEventListener("click", () => switchTerminalTab("messages"));
     if (el.tabOutput) el.tabOutput.addEventListener("click", () => switchTerminalTab("output"));
     if (el.tabProblems) el.tabProblems.addEventListener("click", () => switchTerminalTab("problems"));
     if (el.tabPorts) el.tabPorts.addEventListener("click", () => switchTerminalTab("ports"));
     if (el.tabDebug) el.tabDebug.addEventListener("click", () => switchTerminalTab("debug"));
+    if (el.btnClearMessages) {
+      el.btnClearMessages.addEventListener("click", () => {
+        if (el.messagesHistory) el.messagesHistory.innerHTML = "";
+        messagesCount = 0;
+        if (el.messagesCount) el.messagesCount.style.display = "none";
+      });
+    }
 
     // Status bar interactive items
     if (el.statusGit) el.statusGit.addEventListener("click", openGitHubModal);
@@ -3299,8 +3432,8 @@ Length: ${hex.length * 4} bits (${hex.length} hex chars)
     }
     if (el.statusDiagnostics) el.statusDiagnostics.addEventListener("click", () => switchTerminalTab("problems"));
     if (el.statusLnCol) {
-      el.statusLnCol.addEventListener("click", () => {
-        const ln = prompt("Go to line number:");
+      el.statusLnCol.addEventListener("click", async () => {
+        const ln = await promptInWorkbench("Go to Line", "", "Enter line number");
         if (ln && el.codeTextarea) {
           const lineNum = parseInt(ln, 10);
           const lines = el.codeTextarea.value.split("\n");
@@ -3426,8 +3559,8 @@ Length: ${hex.length * 4} bits (${hex.length} hex chars)
     // Additional GNU Nano Buttons
     const nanoWhere = document.getElementById("vsc-nano-btn-where");
     if (nanoWhere) {
-      nanoWhere.addEventListener("click", () => {
-        const query = prompt("Search in nano:");
+      nanoWhere.addEventListener("click", async () => {
+        const query = await promptInWorkbench("Search in nano", "", "Find text");
         if (query && el.nanoEditor) {
           const idx = el.nanoEditor.value.indexOf(query);
           if (idx !== -1) {
@@ -3470,10 +3603,10 @@ Length: ${hex.length * 4} bits (${hex.length} hex chars)
 
     const nanoReplace = document.getElementById("vsc-nano-btn-replace");
     if (nanoReplace && el.nanoEditor) {
-      nanoReplace.addEventListener("click", () => {
-        const findText = prompt("Find text to replace:");
+      nanoReplace.addEventListener("click", async () => {
+        const findText = await promptInWorkbench("Find in nano", "", "Text to search");
         if (!findText) return;
-        const repText = prompt(`Replace '${findText}' with:`) || "";
+        const repText = await promptInWorkbench(`Replace '${findText}' with`, "", "Replacement text") || "";
         const parts = el.nanoEditor.value.split(findText);
         if (parts.length > 1) {
           el.nanoEditor.value = parts.join(repText);
@@ -3487,7 +3620,7 @@ Length: ${hex.length * 4} bits (${hex.length} hex chars)
     const nanoHelp = document.getElementById("vsc-nano-btn-help");
     if (nanoHelp) {
       nanoHelp.addEventListener("click", () => {
-        alert("GNU nano shortcuts:\n^O / WriteOut: Save changes\n^X / Exit: Close editor\n^W / Where Is: Search\n^K / Cut: Cut text\n^U / Paste: Paste text");
+        showMessage("info", "GNU NANO SHORTCUTS", "^O / WriteOut: Save changes\n^X / Exit: Close editor\n^W / Where Is: Search\n^K / Cut: Cut text\n^U / Paste: Paste text");
       });
     }
 
@@ -3512,8 +3645,8 @@ Length: ${hex.length * 4} bits (${hex.length} hex chars)
 
     const nanoRead = document.getElementById("vsc-nano-btn-read");
     if (nanoRead && el.nanoEditor) {
-      nanoRead.addEventListener("click", () => {
-        const fn = prompt("File to read into nano:", Object.keys(state.files)[0]);
+      nanoRead.addEventListener("click", async () => {
+        const fn = await promptInWorkbench("Read file into nano", Object.keys(state.files)[0], "Filename");
         if (fn && state.files[fn]) {
           const pos = el.nanoEditor.selectionStart;
           el.nanoEditor.value = el.nanoEditor.value.substring(0, pos) + state.files[fn] + el.nanoEditor.value.substring(pos);

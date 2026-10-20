@@ -207,7 +207,7 @@
                 <span id="vsc-workspace-label">dev-vault (Workspace)</span>
               </div>
               <div id="vsc-open-project-container" style="padding:6px 10px">
-                <button class="vsc-editor-btn" id="vsc-btn-open-project-banner" style="width:100%;display:flex;align-items:center;justify-content:center;gap:6px;background:rgba(0,240,255,0.08);border:1px solid rgba(0,240,255,0.35);color:var(--vsc-turquoise);font-weight:600;padding:6px">
+                <button class="vsc-editor-btn" id="vsc-btn-open-project-banner" style="width:100%;display:flex;align-items:center;justify-content:center;gap:6px;background:rgba(55,145,183,0.1);border:1px solid rgba(55,145,183,0.35);color:var(--vsc-turquoise);font-weight:600;padding:6px">
                   <span>📂</span><span>Open Project on E:\</span>
                 </button>
               </div>
@@ -413,6 +413,10 @@
                 <div class="vsc-term-tab active" id="vsc-tab-term" role="tab" aria-selected="true">
                   <span>Terminal</span>
                 </div>
+                <div class="vsc-term-tab" id="vsc-tab-messages" role="tab" aria-selected="false">
+                  <span>Messages</span>
+                  <span class="vsc-term-badge" id="vsc-messages-count" style="display:none">0</span>
+                </div>
                 <div class="vsc-term-tab" id="vsc-tab-output" role="tab" aria-selected="false">
                   <span>Output</span>
                 </div>
@@ -474,6 +478,23 @@
                   aria-label="Terminal Input"
                   placeholder="Type a command (e.g. help, myip, dns, jwt, curl, regex, calc)..."
                 />
+              </div>
+            </div>
+
+            <!-- In-Terminal Messages View -->
+            <div class="vsc-term-body vsc-scrollable" id="vsc-messages-panel" style="display:none">
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 14px;border-bottom:1px solid var(--vsc-border);background:rgba(0,0,0,0.3);position:sticky;top:0;z-index:2">
+                <span style="font-size:11px;font-weight:700;color:var(--vsc-turquoise);text-transform:uppercase;letter-spacing:0.5px">Workbench Messages &amp; Events</span>
+                <button class="vsc-term-btn" id="vsc-btn-clear-messages" title="Clear Messages">Clear</button>
+              </div>
+              <div class="vsc-term-history" id="vsc-messages-history" style="padding:10px 14px">
+                <div class="vsc-msg-card info">
+                  <div class="vsc-msg-header">
+                    <span class="vsc-msg-tag">INFO</span>
+                    <span class="vsc-msg-time">System Ready</span>
+                  </div>
+                  <div class="vsc-msg-text">Workbench initialized. All user notifications, action alerts, and system events stream here without breaking fullscreen.</div>
+                </div>
               </div>
             </div>
 
@@ -689,6 +710,24 @@
       </div>
       <div class="vsc-dialog-footer">
         <button class="vsc-editor-btn run" id="vsc-settings-btn-save">Save &amp; Close</button>
+      </div>
+    </dialog>
+
+    <!-- MODAL DIALOG 4: IN-PAGE QUICK INPUT (Preserves fullscreen) -->
+    <dialog class="vsc-dialog" id="vsc-quickinput-dialog" closedby="any" aria-label="Workbench Quick Input">
+      <div class="vsc-dialog-header">
+        <span id="vsc-quickinput-title">PROMPT</span>
+        <button class="vsc-title-btn" id="vsc-quickinput-btn-close">✕</button>
+      </div>
+      <div class="vsc-dialog-body">
+        <div class="vsc-input-group">
+          <label class="vsc-input-label" id="vsc-quickinput-label">Enter value:</label>
+          <input type="text" class="vsc-modal-input" id="vsc-quickinput-input" autocomplete="off" />
+        </div>
+      </div>
+      <div class="vsc-dialog-footer">
+        <button class="vsc-editor-btn" id="vsc-quickinput-btn-cancel">Cancel</button>
+        <button class="vsc-editor-btn run" id="vsc-quickinput-btn-ok">OK</button>
       </div>
     </dialog>
     </div>
