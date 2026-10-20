@@ -6,6 +6,8 @@
   "scripts": {
     "build:css": "npx tailwindcss -i ./css/main.css -o ./css/tailwind-output.css --minify",
     "watch:css": "npx tailwindcss -i ./css/main.css -o ./css/tailwind-output.css --watch",
+    "pull": "git pull",
+    "push": "git push",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

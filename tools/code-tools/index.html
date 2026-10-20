@@ -57,6 +57,9 @@
                 <div class="vsc-dropdown-item" id="vsc-item-new-file"><span>New File</span><kbd>Ctrl+N</kbd></div>
                 <div class="vsc-dropdown-item" id="vsc-item-open-folder"><span>Open Local Project</span><kbd>Ctrl+O</kbd></div>
                 <div class="vsc-dropdown-item" id="vsc-item-connect-github"><span>Connect GitHub Repo...</span></div>
+                <div class="vsc-dropdown-item" id="vsc-item-pull-github"><span>Pull Changes from GitHub</span></div>
+                <div class="vsc-dropdown-item" id="vsc-item-push-github"><span>Commit &amp; Push to GitHub</span></div>
+                <div class="vsc-dropdown-item" id="vsc-item-sync-github"><span>Sync with GitHub</span></div>
                 <div class="vsc-dropdown-divider"></div>
                 <div class="vsc-dropdown-item" id="vsc-item-save-file"><span>Save</span><kbd>Ctrl+S</kbd></div>
                 <div class="vsc-dropdown-item" id="vsc-item-save-all"><span>Save All</span></div>
@@ -329,7 +332,13 @@
               <div class="vsc-input-group">
                 <label class="vsc-input-label">Commit Message:</label>
                 <textarea class="vsc-commit-input" id="vsc-git-commit-msg" placeholder="feat: update workspace files"></textarea>
-                <button class="vsc-editor-btn run" id="vsc-btn-git-push" style="margin-top:6px">Commit &amp; Push to GitHub</button>
+                <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap">
+                  <button class="vsc-editor-btn run" id="vsc-btn-git-push" style="flex:1;min-width:120px">Commit &amp; Push</button>
+                  <button class="vsc-editor-btn" id="vsc-btn-git-pull" style="flex:1;min-width:100px;color:var(--vsc-turquoise);border-color:var(--vsc-turquoise)" title="Pull latest changes from GitHub">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px"><polyline points="8 8 12 12 16 8"/><line x1="12" y1="12" x2="12" y2="3"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+                    <span>Pull Changes</span>
+                  </button>
+                </div>
               </div>
               <div class="vsc-section-title" style="margin-top:8px">
                 <span>Changed Files</span>
@@ -413,6 +422,10 @@
                 </button>
                 <button class="vsc-editor-btn" id="vsc-btn-save" title="Save File (Ctrl+S)">
                   <span>Save</span>
+                </button>
+                <button class="vsc-editor-btn" id="vsc-btn-pull-editor" title="Pull Latest Changes from GitHub" style="display:none;color:var(--vsc-turquoise);border-color:var(--vsc-turquoise)">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="8 8 12 12 16 8"/><line x1="12" y1="12" x2="12" y2="3"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+                  <span>Pull</span>
                 </button>
                 <button class="vsc-editor-btn" id="vsc-btn-push-editor" title="Commit &amp; Push Changes to GitHub" style="display:none;color:var(--vsc-turquoise);border-color:var(--vsc-turquoise)">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
@@ -504,20 +517,27 @@
             <div class="vsc-term-body vsc-scrollable" id="vsc-term-body">
               <div class="vsc-term-history" id="vsc-term-history"></div>
 
-              <div class="vsc-input-row">
+              <form class="vsc-input-row" id="vsc-term-form" onsubmit="event.preventDefault(); return false;" autocomplete="off" role="search" data-form-type="other">
                 <span class="vsc-prompt-str" id="vsc-prompt-tag">PS ~/workspace&gt; </span>
                 <input
                   type="text"
                   id="vsc-term-input"
                   class="vsc-term-input"
+                  name="terminal_command"
                   autocomplete="off"
                   autocorrect="off"
-                  autocapitalize="off"
+                  autocapitalize="none"
                   spellcheck="false"
-                  aria-label="Terminal Input"
+                  inputmode="text"
+                  enterkeyhint="go"
+                  data-form-type="other"
+                  data-lpignore="true"
+                  data-1p-ignore="true"
+                  data-bwignore="true"
+                  aria-label="Terminal Command Line"
                   placeholder="Type a command (e.g. help, myip, dns, jwt, curl, regex, calc)..."
                 />
-              </div>
+              </form>
             </div>
 
             <!-- In-Terminal Messages View -->

@@ -148,6 +148,7 @@
     btnPreviewMd: document.getElementById("vsc-btn-preview-md"),
     btnFormat: document.getElementById("vsc-btn-format"),
     btnSave: document.getElementById("vsc-btn-save"),
+    btnPullEditor: document.getElementById("vsc-btn-pull-editor"),
     btnPushEditor: document.getElementById("vsc-btn-push-editor"),
     btnClear: document.getElementById("vsc-btn-clear"),
     btnFullscreen: document.getElementById("vsc-btn-fullscreen"),
@@ -288,6 +289,7 @@
     btnDisconnectGh: document.getElementById("vsc-btn-disconnect-gh"),
     gitCommitMsg: document.getElementById("vsc-git-commit-msg"),
     btnGitPush: document.getElementById("vsc-btn-git-push"),
+    btnGitPull: document.getElementById("vsc-btn-git-pull"),
     gitChangesList: document.getElementById("vsc-git-changes-list")
   };
 
@@ -1083,6 +1085,12 @@
       el.btnPushEditor.title = `Commit and push ${modCount} changed file(s) to ${state.githubRepo}@${branch}`;
     }
 
+    if (el.btnPullEditor) {
+      const canPull = !!(state.githubToken && state.githubRepo);
+      el.btnPullEditor.style.display = canPull ? "inline-flex" : "none";
+      el.btnPullEditor.title = `Pull latest changes from ${state.githubRepo}@${branch}`;
+    }
+
     if (el.gitRepoDisplay) {
       if (state.githubRepo) {
         el.gitRepoDisplay.innerHTML = `<span style="color:var(--vsc-turquoise);font-weight:600">${state.githubRepo}</span> <span style="color:var(--vsc-fg-muted)">(${branch})</span>`;
@@ -1475,6 +1483,180 @@
     return { success: true, pushedFiles: results };
   }
 
+  async function githubPull(options = {}) {
+    if (!state.githubToken) throw new Error("GitHub Token required to pull changes.");
+    if (!state.githubRepo) throw new Error("No repository selected. Connect a repo first.");
+
+    const repo = state.githubRepo.trim();
+    const branch = (state.githubBranch || "main").trim();
+    const onProgress = options.onProgress || null;
+
+    const treeUrl = `https://api.github.com/repos/${repo}/git/trees/${branch}?recursive=1`;
+    const res = await fetch(treeUrl, {
+      headers: {
+        "Authorization": `Bearer ${state.githubToken}`,
+        "Accept": "application/vnd.github.v3+json"
+      }
+    });
+
+    if (!res.ok) {
+      throw new Error(`Failed to load tree from ${repo}@${branch}: ${res.status} ${res.statusText}`);
+    }
+
+    const data = await res.json();
+    if (!data.tree || !Array.isArray(data.tree)) {
+      throw new Error("No files found in remote repository tree.");
+    }
+
+    const remoteBlobs = data.tree.filter(item => item.type === "blob" && (!item.size || item.size < 500000));
+    const remoteMap = new Map();
+    remoteBlobs.forEach(item => remoteMap.set(item.path, item));
+
+    const toPull = [];
+    const conflicts = [];
+
+    for (const item of remoteBlobs) {
+      const localSha = state.fileShas[item.path];
+      const hasLocalFile = Object.prototype.hasOwnProperty.call(state.files, item.path);
+      const isModifiedLocally = state.modifiedFiles.has(item.path);
+
+      if (!hasLocalFile || localSha !== item.sha) {
+        if (isModifiedLocally && !options.force) {
+          conflicts.push(item.path);
+        } else {
+          toPull.push(item);
+        }
+      }
+    }
+
+    if (conflicts.length > 0 && !options.force) {
+      const conflictList = conflicts.slice(0, 4).join(", ") + (conflicts.length > 4 ? ` (+${conflicts.length - 4} more)` : "");
+      const answer = await promptInWorkbench(
+        "Pull Conflict Detected",
+        "no",
+        `Type 'yes' to overwrite local changes in: ${conflictList}`
+      );
+      if (answer && answer.trim().toLowerCase() === "yes") {
+        conflicts.forEach(p => {
+          const item = remoteMap.get(p);
+          if (item) toPull.push(item);
+        });
+      } else {
+        throw new Error(`Pull aborted: ${conflicts.length} locally modified file(s) would be overwritten (${conflictList}). Commit or push your changes first.`);
+      }
+    }
+
+    if (toPull.length === 0) {
+      return { success: true, count: 0, pulledFiles: [], message: "Already up to date." };
+    }
+
+    let loaded = 0;
+    const pulledFiles = [];
+
+    for (const item of toPull) {
+      try {
+        const fRes = await fetch(`https://api.github.com/repos/${repo}/contents/${item.path}?ref=${branch}`, {
+          headers: {
+            "Authorization": `Bearer ${state.githubToken}`,
+            "Accept": "application/vnd.github.v3+json"
+          }
+        });
+        if (fRes.ok) {
+          const fData = await fRes.json();
+          if (fData.content) {
+            const decoded = decodeURIComponent(escape(atob(fData.content.replace(/\s/g, ""))));
+            state.files[item.path] = decoded;
+            state.fileShas[item.path] = fData.sha;
+            state.modifiedFiles.delete(item.path);
+            pulledFiles.push(item.path);
+            loaded++;
+            if (onProgress) onProgress(loaded, toPull.length, item.path);
+          }
+        }
+      } catch (e) {
+        console.warn("Failed to pull file:", item.path, e);
+      }
+    }
+
+    // Persist file SHAs
+    try {
+      localStorage.setItem("vsc_gh_file_shas", JSON.stringify(state.fileShas));
+    } catch (e) {}
+
+    saveWorkspace();
+
+    // If active file was updated, reload in active editor textarea
+    if (state.activeFile && pulledFiles.includes(state.activeFile)) {
+      if (el.codeTextarea) {
+        el.codeTextarea.value = state.files[state.activeFile] || "";
+      }
+      updateGutter();
+      updateEditorState();
+    } else if (!state.activeFile || !state.files[state.activeFile]) {
+      const first = Object.keys(state.files)[0];
+      if (first) openFile(first);
+    }
+
+    renderSidebarLists();
+    renderTabs();
+    updateGitStatus();
+    refreshProblems();
+
+    return { success: true, count: loaded, pulledFiles, total: toPull.length };
+  }
+
+  async function syncWithGitHub() {
+    if (!state.githubToken) {
+      openGitHubModal("Please connect your GitHub Personal Access Token to sync changes.");
+      return;
+    }
+    if (!state.githubRepo) {
+      openGitHubModal("Please select a target GitHub repository to sync changes.");
+      return;
+    }
+
+    const branch = state.githubBranch || "main";
+    termPrint(`Synchronizing with GitHub (${state.githubRepo}@${branch})...`, "vsc-term-info");
+    showMessage("info", "GITHUB SYNC", `Starting sync with ${state.githubRepo}...`);
+
+    try {
+      // 1. Pull remote changes
+      const pullRes = await githubPull();
+      let pullMsg = "";
+      if (pullRes.count > 0) {
+        termPrint(`Pulled ${pullRes.count} updated file(s) from GitHub:`, "vsc-term-success");
+        pullRes.pulledFiles.forEach(f => termPrint(`  ↓ ${f}`, "vsc-term-dim"));
+        pullMsg = `Pulled ${pullRes.count} file(s). `;
+      } else {
+        termPrint("Workspace is up to date with remote.", "vsc-term-dim");
+      }
+
+      // 2. Push local changes if any exist
+      const modCount = state.modifiedFiles.size;
+      let pushMsg = "";
+      if (modCount > 0) {
+        const msg = (el.gitCommitMsg && el.gitCommitMsg.value.trim()) || "feat: synchronize workspace files via VS Code Tools";
+        termPrint(`Pushing ${modCount} local change(s)...`, "vsc-term-info");
+        const pushRes = await githubPush(msg);
+        if (pushRes.pushedFiles && pushRes.pushedFiles.length > 0) {
+          termPrint(`Pushed ${pushRes.pushedFiles.length} file(s) to GitHub: "${msg}"`, "vsc-term-success");
+          pushRes.pushedFiles.forEach(f => termPrint(`  ↑ ${f}`, "vsc-term-dim"));
+          pushMsg = `Pushed ${pushRes.pushedFiles.length} file(s).`;
+          if (el.gitCommitMsg) el.gitCommitMsg.value = "";
+        }
+      } else {
+        pushMsg = "Working tree clean, nothing to push.";
+      }
+
+      const summary = (pullMsg + pushMsg).trim() || "Workspace synchronized.";
+      showMessage("success", "GITHUB SYNC", summary);
+      termPrint(`Sync complete: ${summary}`, "vsc-term-success");
+    } catch (e) {
+      termPrint(`Sync failed: ${e.message}`, "vsc-term-error");
+      showMessage("error", "GITHUB SYNC FAILED", e.message);
+    }
+  }
+
   // --- SNIPPETS INSERTION API ---
   window.insertSnippet = function (type) {
     let snippet = "";
@@ -1546,7 +1728,9 @@
     { id: "file_clear_workspace", label: "File: Clear Workspace (Start Clean)", exec: () => clearWorkspace() },
     { id: "file_clear_workspace_fresh", label: "File: Reset Workspace & Start Fresh (Keep Token)", exec: () => resetWorkspaceData() },
     { id: "github_connect", label: "GitHub: Connect Repository & Personal Access Token", exec: () => openGitHubModal() },
+    { id: "github_pull", label: "Git: Pull Latest Changes from GitHub", exec: () => { if (el.btnGitPull) el.btnGitPull.click(); } },
     { id: "github_push", label: "Git: Commit and Push Changes to GitHub", exec: () => { if (el.btnGitPush) el.btnGitPush.click(); } },
+    { id: "github_sync", label: "Git: Synchronize (Pull & Push) with GitHub", exec: () => syncWithGitHub() },
     { id: "edit_find", label: "Edit: Find in Files", exec: () => { switchSidebarView("search"); if (el.searchQueryInput) el.searchQueryInput.focus(); } },
     { id: "edit_format", label: "Format Document", exec: () => { if (el.btnFormat) el.btnFormat.click(); } },
     { id: "term_run", label: "Terminal: Run Active Script", exec: () => COMMANDS.run.exec([]) },
@@ -2200,6 +2384,9 @@
     });
     bindItem("vsc-item-open-folder", openLocalProjectFolder);
     bindItem("vsc-item-connect-github", openGitHubModal);
+    bindItem("vsc-item-pull-github", () => { if (el.btnGitPull) el.btnGitPull.click(); });
+    bindItem("vsc-item-push-github", () => { if (el.btnGitPush) el.btnGitPush.click(); });
+    bindItem("vsc-item-sync-github", () => syncWithGitHub());
     bindItem("vsc-item-save-file", () => {
       saveCurrentFile();
     });
@@ -2927,9 +3114,11 @@ Integrated Web Developer Workbench:
   <b class="vsc-term-success">timestamp</b> [epoch]                   Unix timestamp converter (UTC, Local, Relative)
 
 <span class="vsc-prompt-tag">[GITHUB &amp; GIT CLOUD REPO SYNC]</span>
+  <b class="vsc-term-success">github pull</b> / <b class="vsc-term-success">git pull</b>         Pull latest changes from remote GitHub repo
+  <b class="vsc-term-success">github push</b> [commit message]        Commit &amp; push changed files to GitHub repo
+  <b class="vsc-term-success">github sync</b> / <b class="vsc-term-success">git sync</b>         Synchronize (pull remote changes then push local commits)
   <b class="vsc-term-success">github</b> auth &lt;token&gt;                 Authenticate with GitHub PAT (syncs across PC &amp; phone)
   <b class="vsc-term-success">github</b> clone &lt;repo&gt; [branch]        Fetch file tree and load real files into workspace
-  <b class="vsc-term-success">github</b> push [commit message]        Commit &amp; push changed files to GitHub repo
   <b class="vsc-term-success">github</b> repos                        List your recent GitHub repositories
   <b class="vsc-term-success">github</b> status                       Show current repo, branch, user and modified files
   <b class="vsc-term-success">github</b> logout                       Clear GitHub token and cookies
@@ -3789,8 +3978,8 @@ Subcommands:
     },
 
     github: {
-      desc: "GitHub integration: auth, remember tokens, clone repo trees, push commits, and view status",
-      usage: "github <token|auth|clone|push|repos|status|logout> [args...]",
+      desc: "GitHub integration: pull changes, push commits, sync, clone repo trees, auth, and view status",
+      usage: "github <pull|push|sync|clone|auth|token|repos|status|logout> [args...]",
       exec: async (args) => {
         const sub = (args[0] || "status").toLowerCase();
 
@@ -3853,6 +4042,23 @@ Subcommands:
           } catch (e) {
             termPrint(`Clone failed: ${e.message}`, "vsc-term-error");
           }
+        } else if (sub === "pull") {
+          termPrint(`Pulling latest changes from ${state.githubRepo || "remote"} (${state.githubBranch || "main"})...`, "vsc-term-info");
+          try {
+            const pullRes = await githubPull();
+            if (pullRes.pulledFiles && pullRes.pulledFiles.length > 0) {
+              termPrint(`Successfully pulled ${pullRes.pulledFiles.length} file(s) from GitHub:`, "vsc-term-success");
+              pullRes.pulledFiles.forEach(f => termPrint(`  ↓ ${f}`, "vsc-term-dim"));
+              showMessage("success", "GITHUB PULL", `Pulled ${pullRes.pulledFiles.length} updated file(s) from ${state.githubRepo}`);
+            } else {
+              termPrint(pullRes.message || "Already up to date with remote repository.", "vsc-term-info");
+            }
+          } catch (e) {
+            termPrint(`Pull failed: ${e.message}`, "vsc-term-error");
+            showMessage("error", "GITHUB PULL FAILED", e.message);
+          }
+        } else if (sub === "sync") {
+          await syncWithGitHub();
         } else if (sub === "push") {
           const commitMsg = args.slice(1).join(" ") || "feat: update workspace files via VS Code Tools";
           termPrint(`Pushing ${state.modifiedFiles.size} changed file(s) to ${state.githubRepo}...`, "vsc-term-info");
@@ -4681,6 +4887,33 @@ Subcommands:
         }
       });
     }
+    if (el.btnGitPull) {
+      el.btnGitPull.addEventListener("click", async () => {
+        if (!state.githubToken) {
+          openGitHubModal("Please connect your GitHub Personal Access Token to pull changes.");
+          return;
+        }
+        if (!state.githubRepo) {
+          openGitHubModal("Please select a target GitHub repository to pull changes.");
+          return;
+        }
+        termPrint(`Pulling changes from GitHub (${state.githubRepo}@${state.githubBranch || "main"})...`, "vsc-term-info");
+        try {
+          const res = await githubPull();
+          if (res.pulledFiles && res.pulledFiles.length > 0) {
+            termPrint(`Successfully pulled ${res.pulledFiles.length} file(s) from GitHub:`, "vsc-term-success");
+            res.pulledFiles.forEach(f => termPrint(`  ↓ ${f}`, "vsc-term-dim"));
+            showMessage("success", "GITHUB PULL", `Pulled ${res.pulledFiles.length} file(s) from ${state.githubRepo}`);
+          } else {
+            termPrint(res.message || "Already up to date with remote repository.", "vsc-term-info");
+            showMessage("info", "GITHUB PULL", "Already up to date with remote repository.");
+          }
+        } catch (e) {
+          termPrint(`Pull failed: ${e.message}`, "vsc-term-error");
+          showMessage("error", "GITHUB PULL FAILED", e.message);
+        }
+      });
+    }
 
     // Run & Debug view
     if (el.btnDebugRun) {
@@ -4718,7 +4951,7 @@ Subcommands:
     if (el.statusGit) el.statusGit.addEventListener("click", openGitHubModal);
     if (el.statusSync) {
       el.statusSync.addEventListener("click", () => {
-        if (el.btnGitPush) el.btnGitPush.click();
+        syncWithGitHub();
       });
     }
     if (el.statusDiagnostics) el.statusDiagnostics.addEventListener("click", () => switchTerminalTab("problems"));
@@ -5853,7 +6086,35 @@ Subcommands:
       });
     });
 
-    // Editor toolbar Push to GitHub button
+    // Editor toolbar Pull & Push buttons
+    if (el.btnPullEditor) {
+      el.btnPullEditor.addEventListener("click", async () => {
+        if (!state.githubToken) {
+          openGitHubModal("Please connect your GitHub Personal Access Token to pull changes.");
+          return;
+        }
+        if (!state.githubRepo) {
+          openGitHubModal("Please select a target GitHub repository to pull changes.");
+          return;
+        }
+        termPrint(`Pulling changes from GitHub (${state.githubRepo}@${state.githubBranch || "main"})...`, "vsc-term-info");
+        try {
+          const res = await githubPull();
+          if (res.pulledFiles && res.pulledFiles.length > 0) {
+            termPrint(`Successfully pulled ${res.pulledFiles.length} file(s) from GitHub:`, "vsc-term-success");
+            res.pulledFiles.forEach(f => termPrint(`  ↓ ${f}`, "vsc-term-dim"));
+            showMessage("success", "GITHUB PULL", `Successfully pulled ${res.pulledFiles.length} file(s) from ${state.githubRepo}`);
+          } else {
+            termPrint(res.message || "Already up to date with remote repository.", "vsc-term-info");
+            showMessage("info", "GITHUB PULL", "Already up to date with remote repository.");
+          }
+        } catch (err) {
+          termPrint(`Pull failed: ${err.message}`, "vsc-term-error");
+          showMessage("error", "GITHUB PULL FAILED", err.message);
+        }
+      });
+    }
+
     if (el.btnPushEditor) {
       el.btnPushEditor.addEventListener("click", async () => {
         if (!state.githubToken) {
