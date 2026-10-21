@@ -7485,9 +7485,32 @@ Subcommands:
 
     if (el.previewBtnExternal && el.previewFrame) {
       el.previewBtnExternal.addEventListener("click", () => {
-        const targetUrl = el.previewFrame.dataset.blobUrl || el.previewFrame.src;
-        if (targetUrl) {
-          window.open(targetUrl, "_blank");
+        // Open a same-origin about:blank tab and write the rendered preview into it.
+        // Navigating directly to the Blob URL can detach the popup from the workbench
+        // bridge used by preview runtime (virtual fetch/XHR and local-file resolution).
+        // Writing the current rendered document preserves window.opener and re-runs
+        // its scripts in the new tab instead of relying on a top-level Blob navigation.
+        let popup = null;
+        try {
+          popup = window.open("about:blank", "_blank");
+          if (!popup) {
+            termPrint("Pop-out blocked by the browser. Allow pop-ups for this site and try again.", "vsc-term-warn");
+            return;
+          }
+          const previewDoc = el.previewFrame.contentDocument;
+          if (!previewDoc || !previewDoc.documentElement) {
+            popup.close();
+            termPrint("Cannot pop out: the live preview has not finished loading yet.", "vsc-term-warn");
+            return;
+          }
+          const html = "<!DOCTYPE html>\\n" + previewDoc.documentElement.outerHTML;
+          popup.document.open();
+          popup.document.write(html);
+          popup.document.close();
+          popup.focus();
+        } catch (err) {
+          try { if (popup && !popup.closed) popup.close(); } catch (_) {}
+          termPrint("Pop-out failed: " + (err && err.message ? err.message : String(err)), "vsc-term-error");
         }
       });
     }
