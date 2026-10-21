@@ -7503,7 +7503,7 @@ Subcommands:
             termPrint("Cannot pop out: the live preview has not finished loading yet.", "vsc-term-warn");
             return;
           }
-          const html = "<!DOCTYPE html>\\n" + previewDoc.documentElement.outerHTML;
+          const html = "<!DOCTYPE html>\n" + previewDoc.documentElement.outerHTML;
           popup.document.open();
           popup.document.write(html);
           popup.document.close();
