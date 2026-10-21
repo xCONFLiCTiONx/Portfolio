@@ -1870,7 +1870,7 @@
       const modCount = state.modifiedFiles.size;
       let pushMsg = "";
       if (modCount > 0) {
-        const msg = (el.gitCommitMsg && el.gitCommitMsg.value.trim()) || "feat: synchronize workspace files via VS Code Tools";
+        const msg = (el.gitCommitMsg && el.gitCommitMsg.value.trim()) || "feat: synchronize workspace files via Code Tools";
         termPrint(`Pushing ${modCount} local change(s)...`, "vsc-term-info");
         const pushRes = await githubPush(msg);
         if (pushRes.pushedFiles && pushRes.pushedFiles.length > 0) {
@@ -3135,7 +3135,7 @@
 <span class="vsc-term-info">=== GITHUB PERSONAL ACCESS TOKEN (PAT) SETUP ===</span>
 1. Go to <b style="color:var(--vsc-turquoise)">https://github.com/settings/tokens</b>
 2. Generate new token (classic or fine-grained with <b style="color:#98c379">repo</b> scope).
-3. Connect inside VS Code Tools via:
+3. Connect inside Code Tools via:
    - Click <b style="color:var(--vsc-turquoise)">Accounts</b> (bottom of Activity Bar) OR
    - Terminal: <b style="color:var(--vsc-turquoise)">github auth &lt;token&gt;</b>
 4. Clone any repository:
@@ -3146,7 +3146,7 @@ Token is securely synced across Chrome PC and mobile via persistent cookie and s
     });
     bindItem("vsc-item-about-tool", () => {
       termPrintHTML(`
-<span class="vsc-term-info">Visual Studio Code Tools for Web — Version 4.2.0</span>
+<span class="vsc-term-info">Code Tools for Web — Version 4.2.0</span>
 Pitch Black (#121212), Crisp White (#FFFFFF), Turquoise Accent (#3791B7).
 Integrated Web Developer Workbench:
 - Real GitHub API sync (Pull trees, edit in browser, push commits)
@@ -7556,7 +7556,7 @@ Subcommands:
 
     // Print welcome banner in terminal
     termPrintHTML(`
-<span class="vsc-term-info">Visual Studio Code Tools [Version 4.2.0-web]</span>
+<span class="vsc-term-info">Code Tools [Version 4.2.0-web]</span>
 <span class="vsc-term-dim">(c) DevStudio Web. Pitch Black &amp; Turquoise Workspace.</span>
 Type <b style="color:var(--vsc-turquoise)">help</b> to see all daily diagnostic, network, crypto, and code tools.
 Local Disk: Click <b style="color:var(--vsc-turquoise)">📂 Open Project</b> or press <b style="color:var(--vsc-turquoise)">Ctrl+O</b> to edit files directly on your drive.
