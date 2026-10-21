@@ -162,6 +162,8 @@ body[data-tool-id="code-tools"].vsc-fullscreen #vscode-workbench {
 
 .vsc-logo {
   color: var(--vsc-turquoise);
+  text-decoration: none;
+  cursor: pointer;
   display: flex;
   align-items: center;
   gap: 6px;
