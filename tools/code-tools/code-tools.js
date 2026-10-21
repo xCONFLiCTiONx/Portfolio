@@ -3955,6 +3955,18 @@ Integrated Web Developer Workbench:
     state.currentServingFile = resolvedTarget;
     state.currentServingPort = port;
 
+    // Revoke blobs from the PREVIOUS preview before building the next one.
+    // buildVirtualWebsite() creates fresh Blob URLs for local scripts and assets and
+    // records them in state.activePreviewBlobs. Cleaning up after the build revoked
+    // those newly-created URLs before the preview could load, causing
+    // net::ERR_FILE_NOT_FOUND for blob: scripts/fonts/assets.
+    if (state.activePreviewBlobs && state.activePreviewBlobs.length > 0) {
+      for (const u of state.activePreviewBlobs) {
+        try { URL.revokeObjectURL(u); } catch (e) {}
+      }
+    }
+    state.activePreviewBlobs = [];
+
     let content = state.files[resolvedTarget];
     const isMarkdown = resolvedTarget.toLowerCase().endsWith(".md") || resolvedTarget.toLowerCase().endsWith(".markdown");
 
@@ -3962,16 +3974,6 @@ Integrated Web Developer Workbench:
       content = buildMarkdownDocument(content, resolvedTarget);
     } else {
       content = await buildVirtualWebsite(resolvedTarget);
-    }
-
-    // Revoke previous preview blobs if any
-    if (state.activePreviewBlobs && state.activePreviewBlobs.length > 0) {
-      for (const u of state.activePreviewBlobs) {
-        try { URL.revokeObjectURL(u); } catch (e) {}
-      }
-      state.activePreviewBlobs = [];
-    } else {
-      state.activePreviewBlobs = [];
     }
 
     // Revoke previous blob if any
