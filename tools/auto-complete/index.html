@@ -544,7 +544,7 @@
                 <h4><i class="im im-keyboard" style="color: #58a6ff;"></i> Autofill Matrix Stats</h4>
                 <div class="stat-item">
                     <span class="stat-label">Total Test Fields</span>
-                    <span class="stat-value" id="statTotalFields">36</span>
+                    <span class="stat-value" id="statTotalFields">38</span>
                 </div>
                 <div class="stat-item">
                     <span class="stat-label">Filled by Autofill</span>
@@ -1125,11 +1125,19 @@
                             </div>
                             <div class="field-group" style="margin-bottom: 1.2rem;">
                                 <label class="field-label" for="billing_address">
-                                    <span>Billing Address</span>
+                                    <span>Billing Address (Line 1)</span>
                                     <span class="category-tag">billing_address</span>
                                 </label>
                                 <input type="text" class="test-input" id="billing_address" name="billing_address"
-                                    data-field-group="billing" placeholder="100 Financial Way" autocomplete="billing street-address" />
+                                    data-field-group="billing" placeholder="100 Financial Way" autocomplete="billing address-line1" />
+                            </div>
+                            <div class="field-group" style="margin-bottom: 1.2rem;">
+                                <label class="field-label" for="billing_address_2">
+                                    <span>Billing Address Line 2</span>
+                                    <span class="category-tag">billing_address_2</span>
+                                </label>
+                                <input type="text" class="test-input" id="billing_address_2" name="billing_address_2"
+                                    data-field-group="billing" placeholder="Suite 500" autocomplete="billing address-line2" />
                             </div>
                             <div class="field-group" style="margin-bottom: 1.2rem;">
                                 <label class="field-label" for="billing_city">
@@ -1162,11 +1170,19 @@
                             </div>
                             <div class="field-group" style="margin-bottom: 1.2rem;">
                                 <label class="field-label" for="shipping_address">
-                                    <span>Shipping Address</span>
+                                    <span>Shipping Address (Line 1)</span>
                                     <span class="category-tag">shipping_address</span>
                                 </label>
                                 <input type="text" class="test-input" id="shipping_address" name="shipping_address"
-                                    data-field-group="shipping" placeholder="742 Evergreen Terrace" autocomplete="shipping street-address" />
+                                    data-field-group="shipping" placeholder="742 Evergreen Terrace" autocomplete="shipping address-line1" />
+                            </div>
+                            <div class="field-group" style="margin-bottom: 1.2rem;">
+                                <label class="field-label" for="shipping_address_2">
+                                    <span>Shipping Address Line 2</span>
+                                    <span class="category-tag">shipping_address_2</span>
+                                </label>
+                                <input type="text" class="test-input" id="shipping_address_2" name="shipping_address_2"
+                                    data-field-group="shipping" placeholder="Apt 2B" autocomplete="shipping address-line2" />
                             </div>
                             <div class="field-group" style="margin-bottom: 1.2rem;">
                                 <label class="field-label" for="shipping_city">
@@ -1329,6 +1345,8 @@
             "website": "https://xconflictionx.cc",
             "address_line_1": "742 Evergreen Terrace",
             "address_line_2": "Suite 404",
+            "address-line1": "742 Evergreen Terrace",
+            "address-line2": "Suite 404",
             "city": "Springfield",
             "state": "CA",
             "zip": "97477",
@@ -1339,10 +1357,12 @@
             "income": "$145,000",
             "billing_name": "Michael C. Conflict",
             "billing_address": "742 Evergreen Terrace",
+            "billing_address_2": "Suite 500",
             "billing_city": "Springfield",
             "billing_zip": "97477",
             "shipping_name": "Sarah Connor",
             "shipping_address": "100 Cyberdyne Blvd",
+            "shipping_address_2": "Apt 2B",
             "shipping_city": "Los Angeles",
             "shipping_zip": "90001",
             "order_notes": "Handle with care. Leave package at front reception."
