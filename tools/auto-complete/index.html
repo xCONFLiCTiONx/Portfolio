@@ -1,0 +1,1471 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title class="user-name-title-js">Auto Complete Test Suite & Form Sandbox | xCONFLiCTiONx</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" id="meta-description-js"
+        content="Interactive form sandbox and test suite for Smart AutoComplete and browser autofill extensions. Test RoboForm patterns, name splits, address sets, and dual billing/shipping groups.">
+    <meta name="portfolio-tool-id" content="auto-complete">
+    <link rel="canonical" href="https://xconflictionx.cc/tools/auto-complete/" />
+    <meta name="theme-color" content="#0b0d10">
+    <link rel="manifest" href="../../site.webmanifest">
+    <link rel="stylesheet" href="../../css/main.css">
+    <link rel="icon" id="favicon-js" href="../../assets/favicon.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
+
+    <!-- Open Graph / Social Metadata -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Auto Complete Test Suite & Form Sandbox | xCONFLiCTiONx">
+    <meta property="og:description"
+        content="Interactive form sandbox and test suite for Smart AutoComplete and browser autofill extensions. Test RoboForm patterns, name splits, address sets, and dual billing/shipping groups.">
+    <meta property="og:url" content="https://xconflictionx.cc/tools/auto-complete/">
+    <meta property="og:site_name" content="xCONFLiCTiONx">
+    <meta property="og:image" content="https://xconflictionx.cc/assets/og-image.png">
+
+    <!-- X / Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Auto Complete Test Suite & Form Sandbox | xCONFLiCTiONx">
+    <meta name="twitter:description"
+        content="Interactive form sandbox and test suite for Smart AutoComplete and browser autofill extensions. Test RoboForm patterns, name splits, address sets, and dual billing/shipping groups.">
+    <meta name="twitter:image" content="https://xconflictionx.cc/assets/og-image.png">
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "@id": "https://xconflictionx.cc/tools/auto-complete/#webpage",
+      "url": "https://xconflictionx.cc/tools/auto-complete/",
+      "name": "Auto Complete Test Suite & Form Sandbox | xCONFLiCTiONx",
+      "inLanguage": "en",
+      "description": "Interactive form sandbox and test suite for Smart AutoComplete and browser autofill extensions. Test RoboForm patterns, name splits, address sets, and dual billing/shipping groups.",
+      "author": {
+        "@type": "Person",
+        "@id": "https://xconflictionx.cc/#person",
+        "name": "xCONFLiCTiONx"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "@id": "https://xconflictionx.cc/#organization",
+        "name": "xCONFLiCTiONx",
+        "url": "https://xconflictionx.cc/",
+        "sameAs": [
+          "https://github.com/xCONFLiCTiONx"
+        ]
+      }
+    }
+    </script>
+
+    <style>
+        /* Test Suite Custom Dark Styles */
+        .sandbox-banner {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 2.4rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .sandbox-banner h3 {
+            color: #f0f6fc;
+            font-size: 2.2rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+        }
+
+        .sandbox-banner p {
+            color: #8b949e;
+            font-size: 1.4rem;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+
+        .dashboard-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.6rem;
+            align-items: center;
+            justify-content: space-between;
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 1.4rem 1.8rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .metric-group {
+            display: flex;
+            align-items: center;
+            gap: 1.6rem;
+            flex-wrap: wrap;
+        }
+
+        .metric-pill {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 20px;
+            padding: 0.5rem 1.2rem;
+            font-size: 1.3rem;
+            color: #c9d1d9;
+        }
+
+        .metric-val {
+            font-weight: 700;
+            color: #58a6ff;
+        }
+
+        .action-btns-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.7rem 1.4rem;
+            font-size: 1.3rem;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            border: 1px solid transparent;
+        }
+
+        .btn-primary-action {
+            background: #238636;
+            color: #ffffff;
+            border-color: rgba(240, 246, 252, 0.1);
+        }
+
+        .btn-primary-action:hover {
+            background: #2ea043;
+            color: #fff;
+        }
+
+        .btn-secondary-action {
+            background: #21262d;
+            color: #c9d1d9;
+            border-color: #30363d;
+        }
+
+        .btn-secondary-action:hover {
+            background: #30363d;
+            color: #f0f6fc;
+        }
+
+        .btn-accent-action {
+            background: rgba(88, 166, 255, 0.15);
+            color: #58a6ff;
+            border-color: rgba(88, 166, 255, 0.4);
+        }
+
+        .btn-accent-action:hover {
+            background: rgba(88, 166, 255, 0.25);
+            color: #79c0ff;
+        }
+
+        /* Test Section Form Cards */
+        .form-section-card {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 2.2rem;
+            margin-bottom: 2.5rem;
+            position: relative;
+        }
+
+        .form-section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #21262d;
+            padding-bottom: 1.4rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .form-section-title {
+            color: #f0f6fc;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin: 0;
+        }
+
+        .section-badge {
+            background: rgba(88, 166, 255, 0.1);
+            color: #58a6ff;
+            border: 1px solid rgba(88, 166, 255, 0.3);
+            border-radius: 12px;
+            padding: 0.3rem 0.9rem;
+            font-size: 1.15rem;
+            font-weight: 600;
+        }
+
+        .fields-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.8rem;
+        }
+
+        .field-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            position: relative;
+        }
+
+        .field-label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: #c9d1d9;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .category-tag {
+            font-size: 1.05rem;
+            font-weight: 500;
+            color: #7ee787;
+            background: rgba(63, 185, 80, 0.12);
+            border: 1px solid rgba(63, 185, 80, 0.3);
+            border-radius: 4px;
+            padding: 0.1rem 0.6rem;
+            letter-spacing: 0.2px;
+        }
+
+        .test-input,
+        .test-select,
+        .test-textarea {
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            color: #f0f6fc;
+            padding: 0.9rem 1.2rem;
+            font-size: 1.4rem;
+            width: 100%;
+            outline: none;
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+        }
+
+        .test-input:focus,
+        .test-select:focus,
+        .test-textarea:focus {
+            border-color: #58a6ff;
+            box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.2);
+            background: #111620;
+        }
+
+        .test-input.filled-field,
+        .test-select.filled-field {
+            border-color: #238636;
+            background: rgba(35, 134, 54, 0.08);
+        }
+
+        .field-hint {
+            font-size: 1.15rem;
+            color: #8b949e;
+        }
+
+        /* Dual Column Split for Billing / Shipping */
+        .dual-group-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2.4rem;
+        }
+
+        @media (max-width: 900px) {
+            .dual-group-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .group-sub-panel {
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 1.8rem;
+        }
+
+        .group-sub-panel h4 {
+            color: #f0f6fc;
+            font-size: 1.5rem;
+            margin-bottom: 1.4rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            border-bottom: 1px solid #21262d;
+            padding-bottom: 0.8rem;
+        }
+
+        /* Modal Dialog for Dynamic SPA Form Test */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(4px);
+            z-index: 99999;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-card {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            max-width: 650px;
+            width: 100%;
+            padding: 2.4rem;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+            animation: modalFadeIn 0.25s ease;
+        }
+
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #21262d;
+            padding-bottom: 1.2rem;
+            margin-bottom: 1.8rem;
+        }
+
+        .modal-title {
+            color: #f0f6fc;
+            font-size: 1.8rem;
+            margin: 0;
+        }
+
+        .btn-close-modal {
+            background: transparent;
+            border: none;
+            color: #8b949e;
+            font-size: 2rem;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .btn-close-modal:hover {
+            color: #f0f6fc;
+        }
+
+        /* Diagnostic Activity Log Console */
+        .activity-console {
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 1.6rem 2rem;
+            margin-top: 2rem;
+            font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+            font-size: 1.25rem;
+        }
+
+        .console-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: #58a6ff;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid #21262d;
+            padding-bottom: 0.6rem;
+        }
+
+        .console-log-list {
+            list-style: none;
+            max-height: 160px;
+            overflow-y: auto;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .console-entry {
+            color: #8b949e;
+            line-height: 1.4;
+        }
+
+        .console-entry .ts {
+            color: #6e7681;
+            margin-right: 0.8rem;
+        }
+
+        .console-entry .tag {
+            color: #79c0ff;
+            font-weight: 600;
+            margin-right: 0.6rem;
+        }
+
+        .console-entry .val {
+            color: #7ee787;
+        }
+
+        /* Sidebar Stats Card */
+        .tool-stats-card {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+
+        .tool-stats-card h4 {
+            color: #f0f6fc;
+            font-size: 1.6rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.8rem 0;
+            border-bottom: 1px solid #21262d;
+            font-size: 1.3rem;
+        }
+
+        .stat-item:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            color: #8b949e;
+        }
+
+        .stat-value {
+            color: #58a6ff;
+            font-weight: 600;
+        }
+
+        /* Progress Bar */
+        .progress-track {
+            width: 100%;
+            height: 8px;
+            background: #21262d;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 0.8rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #238636, #3fb950);
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+
+<body id="top" data-tool-id="auto-complete">
+
+    <header class="site-header">
+        <nav class="nav-content">
+            <div class="nav-brand">
+                <a href="../../index.html">
+                    <span id="header-avatar" class="nav-logo"></span>
+                    <span class="user-name-js">Loading...</span>
+                </a>
+            </div>
+            <button class="menu-toggle" id="menuToggle">
+                <i class="im im-menu"></i>
+            </button>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="../../index.html"><i class="im im-home"></i> Overview</a></li>
+                <li><a href="../../about/"><i class="im im-user-male"></i> About</a></li>
+                <li><a href="../index.html" class="active"><i class="im im-tools"></i> Tools</a></li>
+                <li><a href="../../privacy/"><i class="im im-shield"></i> Privacy</a></li>
+                <li><a href="../../contact/"><i class="im im-paperplane"></i> Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="container">
+
+        <!-- Sidebar Profile & Diagnostics -->
+        <aside class="sidebar profile-sidebar">
+            <div id="profile-avatar" class="profile-avatar"></div>
+            <h1 id="profile-name" class="profile-name user-name-js">Loading...</h1>
+            <span id="profile-handle" class="profile-handle">Software Developer</span>
+
+            <p id="profile-bio" class="profile-bio"></p>
+
+            <div class="tool-stats-card">
+                <h4><i class="im im-keyboard" style="color: #58a6ff;"></i> Autofill Matrix Stats</h4>
+                <div class="stat-item">
+                    <span class="stat-label">Total Test Fields</span>
+                    <span class="stat-value" id="statTotalFields">36</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Filled by Autofill</span>
+                    <span class="stat-value" id="statFilledFields">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Profile Categories</span>
+                    <span class="stat-value">22 Categories</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Dual Field Groups</span>
+                    <span class="stat-value">Billing & Shipping</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Honeypot Trap</span>
+                    <span class="stat-value" style="color: #3fb950;">Active & Isolated</span>
+                </div>
+
+                <div style="margin-top: 1.2rem;">
+                    <div style="display:flex; justify-content:space-between; font-size:1.2rem; color:#8b949e;">
+                        <span>Completion Rate</span>
+                        <span id="progressPercent">0%</span>
+                    </div>
+                    <div class="progress-track">
+                        <div class="progress-fill" id="progressBar"></div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 1.8rem; padding-top: 1.2rem; border-top: 1px solid #21262d;">
+                    <a href="https://github.com/xCONFLiCTiONx/Smart-AutoComplete" target="_blank"
+                        style="color: #58a6ff; font-size: 1.3rem; text-decoration: none; display: flex; align-items: center; gap: 0.6rem;">
+                        <i class="im im-github"></i> Smart AutoComplete Repo &rarr;
+                    </a>
+                </div>
+            </div>
+
+            <ul id="profile-metadata" class="profile-metadata" style="margin-top: 2rem;"></ul>
+        </aside>
+
+        <!-- Main Content Area -->
+        <section class="main-content">
+            <h2 class="section-title">Auto Complete Test Suite & Form Sandbox</h2>
+
+            <!-- Intro Banner -->
+            <div class="sandbox-banner">
+                <h3>
+                    <i class="im im-check-mark-circle" style="color: #3fb950;"></i>
+                    Browser Autofill & Inline Suggestion Verification Sandbox
+                </h3>
+                <p>
+                    This comprehensive test suite verifies how browser autofill extensions (such as <strong>Smart AutoComplete</strong>)
+                    categorize, auto-fill, and suggest values for various real-world form architectures. Test RoboForm test patterns
+                    (<code>01___title</code>, <code>02frstname</code>), HTML5 standard <code>autocomplete</code> tokens, dual billing/shipping groups,
+                    and verify that honeypots and search inputs never trigger unsolicited popups.
+                </p>
+
+                <!-- Interactive Controls Bar -->
+                <div class="dashboard-bar">
+                    <div class="metric-group">
+                        <div class="metric-pill">
+                            <span>Status:</span>
+                            <span class="metric-val" id="statusBadge">Ready for testing</span>
+                        </div>
+                        <div class="metric-pill">
+                            <span>Fields Filled:</span>
+                            <span class="metric-val" id="fillCounter">0 / 36</span>
+                        </div>
+                    </div>
+
+                    <div class="action-btns-group">
+                        <button type="button" class="btn-action btn-primary-action" id="btnFillDummy" title="Populate realistic dummy profile into fields to test form submission saving">
+                            <i class="im im-pencil"></i> Fill Sample Profile
+                        </button>
+                        <button type="button" class="btn-action btn-secondary-action" id="btnClearAll" title="Clear all input values on this page">
+                            <i class="im im-trash-can"></i> Clear All
+                        </button>
+                        <button type="button" class="btn-action btn-accent-action" id="btnToggleTags" title="Show or hide category inspection tags">
+                            <i class="im im-tag"></i> Toggle Tags
+                        </button>
+                        <button type="button" class="btn-action btn-secondary-action" id="btnOpenSpaModal" title="Open dynamic SPA modal to test asynchronously injected forms">
+                            <i class="im im-external-link"></i> Test SPA Modal
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Wrapper -->
+            <form id="autoCompleteTestForm" autocomplete="on" onsubmit="event.preventDefault(); handleFormSubmit();">
+
+                <!-- SECTION 1: Personal Identity & RoboForm Suite -->
+                <div class="form-section-card">
+                    <div class="form-section-header">
+                        <h3 class="form-section-title">
+                            <i class="im im-user-male" style="color: #58a6ff;"></i>
+                            1. Personal Identity & RoboForm Suite Patterns
+                        </h3>
+                        <span class="section-badge">Name & Demographics</span>
+                    </div>
+
+                    <div class="fields-grid">
+                        <!-- Title / Prefix -->
+                        <div class="field-group">
+                            <label class="field-label" for="01___title">
+                                <span>Title / Salutation</span>
+                                <span class="category-tag">title</span>
+                            </label>
+                            <input type="text" class="test-input" id="01___title" name="01___title"
+                                placeholder="e.g. Mr., Dr., Ms." autocomplete="honorific-prefix" />
+                            <span class="field-hint">Tests RoboForm <code>01___title</code> & inline click suggestion</span>
+                        </div>
+
+                        <!-- Title Dropdown alternative -->
+                        <div class="field-group">
+                            <label class="field-label" for="title_select">
+                                <span>Title (Dropdown Select)</span>
+                                <span class="category-tag">title</span>
+                            </label>
+                            <select class="test-select" id="title_select" name="title">
+                                <option value="">-- Choose Title --</option>
+                                <option value="Mr.">Mr.</option>
+                                <option value="Ms.">Ms.</option>
+                                <option value="Mrs.">Mrs.</option>
+                                <option value="Dr.">Dr.</option>
+                                <option value="Prof.">Prof.</option>
+                                <option value="Rev.">Rev.</option>
+                            </select>
+                            <span class="field-hint">Tests select element matching</span>
+                        </div>
+
+                        <!-- First Name -->
+                        <div class="field-group">
+                            <label class="field-label" for="02frstname">
+                                <span>First Name</span>
+                                <span class="category-tag">first_name</span>
+                            </label>
+                            <input type="text" class="test-input" id="02frstname" name="02frstname"
+                                placeholder="e.g. John" autocomplete="given-name" />
+                            <span class="field-hint">Tests RoboForm <code>02frstname</code></span>
+                        </div>
+
+                        <!-- Middle Initial -->
+                        <div class="field-group">
+                            <label class="field-label" for="03middle_i">
+                                <span>Middle Initial</span>
+                                <span class="category-tag">middle_initial</span>
+                            </label>
+                            <input type="text" class="test-input" id="03middle_i" name="03middle_i"
+                                maxlength="2" placeholder="e.g. M" autocomplete="additional-name-initial" />
+                            <span class="field-hint">Tests RoboForm <code>03middle_i</code></span>
+                        </div>
+
+                        <!-- Last Name -->
+                        <div class="field-group">
+                            <label class="field-label" for="04last_name">
+                                <span>Last Name</span>
+                                <span class="category-tag">last_name</span>
+                            </label>
+                            <input type="text" class="test-input" id="04last_name" name="04last_name"
+                                placeholder="e.g. Smith" autocomplete="family-name" />
+                            <span class="field-hint">Tests RoboForm <code>04last_name</code></span>
+                        </div>
+
+                        <!-- Full Name -->
+                        <div class="field-group">
+                            <label class="field-label" for="full_name">
+                                <span>Full Name</span>
+                                <span class="category-tag">full_name</span>
+                            </label>
+                            <input type="text" class="test-input" id="full_name" name="full_name"
+                                placeholder="e.g. John M. Smith" autocomplete="name" />
+                            <span class="field-hint">Tests composite full name matching</span>
+                        </div>
+
+                        <!-- Sex / Gender -->
+                        <div class="field-group">
+                            <label class="field-label" for="sex_select">
+                                <span>Sex / Gender</span>
+                                <span class="category-tag">sex</span>
+                            </label>
+                            <select class="test-select" id="sex_select" name="sex_select">
+                                <option value="">-- Choose Gender --</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                                <option value="Decline">Decline</option>
+                            </select>
+                            <span class="field-hint">Tests gender detection & selection</span>
+                        </div>
+
+                        <!-- Date of Birth (HTML5) -->
+                        <div class="field-group">
+                            <label class="field-label" for="dob_input">
+                                <span>Date of Birth</span>
+                                <span class="category-tag">dob</span>
+                            </label>
+                            <input type="date" class="test-input" id="dob_input" name="dob" autocomplete="bday" />
+                            <span class="field-hint">HTML5 <code>type="date"</code> format</span>
+                        </div>
+
+                        <!-- Standalone DOB Month -->
+                        <div class="field-group">
+                            <label class="field-label" for="dob_month">
+                                <span>Birth Month</span>
+                                <span class="category-tag">dob_month</span>
+                            </label>
+                            <select class="test-select" id="dob_month" name="dob_month" autocomplete="bday-month">
+                                <option value="">-- Month --</option>
+                                <option value="01">01 - January</option>
+                                <option value="02">02 - February</option>
+                                <option value="03">03 - March</option>
+                                <option value="04">04 - April</option>
+                                <option value="05">05 - May</option>
+                                <option value="06">06 - June</option>
+                                <option value="07">07 - July</option>
+                                <option value="08">08 - August</option>
+                                <option value="09">09 - September</option>
+                                <option value="10">10 - October</option>
+                                <option value="11">11 - November</option>
+                                <option value="12">12 - December</option>
+                            </select>
+                            <span class="field-hint">Split DOB month dropdown</span>
+                        </div>
+
+                        <!-- Standalone DOB Day -->
+                        <div class="field-group">
+                            <label class="field-label" for="dob_day">
+                                <span>Birth Day</span>
+                                <span class="category-tag">dob_day</span>
+                            </label>
+                            <input type="number" class="test-input" id="dob_day" name="dob_day"
+                                min="1" max="31" placeholder="DD" autocomplete="bday-day" />
+                            <span class="field-hint">Split DOB day field</span>
+                        </div>
+
+                        <!-- Standalone DOB Year -->
+                        <div class="field-group">
+                            <label class="field-label" for="dob_year">
+                                <span>Birth Year</span>
+                                <span class="category-tag">dob_year</span>
+                            </label>
+                            <input type="number" class="test-input" id="dob_year" name="dob_year"
+                                min="1900" max="2099" placeholder="YYYY" autocomplete="bday-year" />
+                            <span class="field-hint">Split DOB year field</span>
+                        </div>
+
+                        <!-- Computed Age -->
+                        <div class="field-group">
+                            <label class="field-label" for="age_field">
+                                <span>Current Age</span>
+                                <span class="category-tag">age</span>
+                            </label>
+                            <input type="text" class="test-input" id="age_field" name="age"
+                                placeholder="Age (e.g. 35)" />
+                            <span class="field-hint">Tests dynamic age calculation from DOB</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION 2: Contact & Authentication -->
+                <div class="form-section-card">
+                    <div class="form-section-header">
+                        <h3 class="form-section-title">
+                            <i class="im im-phone" style="color: #79c0ff;"></i>
+                            2. Contact & Online Identity
+                        </h3>
+                        <span class="section-badge">Phone, Email & Web</span>
+                    </div>
+
+                    <div class="fields-grid">
+                        <!-- Username / Handle -->
+                        <div class="field-group">
+                            <label class="field-label" for="user_id">
+                                <span>User ID / Handle</span>
+                                <span class="category-tag">user_id</span>
+                            </label>
+                            <input type="text" class="test-input" id="user_id" name="username"
+                                placeholder="e.g. xCONFLiCTiONx" autocomplete="username" />
+                            <span class="field-hint">Profile handle or login name</span>
+                        </div>
+
+                        <!-- Email Address -->
+                        <div class="field-group">
+                            <label class="field-label" for="email">
+                                <span>Email Address</span>
+                                <span class="category-tag">email</span>
+                            </label>
+                            <input type="email" class="test-input" id="email" name="email"
+                                placeholder="e.g. user@example.com" autocomplete="email" />
+                            <span class="field-hint">Must validate as authentic email</span>
+                        </div>
+
+                        <!-- Mobile / Cell Phone -->
+                        <div class="field-group">
+                            <label class="field-label" for="cell_phone">
+                                <span>Cell / Mobile Phone</span>
+                                <span class="category-tag">cell_phone</span>
+                            </label>
+                            <input type="tel" class="test-input" id="cell_phone" name="cell_phone"
+                                placeholder="(555) 123-4567" autocomplete="tel-national" />
+                            <span class="field-hint">Primary mobile device number</span>
+                        </div>
+
+                        <!-- Home Phone -->
+                        <div class="field-group">
+                            <label class="field-label" for="home_phone">
+                                <span>Home Landline Phone</span>
+                                <span class="category-tag">home_phone</span>
+                            </label>
+                            <input type="tel" class="test-input" id="home_phone" name="home_phone"
+                                placeholder="(555) 234-5678" />
+                            <span class="field-hint">Residential telephone</span>
+                        </div>
+
+                        <!-- Work Phone -->
+                        <div class="field-group">
+                            <label class="field-label" for="work_phone">
+                                <span>Work Office Phone</span>
+                                <span class="category-tag">work_phone</span>
+                            </label>
+                            <input type="tel" class="test-input" id="work_phone" name="work_phone"
+                                placeholder="(555) 345-6789" />
+                            <span class="field-hint">Workplace direct phone</span>
+                        </div>
+
+                        <!-- Fax -->
+                        <div class="field-group">
+                            <label class="field-label" for="fax">
+                                <span>Fax Number</span>
+                                <span class="category-tag">fax</span>
+                            </label>
+                            <input type="tel" class="test-input" id="fax" name="fax"
+                                placeholder="(555) 456-7890" />
+                            <span class="field-hint">Facsimile transmission number</span>
+                        </div>
+
+                        <!-- Website URL -->
+                        <div class="field-group">
+                            <label class="field-label" for="website">
+                                <span>Website / URL</span>
+                                <span class="category-tag">website</span>
+                            </label>
+                            <input type="url" class="test-input" id="website" name="website"
+                                placeholder="https://xconflictionx.cc" autocomplete="url" />
+                            <span class="field-hint">Personal or business webpage</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION 3: Residential Address -->
+                <div class="form-section-card">
+                    <div class="form-section-header">
+                        <h3 class="form-section-title">
+                            <i class="im im-map-marker" style="color: #f78166;"></i>
+                            3. Residential & Mailing Address
+                        </h3>
+                        <span class="section-badge">Geography & Postal</span>
+                    </div>
+
+                    <div class="fields-grid">
+                        <!-- Address Line 1 -->
+                        <div class="field-group" style="grid-column: span 2;">
+                            <label class="field-label" for="address_line_1">
+                                <span>Street Address (Line 1)</span>
+                                <span class="category-tag">address_line_1</span>
+                            </label>
+                            <input type="text" class="test-input" id="address_line_1" name="address_line_1"
+                                placeholder="123 Main Street" autocomplete="address-line1" />
+                            <span class="field-hint">Street address or P.O. Box</span>
+                        </div>
+
+                        <!-- Address Line 2 -->
+                        <div class="field-group">
+                            <label class="field-label" for="address_line_2">
+                                <span>Suite / Apt / Unit (Line 2)</span>
+                                <span class="category-tag">address_line_2</span>
+                            </label>
+                            <input type="text" class="test-input" id="address_line_2" name="address_line_2"
+                                placeholder="Apt 4B" autocomplete="address-line2" />
+                            <span class="field-hint">Apartment, suite, or building</span>
+                        </div>
+
+                        <!-- City -->
+                        <div class="field-group">
+                            <label class="field-label" for="city">
+                                <span>City</span>
+                                <span class="category-tag">city</span>
+                            </label>
+                            <input type="text" class="test-input" id="city" name="city"
+                                placeholder="San Francisco" autocomplete="address-level2" />
+                            <span class="field-hint">Municipality / City</span>
+                        </div>
+
+                        <!-- State (Dropdown) -->
+                        <div class="field-group">
+                            <label class="field-label" for="state_select">
+                                <span>State (Dropdown Select)</span>
+                                <span class="category-tag">state</span>
+                            </label>
+                            <select class="test-select" id="state_select" name="state" autocomplete="address-level1">
+                                <option value="">-- Choose State --</option>
+                                <option value="AL">Alabama (AL)</option>
+                                <option value="AK">Alaska (AK)</option>
+                                <option value="AZ">Arizona (AZ)</option>
+                                <option value="CA">California (CA)</option>
+                                <option value="CO">Colorado (CO)</option>
+                                <option value="FL">Florida (FL)</option>
+                                <option value="NY">New York (NY)</option>
+                                <option value="TX">Texas (TX)</option>
+                                <option value="WA">Washington (WA)</option>
+                            </select>
+                            <span class="field-hint">Standard US State 2-letter or name</span>
+                        </div>
+
+                        <!-- Zip Code -->
+                        <div class="field-group">
+                            <label class="field-label" for="zip">
+                                <span>ZIP / Postal Code</span>
+                                <span class="category-tag">zip</span>
+                            </label>
+                            <input type="text" class="test-input" id="zip" name="zip"
+                                placeholder="94103" autocomplete="postal-code" />
+                            <span class="field-hint">5-digit postal code</span>
+                        </div>
+
+                        <!-- Zip+4 -->
+                        <div class="field-group">
+                            <label class="field-label" for="zip4">
+                                <span>ZIP+4 Extension</span>
+                                <span class="category-tag">zip4</span>
+                            </label>
+                            <input type="text" class="test-input" id="zip4" name="zip4"
+                                placeholder="1234" />
+                            <span class="field-hint">4-digit extension code</span>
+                        </div>
+
+                        <!-- Country -->
+                        <div class="field-group">
+                            <label class="field-label" for="country_select">
+                                <span>Country</span>
+                                <span class="category-tag">country</span>
+                            </label>
+                            <select class="test-select" id="country_select" name="country" autocomplete="country-name">
+                                <option value="">-- Select Country --</option>
+                                <option value="United States">United States</option>
+                                <option value="Canada">Canada</option>
+                                <option value="United Kingdom">United Kingdom</option>
+                                <option value="Australia">Australia</option>
+                                <option value="Germany">Germany</option>
+                            </select>
+                            <span class="field-hint">Nation / Country</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION 4: Professional & Employment -->
+                <div class="form-section-card">
+                    <div class="form-section-header">
+                        <h3 class="form-section-title">
+                            <i class="im im-briefcase" style="color: #d2a8ff;"></i>
+                            4. Employment & Professional Data
+                        </h3>
+                        <span class="section-badge">Work & Role</span>
+                    </div>
+
+                    <div class="fields-grid">
+                        <!-- Company -->
+                        <div class="field-group">
+                            <label class="field-label" for="company">
+                                <span>Company / Organization</span>
+                                <span class="category-tag">company</span>
+                            </label>
+                            <input type="text" class="test-input" id="company" name="company"
+                                placeholder="Cyber Defense Systems" autocomplete="organization" />
+                            <span class="field-hint">Employer or entity name</span>
+                        </div>
+
+                        <!-- Position / Title -->
+                        <div class="field-group">
+                            <label class="field-label" for="position">
+                                <span>Job Title / Position</span>
+                                <span class="category-tag">position</span>
+                            </label>
+                            <input type="text" class="test-input" id="position" name="position"
+                                placeholder="Senior Security Engineer" autocomplete="organization-title" />
+                            <span class="field-hint">Professional role title</span>
+                        </div>
+
+                        <!-- Annual Income -->
+                        <div class="field-group">
+                            <label class="field-label" for="income">
+                                <span>Annual Income</span>
+                                <span class="category-tag">income</span>
+                            </label>
+                            <input type="text" class="test-input" id="income" name="income"
+                                placeholder="$125,000" />
+                            <span class="field-hint">Gross compensation</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION 5: Dual Field Groups (Billing vs. Shipping Isolation) -->
+                <div class="form-section-card">
+                    <div class="form-section-header">
+                        <h3 class="form-section-title">
+                            <i class="im im-credit-card" style="color: #ffa657;"></i>
+                            5. Dual Field Groups: Billing vs. Shipping Isolation
+                        </h3>
+                        <span class="section-badge">Checkout Scope Isolation</span>
+                    </div>
+
+                    <p style="color: #8b949e; font-size: 1.35rem; margin-bottom: 1.6rem;">
+                        Forms with both <strong>Billing</strong> and <strong>Shipping</strong> sections should match within their own scope
+                        rather than randomly mixing up destinations.
+                    </p>
+
+                    <div class="dual-group-grid">
+                        <!-- Billing Panel -->
+                        <div class="group-sub-panel" data-field-group="billing">
+                            <h4><i class="im im-coin" style="color: #79c0ff;"></i> Billing Information</h4>
+                            <div class="field-group" style="margin-bottom: 1.2rem;">
+                                <label class="field-label" for="billing_name">
+                                    <span>Billing Full Name</span>
+                                    <span class="category-tag">billing_name</span>
+                                </label>
+                                <input type="text" class="test-input" id="billing_name" name="billing_name"
+                                    data-field-group="billing" placeholder="John M. Smith" autocomplete="billing name" />
+                            </div>
+                            <div class="field-group" style="margin-bottom: 1.2rem;">
+                                <label class="field-label" for="billing_address">
+                                    <span>Billing Address</span>
+                                    <span class="category-tag">billing_address</span>
+                                </label>
+                                <input type="text" class="test-input" id="billing_address" name="billing_address"
+                                    data-field-group="billing" placeholder="100 Financial Way" autocomplete="billing street-address" />
+                            </div>
+                            <div class="field-group" style="margin-bottom: 1.2rem;">
+                                <label class="field-label" for="billing_city">
+                                    <span>Billing City</span>
+                                    <span class="category-tag">city</span>
+                                </label>
+                                <input type="text" class="test-input" id="billing_city" name="billing_city"
+                                    data-field-group="billing" placeholder="New York" autocomplete="billing address-level2" />
+                            </div>
+                            <div class="field-group">
+                                <label class="field-label" for="billing_zip">
+                                    <span>Billing ZIP</span>
+                                    <span class="category-tag">zip</span>
+                                </label>
+                                <input type="text" class="test-input" id="billing_zip" name="billing_zip"
+                                    data-field-group="billing" placeholder="10001" autocomplete="billing postal-code" />
+                            </div>
+                        </div>
+
+                        <!-- Shipping Panel -->
+                        <div class="group-sub-panel" data-field-group="shipping">
+                            <h4><i class="im im-paperplane" style="color: #3fb950;"></i> Shipping Information</h4>
+                            <div class="field-group" style="margin-bottom: 1.2rem;">
+                                <label class="field-label" for="shipping_name">
+                                    <span>Shipping Full Name</span>
+                                    <span class="category-tag">shipping_name</span>
+                                </label>
+                                <input type="text" class="test-input" id="shipping_name" name="shipping_name"
+                                    data-field-group="shipping" placeholder="Jane Doe" autocomplete="shipping name" />
+                            </div>
+                            <div class="field-group" style="margin-bottom: 1.2rem;">
+                                <label class="field-label" for="shipping_address">
+                                    <span>Shipping Address</span>
+                                    <span class="category-tag">shipping_address</span>
+                                </label>
+                                <input type="text" class="test-input" id="shipping_address" name="shipping_address"
+                                    data-field-group="shipping" placeholder="742 Evergreen Terrace" autocomplete="shipping street-address" />
+                            </div>
+                            <div class="field-group" style="margin-bottom: 1.2rem;">
+                                <label class="field-label" for="shipping_city">
+                                    <span>Shipping City</span>
+                                    <span class="category-tag">city</span>
+                                </label>
+                                <input type="text" class="test-input" id="shipping_city" name="shipping_city"
+                                    data-field-group="shipping" placeholder="Springfield" autocomplete="shipping address-level2" />
+                            </div>
+                            <div class="field-group">
+                                <label class="field-label" for="shipping_zip">
+                                    <span>Shipping ZIP</span>
+                                    <span class="category-tag">zip</span>
+                                </label>
+                                <input type="text" class="test-input" id="shipping_zip" name="shipping_zip"
+                                    data-field-group="shipping" placeholder="97477" autocomplete="shipping postal-code" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION 6: Edge Cases, Search & Honeypot Protections -->
+                <div class="form-section-card">
+                    <div class="form-section-header">
+                        <h3 class="form-section-title">
+                            <i class="im im-shield" style="color: #ff7b72;"></i>
+                            6. Edge Cases, Honeypots & Search Verification
+                        </h3>
+                        <span class="section-badge">Security & Isolation</span>
+                    </div>
+
+                    <div class="fields-grid">
+                        <!-- Generic Search Input -->
+                        <div class="field-group">
+                            <label class="field-label" for="site_search_box">
+                                <span>Search Query Box</span>
+                                <span class="category-tag" style="color:#ff7b72; background:rgba(255,123,114,0.12); border-color:rgba(255,123,114,0.3);">site_custom (2 chars min)</span>
+                            </label>
+                            <input type="search" class="test-input" id="site_search_box" name="q"
+                                placeholder="Search repository docs..." />
+                            <span class="field-hint">Clicking empty must NOT pop up unsolicited profile dropdowns!</span>
+                        </div>
+
+                        <!-- Notes / Textarea -->
+                        <div class="field-group" style="grid-column: span 2;">
+                            <label class="field-label" for="notes_area">
+                                <span>Special Instructions / Notes</span>
+                                <span class="category-tag">textarea / notes</span>
+                            </label>
+                            <textarea class="test-textarea" id="notes_area" name="order_notes" rows="2"
+                                placeholder="Please deliver after 5 PM..."></textarea>
+                            <span class="field-hint">Tests multiline textarea recognition</span>
+                        </div>
+                    </div>
+
+                    <!-- HONEYPOT TRAP (Hidden from humans, visible to dumb bots/crawlers) -->
+                    <div style="position: absolute; left: -9999px; top: -9999px; height: 0; width: 0; overflow: hidden;" aria-hidden="true">
+                        <label for="honeypot_email_trap">Bot Honeypot Token Field (Do Not Fill)</label>
+                        <input type="text" id="honeypot_email_trap" name="Mh2gJvoXzNONVCAdeVHFeQERLzLDmkSAKkp6Noqj"
+                            tabindex="-1" value="csrf_token_Mh2gJvoXzNONVCAdeVHFeQERLzLDmkSAKkp6Noqj" />
+                    </div>
+                </div>
+
+                <!-- Submission Test Bar -->
+                <div style="display: flex; gap: 1.4rem; align-items: center; justify-content: flex-end; margin-bottom: 3rem;">
+                    <button type="submit" class="btn-action btn-primary-action" style="padding: 1rem 2.4rem; font-size: 1.5rem;">
+                        <i class="im im-check-mark"></i> Submit Test Form
+                    </button>
+                </div>
+            </form>
+
+            <!-- Dynamic SPA Modal -->
+            <div class="modal-overlay" id="spaModal">
+                <div class="modal-card">
+                    <div class="modal-header">
+                        <h3 class="modal-title"><i class="im im-sync" style="color: #58a6ff;"></i> Dynamic SPA Modal Form</h3>
+                        <button type="button" class="btn-close-modal" id="btnCloseSpaModal">&times;</button>
+                    </div>
+                    <p style="color: #8b949e; font-size: 1.35rem; margin-bottom: 1.6rem;">
+                        This form was injected asynchronously into the page DOM. Extensions with dynamic DOM observers (MutationObserver)
+                        should automatically attach autocomplete listeners to these new inputs immediately!
+                    </p>
+                    <div class="fields-grid" style="grid-template-columns: 1fr 1fr;">
+                        <div class="field-group">
+                            <label class="field-label" for="modal_title">
+                                <span>Title</span>
+                                <span class="category-tag">title</span>
+                            </label>
+                            <input type="text" class="test-input" id="modal_title" name="title" placeholder="Mr., Ms., Dr." />
+                        </div>
+                        <div class="field-group">
+                            <label class="field-label" for="modal_fname">
+                                <span>First Name</span>
+                                <span class="category-tag">first_name</span>
+                            </label>
+                            <input type="text" class="test-input" id="modal_fname" name="first_name" placeholder="First Name" />
+                        </div>
+                        <div class="field-group" style="grid-column: span 2;">
+                            <label class="field-label" for="modal_email">
+                                <span>Email Address</span>
+                                <span class="category-tag">email</span>
+                            </label>
+                            <input type="email" class="test-input" id="modal_email" name="email" placeholder="email@domain.com" />
+                        </div>
+                    </div>
+                    <div style="margin-top: 2rem; display: flex; justify-content: flex-end; gap: 1rem;">
+                        <button type="button" class="btn-action btn-secondary-action" id="btnCloseModalBtn">Close Modal</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Live Diagnostic Activity Console -->
+            <div class="activity-console">
+                <div class="console-header">
+                    <span><i class="im im-terminal"></i> Live Field Diagnostics & Autofill Event Stream</span>
+                    <button type="button" class="btn-action btn-secondary-action" id="btnClearConsole" style="padding: 0.2rem 0.8rem; font-size: 1.1rem;">Clear</button>
+                </div>
+                <ul class="console-log-list" id="consoleLogList">
+                    <li class="console-entry">
+                        <span class="ts">[System]</span>
+                        <span class="tag">Ready:</span>
+                        <span>Auto Complete Sandbox initialized. Click any field or trigger extension autofill.</span>
+                    </li>
+                </ul>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Framework & Scripts -->
+    <script src="../../js/framework.js"></script>
+    <script src="../../js/jquery-3.2.1.min.js"></script>
+    <script src="../../js/github-fetch.js?v=25"></script>
+
+    <script>
+        // Sample test profile dictionary matching Smart AutoComplete schemas
+        const SAMPLE_PROFILE = {
+            "01___title": "Mr.",
+            "title": "Mr.",
+            "02frstname": "Michael",
+            "first_name": "Michael",
+            "03middle_i": "C",
+            "middle_initial": "C",
+            "04last_name": "Conflict",
+            "last_name": "Conflict",
+            "full_name": "Michael C. Conflict",
+            "sex_select": "Male",
+            "dob": "1991-04-18",
+            "dob_month": "04",
+            "dob_day": "18",
+            "dob_year": "1991",
+            "age": "35",
+            "username": "xCONFLiCTiONx",
+            "email": "contact@xconflictionx.cc",
+            "cell_phone": "(555) 789-0123",
+            "home_phone": "(555) 321-7654",
+            "work_phone": "(555) 998-1122",
+            "fax": "(555) 443-8877",
+            "website": "https://xconflictionx.cc",
+            "address_line_1": "742 Evergreen Terrace",
+            "address_line_2": "Suite 404",
+            "city": "Springfield",
+            "state": "CA",
+            "zip": "97477",
+            "zip4": "1234",
+            "country": "United States",
+            "company": "Confliction Cyber Labs",
+            "position": "Security Architect",
+            "income": "$145,000",
+            "billing_name": "Michael C. Conflict",
+            "billing_address": "742 Evergreen Terrace",
+            "billing_city": "Springfield",
+            "billing_zip": "97477",
+            "shipping_name": "Sarah Connor",
+            "shipping_address": "100 Cyberdyne Blvd",
+            "shipping_city": "Los Angeles",
+            "shipping_zip": "90001",
+            "order_notes": "Handle with care. Leave package at front reception."
+        };
+
+        const form = document.getElementById("autoCompleteTestForm");
+        const fillCounter = document.getElementById("fillCounter");
+        const statusBadge = document.getElementById("statusBadge");
+        const statFilledFields = document.getElementById("statFilledFields");
+        const statTotalFields = document.getElementById("statTotalFields");
+        const progressPercent = document.getElementById("progressPercent");
+        const progressBar = document.getElementById("progressBar");
+        const consoleLogList = document.getElementById("consoleLogList");
+
+        function logConsole(tag, message, val) {
+            if (!consoleLogList) return;
+            const li = document.createElement("li");
+            li.className = "console-entry";
+            const now = new Date().toLocaleTimeString();
+            li.innerHTML = `
+                <span class="ts">[${now}]</span>
+                <span class="tag">${escapeHtml(tag)}</span>
+                <span>${escapeHtml(message)}</span>
+                ${val ? `<span class="val">"${escapeHtml(val)}"</span>` : ''}
+            `;
+            consoleLogList.prepend(li);
+            // limit to 80 entries
+            while (consoleLogList.children.length > 80) {
+                consoleLogList.removeChild(consoleLogList.lastChild);
+            }
+        }
+
+        function escapeHtml(str) {
+            return String(str || '').replace(/[&<>"']/g, m => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            }[m]));
+        }
+
+        function getVisibleTestInputs() {
+            return Array.from(document.querySelectorAll("#autoCompleteTestForm input, #autoCompleteTestForm select, #autoCompleteTestForm textarea"))
+                .filter(el => {
+                    if (el.type === 'hidden' || el.closest('[aria-hidden="true"]')) return false;
+                    return true;
+                });
+        }
+
+        function updateMetrics() {
+            const inputs = getVisibleTestInputs();
+            let filled = 0;
+
+            inputs.forEach(el => {
+                const val = (el.value || '').trim();
+                if (val.length > 0) {
+                    filled++;
+                    el.classList.add("filled-field");
+                } else {
+                    el.classList.remove("filled-field");
+                }
+            });
+
+            const total = inputs.length;
+            const pct = total > 0 ? Math.round((filled / total) * 100) : 0;
+
+            if (fillCounter) fillCounter.textContent = `${filled} / ${total}`;
+            if (statFilledFields) statFilledFields.textContent = filled;
+            if (statTotalFields) statTotalFields.textContent = total;
+            if (progressPercent) progressPercent.textContent = `${pct}%`;
+            if (progressBar) progressBar.style.width = `${pct}%`;
+
+            if (statusBadge) {
+                if (filled === total) {
+                    statusBadge.textContent = "100% Fully Filled!";
+                    statusBadge.style.color = "#3fb950";
+                } else if (filled > 0) {
+                    statusBadge.textContent = `${filled} Fields Populated`;
+                    statusBadge.style.color = "#58a6ff";
+                } else {
+                    statusBadge.textContent = "Ready for testing";
+                    statusBadge.style.color = "#c9d1d9";
+                }
+            }
+        }
+
+        // Attach event listeners for real-time diagnostics
+        getVisibleTestInputs().forEach(el => {
+            const name = el.name || el.id || el.placeholder || 'input';
+
+            el.addEventListener("focus", () => {
+                const catTag = el.closest(".field-group")?.querySelector(".category-tag")?.textContent || 'general';
+                logConsole("Focus", `Field: ${name} (Category: ${catTag})`);
+            });
+
+            el.addEventListener("input", (e) => {
+                logConsole("Input", `Field: ${name} ->`, e.target.value);
+                updateMetrics();
+            });
+
+            el.addEventListener("change", (e) => {
+                logConsole("Change", `Field: ${name} ->`, e.target.value);
+                updateMetrics();
+            });
+        });
+
+        // Dummy profile button
+        document.getElementById("btnFillDummy")?.addEventListener("click", () => {
+            let count = 0;
+            getVisibleTestInputs().forEach(el => {
+                const key = el.id || el.name;
+                const altKey = el.name || el.id;
+                let sampleVal = SAMPLE_PROFILE[key] || SAMPLE_PROFILE[altKey];
+
+                if (!sampleVal && el.autocomplete) {
+                    const cleanAuto = el.autocomplete.replace(/^(billing|shipping)\s+/, '');
+                    sampleVal = SAMPLE_PROFILE[cleanAuto];
+                }
+
+                if (sampleVal) {
+                    el.value = sampleVal;
+                    el.dispatchEvent(new Event("input", { bubbles: true }));
+                    el.dispatchEvent(new Event("change", { bubbles: true }));
+                    count++;
+                }
+            });
+            logConsole("Action", `Sample dummy profile populated into ${count} fields.`);
+            updateMetrics();
+        });
+
+        // Clear all button
+        document.getElementById("btnClearAll")?.addEventListener("click", () => {
+            getVisibleTestInputs().forEach(el => {
+                el.value = '';
+                el.dispatchEvent(new Event("input", { bubbles: true }));
+                el.dispatchEvent(new Event("change", { bubbles: true }));
+            });
+            logConsole("Action", "All fields cleared.");
+            updateMetrics();
+        });
+
+        // Toggle inspection tags
+        let tagsVisible = true;
+        document.getElementById("btnToggleTags")?.addEventListener("click", () => {
+            tagsVisible = !tagsVisible;
+            document.querySelectorAll(".category-tag").forEach(tag => {
+                tag.style.display = tagsVisible ? "inline-block" : "none";
+            });
+            logConsole("Action", `Field category tags ${tagsVisible ? "shown" : "hidden"}.`);
+        });
+
+        // Clear console
+        document.getElementById("btnClearConsole")?.addEventListener("click", () => {
+            if (consoleLogList) consoleLogList.innerHTML = '';
+            logConsole("System", "Console cleared.");
+        });
+
+        // SPA Modal logic
+        const spaModal = document.getElementById("spaModal");
+        document.getElementById("btnOpenSpaModal")?.addEventListener("click", () => {
+            if (spaModal) spaModal.classList.add("active");
+            logConsole("SPA", "Dynamic modal spawned into DOM.");
+        });
+
+        function closeSpaModal() {
+            if (spaModal) spaModal.classList.remove("active");
+            logConsole("SPA", "Dynamic modal closed.");
+        }
+
+        document.getElementById("btnCloseSpaModal")?.addEventListener("click", closeSpaModal);
+        document.getElementById("btnCloseModalBtn")?.addEventListener("click", closeSpaModal);
+
+        // Form submission test
+        function handleFormSubmit() {
+            const inputs = getVisibleTestInputs();
+            const data = {};
+            inputs.forEach(el => {
+                const key = el.name || el.id || 'unknown';
+                data[key] = el.value || '';
+            });
+            logConsole("Submit", "Form submission triggered. Captured payload:", JSON.stringify(data).substring(0, 100) + '...');
+            alert("Test form submitted! If you have 'Remember values from submitted forms' enabled in Smart AutoComplete, newly entered values have been stored to your dictionary.");
+        }
+
+        // Initialize on page load
+        window.addEventListener("load", () => {
+            updateMetrics();
+            // Periodically check if an extension autofilled fields on load
+            setTimeout(updateMetrics, 500);
+            setTimeout(updateMetrics, 1500);
+            setTimeout(updateMetrics, 3000);
+        });
+    </script>
+</body>
+
+</html>
