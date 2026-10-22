@@ -615,9 +615,6 @@
                     </div>
 
                     <div class="action-btns-group">
-                        <button type="button" class="btn-action btn-primary-action" id="btnFillDummy" title="Populate realistic dummy profile into fields to test form submission saving">
-                            <i class="im im-pencil"></i> Fill Sample Profile
-                        </button>
                         <button type="button" class="btn-action btn-secondary-action" id="btnClearAll" title="Clear all input values on this page">
                             <i class="im im-trash-can"></i> Clear All
                         </button>
@@ -1319,54 +1316,6 @@
     <script src="../../js/github-fetch.js?v=25"></script>
 
     <script>
-        // Sample test profile dictionary matching Smart AutoComplete schemas
-        const SAMPLE_PROFILE = {
-            "01___title": "Mr.",
-            "title": "Mr.",
-            "02frstname": "Michael",
-            "first_name": "Michael",
-            "03middle_i": "C",
-            "middle_initial": "C",
-            "04last_name": "Conflict",
-            "last_name": "Conflict",
-            "full_name": "Michael C. Conflict",
-            "sex_select": "Male",
-            "dob": "1991-04-18",
-            "dob_month": "04",
-            "dob_day": "18",
-            "dob_year": "1991",
-            "age": "35",
-            "username": "xCONFLiCTiONx",
-            "email": "contact@xconflictionx.cc",
-            "cell_phone": "(555) 789-0123",
-            "home_phone": "(555) 321-7654",
-            "work_phone": "(555) 998-1122",
-            "fax": "(555) 443-8877",
-            "website": "https://xconflictionx.cc",
-            "address_line_1": "742 Evergreen Terrace",
-            "address_line_2": "Suite 404",
-            "address-line1": "742 Evergreen Terrace",
-            "address-line2": "Suite 404",
-            "city": "Springfield",
-            "state": "CA",
-            "zip": "97477",
-            "zip4": "1234",
-            "country": "United States",
-            "company": "Confliction Cyber Labs",
-            "position": "Security Architect",
-            "income": "$145,000",
-            "billing_name": "Michael C. Conflict",
-            "billing_address": "742 Evergreen Terrace",
-            "billing_address_2": "Suite 500",
-            "billing_city": "Springfield",
-            "billing_zip": "97477",
-            "shipping_name": "Sarah Connor",
-            "shipping_address": "100 Cyberdyne Blvd",
-            "shipping_address_2": "Apt 2B",
-            "shipping_city": "Los Angeles",
-            "shipping_zip": "90001",
-            "order_notes": "Handle with care. Leave package at front reception."
-        };
 
         const form = document.getElementById("autoCompleteTestForm");
         const fillCounter = document.getElementById("fillCounter");
@@ -1466,29 +1415,6 @@
             });
         });
 
-        // Dummy profile button
-        document.getElementById("btnFillDummy")?.addEventListener("click", () => {
-            let count = 0;
-            getVisibleTestInputs().forEach(el => {
-                const key = el.id || el.name;
-                const altKey = el.name || el.id;
-                let sampleVal = SAMPLE_PROFILE[key] || SAMPLE_PROFILE[altKey];
-
-                if (!sampleVal && el.autocomplete) {
-                    const cleanAuto = el.autocomplete.replace(/^(billing|shipping)\s+/, '');
-                    sampleVal = SAMPLE_PROFILE[cleanAuto];
-                }
-
-                if (sampleVal) {
-                    el.value = sampleVal;
-                    el.dispatchEvent(new Event("input", { bubbles: true }));
-                    el.dispatchEvent(new Event("change", { bubbles: true }));
-                    count++;
-                }
-            });
-            logConsole("Action", `Sample dummy profile populated into ${count} fields.`);
-            updateMetrics();
-        });
 
         // Clear all button
         document.getElementById("btnClearAll")?.addEventListener("click", () => {
