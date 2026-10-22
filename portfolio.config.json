@@ -62,7 +62,7 @@
         "header": true,
         "sidebar": false,
         "footer": true,
-        "ads": true
+        "ads": false
       }
     },
     {
@@ -78,7 +78,7 @@
         "header": true,
         "sidebar": false,
         "footer": true,
-        "ads": true
+        "ads": false
       }
     },
     {
@@ -94,7 +94,7 @@
         "header": true,
         "sidebar": false,
         "footer": true,
-        "ads": true
+        "ads": false
       }
     },
     {
@@ -110,7 +110,7 @@
         "header": true,
         "sidebar": false,
         "footer": true,
-        "ads": true
+        "ads": false
       }
     },
     {
@@ -127,7 +127,7 @@
         "header": true,
         "sidebar": false,
         "footer": true,
-        "ads": true
+        "ads": false
       }
     },
     {
@@ -143,7 +143,7 @@
         "header": true,
         "sidebar": false,
         "footer": true,
-        "ads": true
+        "ads": false
       }
     },
     {
@@ -159,7 +159,7 @@
         "header": true,
         "sidebar": false,
         "footer": true,
-        "ads": true
+        "ads": false
       }
     },
     {
@@ -175,7 +175,7 @@
         "header": true,
         "sidebar": false,
         "footer": true,
-        "ads": true
+        "ads": false
       }
     },
     {
@@ -191,7 +191,7 @@
         "header": true,
         "sidebar": false,
         "footer": true,
-        "ads": true
+        "ads": false
       }
     },
     {
@@ -207,7 +207,7 @@
         "header": true,
         "sidebar": false,
         "footer": true,
-        "ads": true
+        "ads": false
       }
     },
     {
@@ -223,7 +223,7 @@
         "header": true,
         "sidebar": false,
         "footer": true,
-        "ads": true
+        "ads": false
       }
     },
     {
@@ -239,7 +239,7 @@
         "header": true,
         "sidebar": false,
         "footer": true,
-        "ads": true
+        "ads": false
       }
     },
     {
@@ -271,7 +271,7 @@
         "header": true,
         "sidebar": false,
         "footer": true,
-        "ads": true
+        "ads": false
       }
     }
   ],
