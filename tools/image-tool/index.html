@@ -1222,6 +1222,13 @@
             <div class="card">
               <h2>Vector Preview</h2>
               <div class="preview" id="tracePreview">Your traced SVG will appear here.</div>
+              <label for="traceSvgCode">SVG source data</label>
+              <textarea id="traceSvgCode" rows="16" spellcheck="false" autocapitalize="off" autocomplete="off" placeholder="Trace an image to generate SVG markup, or paste SVG data here." style="width:100%;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12px;resize:vertical;"></textarea>
+              <div class="actions">
+                <button id="traceCopy" disabled>Copy SVG Data</button>
+                <button id="traceApply" disabled>Apply Edits &amp; Preview</button>
+              </div>
+              <div id="traceEditInfo" class="stat" aria-live="polite">After tracing, you can inspect and edit the SVG markup here.</div>
             </div>
           </div>
         </section>
@@ -2552,16 +2559,12 @@ if(typeof define === 'function' && define.amd){
             strokewidth: 0
           });
           if (!svg || !svg.includes("<svg")) throw new Error("The vectorizer did not produce an SVG.");
-          state.traceSvg = new Blob([svg], { type: "image/svg+xml;charset=utf-8" });
-          const url = URL.createObjectURL(state.traceSvg);
-          const preview = document.createElement("img");
-          preview.alt = "Traced vector SVG preview";
-          preview.src = url;
-          preview.onload = () => URL.revokeObjectURL(url);
-          $("#tracePreview").replaceChildren(preview);
-          $("#traceDownload").disabled = false;
+          setTraceSvgSource(svg);
+          $("#traceCopy").disabled = false;
+          $("#traceApply").disabled = false;
           const kb = (state.traceSvg.size / 1024).toFixed(1);
-          $("#traceInfo").textContent = `Vectorization complete: ${canvas.width} × ${canvas.height} trace size, ${kb} KB SVG. Download the SVG to use or edit it in a vector editor.`;
+          $("#traceInfo").textContent = `Vectorization complete: ${canvas.width} × ${canvas.height} trace size, ${kb} KB SVG. You can now copy or edit the SVG source below.`;
+          $("#traceEditInfo").textContent = "SVG source ready. Edit the markup and select Apply Edits & Preview to render your changes.";
         } catch (error) {
           $("#traceInfo").textContent = "Vectorization failed: " + error.message;
         } finally {
@@ -2571,6 +2574,53 @@ if(typeof define === 'function' && define.amd){
 
       $("#traceDownload").addEventListener("click", () => {
         if (state.traceSvg) downloadBlob(state.traceSvg, "image-vector.svg");
+      });
+
+      function setTraceSvgSource(svgText) {
+        const normalized = validateSvg(svgText);
+        state.traceSvg = new Blob([normalized], { type: "image/svg+xml;charset=utf-8" });
+        $("#traceSvgCode").value = normalized;
+        $("#traceDownload").disabled = false;
+        const url = URL.createObjectURL(state.traceSvg);
+        const preview = document.createElement("img");
+        preview.alt = "SVG vector preview";
+        preview.onload = () => URL.revokeObjectURL(url);
+        preview.onerror = () => {
+          URL.revokeObjectURL(url);
+          $("#traceEditInfo").textContent = "SVG source is valid, but the preview could not be rendered.";
+        };
+        preview.src = url;
+        $("#tracePreview").replaceChildren(preview);
+      }
+
+      $("#traceApply").addEventListener("click", () => {
+        try {
+          setTraceSvgSource($("#traceSvgCode").value);
+          $("#traceCopy").disabled = false;
+          $("#traceEditInfo").textContent = "Edits applied. The preview and downloaded SVG now use your edited source.";
+          $("#traceInfo").textContent = "Edited SVG ready to download.";
+        } catch (error) {
+          $("#traceEditInfo").textContent = "Could not apply SVG: " + error.message;
+        }
+      });
+
+      $("#traceCopy").addEventListener("click", async () => {
+        const source = $("#traceSvgCode").value;
+        if (!source.trim()) return;
+        try {
+          if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(source);
+          } else {
+            const editor = $("#traceSvgCode");
+            editor.focus();
+            editor.select();
+            if (!document.execCommand("copy")) throw new Error("Clipboard access was denied.");
+            editor.setSelectionRange(0, 0);
+          }
+          $("#traceEditInfo").textContent = "SVG source copied to clipboard.";
+        } catch (error) {
+          $("#traceEditInfo").textContent = "Copy failed. Select the SVG source and copy it manually.";
+        }
       });
 
       function loadImage(file) {
