@@ -329,6 +329,164 @@
             padding-bottom: 0.8rem;
         }
 
+        
+        /* Scenario Navigation Tabs */
+        .scenario-nav-tabs {
+            display: flex;
+            gap: 0.8rem;
+            margin-bottom: 2.4rem;
+            border-bottom: 2px solid #21262d;
+            padding-bottom: 1.2rem;
+            overflow-x: auto;
+            scrollbar-width: thin;
+        }
+
+        .scenario-tab-btn {
+            background: #161b22;
+            border: 1px solid #30363d;
+            color: #8b949e;
+            padding: 0.9rem 1.6rem;
+            border-radius: 6px;
+            font-size: 1.35rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.8rem;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+        }
+
+        .scenario-tab-btn:hover {
+            background: #21262d;
+            color: #f0f6fc;
+            border-color: #8b949e;
+        }
+
+        .scenario-tab-btn.active {
+            background: rgba(88, 166, 255, 0.15);
+            border-color: #58a6ff;
+            color: #58a6ff;
+            box-shadow: 0 0 14px rgba(88, 166, 255, 0.2);
+        }
+
+        .scenario-tab-btn .tab-badge {
+            background: #21262d;
+            color: #c9d1d9;
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            font-size: 1.1rem;
+        }
+
+        .scenario-tab-btn.active .tab-badge {
+            background: #58a6ff;
+            color: #0b0d10;
+            font-weight: 700;
+        }
+
+        .scenario-pane {
+            display: none;
+            animation: paneFadeIn 0.2s ease;
+        }
+
+        .scenario-pane.active {
+            display: block;
+        }
+
+        @keyframes paneFadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Rich Text / ContentEditable Sandbox */
+        .mock-editor-container {
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 1.4rem;
+            margin-top: 1rem;
+        }
+
+        .mock-editor-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: #8b949e;
+            font-size: 1.2rem;
+            margin-bottom: 0.8rem;
+            border-bottom: 1px solid #21262d;
+            padding-bottom: 0.6rem;
+        }
+
+        .contenteditable-div {
+            min-height: 80px;
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 1rem 1.2rem;
+            color: #f0f6fc;
+            font-size: 1.4rem;
+            outline: none;
+            line-height: 1.5;
+        }
+
+        .contenteditable-div:focus {
+            border-color: #58a6ff;
+            box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.2);
+        }
+
+        /* Shortcode Badge Helper */
+        .shortcode-pill-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            margin: 1.2rem 0;
+        }
+
+        .shortcode-pill {
+            background: rgba(99, 102, 241, 0.15);
+            border: 1px solid rgba(99, 102, 241, 0.35);
+            color: #818cf8;
+            padding: 0.4rem 1rem;
+            border-radius: 6px;
+            font-size: 1.25rem;
+            font-family: ui-monospace, SFMono-Regular, monospace;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .shortcode-pill:hover {
+            background: rgba(99, 102, 241, 0.25);
+            color: #fff;
+            transform: translateY(-1px);
+        }
+
+        .audit-result-banner {
+            padding: 1.4rem 1.8rem;
+            border-radius: 6px;
+            font-size: 1.35rem;
+            margin-top: 1.6rem;
+            display: none;
+        }
+
+        .audit-result-banner.pass {
+            background: rgba(35, 134, 54, 0.15);
+            border: 1px solid #238636;
+            color: #3fb950;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .audit-result-banner.fail {
+            background: rgba(218, 54, 51, 0.15);
+            border: 1px solid #da3633;
+            color: #f85149;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
         /* Modal Dialog for Dynamic SPA Form Test */
         .modal-overlay {
             display: none;
@@ -630,6 +788,364 @@
 
             <!-- Form Wrapper -->
             <form id="autoCompleteTestForm" autocomplete="on" onsubmit="event.preventDefault(); handleFormSubmit();">
+            <!-- Scenario Navigation Tabs -->
+            <div class="scenario-nav-tabs" role="tablist">
+                <button type="button" class="scenario-tab-btn active" data-tab="tab-checkout">
+                    <span>🛒 1. E-Commerce Checkout</span>
+                    <span class="tab-badge" id="badge-checkout">0/9</span>
+                </button>
+                <button type="button" class="scenario-tab-btn" data-tab="tab-jobapp">
+                    <span>💼 2. Job Application</span>
+                    <span class="tab-badge" id="badge-jobapp">0/11</span>
+                </button>
+                <button type="button" class="scenario-tab-btn" data-tab="tab-shortcodes">
+                    <span>⚡ 3. Shortcodes & Ghost Text</span>
+                    <span class="tab-badge" id="badge-shortcodes">Interactive</span>
+                </button>
+                <button type="button" class="scenario-tab-btn" data-tab="tab-security">
+                    <span>🛡️ 4. Security & Honeypots</span>
+                    <span class="tab-badge" id="badge-security">Audit</span>
+                </button>
+                <button type="button" class="scenario-tab-btn" data-tab="tab-roboform">
+                    <span>🧪 5. 42-Field RoboForm Suite</span>
+                    <span class="tab-badge" id="badge-roboform">0/42</span>
+                </button>
+            </div>
+
+                <!-- TAB 1: E-COMMERCE CHECKOUT SCENARIO -->
+                <div class="scenario-pane active" id="tab-checkout">
+                    <div class="form-section-card">
+                        <div class="form-section-header">
+                            <h3 class="form-section-title">
+                                <i class="im im-shopping-cart" style="color: #58a6ff;"></i>
+                                E-Commerce Express Checkout & Delivery
+                            </h3>
+                            <span class="section-badge">Scenario: Shopify / WooCommerce</span>
+                        </div>
+                        <p style="color:#8b949e; font-size:1.3rem; margin-bottom:1.8rem;">
+                            Simulates an online store checkout. Verifies customer delivery contact, shipping address, and dynamic modal dialogs.
+                        </p>
+
+                        <div class="fields-grid">
+                            <!-- Contact Email -->
+                            <div class="field-group">
+                                <label class="field-label" for="checkout_email">
+                                    <span>Contact Email</span>
+                                    <span class="category-tag">email</span>
+                                </label>
+                                <input type="email" id="checkout_email" name="checkout_email" class="test-input" autocomplete="email" placeholder="you@example.com" />
+                            </div>
+
+                            <!-- Mobile Phone -->
+                            <div class="field-group">
+                                <label class="field-label" for="checkout_tel">
+                                    <span>Delivery Mobile Phone</span>
+                                    <span class="category-tag">cell_phone</span>
+                                </label>
+                                <input type="tel" id="checkout_tel" name="checkout_tel" class="test-input" autocomplete="tel" placeholder="(555) 000-0000" />
+                            </div>
+
+                            <!-- Recipient Full Name -->
+                            <div class="field-group">
+                                <label class="field-label" for="checkout_shipping_name">
+                                    <span>Recipient Full Name</span>
+                                    <span class="category-tag">full_name</span>
+                                </label>
+                                <input type="text" id="checkout_shipping_name" name="checkout_shipping_name" class="test-input" autocomplete="shipping name" placeholder="Full Name" />
+                            </div>
+
+                            <!-- Street Address -->
+                            <div class="field-group">
+                                <label class="field-label" for="checkout_shipping_address1">
+                                    <span>Street Address</span>
+                                    <span class="category-tag">address_line_1</span>
+                                </label>
+                                <input type="text" id="checkout_shipping_address1" name="checkout_shipping_address1" class="test-input" autocomplete="shipping street-address" placeholder="123 Main St" />
+                            </div>
+
+                            <!-- Apt / Suite -->
+                            <div class="field-group">
+                                <label class="field-label" for="checkout_shipping_address2">
+                                    <span>Apt, Suite, Unit</span>
+                                    <span class="category-tag">address_line_2</span>
+                                </label>
+                                <input type="text" id="checkout_shipping_address2" name="checkout_shipping_address2" class="test-input" autocomplete="shipping address-line2" placeholder="Suite 400" />
+                            </div>
+
+                            <!-- City -->
+                            <div class="field-group">
+                                <label class="field-label" for="checkout_shipping_city">
+                                    <span>City</span>
+                                    <span class="category-tag">city</span>
+                                </label>
+                                <input type="text" id="checkout_shipping_city" name="checkout_shipping_city" class="test-input" autocomplete="shipping address-level2" placeholder="City" />
+                            </div>
+
+                            <!-- State -->
+                            <div class="field-group">
+                                <label class="field-label" for="checkout_shipping_state">
+                                    <span>State / Province</span>
+                                    <span class="category-tag">state</span>
+                                </label>
+                                <input type="text" id="checkout_shipping_state" name="checkout_shipping_state" class="test-input" autocomplete="shipping address-level1" placeholder="State" />
+                            </div>
+
+                            <!-- Zip / Postal Code -->
+                            <div class="field-group">
+                                <label class="field-label" for="checkout_shipping_zip">
+                                    <span>Postal / Zip Code</span>
+                                    <span class="category-tag">zip</span>
+                                </label>
+                                <input type="text" id="checkout_shipping_zip" name="checkout_shipping_zip" class="test-input" autocomplete="shipping postal-code" placeholder="Zip" />
+                            </div>
+
+                            <!-- Country -->
+                            <div class="field-group">
+                                <label class="field-label" for="checkout_shipping_country">
+                                    <span>Country</span>
+                                    <span class="category-tag">country</span>
+                                </label>
+                                <input type="text" id="checkout_shipping_country" name="checkout_shipping_country" class="test-input" autocomplete="shipping country" placeholder="Country" />
+                            </div>
+
+                            <!-- Delivery Instructions -->
+                            <div class="field-group" style="grid-column: 1 / -1;">
+                                <label class="field-label" for="checkout_delivery_notes">
+                                    <span>Delivery Instructions (Custom Textarea)</span>
+                                    <span class="category-tag" style="background:rgba(148,163,184,0.15); color:#94a3b8; border-color:#334155;">textarea</span>
+                                </label>
+                                <textarea id="checkout_delivery_notes" name="checkout_delivery_notes" class="test-textarea" rows="2" placeholder="Leave package at front door, gate code #1234..."></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Dynamic SPA Modal Trigger -->
+                        <div style="margin-top: 2.2rem; padding-top: 1.6rem; border-top: 1px solid #21262d; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+                            <div>
+                                <strong style="color: #f0f6fc; font-size: 1.35rem;">Dynamic SPA Hydration Test:</strong>
+                                <p style="color: #8b949e; font-size: 1.2rem; margin: 0;">Mounts a dynamic address modal into the DOM to test quiet-window autofill.</p>
+                            </div>
+                            <button type="button" class="btn-action btn-accent-action" id="btnOpenSpaModal2">
+                                <i class="im im-external-link"></i> Launch Dynamic Address Modal
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 2: JOB APPLICATION SCENARIO -->
+                <div class="scenario-pane" id="tab-jobapp">
+                    <div class="form-section-card">
+                        <div class="form-section-header">
+                            <h3 class="form-section-title">
+                                <i class="im im-briefcase" style="color: #58a6ff;"></i>
+                                Candidate Job Application Portal
+                            </h3>
+                            <span class="section-badge">Scenario: Workday / Greenhouse</span>
+                        </div>
+                        <p style="color:#8b949e; font-size:1.3rem; margin-bottom:1.8rem;">
+                            Tests legal first/last name vs preferred handles, corporate/personal emails, portfolio links, and compensation.
+                        </p>
+
+                        <div class="fields-grid">
+                            <!-- First Name -->
+                            <div class="field-group">
+                                <label class="field-label" for="job_fname"><span>First Name</span><span class="category-tag">first_name</span></label>
+                                <input type="text" id="job_fname" name="job_fname" class="test-input" autocomplete="given-name" placeholder="First Name" />
+                            </div>
+                            <!-- Middle Initial -->
+                            <div class="field-group">
+                                <label class="field-label" for="job_mi"><span>Middle Initial</span><span class="category-tag">middle_initial</span></label>
+                                <input type="text" id="job_mi" name="job_mi" class="test-input" maxlength="2" placeholder="M" />
+                            </div>
+                            <!-- Last Name -->
+                            <div class="field-group">
+                                <label class="field-label" for="job_lname"><span>Last Name</span><span class="category-tag">last_name</span></label>
+                                <input type="text" id="job_lname" name="job_lname" class="test-input" autocomplete="family-name" placeholder="Last Name" />
+                            </div>
+                            <!-- Preferred Handle / Username -->
+                            <div class="field-group">
+                                <label class="field-label" for="job_handle"><span>Preferred Handle / Username</span><span class="category-tag">user_id</span></label>
+                                <input type="text" id="job_handle" name="job_handle" class="test-input" autocomplete="nickname" placeholder="xCONFLiCTiONx" />
+                            </div>
+                            <!-- Email -->
+                            <div class="field-group">
+                                <label class="field-label" for="job_email"><span>Primary Email</span><span class="category-tag">email</span></label>
+                                <input type="email" id="job_email" name="job_email" class="test-input" autocomplete="email" placeholder="name@domain.com" />
+                            </div>
+                            <!-- Mobile Phone -->
+                            <div class="field-group">
+                                <label class="field-label" for="job_phone"><span>Cell Phone</span><span class="category-tag">cell_phone</span></label>
+                                <input type="tel" id="job_phone" name="job_phone" class="test-input" autocomplete="tel-national" placeholder="(555) 000-0000" />
+                            </div>
+                            <!-- Website / Portfolio URL -->
+                            <div class="field-group">
+                                <label class="field-label" for="job_portfolio"><span>Portfolio / Website URL</span><span class="category-tag">website</span></label>
+                                <input type="url" id="job_portfolio" name="job_portfolio" class="test-input" autocomplete="url" placeholder="https://..." />
+                            </div>
+                            <!-- Current Company -->
+                            <div class="field-group">
+                                <label class="field-label" for="job_company"><span>Current Employer</span><span class="category-tag">company</span></label>
+                                <input type="text" id="job_company" name="job_company" class="test-input" autocomplete="organization" placeholder="Current Company" />
+                            </div>
+                            <!-- Current Job Title -->
+                            <div class="field-group">
+                                <label class="field-label" for="job_position"><span>Current Position</span><span class="category-tag">position</span></label>
+                                <input type="text" id="job_position" name="job_position" class="test-input" autocomplete="organization-title" placeholder="Job Title" />
+                            </div>
+                            <!-- Expected Salary -->
+                            <div class="field-group">
+                                <label class="field-label" for="job_salary"><span>Desired Salary / Income</span><span class="category-tag">income</span></label>
+                                <input type="text" id="job_salary" name="job_salary" class="test-input" placeholder="$120,000" />
+                            </div>
+                            <!-- Date of Birth -->
+                            <div class="field-group">
+                                <label class="field-label" for="job_dob"><span>Date of Birth</span><span class="category-tag">dob</span></label>
+                                <input type="date" id="job_dob" name="job_dob" class="test-input" autocomplete="bday" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 3: SHORTCODES & GHOST TEXT LABORATORY -->
+                <div class="scenario-pane" id="tab-shortcodes">
+                    <div class="form-section-card">
+                        <div class="form-section-header">
+                            <h3 class="form-section-title">
+                                <i class="im im-keyboard" style="color: #818cf8;"></i>
+                                Instant Shortcodes & Inline Ghost Text Laboratory
+                            </h3>
+                            <span class="section-badge" style="background:rgba(99,102,241,0.15); color:#818cf8; border-color:rgba(99,102,241,0.3);">v2.1.0 Features</span>
+                        </div>
+                        <p style="color:#8b949e; font-size:1.3rem; margin-bottom:1.6rem;">
+                            Test instant shortcode expansion (Text Blaze style) and deterministic inline ghost text (Tab-to-complete) across single-line inputs, multi-line textareas, and rich-text <code>contenteditable</code> elements.
+                        </p>
+
+                        <!-- Quick Shortcuts Reference Pill List -->
+                        <div style="background:#0d1117; padding:1.4rem; border-radius:6px; border:1px solid #30363d; margin-bottom:2rem;">
+                            <strong style="color:#c9d1d9; font-size:1.25rem;">Try typing any of these shortcodes:</strong>
+                            <div class="shortcode-pill-list">
+                                <span class="shortcode-pill" title="Click to copy into clipboard" onclick="navigator.clipboard.writeText('/handle'); logConsole('Shortcode', 'Copied /handle');">/handle &rarr; xCONFLiCTiONx</span>
+                                <span class="shortcode-pill" title="Click to copy into clipboard" onclick="navigator.clipboard.writeText('/email'); logConsole('Shortcode', 'Copied /email');">/email &rarr; Saved Email</span>
+                                <span class="shortcode-pill" title="Click to copy into clipboard" onclick="navigator.clipboard.writeText('/phone'); logConsole('Shortcode', 'Copied /phone');">/phone &rarr; Saved Phone</span>
+                                <span class="shortcode-pill" title="Click to copy into clipboard" onclick="navigator.clipboard.writeText('/addr'); logConsole('Shortcode', 'Copied /addr');">/addr &rarr; Full Address</span>
+                                <span class="shortcode-pill" title="Click to copy into clipboard" onclick="navigator.clipboard.writeText('/date'); logConsole('Shortcode', 'Copied /date');">/date &rarr; Today's Date</span>
+                                <span class="shortcode-pill" title="Click to copy into clipboard" onclick="navigator.clipboard.writeText('/time'); logConsole('Shortcode', 'Copied /time');">/time &rarr; Current Time</span>
+                                <span class="shortcode-pill" title="Click to copy into clipboard" onclick="navigator.clipboard.writeText('/shrug'); logConsole('Shortcode', 'Copied /shrug');">/shrug &rarr; ¯\_(ツ)_/¯</span>
+                            </div>
+                        </div>
+
+                        <div class="fields-grid" style="grid-template-columns: 1fr 1fr;">
+                            <!-- Single Line Shortcode Input -->
+                            <div class="field-group">
+                                <label class="field-label" for="shortcode_input">
+                                    <span>Single-Line Input (Type /handle or /date)</span>
+                                    <span class="category-tag">input</span>
+                                </label>
+                                <input type="text" id="shortcode_input" class="test-input" placeholder="Type /handle or /email here..." />
+                                <span class="field-hint">Expands automatically the moment the shortcut is typed.</span>
+                            </div>
+
+                            <!-- Ghost Text Completion Input -->
+                            <div class="field-group">
+                                <label class="field-label" for="ghost_input">
+                                    <span>Ghost Text Field (Type 'xco' + Press Tab)</span>
+                                    <span class="category-tag" style="background:rgba(56,189,248,0.15); color:#38bdf8; border-color:rgba(56,189,248,0.3);">Tab ⇥</span>
+                                </label>
+                                <input type="text" id="ghost_input" name="user_id" class="test-input" placeholder="Type 'xco' to trigger ghost text..." />
+                                <span class="field-hint">A floating badge appears with the remaining letters. Hit [Tab] or [→] to accept!</span>
+                            </div>
+
+                            <!-- Multiline Textarea Shortcode Input -->
+                            <div class="field-group" style="grid-column: 1 / -1;">
+                                <label class="field-label" for="shortcode_textarea">
+                                    <span>Multiline Textarea (Type /addr or /shrug)</span>
+                                    <span class="category-tag">textarea</span>
+                                </label>
+                                <textarea id="shortcode_textarea" class="test-textarea" rows="3" placeholder="Type a message with /addr or /shrug in the middle of sentences..."></textarea>
+                            </div>
+
+                            <!-- ContentEditable Rich Text Div -->
+                            <div class="field-group" style="grid-column: 1 / -1;">
+                                <label class="field-label">
+                                    <span>Rich Text ContentEditable Div (Discord / Slack / Reddit Mock)</span>
+                                    <span class="category-tag" style="background:rgba(168,85,247,0.15); color:#c084fc; border-color:rgba(168,85,247,0.3);">contenteditable</span>
+                                </label>
+                                <div class="mock-editor-container">
+                                    <div class="mock-editor-header">
+                                        <span>💬 Message #general (Rich Text)</span>
+                                        <span>Supports /handle, /shrug, /date</span>
+                                    </div>
+                                    <div id="shortcode_contenteditable" class="contenteditable-div" contenteditable="true" role="textbox" aria-multiline="true">
+                                        Type here like in Discord or Slack... try typing <strong>/handle</strong> or <strong>/shrug</strong>!
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 4: SECURITY & HONEYPOTS GAUNTLET -->
+                <div class="scenario-pane" id="tab-security">
+                    <div class="form-section-card">
+                        <div class="form-section-header">
+                            <h3 class="form-section-title">
+                                <i class="im im-shield" style="color: #ff7b72;"></i>
+                                Security, Passwords & Honeypot Negative Test Gauntlet
+                            </h3>
+                            <span class="section-badge" style="background:rgba(239,68,68,0.15); color:#f87171; border-color:rgba(239,68,68,0.3);">Strict Exclusions</span>
+                        </div>
+                        <p style="color:#8b949e; font-size:1.3rem; margin-bottom:1.6rem;">
+                            Smart AutoComplete strictly isolates security fields so your password manager retains 100% control and anti-spam honeypots are never tripped.
+                        </p>
+
+                        <div class="fields-grid">
+                            <!-- Current Password -->
+                            <div class="field-group">
+                                <label class="field-label" for="sec_curr_pass"><span>Current Password</span><span class="category-tag" style="background:rgba(239,68,68,0.15); color:#f87171; border-color:rgba(239,68,68,0.3);">Excluded</span></label>
+                                <input type="password" id="sec_curr_pass" name="password" class="test-input sec-trap" autocomplete="current-password" placeholder="••••••••" />
+                            </div>
+                            <!-- New Password -->
+                            <div class="field-group">
+                                <label class="field-label" for="sec_new_pass"><span>New Password</span><span class="category-tag" style="background:rgba(239,68,68,0.15); color:#f87171; border-color:rgba(239,68,68,0.3);">Excluded</span></label>
+                                <input type="password" id="sec_new_pass" name="new_password" class="test-input sec-trap" autocomplete="new-password" placeholder="••••••••" />
+                            </div>
+                            <!-- Credit Card Number -->
+                            <div class="field-group">
+                                <label class="field-label" for="sec_cc"><span>Credit Card (CC) Number</span><span class="category-tag" style="background:rgba(239,68,68,0.15); color:#f87171; border-color:rgba(239,68,68,0.3);">Excluded</span></label>
+                                <input type="text" id="sec_cc" name="cardnumber" class="test-input sec-trap" autocomplete="cc-number" placeholder="4111 2222 3333 4444" />
+                            </div>
+                            <!-- CVC / CVV -->
+                            <div class="field-group">
+                                <label class="field-label" for="sec_cvv"><span>Card Verification Code (CVC)</span><span class="category-tag" style="background:rgba(239,68,68,0.15); color:#f87171; border-color:rgba(239,68,68,0.3);">Excluded</span></label>
+                                <input type="password" id="sec_cvv" name="cvc" class="test-input sec-trap" maxlength="4" placeholder="123" />
+                            </div>
+                            <!-- Honeypot -->
+                            <div class="field-group">
+                                <label class="field-label" for="sec_honeypot"><span>Anti-Bot Honeypot Field</span><span class="category-tag" style="background:rgba(239,68,68,0.15); color:#f87171; border-color:rgba(239,68,68,0.3);">Honeypot</span></label>
+                                <input type="text" id="sec_honeypot" name="hp_bot_trap_email" class="test-input sec-trap" placeholder="Bots fill this, Smart AutoComplete ignores" />
+                            </div>
+                            <!-- CSRF Token -->
+                            <div class="field-group">
+                                <label class="field-label" for="sec_csrf"><span>CSRF Token Field</span><span class="category-tag" style="background:rgba(239,68,68,0.15); color:#f87171; border-color:rgba(239,68,68,0.3);">Token</span></label>
+                                <input type="text" id="sec_csrf" name="csrf_token_hash" class="test-input" placeholder="Security Token" readonly value="abc987654321xyz" />
+                            </div>
+                        </div>
+
+                        <!-- Live Automated Security Audit Button -->
+                        <div style="margin-top: 2rem; padding-top: 1.6rem; border-top: 1px solid #21262d;">
+                            <button type="button" class="btn-action btn-primary-action" id="btnRunSecurityAudit">
+                                <i class="im im-shield"></i> Run Automated Security Audit
+                            </button>
+                            <div id="securityAuditResult" class="audit-result-banner"></div>
+                        </div>
+                    </div>
+                </div>
+
+                
+                </div>
+
+                <!-- TAB 6: 42-FIELD ROBOFORM REFERENCE MATRIX -->
+                <div class="scenario-pane" id="tab-roboform">
+
 
                 <!-- SECTION 1: Personal Identity & RoboForm Suite -->
                 <div class="form-section-card">
@@ -1316,7 +1832,6 @@
     <script src="../../js/github-fetch.js?v=25"></script>
 
     <script>
-
         const form = document.getElementById("autoCompleteTestForm");
         const fillCounter = document.getElementById("fillCounter");
         const statusBadge = document.getElementById("statusBadge");
@@ -1338,7 +1853,6 @@
                 ${val ? `<span class="val">"${escapeHtml(val)}"</span>` : ''}
             `;
             consoleLogList.prepend(li);
-            // limit to 80 entries
             while (consoleLogList.children.length > 80) {
                 consoleLogList.removeChild(consoleLogList.lastChild);
             }
@@ -1381,8 +1895,11 @@
             if (progressPercent) progressPercent.textContent = `${pct}%`;
             if (progressBar) progressBar.style.width = `${pct}%`;
 
+            // Update individual tab badges
+            updateTabBadges();
+
             if (statusBadge) {
-                if (filled === total) {
+                if (filled === total && total > 0) {
                     statusBadge.textContent = "100% Fully Filled!";
                     statusBadge.style.color = "#3fb950";
                 } else if (filled > 0) {
@@ -1394,6 +1911,44 @@
                 }
             }
         }
+
+        function updateTabBadges() {
+            const tabs = [
+                { id: 'tab-checkout', badge: 'badge-checkout' },
+                { id: 'tab-jobapp', badge: 'badge-jobapp' },
+                { id: 'tab-roboform', badge: 'badge-roboform' }
+            ];
+
+            tabs.forEach(t => {
+                const pane = document.getElementById(t.id);
+                const badge = document.getElementById(t.badge);
+                if (pane && badge) {
+                    const paneInputs = Array.from(pane.querySelectorAll("input:not([type='hidden']), select, textarea"));
+                    const paneFilled = paneInputs.filter(i => (i.value || '').trim().length > 0).length;
+                    badge.textContent = `${paneFilled}/${paneInputs.length}`;
+                }
+            });
+        }
+
+        // Scenario Tab Switching
+        const scenarioTabBtns = document.querySelectorAll(".scenario-tab-btn");
+        const scenarioPanes = document.querySelectorAll(".scenario-pane");
+
+        scenarioTabBtns.forEach(btn => {
+            btn.addEventListener("click", () => {
+                const targetId = btn.getAttribute("data-tab");
+                scenarioTabBtns.forEach(b => b.classList.remove("active"));
+                scenarioPanes.forEach(p => p.classList.remove("active"));
+
+                btn.classList.add("active");
+                const targetPane = document.getElementById(targetId);
+                if (targetPane) {
+                    targetPane.classList.add("active");
+                }
+                logConsole("Tab", `Switched to scenario: ${btn.querySelector('span')?.textContent || targetId}`);
+                updateMetrics();
+            });
+        });
 
         // Attach event listeners for real-time diagnostics
         getVisibleTestInputs().forEach(el => {
@@ -1414,7 +1969,6 @@
                 updateMetrics();
             });
         });
-
 
         // Clear all button
         document.getElementById("btnClearAll")?.addEventListener("click", () => {
@@ -1445,10 +1999,13 @@
 
         // SPA Modal logic
         const spaModal = document.getElementById("spaModal");
-        document.getElementById("btnOpenSpaModal")?.addEventListener("click", () => {
+        const openSpaModal = () => {
             if (spaModal) spaModal.classList.add("active");
             logConsole("SPA", "Dynamic modal spawned into DOM.");
-        });
+        };
+
+        document.getElementById("btnOpenSpaModal")?.addEventListener("click", openSpaModal);
+        document.getElementById("btnOpenSpaModal2")?.addEventListener("click", openSpaModal);
 
         function closeSpaModal() {
             if (spaModal) spaModal.classList.remove("active");
@@ -1457,6 +2014,33 @@
 
         document.getElementById("btnCloseSpaModal")?.addEventListener("click", closeSpaModal);
         document.getElementById("btnCloseModalBtn")?.addEventListener("click", closeSpaModal);
+
+        // Security Audit Runner
+        const btnRunSecurityAudit = document.getElementById("btnRunSecurityAudit");
+        const securityAuditResult = document.getElementById("securityAuditResult");
+
+        if (btnRunSecurityAudit && securityAuditResult) {
+            btnRunSecurityAudit.addEventListener("click", () => {
+                const traps = document.querySelectorAll(".sec-trap");
+                const violations = [];
+
+                traps.forEach(trap => {
+                    if (trap.value && trap.value.trim().length > 0) {
+                        violations.push(trap.name || trap.id || 'unnamed');
+                    }
+                });
+
+                if (violations.length === 0) {
+                    securityAuditResult.className = "audit-result-banner pass";
+                    securityAuditResult.innerHTML = "<strong>✅ PASSED 100%:</strong> Zero credential leaks! Password fields, credit card inputs, and anti-bot honeypots were completely untouched.";
+                    logConsole("Security", "Automated Security Audit: PASSED (0 violations)");
+                } else {
+                    securityAuditResult.className = "audit-result-banner fail";
+                    securityAuditResult.innerHTML = `<strong>⚠️ VIOLATION DETECTED:</strong> The following protected security fields were filled: ${violations.join(", ")}`;
+                    logConsole("Security", "Automated Security Audit: VIOLATION", violations.join(", "));
+                }
+            });
+        }
 
         // Form submission test
         function handleFormSubmit() {
@@ -1473,11 +2057,11 @@
         // Initialize on page load
         window.addEventListener("load", () => {
             updateMetrics();
-            // Periodically check if an extension autofilled fields on load
             setTimeout(updateMetrics, 500);
             setTimeout(updateMetrics, 1500);
             setTimeout(updateMetrics, 3000);
         });
+
     </script>
 </body>
 
