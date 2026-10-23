@@ -4300,7 +4300,7 @@ if(typeof define === 'function' && define.amd){
         $("#fgCropSize").value=s;$("#fgCropX").value=Math.floor((w-s)/2);$("#fgCropY").value=Math.floor((h-s)/2);
         fgDrawSourceCrop();fgBuildProcessedCanvas();
       });
-      ["fgTolerance,"fgColor","fgBgColor","fgCorner","fgOutputSize","fgCropX","fgCropY","fgCropSize"].forEach(id=>$("#"+id).addEventListener("input",()=>{
+      ["fgTolerance","fgColor","fgBgColor","fgCorner","fgOutputSize","fgCropX","fgCropY","fgCropSize"].forEach(id=>$("#"+id).addEventListener("input",()=>{
         if(id==="fgBgColor") fgState.backgroundColor=fgColorToRgb($("#fgBgColor").value);
         fgSyncLabels(); if(fgState.image){try{fgDrawSourceCrop();fgBuildProcessedCanvas();}catch(err){fgSetInfo(err.message);}}
       }));
