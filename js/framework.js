@@ -188,6 +188,15 @@
     /**
      * Detect current page's tool metadata and layout configuration
      */
+        function earlyLayoutCheck() {
+        const metaSidebar = document.querySelector('meta[name="portfolio-layout-sidebar"]')?.getAttribute('content');
+        if (metaSidebar === 'false') {
+            if (document.body) document.body.classList.add('no-sidebar');
+            const sidebarEl = document.querySelector('aside.sidebar');
+            if (sidebarEl) sidebarEl.style.display = 'none';
+        }
+    }
+
     function resolvePageLayout(config) {
         const bodyToolId = document.body ? document.body.getAttribute('data-tool-id') : null;
         const metaToolId = document.querySelector('meta[name="portfolio-tool-id"]')?.getAttribute('content');
@@ -199,10 +208,11 @@
         }
 
         if (!matchedTool && config.tools) {
-            const currentPath = window.location.pathname.toLowerCase();
+            const currentPath = window.location.pathname.toLowerCase().replace(/\/index\.html$/, '/');
             matchedTool = config.tools.find(t => {
-                const toolCleanPath = t.path.toLowerCase().replace(/^\//, '');
-                return currentPath.endsWith(toolCleanPath) || currentPath.endsWith(toolCleanPath.replace('/index.html', '/'));
+                const toolCleanPath = t.path.toLowerCase().replace(/^\//, '').replace(/\/index\.html$/, '/');
+                const pathWithSlash = toolCleanPath.endsWith('/') ? toolCleanPath : toolCleanPath + '/';
+                return currentPath.endsWith(pathWithSlash) || (currentPath + '/').endsWith(pathWithSlash);
             });
         }
 
@@ -453,9 +463,14 @@
      */
     async function initFramework() {
         ensureMainCssLoaded();
+        earlyLayoutCheck();
         const config = await getPortfolioConfig();
+        // Immediately apply structural layout (header and sidebar) so sidebar does not flash while awaiting ads snippet
+        applyLayout(config, null);
         const adsHtml = await getAdsSnippet(config);
-        applyLayout(config, adsHtml);
+        if (adsHtml) {
+            applyLayout(config, adsHtml);
+        }
         populateIdentity(config);
         return config;
     }

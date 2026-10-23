@@ -8,6 +8,7 @@
     <meta name="description" id="meta-description-js"
         content="Interactive form sandbox and test suite for Smart AutoComplete and browser autofill extensions. Test RoboForm patterns, name splits, address sets, and dual billing/shipping groups.">
     <meta name="portfolio-tool-id" content="auto-complete">
+    <meta name="portfolio-layout-sidebar" content="false">
     <link rel="canonical" href="https://xconflictionx.cc/tools/auto-complete/" />
     <meta name="theme-color" content="#0b0d10">
     <link rel="manifest" href="../../site.webmanifest">
@@ -665,7 +666,7 @@
     </style>
 </head>
 
-<body id="top" data-tool-id="auto-complete">
+<body id="top" data-tool-id="auto-complete" class="no-sidebar">
 
     <header class="site-header">
         <nav class="nav-content">
@@ -688,59 +689,7 @@
         </nav>
     </header>
 
-    <main class="container">
-
-        <!-- Sidebar Profile & Diagnostics -->
-        <aside class="sidebar profile-sidebar">
-            <div id="profile-avatar" class="profile-avatar"></div>
-            <h1 id="profile-name" class="profile-name user-name-js">Loading...</h1>
-            <span id="profile-handle" class="profile-handle">Software Developer</span>
-
-            <p id="profile-bio" class="profile-bio"></p>
-
-            <div class="tool-stats-card">
-                <h4><i class="im im-keyboard" style="color: #58a6ff;"></i> Autofill Matrix Stats</h4>
-                <div class="stat-item">
-                    <span class="stat-label">Total Test Fields</span>
-                    <span class="stat-value" id="statTotalFields">38</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">Filled by Autofill</span>
-                    <span class="stat-value" id="statFilledFields">0</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">Profile Categories</span>
-                    <span class="stat-value">22 Categories</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">Dual Field Groups</span>
-                    <span class="stat-value">Billing & Shipping</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">Honeypot Trap</span>
-                    <span class="stat-value" style="color: #3fb950;">Active & Isolated</span>
-                </div>
-
-                <div style="margin-top: 1.2rem;">
-                    <div style="display:flex; justify-content:space-between; font-size:1.2rem; color:#8b949e;">
-                        <span>Completion Rate</span>
-                        <span id="progressPercent">0%</span>
-                    </div>
-                    <div class="progress-track">
-                        <div class="progress-fill" id="progressBar"></div>
-                    </div>
-                </div>
-
-                <div style="margin-top: 1.8rem; padding-top: 1.2rem; border-top: 1px solid #21262d;">
-                    <a href="https://github.com/xCONFLiCTiONx/Smart-AutoComplete" target="_blank"
-                        style="color: #58a6ff; font-size: 1.3rem; text-decoration: none; display: flex; align-items: center; gap: 0.6rem;">
-                        <i class="im im-github"></i> Smart AutoComplete Repo &rarr;
-                    </a>
-                </div>
-            </div>
-
-            <ul id="profile-metadata" class="profile-metadata" style="margin-top: 2rem;"></ul>
-        </aside>
+    <main class="container no-sidebar">
 
         <!-- Main Content Area -->
         <section class="main-content">

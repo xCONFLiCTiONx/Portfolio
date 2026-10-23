@@ -42,13 +42,16 @@ async function initPortfolio() {
         cache: 'no-cache'
     };
 
+    const layoutInfo = window.PortfolioFramework?.resolvePageLayout?.(config);
+    const hasSidebar = layoutInfo ? layoutInfo.layout.sidebar : !document.body.classList.contains('no-sidebar');
+
     let userData = null;
     try {
         const userURL = `https://api.github.com/users/${username}`;
         const userResponse = await fetch(userURL, fetchOptions);
         if (userResponse.ok) {
             userData = await userResponse.json();
-            populateProfile(userData, username);
+            populateProfile(userData, username, hasSidebar);
         } else {
             document.querySelectorAll('.user-name-js').forEach(el => el.textContent = username);
         }
@@ -86,7 +89,20 @@ async function initPortfolio() {
     }
 }
 
-function populateProfile(data, username) {
+function populateProfile(data, username, hasSidebar = true) {
+    document.querySelectorAll('.user-name-js').forEach(el => el.textContent = data.name || username);
+
+    const headerAvatar = document.getElementById(HEADER_AVATAR_ID);
+    const favicon = document.getElementById(FAVICON_ID);
+
+    if (data.avatar_url) {
+        const imgHtml = `<img src="${data.avatar_url}" alt="${data.name || username}">`;
+        if (headerAvatar) headerAvatar.innerHTML = imgHtml;
+        if (favicon) favicon.setAttribute('href', data.avatar_url);
+    }
+
+    if (!hasSidebar) return;
+
     const openGithub = () => window.open(`https://github.com/${username}`, '_blank');
     const ids = [AVATAR_CONTAINER_ID, 'profile-name', HANDLE_CONTAINER_ID, BIO_CONTAINER_ID];
 
@@ -98,19 +114,12 @@ function populateProfile(data, username) {
         }
     });
 
-    document.querySelectorAll('.user-name-js').forEach(el => el.textContent = data.name || username);
     if (document.getElementById(HANDLE_CONTAINER_ID)) document.getElementById(HANDLE_CONTAINER_ID).textContent = data.login || username;
     if (document.getElementById(BIO_CONTAINER_ID)) document.getElementById(BIO_CONTAINER_ID).textContent = data.bio || 'Building tools for freedom & productivity.';
 
     const avatarContainer = document.getElementById(AVATAR_CONTAINER_ID);
-    const headerAvatar = document.getElementById(HEADER_AVATAR_ID);
-    const favicon = document.getElementById(FAVICON_ID);
-
-    if (data.avatar_url) {
-        const imgHtml = `<img src="${data.avatar_url}" alt="${data.name || username}">`;
-        if (avatarContainer) avatarContainer.innerHTML = imgHtml;
-        if (headerAvatar) headerAvatar.innerHTML = imgHtml;
-        if (favicon) favicon.setAttribute('href', data.avatar_url);
+    if (data.avatar_url && avatarContainer) {
+        avatarContainer.innerHTML = `<img src="${data.avatar_url}" alt="${data.name || username}">`;
     }
 
     const metadataContainer = document.getElementById(METADATA_CONTAINER_ID);
