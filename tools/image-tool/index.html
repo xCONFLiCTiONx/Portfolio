@@ -441,12 +441,15 @@
                 <div><label for="fgCropSize">Square crop size (px)</label><input id="fgCropSize" type="number" min="1" value="512" /></div>
                 <div style="display:flex;align-items:end"><button id="fgAutoCrop" type="button" style="width:100%">Center square crop</button></div>
               </div>
+              <label for="fgZoom">Zoom in before cropping: <span id="fgZoomValue">1.0×</span></label>
+              <input id="fgZoom" type="range" min="1" max="4" step="0.1" value="1" />
+              <div class="notice">Zoom changes the area captured inside your square crop. Adjust the crop X/Y and size controls to position the area, then zoom in for a closer crop.</div>
               <label for="fgTolerance">Background removal tolerance: <span id="fgToleranceValue">55</span></label>
               <input id="fgTolerance" type="range" min="0" max="180" value="55" />
               <div class="notice">Background removal samples the top-left pixel and removes similar pixels connected to the image edges. This is designed for solid-color backgrounds like blue with a white foreground. Increase tolerance if blue remains; decrease it if the foreground starts disappearing.</div>
               <div class="row">
                 <div><label for="fgColor">Foreground color</label><input id="fgColor" type="color" value="#ffffff" style="height:44px;padding:4px" /></div>
-                <div><label for="fgCorner">Rounded corner radius: <span id="fgCornerValue">0 px</span></label><input id="fgCorner" type="range" min="0" max="256" value="0" /></div>
+                <div><label><input id="fgRoundEnabled" type="checkbox" /> Apply rounded outer corners (optional)</label><label for="fgCorner">Corner radius: <span id="fgCornerValue">Off</span></label><input id="fgCorner" type="range" min="0" max="256" value="24" disabled /></div>
               </div>
               <label for="fgOutputSize">Output size (square px)</label>
               <select id="fgOutputSize">
@@ -4220,7 +4223,8 @@ if(typeof define === 'function' && define.amd){
         const img=fgState.image,w=img.naturalWidth||img.width,h=img.naturalHeight||img.height;
         const s=fgClamp(Math.round(Number($("#fgCropSize").value)||Math.min(w,h)),1,Math.min(w,h));
         const x=fgClamp(Math.round(Number($("#fgCropX").value)||0),0,w-s), y=fgClamp(Math.round(Number($("#fgCropY").value)||0),0,h-s);
-        const c=document.createElement("canvas");c.width=512;c.height=512;c.getContext("2d").drawImage(img,x,y,s,s,0,0,512,512);
+        const zoom=fgClamp(Number($("#fgZoom").value)||1,1,4), visible=s/zoom, sx=x+(s-visible)/2, sy=y+(s-visible)/2;
+        const c=document.createElement("canvas");c.width=512;c.height=512;c.getContext("2d").drawImage(img,sx,sy,visible,visible,0,0,512,512);
         fgState.sourceCanvas=c;fgSourcePreview.width=512;fgSourcePreview.height=512;fgSourceCtx.clearRect(0,0,512,512);fgSourceCtx.drawImage(c,0,0);
       }
       function fgSampleBackground(x,y) {
@@ -4234,7 +4238,9 @@ if(typeof define === 'function' && define.amd){
       function fgClamp(n, min, max) { return Math.max(min, Math.min(max, n)); }
       function fgSyncLabels() {
         $("#fgToleranceValue").textContent = $("#fgTolerance").value;
-        $("#fgCornerValue").textContent = $("#fgCorner").value + " px";
+        $("#fgCornerValue").textContent = $("#fgRoundEnabled").checked ? $("#fgCorner").value + " px" : "Off";
+        $("#fgZoomValue").textContent = Number($("#fgZoom").value).toFixed(1) + "×";
+        $("#fgCorner").disabled = !$("#fgRoundEnabled").checked;
         $("#fgDownload").textContent = "Download " + ($("#fgExportFormat").value === "ico" ? "ICO" : "PNG");
       }
       function fgDrawPreview(sourceCanvas) {
@@ -4250,7 +4256,8 @@ if(typeof define === 'function' && define.amd){
         const y = fgClamp(Math.round(Number($("#fgCropY").value) || 0), 0, naturalH - cropSize);
         const work = document.createElement("canvas"); work.width = 512; work.height = 512;
         const wctx = work.getContext("2d", {willReadFrequently:true});
-        wctx.drawImage(img, x, y, cropSize, cropSize, 0, 0, 512, 512);
+        const zoom=fgClamp(Number($("#fgZoom").value)||1,1,4), visibleSize=cropSize/zoom;
+        wctx.drawImage(img, x+(cropSize-visibleSize)/2, y+(cropSize-visibleSize)/2, visibleSize, visibleSize, 0, 0, 512, 512);
         const frame = wctx.getImageData(0,0,512,512), px = frame.data, tolerance = Number($("#fgTolerance").value);
         const bg = fgColorToRgb($("#fgBgColor").value);
         const seen = new Uint8Array(512*512), queue = new Int32Array(512*512); let head=0, tail=0, removed=0;
@@ -4274,7 +4281,7 @@ if(typeof define === 'function' && define.amd){
         for(let i=0;i<px.length;i+=4) if(px[i+3]>0){px[i]=rr;px[i+1]=gg;px[i+2]=bb;}
         wctx.putImageData(frame,0,0);
         const outSize=Number($("#fgOutputSize").value), out=document.createElement("canvas"); out.width=outSize; out.height=outSize;
-        const ctx=out.getContext("2d"); const radius=fgClamp(Number($("#fgCorner").value),0,outSize/2);
+        const ctx=out.getContext("2d"); const radius=$("#fgRoundEnabled").checked ? fgClamp(Number($("#fgCorner").value),0,outSize/2) : 0;
         if(radius>0){ctx.beginPath();ctx.moveTo(radius,0);ctx.lineTo(outSize-radius,0);ctx.quadraticCurveTo(outSize,0,outSize,radius);ctx.lineTo(outSize,outSize-radius);ctx.quadraticCurveTo(outSize,outSize,outSize-radius,outSize);ctx.lineTo(radius,outSize);ctx.quadraticCurveTo(0,outSize,0,outSize-radius);ctx.lineTo(0,radius);ctx.quadraticCurveTo(0,0,radius,0);ctx.closePath();ctx.clip();}
         ctx.drawImage(work,0,0,outSize,outSize);
         fgState.resultCanvas=out; fgDrawPreview(out);
@@ -4300,7 +4307,7 @@ if(typeof define === 'function' && define.amd){
         $("#fgCropSize").value=s;$("#fgCropX").value=Math.floor((w-s)/2);$("#fgCropY").value=Math.floor((h-s)/2);
         fgDrawSourceCrop();fgBuildProcessedCanvas();
       });
-      ["fgTolerance","fgColor","fgBgColor","fgCorner","fgOutputSize","fgCropX","fgCropY","fgCropSize"].forEach(id=>$("#"+id).addEventListener("input",()=>{
+      ["fgTolerance","fgColor","fgBgColor","fgCorner","fgRoundEnabled","fgZoom","fgOutputSize","fgCropX","fgCropY","fgCropSize"].forEach(id=>$("#"+id).addEventListener("input",()=>{
         if(id==="fgBgColor") fgState.backgroundColor=fgColorToRgb($("#fgBgColor").value);
         fgSyncLabels(); if(fgState.image){try{fgDrawSourceCrop();fgBuildProcessedCanvas();}catch(err){fgSetInfo(err.message);}}
       }));
@@ -4313,7 +4320,7 @@ if(typeof define === 'function' && define.amd){
       $("#fgExportFormat").addEventListener("change",fgSyncLabels);
       $("#fgProcess").addEventListener("click",()=>{try{fgBuildProcessedCanvas();$("#fgDownload").disabled=false;}catch(err){fgSetInfo(err.message);}});
       $("#fgReset").addEventListener("click",()=>{
-        $("#fgTolerance").value=55;$("#fgColor").value="#ffffff";$("#fgCorner").value=0;$("#fgOutputSize").value="256";
+        $("#fgTolerance").value=55;$("#fgColor").value="#ffffff";$("#fgRoundEnabled").checked=false;$("#fgCorner").value=24;$("#fgZoom").value=1;$("#fgOutputSize").value="256";
         if(fgState.image){const img=fgState.image,s=Math.min(img.naturalWidth||img.width,img.naturalHeight||img.height);$("#fgCropSize").value=s;$("#fgCropX").value=Math.floor(((img.naturalWidth||img.width)-s)/2);$("#fgCropY").value=Math.floor(((img.naturalHeight||img.height)-s)/2);}
         fgSyncLabels();if(fgState.image){fgDrawSourceCrop();const p=fgState.sourceCanvas.getContext("2d",{willReadFrequently:true}).getImageData(0,0,1,1).data;fgState.backgroundColor=[p[0],p[1],p[2]];$("#fgBgColor").value=fgRgbToHex(fgState.backgroundColor);fgBuildProcessedCanvas();}
       });
