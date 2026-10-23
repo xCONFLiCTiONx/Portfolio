@@ -4254,38 +4254,48 @@ if(typeof define === 'function' && define.amd){
         const cropSize = fgClamp(Math.round(Number($("#fgCropSize").value) || Math.min(naturalW,naturalH)), 1, Math.min(naturalW,naturalH));
         const x = fgClamp(Math.round(Number($("#fgCropX").value) || 0), 0, naturalW - cropSize);
         const y = fgClamp(Math.round(Number($("#fgCropY").value) || 0), 0, naturalH - cropSize);
-        const work = document.createElement("canvas"); work.width = 512; work.height = 512;
-        const wctx = work.getContext("2d", {willReadFrequently:true});
-        const zoom=fgClamp(Number($("#fgZoom").value)||1,1,4), visibleSize=cropSize/zoom;
-        wctx.drawImage(img, x+(cropSize-visibleSize)/2, y+(cropSize-visibleSize)/2, visibleSize, visibleSize, 0, 0, 512, 512);
-        const frame = wctx.getImageData(0,0,512,512), px = frame.data, tolerance = Number($("#fgTolerance").value);
+        // Process at source resolution (up to 2048px) instead of shrinking every cutout to 512px.
+        const zoom = fgClamp(Number($("#fgZoom").value) || 1, 1, 4);
+        const visibleSize = cropSize / zoom;
+        const workSize = Math.max(512, Math.min(2048, Math.round(visibleSize)));
+        const work = document.createElement("canvas"); work.width = workSize; work.height = workSize;
+        const wctx = work.getContext("2d", { willReadFrequently: true });
+        wctx.imageSmoothingEnabled = true; wctx.imageSmoothingQuality = "high";
+        wctx.drawImage(img, x + (cropSize-visibleSize)/2, y + (cropSize-visibleSize)/2, visibleSize, visibleSize, 0, 0, workSize, workSize);
+        const frame = wctx.getImageData(0,0,workSize,workSize), px = frame.data, tolerance = Number($("#fgTolerance").value);
         const bg = fgColorToRgb($("#fgBgColor").value);
-        const seen = new Uint8Array(512*512), queue = new Int32Array(512*512); let head=0, tail=0, removed=0;
+        const pixelCount = workSize * workSize, seen = new Uint8Array(pixelCount), queue = new Int32Array(pixelCount);
+        let head=0, tail=0, removed=0;
         function similar(i) {
           const dr=px[i*4]-bg[0], dg=px[i*4+1]-bg[1], db=px[i*4+2]-bg[2];
           return Math.sqrt(dr*dr+dg*dg+db*db) <= tolerance && px[i*4+3] > 0;
         }
-        function enqueue(i) { if (i<0 || i>=512*512 || seen[i] || !similar(i)) return; seen[i]=1; queue[tail++]=i; }
-        for(let i=0;i<512;i++){enqueue(i);enqueue((511*512)+i);enqueue(i*512);enqueue(i*512+511);}
+        function enqueue(i) {
+          if (i<0 || i>=pixelCount || seen[i] || !similar(i)) return;
+          seen[i]=1; queue[tail++]=i;
+        }
+        for(let i=0;i<workSize;i++){enqueue(i);enqueue((workSize-1)*workSize+i);enqueue(i*workSize);enqueue(i*workSize+workSize-1);}
         while(head<tail){
-          const i=queue[head++]; const a=i*4;
-          // Smooth the key edge a little to avoid a hard jagged fringe.
+          const i=queue[head++], a=i*4;
           const dr=px[a]-bg[0], dg=px[a+1]-bg[1], db=px[a+2]-bg[2];
           const distance=Math.sqrt(dr*dr+dg*dg+db*db);
+          // Feather keyed edges smoothly at the higher processing resolution.
           px[a+3]=distance < tolerance*0.82 ? 0 : Math.round(px[a+3]*fgClamp((distance-tolerance*0.82)/(tolerance*0.18+1),0,1));
           removed++;
-          const col=i%512;
-          if(col>0) enqueue(i-1); if(col<511) enqueue(i+1); if(i>=512) enqueue(i-512); if(i<512*511) enqueue(i+512);
+          const col=i%workSize;
+          if(col>0) enqueue(i-1); if(col<workSize-1) enqueue(i+1);
+          if(i>=workSize) enqueue(i-workSize); if(i<pixelCount-workSize) enqueue(i+workSize);
         }
         const color=$("#fgColor").value, rr=parseInt(color.slice(1,3),16), gg=parseInt(color.slice(3,5),16), bb=parseInt(color.slice(5,7),16);
         for(let i=0;i<px.length;i+=4) if(px[i+3]>0){px[i]=rr;px[i+1]=gg;px[i+2]=bb;}
         wctx.putImageData(frame,0,0);
         const outSize=Number($("#fgOutputSize").value), out=document.createElement("canvas"); out.width=outSize; out.height=outSize;
-        const ctx=out.getContext("2d"); const radius=$("#fgRoundEnabled").checked ? fgClamp(Number($("#fgCorner").value),0,outSize/2) : 0;
+        const ctx=out.getContext("2d"); ctx.imageSmoothingEnabled=true; ctx.imageSmoothingQuality="high";
+        const radius=$("#fgRoundEnabled").checked ? fgClamp(Number($("#fgCorner").value),0,outSize/2) : 0;
         if(radius>0){ctx.beginPath();ctx.moveTo(radius,0);ctx.lineTo(outSize-radius,0);ctx.quadraticCurveTo(outSize,0,outSize,radius);ctx.lineTo(outSize,outSize-radius);ctx.quadraticCurveTo(outSize,outSize,outSize-radius,outSize);ctx.lineTo(radius,outSize);ctx.quadraticCurveTo(0,outSize,0,outSize-radius);ctx.lineTo(0,radius);ctx.quadraticCurveTo(0,0,radius,0);ctx.closePath();ctx.clip();}
         ctx.drawImage(work,0,0,outSize,outSize);
         fgState.resultCanvas=out; fgDrawPreview(out);
-        fgSetInfo("Processed " + naturalW + "×" + naturalH + " source. Removed " + removed.toLocaleString() + " edge-connected background pixels. Output: " + outSize + "×" + outSize + ". Background is transparent.");
+        fgSetInfo("Processed at "+workSize+"×"+workSize+" for cleaner edges. Removed "+removed.toLocaleString()+" edge-connected background pixels. Output: "+outSize+"×"+outSize+". Background is transparent.");
         return out;
       }
       fgFile.addEventListener("change", async () => {
