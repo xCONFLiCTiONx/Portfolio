@@ -462,9 +462,16 @@
               <div id="fgInfo" class="stat">Upload an image to begin.</div>
             </div>
             <div class="card">
-              <h2>Transparent Preview</h2>
-              <div class="preview" style="min-height:360px"><canvas id="fgPreview" width="512" height="512" style="width:min(100%,512px);height:auto;image-rendering:auto"></canvas></div>
-              <div class="notice">Checkerboard areas are transparent. Background removal preserves the foreground silhouette; recoloring changes visible foreground pixels only. Corner radius is measured in pixels on the selected output canvas.</div>
+              <h2>Preview</h2>
+              <label>1. Source image — click the background color you want removed</label>
+              <div class="preview" style="min-height:220px;background-color:#e8e8e8;background-image:linear-gradient(45deg,#c7c7c7 25%,transparent 25%),linear-gradient(-45deg,#c7c7c7 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#c7c7c7 75%),linear-gradient(-45deg,transparent 75%,#c7c7c7 75%);background-size:20px 20px;background-position:0 0,0 10px,10px -10px,-10px 0"><canvas id="fgSourcePreview" width="512" height="512" title="Click the background to sample its color" style="width:min(100%,512px);height:auto;cursor:crosshair;image-rendering:auto"></canvas></div>
+              <div class="row">
+                <div><label for="fgBgColor">Background color to remove</label><input id="fgBgColor" type="color" value="#0000ff" style="height:44px;padding:4px" /></div>
+                <div style="display:flex;align-items:end"><button id="fgSampleCorner" type="button" style="width:100%">Sample top-left pixel</button></div>
+              </div>
+              <label>2. Transparent result preview</label>
+              <div class="preview" style="min-height:280px;background-color:#e8e8e8;background-image:linear-gradient(45deg,#c7c7c7 25%,transparent 25%),linear-gradient(-45deg,#c7c7c7 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#c7c7c7 75%),linear-gradient(-45deg,transparent 75%,#c7c7c7 75%);background-size:20px 20px;background-position:0 0,0 10px,10px -10px,-10px 0"><canvas id="fgPreview" width="512" height="512" style="width:min(100%,512px);height:auto;image-rendering:auto"></canvas></div>
+              <div class="notice">The checkerboard makes transparent pixels visible. If the wrong part disappears, click a clean patch of background in the source image or choose its color manually, then adjust tolerance.</div>
             </div>
           </div>
         </section>
@@ -4203,8 +4210,26 @@ if(typeof define === 'function' && define.amd){
 
 
       // Foreground Icon Maker: crop, edge-connected background removal, recolor, rounded corners, single-format export.
-      const fgState = { image: null, resultCanvas: null };
+      const fgState = { image: null, resultCanvas: null, sourceCanvas: null, backgroundColor: [0,0,255] };
       const fgFile = $("#fgFile"), fgPreview = $("#fgPreview"), fgCtx = fgPreview.getContext("2d", { willReadFrequently: true });
+      const fgSourcePreview = $("#fgSourcePreview"), fgSourceCtx = fgSourcePreview.getContext("2d", { willReadFrequently: true });
+      function fgColorToRgb(hex) { return [parseInt(hex.slice(1,3),16),parseInt(hex.slice(3,5),16),parseInt(hex.slice(5,7),16)]; }
+      function fgRgbToHex(rgb) { return "#" + rgb.map(v=>Math.round(v).toString(16).padStart(2,"0")).join(""); }
+      function fgDrawSourceCrop() {
+        if(!fgState.image) return;
+        const img=fgState.image,w=img.naturalWidth||img.width,h=img.naturalHeight||img.height;
+        const s=fgClamp(Math.round(Number($("#fgCropSize").value)||Math.min(w,h)),1,Math.min(w,h));
+        const x=fgClamp(Math.round(Number($("#fgCropX").value)||0),0,w-s), y=fgClamp(Math.round(Number($("#fgCropY").value)||0),0,h-s);
+        const c=document.createElement("canvas");c.width=512;c.height=512;c.getContext("2d").drawImage(img,x,y,s,s,0,0,512,512);
+        fgState.sourceCanvas=c;fgSourcePreview.width=512;fgSourcePreview.height=512;fgSourceCtx.clearRect(0,0,512,512);fgSourceCtx.drawImage(c,0,0);
+      }
+      function fgSampleBackground(x,y) {
+        if(!fgState.sourceCanvas)return;
+        const p=fgState.sourceCanvas.getContext("2d",{willReadFrequently:true}).getImageData(fgClamp(Math.round(x),0,511),fgClamp(Math.round(y),0,511),1,1).data;
+        fgState.backgroundColor=[p[0],p[1],p[2]];$("#fgBgColor").value=fgRgbToHex(fgState.backgroundColor);
+        fgSetInfo("Background color sampled: "+$("#fgBgColor").value+". Reprocessing preview…");
+        fgBuildProcessedCanvas();
+      }
       function fgSetInfo(message) { $("#fgInfo").textContent = message; }
       function fgClamp(n, min, max) { return Math.max(min, Math.min(max, n)); }
       function fgSyncLabels() {
@@ -4227,7 +4252,7 @@ if(typeof define === 'function' && define.amd){
         const wctx = work.getContext("2d", {willReadFrequently:true});
         wctx.drawImage(img, x, y, cropSize, cropSize, 0, 0, 512, 512);
         const frame = wctx.getImageData(0,0,512,512), px = frame.data, tolerance = Number($("#fgTolerance").value);
-        const bg = [px[0],px[1],px[2]];
+        const bg = fgColorToRgb($("#fgBgColor").value);
         const seen = new Uint8Array(512*512), queue = new Int32Array(512*512); let head=0, tail=0, removed=0;
         function similar(i) {
           const dr=px[i*4]-bg[0], dg=px[i*4+1]-bg[1], db=px[i*4+2]-bg[2];
@@ -4263,6 +4288,9 @@ if(typeof define === 'function' && define.amd){
           const img=fgState.image, size=Math.min(img.naturalWidth||img.width,img.naturalHeight||img.height);
           $("#fgCropSize").value=size; $("#fgCropX").value=Math.floor(((img.naturalWidth||img.width)-size)/2); $("#fgCropY").value=Math.floor(((img.naturalHeight||img.height)-size)/2);
           $("#fgCropSize").max=size; $("#fgCropX").max=Math.max(0,(img.naturalWidth||img.width)-size); $("#fgCropY").max=Math.max(0,(img.naturalHeight||img.height)-size);
+          fgDrawSourceCrop();
+          const p=fgState.sourceCanvas.getContext("2d",{willReadFrequently:true}).getImageData(0,0,1,1).data;
+          fgState.backgroundColor=[p[0],p[1],p[2]];$("#fgBgColor").value=fgRgbToHex(fgState.backgroundColor);
           $("#fgDownload").disabled=false; fgBuildProcessedCanvas();
         } catch(err){fgSetInfo("Could not load image: "+err.message);}
       });
@@ -4270,17 +4298,24 @@ if(typeof define === 'function' && define.amd){
         if(!fgState.image)return;
         const img=fgState.image,w=img.naturalWidth||img.width,h=img.naturalHeight||img.height,s=Math.min(w,h);
         $("#fgCropSize").value=s;$("#fgCropX").value=Math.floor((w-s)/2);$("#fgCropY").value=Math.floor((h-s)/2);
-        fgBuildProcessedCanvas();
+        fgDrawSourceCrop();fgBuildProcessedCanvas();
       });
-      ["fgTolerance","fgColor","fgCorner","fgOutputSize","fgCropX","fgCropY","fgCropSize"].forEach(id=>$("#"+id).addEventListener("input",()=>{
-        fgSyncLabels(); if(fgState.image){try{fgBuildProcessedCanvas();}catch(err){fgSetInfo(err.message);}}
+      ["fgTolerance,"fgColor","fgBgColor","fgCorner","fgOutputSize","fgCropX","fgCropY","fgCropSize"].forEach(id=>$("#"+id).addEventListener("input",()=>{
+        if(id==="fgBgColor") fgState.backgroundColor=fgColorToRgb($("#fgBgColor").value);
+        fgSyncLabels(); if(fgState.image){try{fgDrawSourceCrop();fgBuildProcessedCanvas();}catch(err){fgSetInfo(err.message);}}
       }));
+      fgSourcePreview.addEventListener("click",e=>{
+        if(!fgState.sourceCanvas)return;
+        const r=fgSourcePreview.getBoundingClientRect();
+        fgSampleBackground((e.clientX-r.left)/r.width*512,(e.clientY-r.top)/r.height*512);
+      });
+      $("#fgSampleCorner").addEventListener("click",()=>fgSampleBackground(0,0));
       $("#fgExportFormat").addEventListener("change",fgSyncLabels);
       $("#fgProcess").addEventListener("click",()=>{try{fgBuildProcessedCanvas();$("#fgDownload").disabled=false;}catch(err){fgSetInfo(err.message);}});
       $("#fgReset").addEventListener("click",()=>{
         $("#fgTolerance").value=55;$("#fgColor").value="#ffffff";$("#fgCorner").value=0;$("#fgOutputSize").value="256";
         if(fgState.image){const img=fgState.image,s=Math.min(img.naturalWidth||img.width,img.naturalHeight||img.height);$("#fgCropSize").value=s;$("#fgCropX").value=Math.floor(((img.naturalWidth||img.width)-s)/2);$("#fgCropY").value=Math.floor(((img.naturalHeight||img.height)-s)/2);}
-        fgSyncLabels();if(fgState.image)fgBuildProcessedCanvas();
+        fgSyncLabels();if(fgState.image){fgDrawSourceCrop();const p=fgState.sourceCanvas.getContext("2d",{willReadFrequently:true}).getImageData(0,0,1,1).data;fgState.backgroundColor=[p[0],p[1],p[2]];$("#fgBgColor").value=fgRgbToHex(fgState.backgroundColor);fgBuildProcessedCanvas();}
       });
       $("#fgDownload").addEventListener("click",async()=>{
         try {
