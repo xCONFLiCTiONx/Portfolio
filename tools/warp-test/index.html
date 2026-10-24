@@ -853,7 +853,7 @@ async function getIPv6() {
 
         const response =
             await fetch(
-                "https://api6.ipify.org?format=json&cache=" +
+                "https://ipv6.icanhazip.com/?cache=" +
                 Date.now(),
                 {
                     cache: "no-store"
@@ -1306,7 +1306,6 @@ async function runTunnelAudit() {
     const tests = [
         { label: "This site · Cloudflare trace", local: true },
         { label: "ipify IPv4/dual-stack", url: "https://api.ipify.org?format=json", kind: "json" },
-        { label: "ifconfig.co", url: "https://ifconfig.co/json", kind: "json" },
         { label: "AWS checkip", url: "https://checkip.amazonaws.com", kind: "text" },
         { label: "ipinfo.io", url: "https://ipinfo.io/json", kind: "json" }
     ];
