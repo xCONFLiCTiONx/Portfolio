@@ -1440,17 +1440,19 @@ const config = {
           geoEl.textContent = "Detecting IPv6...";
 
           try {
-            const resV4 = await fetch("https://api.ipify.org?format=json");
-            const dataV4 = await resV4.json();
-            ipEl.textContent = dataV4.ip;
+            const resV4 = await fetch("/cdn-cgi/trace", { cache: "no-store" });
+            const traceV4 = await resV4.text();
+            const ipMatch = traceV4.match(/^ip=(.+)$/m);
+            if (!resV4.ok || !ipMatch) throw new Error("Cloudflare trace unavailable");
+            ipEl.textContent = ipMatch[1].trim();
           } catch (err) {
-            ipEl.textContent = "IPv4 lookup failed";
+            ipEl.textContent = "Same-origin exit-IP check unavailable";
           }
 
           try {
             const resV6 = await fetch("https://api6.ipify.org?format=json");
             const dataV6 = await resV6.json();
-            geoEl.textContent = `IPv6: ${dataV6.ip}`;
+            geoEl.textContent = `External IPv6 check: ${dataV6.ip} (may be direct)`;
           } catch (err) {
             geoEl.textContent = "IPv6 not available on this network";
           }
