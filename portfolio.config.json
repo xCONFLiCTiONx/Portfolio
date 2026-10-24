@@ -164,8 +164,8 @@
     },
     {
       "id": "security-audit",
-      "name": "Security Audit",
-      "description": "Comprehensive Android Privacy & Security Diagnostic tool to inspect device permission scopes, surface potential security vulnerabilities, and evaluate system posture.",
+      "name": "Security Audit Studio",
+      "description": "Comprehensive Client Security & Privacy Audit Studio to inspect proxy/VPN encapsulation, WebRTC leak detection, browser fingerprint resistance, and permission isolation.",
       "path": "tools/security-audit/",
       "icon": "im im-fingerprint",
       "category": "Developer Utility",

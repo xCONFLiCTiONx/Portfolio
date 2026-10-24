@@ -1,102 +1,136 @@
+/**
+ * Browser Fingerprinting & Tracking Surface Audit
+ * Evaluates Canvas, WebGL, AudioContext, Font metrics, and hardware entropy exposure.
+ */
+
 export async function fingerprintScan() {
   let results = {};
+  let riskScore = 0; // lower is better
 
-  // Canvas fingerprint stability test
+  // 1. Canvas Fingerprint Entropy & Dynamic Poisoning Test
   try {
-    const getCanvasHash = () => {
+    const renderCanvas = () => {
       const canvas = document.createElement("canvas");
+      canvas.width = 240;
+      canvas.height = 60;
       const ctx = canvas.getContext("2d");
       if (!ctx) return null;
-      ctx.textBaseline = "top";
-      ctx.font = "16px Arial";
-      ctx.fillStyle = "#00ff88";
-      ctx.fillText("Security Audit", 10, 10);
+      ctx.textBaseline = "alphabetic";
+      ctx.fillStyle = "#f60";
+      ctx.fillRect(125, 1, 62, 20);
+      ctx.fillStyle = "#069";
+      ctx.font = "14pt Arial, sans-serif";
+      ctx.fillText("xSecurity<canvas>!&%", 4, 35);
+      ctx.fillStyle = "rgba(102, 204, 0, 0.7)";
+      ctx.font = "16pt Segoe UI, sans-serif";
+      ctx.fillText("xSecurity<canvas>!&%", 8, 38);
       return canvas.toDataURL();
     };
 
-    const hash1 = getCanvasHash();
-    const hash2 = getCanvasHash();
+    const hash1 = renderCanvas();
+    const hash2 = renderCanvas();
 
     if (hash1 && hash2) {
-      results["Canvas Fingerprint"] = hash1.length;
-
-      if (hash1 === hash2) {
-        results["Canvas Exposure"] = "[ WARN ] STABLE FINGERPRINT (Tracking Risk)";
+      if (hash1 !== hash2) {
+        results["Canvas Fingerprint Protection"] = "[ PASS ] SHIELDED (Dynamic Noise / Poisoning Detected)";
       } else {
-        results["Canvas Exposure"] = "[ PASS ] RANDOMIZED / PROTECTED";
+        results["Canvas Fingerprint Protection"] = "[ WARN ] STABLE HASH (Deterministic Canvas Signature)";
+        riskScore += 1;
       }
     } else {
-      results["Canvas Exposure"] = "[ PASS ] BLOCKED";
+      results["Canvas Fingerprint Protection"] = "[ PASS ] BLOCKED (Canvas 2D Access Restricted)";
     }
-  } catch {
-    results["Canvas Exposure"] = "[ PASS ] BLOCKED";
+  } catch (_) {
+    results["Canvas Fingerprint Protection"] = "[ PASS ] BLOCKED (Canvas Access Denied)";
   }
 
-  // WebGL Hardware Fingerprint
+  // 2. WebGL Hardware Fingerprint & Unmasked Driver Exposure
   try {
     const canvas = document.createElement("canvas");
     const gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
     if (gl) {
       const debug = gl.getExtension("WEBGL_debug_renderer_info");
-      const vendor = debug ? gl.getParameter(debug.UNMASKED_VENDOR_WEBGL) : "PROTECTED";
-      const renderer = debug ? gl.getParameter(debug.UNMASKED_RENDERER_WEBGL) : "PROTECTED";
-      results["WebGL Vendor"] = vendor || "PROTECTED";
-      results["WebGL Renderer"] = renderer || "PROTECTED";
+      const vendor = debug ? gl.getParameter(debug.UNMASKED_VENDOR_WEBGL) : null;
+      const renderer = debug ? gl.getParameter(debug.UNMASKED_RENDERER_WEBGL) : null;
 
-      const vStr = String(vendor).toUpperCase();
-      const rStr = String(renderer).toUpperCase();
-
-      results["WebGL Hardware Fingerprint"] = (vStr !== "PROTECTED" && rStr !== "PROTECTED")
-        ? "[ WARN ] EXPOSED (Hardware info accessible)"
-        : "[ PASS ] PROTECTED";
+      if (vendor && renderer && !/generic|protected|swiftshader/i.test(renderer)) {
+        results["WebGL Hardware Masking"] = `[ WARN ] EXPOSED (${renderer.slice(0, 32)})`;
+        results["How to Fix WebGL Exposure"] = "Your GPU model is directly accessible to trackers. In Firefox set 'privacy.resistFingerprinting = true' or enable Brave Shields / privacy extensions to mask hardware telemetry.";
+        riskScore += 1;
+      } else {
+        results["WebGL Hardware Masking"] = "[ PASS ] PROTECTED (Masked / Generic Shader)";
+      }
     } else {
-      results["WebGL"] = "[ PASS ] UNAVAILABLE";
-      results["WebGL Hardware Fingerprint"] = "[ PASS ] PROTECTED";
+      results["WebGL Hardware Masking"] = "[ PASS ] BLOCKED (WebGL Disabled)";
     }
-  } catch {
-    results["WebGL"] = "[ PASS ] BLOCKED";
-    results["WebGL Hardware Fingerprint"] = "[ PASS ] PROTECTED";
+  } catch (_) {
+    results["WebGL Hardware Masking"] = "[ PASS ] PROTECTED (WebGL Blocked)";
   }
 
-  // Audio Context check
+  // 3. AudioContext Fingerprint Test
   try {
-    const AudioCtx = window.OfflineAudioContext || window.webkitOfflineAudioContext;
-    if (AudioCtx) {
-      let isProtected = false;
-      try {
-        const audio1 = new AudioCtx(1, 44100, 44100);
-        const audio2 = new AudioCtx(1, 44100, 44100);
-        if (audio1.constructor !== audio2.constructor) {
-          isProtected = true;
-        }
-      } catch {
-        isProtected = true;
+    const AudioContextClass = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+    if (AudioContextClass) {
+      const audioCtx = new AudioContextClass(1, 44100, 44100);
+      const osc = audioCtx.createOscillator();
+      osc.type = "triangle";
+      osc.frequency.setValueAtTime(10000, audioCtx.currentTime);
+
+      const compressor = audioCtx.createDynamicsCompressor();
+      compressor.threshold.setValueAtTime(-50, audioCtx.currentTime);
+      compressor.knee.setValueAtTime(40, audioCtx.currentTime);
+      compressor.ratio.setValueAtTime(12, audioCtx.currentTime);
+      compressor.attack.setValueAtTime(0, audioCtx.currentTime);
+      compressor.release.setValueAtTime(0.25, audioCtx.currentTime);
+
+      osc.connect(compressor);
+      compressor.connect(audioCtx.destination);
+      osc.start(0);
+
+      const renderedBuffer = await audioCtx.startRendering();
+      const channelData = renderedBuffer.getChannelData(0);
+      let sum = 0;
+      for (let i = 4500; i < 5000; i++) {
+        sum += Math.abs(channelData[i]);
       }
 
-      results["Audio Context"] = isProtected ? "[ PASS ] BLOCKED / RANDOMIZED" : "[ WARN ] AVAILABLE";
-      results["Audio Protection"] = isProtected ? "[ PASS ] MODIFIED / RANDOMIZED" : "[ WARN ] STANDARD AUDIO API";
+      if (sum === 0 || isNaN(sum)) {
+        results["AudioContext Fingerprint"] = "[ PASS ] BLOCKED / RANDOMIZED";
+      } else {
+        results["AudioContext Fingerprint"] = "[ WARN ] ACCESSIBLE (Standard Audio Synthesizer Output)";
+        riskScore += 0.5;
+      }
     } else {
-      results["Audio Context"] = "[ PASS ] BLOCKED";
-      results["Audio Protection"] = "[ PASS ] BLOCKED";
+      results["AudioContext Fingerprint"] = "[ PASS ] BLOCKED (API Unavailable)";
     }
-  } catch {
-    results["Audio Context"] = "[ PASS ] BLOCKED";
-    results["Audio Protection"] = "[ PASS ] BLOCKED";
+  } catch (_) {
+    results["AudioContext Fingerprint"] = "[ PASS ] BLOCKED (Audio API Restricted)";
   }
 
-  // Fingerprint Risk Assessment
-  let stableVectors = 0;
-  if (results["Canvas Exposure"] && results["Canvas Exposure"].includes("STABLE FINGERPRINT")) stableVectors++;
-  if (results["Audio Protection"] && results["Audio Protection"].includes("STANDARD AUDIO API")) stableVectors++;
+  // 4. Battery Status Tracking Vector Check
+  try {
+    if (navigator.getBattery) {
+      const b = await navigator.getBattery();
+      if (b && typeof b.level === "number") {
+        results["Battery Status API"] = "[ WARN ] EXPOSED (Historic Mobile Tracking Vector Accessible)";
+        riskScore += 0.5;
+      } else {
+        results["Battery Status API"] = "[ PASS ] BLOCKED / PROTECTED";
+      }
+    } else {
+      results["Battery Status API"] = "[ PASS ] REMOVED (Modern Browser Privacy Standard)";
+    }
+  } catch (_) {
+    results["Battery Status API"] = "[ PASS ] BLOCKED";
+  }
 
-  if (stableVectors >= 2) {
-    results["Fingerprint Risk"] = "[ WARN ] MEDIUM";
-    results["How to Fix Fingerprinting"] = "Standard browser APIs are accessible and deterministic. Enable strict tracking protection (e.g., Brave Shields or Firefox ETP) if you require active fingerprint randomization.";
-  } else if (stableVectors === 1) {
-    results["Fingerprint Risk"] = "[ WARN ] LOW-MEDIUM";
-    results["How to Fix Fingerprinting"] = "Partial fingerprinting protection detected. Consider enabling enhanced tracking protection in your browser.";
+  // 5. Synthesis & Risk Level
+  if (riskScore >= 2) {
+    results["Overall Fingerprint Risk"] = "[ WARN ] ELEVATED (Deterministic tracking vectors accessible)";
+  } else if (riskScore > 0) {
+    results["Overall Fingerprint Risk"] = "[ PASS ] LOW-MEDIUM (Partial Fingerprint Hardening Active)";
   } else {
-    results["Fingerprint Risk"] = "[ PASS ] LOW";
+    results["Overall Fingerprint Risk"] = "[ PASS ] MINIMAL (Strict Tracking Protections Verified)";
   }
 
   return results;

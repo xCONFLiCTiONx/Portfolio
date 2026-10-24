@@ -2,46 +2,134 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Security Audit — Android Privacy & Security Diagnostic | Portfolio</title>
+    <title>Security &amp; Privacy Audit Studio — Network, Proxy &amp; Vector Diagnostic | xCONFLiCTiONx</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Android Privacy & Security Diagnostic tool to audit device security, browser features, permissions, and network settings.">
+    <meta name="description" content="Comprehensive Client Security &amp; Privacy Audit Studio. Accurately tests network routing, proxy/VPN encapsulation, WebRTC leak detection, browser fingerprint resistance, and permission isolation.">
     <meta name="portfolio-tool-id" content="security-audit">
+    <meta name="portfolio-layout-sidebar" content="false">
     <meta name="theme-color" content="#0b0d10">
     <link rel="manifest" href="manifest.json">
+    <link rel="canonical" href="https://xconflictionx.cc/tools/security-audit/">
     <link rel="stylesheet" href="../../css/main.css">
     <link rel="stylesheet" href="css/style.css">
     <link rel="icon" id="favicon-js" href="../../assets/favicon.ico" type="image/x-icon">
     <link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
 </head>
-<body id="top" data-tool-id="security-audit">
+<body id="top" data-tool-id="security-audit" class="no-sidebar">
 
-    <div class="container">
-        <header style="margin-top: 20px; margin-bottom: 20px;">
-            <h1>Security Audit</h1>
-            <p style="color: var(--muted, #888); margin: 5px 0 0;">Android Privacy & Security Diagnostic</p>
-        </header>
+    <main class="container no-sidebar">
+        <div class="audit-container">
 
-        <main>
-            <section class="card hero">
-                <div id="scoreCircle">
-                    <span id="score"> -- </span>
-                    <small> Security Score </small>
+            <!-- Title & Header Badges -->
+            <header class="audit-header">
+                <div class="audit-header-badge-row">
+                    <span class="tool-chip"><i class="im im-shield"></i> Security Studio v2.0</span>
+                    <span class="tool-chip green"><i class="im im-check-mark"></i> 100% In-Browser &bull; Zero Telemetry</span>
+                    <span class="tool-chip"><i class="im im-globe"></i> Proxy &amp; WebRTC Verified</span>
+                </div>
+                <h1><i class="im im-fingerprint"></i> Security &amp; Privacy Audit Studio</h1>
+                <p class="audit-subtitle">Comprehensive posture assessment: Network anonymity, Proxy/VPN encapsulation, WebRTC leaks, fingerprint defense, and permission isolation.</p>
+            </header>
+
+            <!-- Hero Master HUD -->
+            <section class="hero-hud-card">
+                <div class="hero-layout">
+                    <!-- Circular Score Gauge -->
+                    <div class="gauge-wrapper">
+                        <svg class="gauge-svg" viewBox="0 0 160 160">
+                            <circle class="gauge-bg" cx="80" cy="80" r="70" />
+                            <circle class="gauge-fill" id="gaugeCircle" cx="80" cy="80" r="70" style="stroke-dasharray: 439.82; stroke-dashoffset: 439.82;" />
+                        </svg>
+                        <div class="gauge-center">
+                            <span class="gauge-score" id="scoreValue">--</span>
+                            <span class="gauge-label">Security Score</span>
+                        </div>
+                    </div>
+
+                    <!-- Posture, Status & Pillars -->
+                    <div class="hero-content">
+                        <div class="posture-header-row">
+                            <div class="grade-pill grade-a" id="gradeBadge">--</div>
+                            <div class="posture-badge grade-a" id="postureTag">INITIALIZING DIAGNOSTIC</div>
+                        </div>
+
+                        <!-- Live Status Notification -->
+                        <div class="scan-status-box">
+                            <div class="scan-status-text">
+                                <i class="im im-spinner im-spin"></i>
+                                <span id="scanStatusText">Waiting to begin audit...</span>
+                            </div>
+                            <div class="progress-track">
+                                <div class="progress-fill" id="scanProgressBar"></div>
+                            </div>
+                        </div>
+
+                        <!-- 4 Pillar Metrics Grid -->
+                        <div class="pillars-grid">
+                            <div class="pillar-card" id="pillarNetwork">
+                                <div class="pillar-head">
+                                    <span class="pillar-title"><i class="im im-globe"></i> Network &amp; Proxy</span>
+                                    <span class="pillar-num">--/30</span>
+                                </div>
+                                <div class="pillar-bar-bg"><div class="pillar-fill" style="width: 0%;"></div></div>
+                            </div>
+                            <div class="pillar-card" id="pillarFingerprint">
+                                <div class="pillar-head">
+                                    <span class="pillar-title"><i class="im im-fingerprint"></i> Fingerprint Defense</span>
+                                    <span class="pillar-num">--/25</span>
+                                </div>
+                                <div class="pillar-bar-bg"><div class="pillar-fill" style="width: 0%;"></div></div>
+                            </div>
+                            <div class="pillar-card" id="pillarPermissions">
+                                <div class="pillar-head">
+                                    <span class="pillar-title"><i class="im im-key"></i> Permissions &amp; APIs</span>
+                                    <span class="pillar-num">--/20</span>
+                                </div>
+                                <div class="pillar-bar-bg"><div class="pillar-fill" style="width: 0%;"></div></div>
+                            </div>
+                            <div class="pillar-card" id="pillarBrowser">
+                                <div class="pillar-head">
+                                    <span class="pillar-title"><i class="im im-lock"></i> Protocol &amp; Browser</span>
+                                    <span class="pillar-num">--/25</span>
+                                </div>
+                                <div class="pillar-bar-bg"><div class="pillar-fill" style="width: 0%;"></div></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <div style="margin-top: 15px;">
-                    <button id="scanButton">START SECURITY SCAN</button>
-                    <button id="reportButton" disabled>EXPORT REPORT</button>
+                <!-- Action Toolbar -->
+                <div class="hud-actions-row">
+                    <button class="btn-primary" id="scanButton"><i class="im im-sync"></i> Run Full Audit</button>
+                    <button class="btn-secondary" id="retestNetButton"><i class="im im-shield-check"></i> Re-Test Proxy &amp; WebRTC</button>
+                    <button class="btn-secondary" id="reportButton" disabled><i class="im im-file-o"></i> Export HTML Report</button>
+                    <button class="btn-secondary" id="copySummaryButton" disabled><i class="im im-copy"></i> Copy Summary</button>
                 </div>
             </section>
 
-            <section class="card">
-                <h2>Scan Status</h2>
-                <div id="status">Waiting for scan...</div>
+            <!-- Search & Category Filters -->
+            <section class="controls-card">
+                <div class="search-input-wrap">
+                    <i class="im im-magnifier"></i>
+                    <input type="text" id="auditSearch" class="search-input" placeholder="Search diagnostic checks (e.g. proxy, webrtc, canvas, gps, dns)..." autocomplete="off" spellcheck="false">
+                </div>
+                <div class="filter-tabs">
+                    <button type="button" class="filter-tab active" data-filter="all">All Checks</button>
+                    <button type="button" class="filter-tab" data-filter="network">Network &amp; Proxy</button>
+                    <button type="button" class="filter-tab" data-filter="fingerprint">Fingerprinting</button>
+                    <button type="button" class="filter-tab" data-filter="permissions">Permissions</button>
+                    <button type="button" class="filter-tab" data-filter="browser">Browser &amp; Storage</button>
+                    <button type="button" class="filter-tab" data-filter="fixes">Fixes &amp; Advice</button>
+                </div>
             </section>
 
-            <section id="results"></section>
-        </main>
-    </div>
+            <!-- Audit Results Grid -->
+            <section class="audit-cards-grid" id="results">
+                <!-- Dynamically populated by app.js -->
+            </section>
+
+        </div>
+    </main>
 
     <!-- Framework & Scripts -->
     <script src="../../js/framework.js"></script>
@@ -51,11 +139,8 @@
 
     <script>
       if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.register("service-worker.js")
-          .then(() => {
-            console.log("Security Audit offline enabled");
-          })
-          .catch(err => console.log(err));
+        navigator.serviceWorker.register("js/service-worker.js")
+          .catch(() => {});
       }
     </script>
 </body>

@@ -1,13 +1,13 @@
 {
-  "name": "Security Audit",
-  "short_name": "xSecurity",
-  "description": "Android privacy and security diagnostic tool.",
+  "name": "Security & Privacy Audit Studio",
+  "short_name": "SecurityAudit",
+  "description": "Comprehensive client security, proxy anonymity, WebRTC leak, and vector diagnostic workbench.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "orientation": "portrait",
-  "background_color": "#050505",
-  "theme_color": "#00ff88",
+  "orientation": "any",
+  "background_color": "#0b0d10",
+  "theme_color": "#0b0d10",
   "icons": [
     {
       "src": "icons/icon-192.png",
