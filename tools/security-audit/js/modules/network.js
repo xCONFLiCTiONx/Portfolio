@@ -23,52 +23,28 @@ export async function networkScan() {
   let isProxyOrVpn = false;
   let cfTraceData = null;
 
-  // Primary: Cloudflare Trace
-  try {
-    const cfUrls = ["/cdn-cgi/trace", "https://cloudflare.com/cdn-cgi/trace"];
-    for (const url of cfUrls) {
-      try {
-        const res = await fetch(url, { cache: "no-store" });
-        if (res.ok) {
-          const text = await res.text();
-          const parsed = parseCfTrace(text);
-          if (parsed.ip) {
-            cfTraceData = parsed;
-            publicIp = parsed.ip;
-            break;
-          }
-        }
-      } catch (_) {}
-    }
-  } catch (_) {}
-
-  // Secondary: IP Intelligence API (CORS enabled)
-  try {
-    const res = await fetch("https://freeipapi.com/api/json", { cache: "no-store" });
-    if (res.ok) {
-      const data = await res.json();
-      if (data) {
-        if (!publicIp && data.ipAddress) publicIp = data.ipAddress;
-        if (data.isProxy) isProxyOrVpn = true;
-        if (data.cityName && data.countryName) {
-          results["Geo Location (Reported)"] = `${data.cityName}, ${data.countryName}`;
+  // Primary: Cloudflare Trace endpoints (CORS enabled)
+  const cfUrls = [
+    "https://1.1.1.1/cdn-cgi/trace",
+    "https://cloudflare.com/cdn-cgi/trace",
+    "/cdn-cgi/trace"
+  ];
+  for (const url of cfUrls) {
+    try {
+      const res = await fetch(url, { cache: "no-store" });
+      if (res.ok) {
+        const text = await res.text();
+        const parsed = parseCfTrace(text);
+        if (parsed.ip) {
+          cfTraceData = parsed;
+          publicIp = parsed.ip;
+          break;
         }
       }
-    }
-  } catch (_) {
-    // Tertiary fallback: ipify
-    if (!publicIp) {
-      try {
-        const ipRes = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
-        if (ipRes.ok) {
-          const ipData = await ipRes.json();
-          if (ipData && ipData.ip) publicIp = ipData.ip;
-        }
-      } catch (_) {}
-    }
+    } catch (_) {}
   }
 
-  // IPWHOIS fallback for ISP / Org detection
+  // Secondary: Reliable CORS Geo + IP APIs
   try {
     const whoRes = await fetch("https://ipwho.is/", { cache: "no-store" });
     if (whoRes.ok) {
@@ -79,12 +55,48 @@ export async function networkScan() {
         if (whoData.security?.proxy || whoData.security?.vpn || whoData.security?.tor || whoData.security?.hosting) {
           isProxyOrVpn = true;
         }
-        if (whoData.city && whoData.country && !results["Geo Location (Reported)"]) {
+        if (whoData.city && whoData.country) {
           results["Geo Location (Reported)"] = `${whoData.city}, ${whoData.country}`;
         }
       }
     }
   } catch (_) {}
+
+  // Fallback Geo: free.freeipapi.com v1
+  if (!results["Geo Location (Reported)"]) {
+    try {
+      const res = await fetch("https://free.freeipapi.com/api/v1/json", { cache: "no-store" });
+      if (res.ok) {
+        const data = await res.json();
+        if (data) {
+          if (!publicIp && data.ipAddress) publicIp = data.ipAddress;
+          if (data.isProxy) isProxyOrVpn = true;
+          if (data.cityName && data.countryName) {
+            results["Geo Location (Reported)"] = `${data.cityName}, ${data.countryName}`;
+          }
+        }
+      }
+    } catch (_) {}
+  }
+
+  // Direct IP Fallbacks: api64.ipify & api.ipify
+  if (!publicIp) {
+    try {
+      const ipRes = await fetch("https://api64.ipify.org?format=json", { cache: "no-store" });
+      if (ipRes.ok) {
+        const ipData = await ipRes.json();
+        if (ipData && ipData.ip) publicIp = ipData.ip;
+      }
+    } catch (_) {
+      try {
+        const ipRes2 = await fetch("https://api.ipify.org?format=json", { cache: "no-store" });
+        if (ipRes2.ok) {
+          const ipData2 = await ipRes2.json();
+          if (ipData2 && ipData2.ip) publicIp = ipData2.ip;
+        }
+      } catch (_) {}
+    }
+  }
 
   // Cloudflare WARP flag check
   let isWarp = false;
