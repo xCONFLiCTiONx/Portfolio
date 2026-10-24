@@ -44,25 +44,61 @@ export async function networkScan() {
     } catch (_) {}
   }
 
-  // Secondary: Reliable CORS Geo + IP APIs
+  // Secondary: High-Accuracy IP Geolocation Providers (ipinfo.io & geojs.io)
+  // ipinfo.io and geojs.io accurately differentiate Metro/ISP routing (e.g. Marion, AR vs Memphis, TN)
+  try {
+    const infoRes = await fetch("https://ipinfo.io/json", { cache: "no-store" });
+    if (infoRes.ok) {
+      const infoData = await infoRes.json();
+      if (infoData) {
+        if (!publicIp && infoData.ip) publicIp = infoData.ip;
+        if (infoData.org && !ispOrg) ispOrg = infoData.org;
+        if (infoData.city && infoData.region) {
+          results["Geo Location (Reported)"] = `${infoData.city}, ${infoData.region}, ${infoData.country || "US"}`;
+        }
+      }
+    }
+  } catch (_) {}
+
+  // Fallback Geolocation: geojs.io
+  if (!results["Geo Location (Reported)"]) {
+    try {
+      const geoRes = await fetch("https://get.geojs.io/v1/ip/geo.json", { cache: "no-store" });
+      if (geoRes.ok) {
+        const geoData = await geoRes.json();
+        if (geoData) {
+          if (!publicIp && geoData.ip) publicIp = geoData.ip;
+          if (geoData.organization_name && !ispOrg) ispOrg = geoData.organization_name;
+          if (geoData.city && geoData.region) {
+            results["Geo Location (Reported)"] = `${geoData.city}, ${geoData.region}, ${geoData.country || "US"}`;
+          }
+        }
+      }
+    } catch (_) {}
+  }
+
+  // Fallback Geolocation & ISP Telemetry: ipwho.is
   try {
     const whoRes = await fetch("https://ipwho.is/", { cache: "no-store" });
     if (whoRes.ok) {
       const whoData = await whoRes.json();
       if (whoData && whoData.success !== false) {
         if (!publicIp && whoData.ip) publicIp = whoData.ip;
-        ispOrg = whoData.connection?.org || whoData.connection?.isp || whoData.isp;
+        if (!ispOrg) {
+          ispOrg = whoData.connection?.org || whoData.connection?.isp || whoData.isp;
+        }
         if (whoData.security?.proxy || whoData.security?.vpn || whoData.security?.tor || whoData.security?.hosting) {
           isProxyOrVpn = true;
         }
-        if (whoData.city && whoData.country) {
-          results["Geo Location (Reported)"] = `${whoData.city}, ${whoData.country}`;
+        if (!results["Geo Location (Reported)"] && whoData.city && whoData.country) {
+          const regionPart = whoData.region ? `${whoData.region}, ` : "";
+          results["Geo Location (Reported)"] = `${whoData.city}, ${regionPart}${whoData.country}`;
         }
       }
     }
   } catch (_) {}
 
-  // Fallback Geo: free.freeipapi.com v1
+  // Tertiary Fallback Geo: freeipapi.com
   if (!results["Geo Location (Reported)"]) {
     try {
       const res = await fetch("https://free.freeipapi.com/api/v1/json", { cache: "no-store" });
@@ -72,7 +108,8 @@ export async function networkScan() {
           if (!publicIp && data.ipAddress) publicIp = data.ipAddress;
           if (data.isProxy) isProxyOrVpn = true;
           if (data.cityName && data.countryName) {
-            results["Geo Location (Reported)"] = `${data.cityName}, ${data.countryName}`;
+            const regPart = data.regionName ? `${data.regionName}, ` : "";
+            results["Geo Location (Reported)"] = `${data.cityName}, ${regPart}${data.countryName}`;
           }
         }
       }
