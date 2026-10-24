@@ -821,61 +821,13 @@ async function getIPv4() {
             );
         }
 
-        const data =
-            await response.json();
+        const ip = (await response.text()).trim();
 
-        byId("ipv4").textContent =
-            data.ip || "Unavailable";
+        byId("ipv6").textContent = ip || "Unavailable";
 
         log(
-            "IPv4: " +
-            (data.ip || "Unavailable"),
-            "ok"
-        );
-
-    } catch (error) {
-
-        byId("ipv4").textContent =
-            "Unavailable";
-
-        log(
-            "IPv4 lookup failed: " +
-            error.message,
-            "error"
-        );
-    }
-}
-
-
-async function getIPv6() {
-
-    try {
-
-        const response =
-            await fetch(
-                "https://ipv6.icanhazip.com/?cache=" +
-                Date.now(),
-                {
-                    cache: "no-store"
-                }
-            );
-
-        if (!response.ok) {
-            throw new Error(
-                "HTTP " + response.status
-            );
-        }
-
-        const data =
-            await response.json();
-
-        byId("ipv6").textContent =
-            data.ip || "Unavailable";
-
-        log(
-            "IPv6: " +
-            (data.ip || "Unavailable"),
-            "ok"
+            "IPv6: " + (ip || "Unavailable"),
+            ip ? "ok" : "warn"
         );
 
     } catch (error) {
