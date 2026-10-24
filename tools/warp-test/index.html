@@ -823,25 +823,35 @@ async function getIPv4() {
 }
 
 async function getIPv6() {
+    const output = byId("ipv6");
+    output.textContent = "Checking…";
+
     try {
-        // Keep the original IPv6-only ipify endpoint; don't introduce a new DNS dependency.
+        // This IPv6-only endpoint succeeds only when the browser can reach it over IPv6.
         const response = await fetch(
             "https://api6.ipify.org?format=json&cache=" + Date.now(),
-            { cache: "no-store" }
+            {
+                cache: "no-store",
+                signal: AbortSignal.timeout(6000)
+            }
         );
         if (!response.ok) throw new Error("HTTP " + response.status);
 
         const data = await response.json();
         const ip = typeof data.ip === "string" ? data.ip.trim() : "";
         if (!ip || !ip.includes(":")) {
-            throw new Error("No valid IPv6 address returned");
+            throw new Error("The endpoint did not return a valid IPv6 address");
         }
 
-        byId("ipv6").textContent = ip;
-        log("IPv6: " + ip, "ok");
+        output.textContent = ip;
+        output.className = "good";
+        log("IPv6 connectivity confirmed: " + ip, "ok");
     } catch (error) {
-        byId("ipv6").textContent = "Unavailable";
-        log("IPv6 lookup failed: " + error.message, "warn");
+        // A failed IPv6-only probe means IPv6 is unavailable from this browser,
+        // though DNS filtering or an endpoint outage can also cause the failure.
+        output.textContent = "No IPv6 connection";
+        output.className = "warn";
+        log("IPv6 unavailable from this browser (no IPv6 route/address, DNS failure, or endpoint unavailable): " + error.message, "warn");
     }
 }
 
