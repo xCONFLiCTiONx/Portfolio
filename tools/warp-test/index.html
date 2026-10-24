@@ -1281,10 +1281,18 @@ async function runTunnelAudit() {
         });
         const ips = [...new Set(results.filter(r => r.ip !== "No result").map(r => r.ip))];
         const successful = results.filter(r => r.ip !== "No result").length;
-        if (ips.length > 1) {
-            byId("tunnelSummaryValue").textContent = "DIFFERENT EXIT IPs DETECTED";
+        const traceResult = results.find(r => r.label === "This site · Cloudflare trace" && r.ip !== "No result");
+        const externalResults = results.filter(r => r.label !== "This site · Cloudflare trace" && r.ip !== "No result");
+        const externalIps = [...new Set(externalResults.map(r => r.ip))];
+
+        if (traceResult && externalResults.length >= 2 && externalIps.length === 1 && traceResult.ip !== externalIps[0]) {
+            byId("tunnelSummaryValue").textContent = "ROUTING MISMATCH — CHECK SPLIT TUNNEL";
             byId("tunnelSummaryValue").style.color = "var(--yellow)";
-            byId("tunnelSummaryDetail").textContent = "Successful endpoints returned " + ips.length + " distinct IPs. This can indicate destination-specific routing, different address families, or different egress services. Compare each IP with your known VPN/proxy IP and your disconnected baseline before calling it a leak.";
+            byId("tunnelSummaryDetail").textContent = "This site via Cloudflare reports " + traceResult.ip + ", while " + externalResults.length + " external service(s) agree on " + externalIps[0] + ". This strongly suggests destination-specific routing or proxy/VPN egress differences. Check your VPN/WARP split-tunnel rules for xconflictionx.cc and the external endpoint hostnames. This browser audit cannot change those routes or prove which route is intended.";
+        } else if (ips.length > 1) {
+            byId("tunnelSummaryValue").textContent = "MULTIPLE EXIT IPs — ROUTES DIFFER";
+            byId("tunnelSummaryValue").style.color = "var(--yellow)";
+            byId("tunnelSummaryDetail").textContent = "Successful endpoints returned " + ips.length + " distinct IPs, and the external services do not all agree. This indicates different egress routes, address families, or proxy services; compare against your intended VPN route and disconnected baseline.";
         } else if (successful >= 2) {
             byId("tunnelSummaryValue").textContent = "CONSISTENT IPs ON RESPONDING ENDPOINTS";
             byId("tunnelSummaryValue").style.color = "var(--green)";
