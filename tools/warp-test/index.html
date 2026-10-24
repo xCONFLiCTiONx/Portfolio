@@ -575,6 +575,35 @@
         </div>
 
 
+        <!-- MULTI-ENDPOINT TUNNEL AUDIT -->
+        <div class="card wide" style="margin-top:15px;">
+            <h2>🛡️ Multi-Endpoint Tunnel Audit</h2>
+            <div class="detail">
+                Checks this site's Cloudflare trace and several independent public-IP services separately. Each service may follow a different proxy rule. Compare the returned IPs; failed/CORS-blocked checks are inconclusive, not proof of a leak.
+            </div>
+            <div class="button-row" style="margin-top:16px;">
+                <button id="tunnelAuditButton" onclick="runTunnelAudit()">Run Tunnel Audit</button>
+                <button id="webrtcButton" onclick="runWebRTCTest()">Check WebRTC</button>
+                <button onclick="copyTunnelReport()">Copy Report</button>
+            </div>
+            <div id="tunnelSummary" class="routing-box" role="status">
+                <div class="routing-title">Audit result</div>
+                <div id="tunnelSummaryValue" class="routing-result">Not run yet</div>
+                <div id="tunnelSummaryDetail" class="detail">Run the audit while your VPN/proxy is connected, then repeat with it disconnected to establish a baseline.</div>
+            </div>
+            <table class="table" style="margin-top:12px;">
+                <thead><tr><td>Endpoint / route</td><td>Observed IP / result</td><td>Status</td><td>Time</td></tr></thead>
+                <tbody id="tunnelAuditRows"><tr><td colspan="4">No tests run yet.</td></tr></tbody>
+            </table>
+            <div class="routing-box">
+                <div class="routing-title">WebRTC candidate check</div>
+                <div id="webrtcResult" class="detail">Not run yet. This checks addresses exposed to the browser by WebRTC; modern browsers often hide local addresses.</div>
+            </div>
+            <div class="detail" style="margin-top:12px;">
+                <strong>Important:</strong> this is a browser-level diagnostic, not a guarantee that every app or every network protocol uses the tunnel. It cannot directly inspect your operating system's DNS resolver or prove the route taken by traffic outside this browser. For a stronger test, compare results with the tunnel ON and OFF, and use your VPN/proxy's own logs or an external packet capture.
+            </div>
+        </div>
+
         <!-- SPEED TEST -->
 
         <div class="card wide" style="margin-top:15px;">
@@ -1200,6 +1229,159 @@ async function getCloudflareTrace() {
             error.message,
             "error"
         );
+    }
+}
+
+
+/* =========================================================
+   MULTI-ENDPOINT TUNNEL AUDIT
+   ========================================================= */
+
+let tunnelAuditResults = [];
+
+function addAuditRow(label, value, status, elapsed) {
+    const row = document.createElement("tr");
+    [label, value, status, elapsed].forEach((text) => {
+        const cell = document.createElement("td");
+        const code = document.createElement("code");
+        code.textContent = String(text);
+        cell.appendChild(code);
+        row.appendChild(cell);
+    });
+    byId("tunnelAuditRows").appendChild(row);
+}
+
+async function probeIPEndpoint(test) {
+    const started = performance.now();
+    try {
+        const response = await fetch(test.url + (test.url.includes("?") ? "&" : "?") + "_tunneltest=" + Date.now(), {
+            cache: "no-store",
+            mode: "cors",
+            credentials: "omit",
+            signal: AbortSignal.timeout(9000)
+        });
+        if (!response.ok) throw new Error("HTTP " + response.status);
+        const body = await response.text();
+        let ip = "";
+        if (test.kind === "json") {
+            const data = JSON.parse(body);
+            ip = data.ip || data.ip_addr || data.query || "";
+        } else {
+            ip = body.trim().split(/\s+/)[0];
+        }
+        if (!ip || !/^[0-9a-f:.]+$/i.test(ip)) throw new Error("Could not parse an IP address");
+        return { label: test.label, ip, status: "Success", ms: Math.round(performance.now() - started) + " ms" };
+    } catch (error) {
+        return { label: test.label, ip: "No result", status: error.name === "TimeoutError" ? "Timed out" : "Blocked / unavailable", ms: Math.round(performance.now() - started) + " ms", error: error.message };
+    }
+}
+
+async function probeSameOriginTrace() {
+    const started = performance.now();
+    try {
+        const response = await fetch("/cdn-cgi/trace?_tunneltest=" + Date.now(), {
+            cache: "no-store",
+            credentials: "same-origin",
+            signal: AbortSignal.timeout(9000)
+        });
+        if (!response.ok) throw new Error("HTTP " + response.status);
+        const body = await response.text();
+        const match = body.match(/^ip=(.+)$/m);
+        if (!match) throw new Error("No ip= field in Cloudflare trace");
+        return { label: "This site · Cloudflare trace", ip: match[1].trim(), status: "Success (same-origin)", ms: Math.round(performance.now() - started) + " ms" };
+    } catch (error) {
+        return { label: "This site · Cloudflare trace", ip: "No result", status: "Unavailable", ms: Math.round(performance.now() - started) + " ms", error: error.message };
+    }
+}
+
+async function runTunnelAudit() {
+    const button = byId("tunnelAuditButton");
+    button.disabled = true;
+    button.textContent = "Testing…";
+    byId("tunnelAuditRows").innerHTML = "";
+    byId("tunnelSummaryValue").textContent = "Running checks…";
+    byId("tunnelSummaryDetail").textContent = "Each destination is requested independently. Results can differ because split-tunnel rules are often hostname-specific.";
+    log("Starting multi-endpoint tunnel audit.", "info");
+
+    const tests = [
+        { label: "This site · Cloudflare trace", local: true },
+        { label: "ipify IPv4/dual-stack", url: "https://api.ipify.org?format=json", kind: "json" },
+        { label: "ifconfig.co", url: "https://ifconfig.co/json", kind: "json" },
+        { label: "AWS checkip", url: "https://checkip.amazonaws.com", kind: "text" },
+        { label: "ipinfo.io", url: "https://ipinfo.io/json", kind: "json" }
+    ];
+    try {
+        const results = await Promise.all(tests.map(test => test.local ? probeSameOriginTrace() : probeIPEndpoint(test)));
+        tunnelAuditResults = results;
+        results.forEach(result => {
+            addAuditRow(result.label, result.ip, result.status, result.ms);
+            log(result.label + ": " + result.ip + " (" + result.status + ")" + (result.error ? " — " + result.error : ""), result.ip === "No result" ? "warn" : "info");
+        });
+        const ips = [...new Set(results.filter(r => r.ip !== "No result").map(r => r.ip))];
+        const successful = results.filter(r => r.ip !== "No result").length;
+        if (ips.length > 1) {
+            byId("tunnelSummaryValue").textContent = "DIFFERENT EXIT IPs DETECTED";
+            byId("tunnelSummaryValue").style.color = "var(--yellow)";
+            byId("tunnelSummaryDetail").textContent = "Successful endpoints returned " + ips.length + " distinct IPs. This can indicate destination-specific routing, different address families, or different egress services. Compare each IP with your known VPN/proxy IP and your disconnected baseline before calling it a leak.";
+        } else if (successful >= 2) {
+            byId("tunnelSummaryValue").textContent = "CONSISTENT IPs ON RESPONDING ENDPOINTS";
+            byId("tunnelSummaryValue").style.color = "var(--green)";
+            byId("tunnelSummaryDetail").textContent = "All " + successful + " successful checks returned the same IP. This is useful evidence, but does not prove all destinations or protocols use the tunnel.";
+        } else {
+            byId("tunnelSummaryValue").textContent = "NOT ENOUGH RESULTS";
+            byId("tunnelSummaryValue").style.color = "var(--yellow)";
+            byId("tunnelSummaryDetail").textContent = "Only " + successful + " endpoint(s) returned an IP. CORS restrictions, endpoint outages, or network filtering may explain failures.";
+        }
+    } finally {
+        button.disabled = false;
+        button.textContent = "Run Tunnel Audit";
+    }
+}
+
+async function runWebRTCTest() {
+    const button = byId("webrtcButton");
+    const output = byId("webrtcResult");
+    button.disabled = true;
+    output.textContent = "Gathering ICE candidates for up to 5 seconds…";
+    try {
+        if (!window.RTCPeerConnection) throw new Error("WebRTC is not supported by this browser");
+        const pc = new RTCPeerConnection({ iceServers: [] });
+        const found = new Set();
+        pc.createDataChannel("tunnel-audit");
+        pc.onicecandidate = event => {
+            if (!event.candidate) return;
+            const text = event.candidate.candidate || "";
+            const match = text.match(/(?:\d{1,3}\.){3}\d{1,3}|[0-9a-f]{0,4}:[0-9a-f:]{2,}/i);
+            if (match) found.add(match[0]);
+        };
+        await pc.setLocalDescription(await pc.createOffer());
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        pc.close();
+        const addresses = [...found];
+        output.textContent = addresses.length
+            ? "Browser exposed candidate address(es): " + addresses.join(", ") + ". Private/local or mDNS-style candidates do not automatically indicate a public IP leak; compare any public candidate against your known VPN/proxy exit IP."
+            : "No address candidates exposed during this check. This is not proof WebRTC can never expose an address.";
+        log("WebRTC candidate check completed: " + (addresses.join(", ") || "no candidates observed"), addresses.length ? "warn" : "info");
+    } catch (error) {
+        output.textContent = "WebRTC check unavailable: " + error.message;
+    } finally {
+        button.disabled = false;
+    }
+}
+
+function copyTunnelReport() {
+    const lines = [
+        "xCONFLiCTiONx Tunnel Audit",
+        "Time: " + new Date().toISOString(),
+        "Page: " + location.href,
+        ...tunnelAuditResults.map(r => r.label + ": " + r.ip + " | " + r.status + " | " + r.ms + (r.error ? " | " + r.error : "")),
+        "WebRTC: " + byId("webrtcResult").textContent,
+        "Summary: " + byId("tunnelSummaryValue").textContent + " — " + byId("tunnelSummaryDetail").textContent
+    ].join("\n");
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(lines).then(() => log("Tunnel audit report copied.", "ok")).catch(() => window.prompt("Copy tunnel audit report:", lines));
+    } else {
+        window.prompt("Copy tunnel audit report:", lines);
     }
 }
 
