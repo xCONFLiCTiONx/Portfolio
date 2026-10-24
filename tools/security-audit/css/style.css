@@ -96,6 +96,72 @@ body {
   margin: 0;
 }
 
+/* Detected IP & Location Banner */
+.detected-identity-banner {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.identity-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 12px 18px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.identity-card:hover {
+  border-color: rgba(88, 166, 255, 0.4);
+}
+
+.identity-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: var(--accent-blue-bg);
+  color: var(--accent-blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.identity-meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.identity-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  color: var(--text-muted);
+  margin-bottom: 2px;
+}
+
+.identity-value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.identity-value.mono {
+  font-family: var(--font-mono);
+  color: var(--accent-blue);
+}
+
 /* Hero HUD Card */
 .hero-hud-card {
   background: var(--bg-card);

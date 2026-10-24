@@ -130,6 +130,7 @@ export async function networkScan() {
   return {
     ...results,
     __internal_public_ip: publicIp,
+    __internal_geo: results["Geo Location (Reported)"] || null,
     __internal_is_proxy: isProxyOrVpn || isWarp
   };
 }

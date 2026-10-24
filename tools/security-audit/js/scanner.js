@@ -19,7 +19,9 @@ export async function runScanner(onProgress = null) {
   notify("Auditing network routing and public IP telemetry...");
   const netResults = await safe(networkScan);
   const publicIp = netResults.__internal_public_ip || null;
+  const detectedLocation = netResults.__internal_geo || null;
   delete netResults.__internal_public_ip;
+  delete netResults.__internal_geo;
   delete netResults.__internal_is_proxy;
   sections["NETWORK & PROXY ROUTING"] = netResults;
 
@@ -85,7 +87,9 @@ export async function runScanner(onProgress = null) {
     postureClass: scoreResult.postureClass,
     deductions: scoreResult.deductions,
     pillars: scoreResult.pillars,
-    sections: finalSections
+    sections: finalSections,
+    publicIp: publicIp,
+    detectedLocation: detectedLocation
   };
 }
 

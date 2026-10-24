@@ -29,6 +29,24 @@
                 </div>
                 <h1><i class="im im-fingerprint"></i> Security &amp; Privacy Audit Studio</h1>
                 <p class="audit-subtitle">Comprehensive posture assessment: Network anonymity, Proxy/VPN encapsulation, WebRTC leaks, fingerprint defense, and permission isolation.</p>
+
+                <!-- Detected IP & Location Banner -->
+                <div class="detected-identity-banner" id="detectedIdentityBanner">
+                    <div class="identity-card">
+                        <div class="identity-icon"><i class="im im-globe"></i></div>
+                        <div class="identity-meta">
+                            <span class="identity-label">Detected Public IP</span>
+                            <span class="identity-value mono" id="topDetectedIp">Detecting...</span>
+                        </div>
+                    </div>
+                    <div class="identity-card">
+                        <div class="identity-icon"><i class="im im-location"></i></div>
+                        <div class="identity-meta">
+                            <span class="identity-label">Detected Location</span>
+                            <span class="identity-value" id="topDetectedLocation">Detecting...</span>
+                        </div>
+                    </div>
+                </div>
             </header>
 
             <!-- Hero Master HUD -->

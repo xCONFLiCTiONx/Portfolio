@@ -23,6 +23,8 @@ const postureTag = document.getElementById("postureTag");
 const resultsContainer = document.getElementById("results");
 const filterTabs = document.querySelectorAll(".filter-tab");
 const searchInput = document.getElementById("auditSearch");
+const topDetectedIp = document.getElementById("topDetectedIp");
+const topDetectedLocation = document.getElementById("topDetectedLocation");
 
 // Pillar elements
 const pillarNetwork = document.getElementById("pillarNetwork");
@@ -87,6 +89,8 @@ async function executeFullScan(customStatus = null) {
   if (retestNetButton) retestNetButton.disabled = true;
   if (scanProgressBar) scanProgressBar.style.width = "20%";
   if (scanStatusText) scanStatusText.textContent = customStatus || "Initializing security probe...";
+  if (topDetectedIp) topDetectedIp.textContent = "Detecting...";
+  if (topDetectedLocation) topDetectedLocation.textContent = "Detecting...";
 
   try {
     latestReport = await runScanner((stepMsg) => {
@@ -101,6 +105,7 @@ async function executeFullScan(customStatus = null) {
     if (scanStatusText) scanStatusText.textContent = `Audit complete. Security score: ${latestReport.score} / 100 (${latestReport.grade}).`;
 
     updateHeroScore(latestReport);
+    updateTopIdentity(latestReport);
     renderResults(latestReport.sections);
 
     if (reportButton) reportButton.disabled = false;
@@ -155,6 +160,15 @@ function updateHeroScore(report) {
     updatePillarUI(pillarFingerprint, report.pillars.fingerprint);
     updatePillarUI(pillarPermissions, report.pillars.permissions);
     updatePillarUI(pillarBrowser, report.pillars.browser);
+  }
+}
+
+function updateTopIdentity(report) {
+  if (topDetectedIp) {
+    topDetectedIp.textContent = report.publicIp || "Unavailable / Hidden";
+  }
+  if (topDetectedLocation) {
+    topDetectedLocation.textContent = report.detectedLocation || "Unknown Location";
   }
 }
 
