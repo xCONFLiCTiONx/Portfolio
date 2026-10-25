@@ -1585,10 +1585,32 @@ const config = {
           const dntEl = document.getElementById("recon-dnt");
           const dntVal =
             navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
-          const gpcVal = navigator.globalPrivacyControl;
-          dntEl.textContent = `DoNotTrack: ${
-            dntVal ? "Enabled" : "Disabled/Not Set"
-          } | GPC: ${gpcVal ? "Enabled" : "Disabled"}`;
+          const gpcApiValue = navigator.globalPrivacyControl;
+          const dntStatus = dntVal ? "Enabled" : "Disabled/Not Set";
+
+          // Some browsers/extensions send Sec-GPC: 1 without exposing a reliable
+          // navigator.globalPrivacyControl value. Check the actual request header
+          // at this same-origin Pages Function instead of guessing from DNT or JS.
+          let gpcStatus = typeof gpcApiValue === "boolean"
+            ? (gpcApiValue ? "Enabled" : "Not enabled in JavaScript API")
+            : "Checking request header…";
+          try {
+            const response = await fetch("/api/gpc-status", { cache: "no-store" });
+            if (!response.ok) throw new Error("GPC header endpoint unavailable");
+            const result = await response.json();
+            gpcStatus = result.enabled
+              ? "Enabled (Sec-GPC: 1 confirmed)"
+              : result.headerPresent
+                ? `Unexpected Sec-GPC value: ${String(result.value)}`
+                : typeof gpcApiValue === "boolean" && gpcApiValue
+                  ? "Enabled in JavaScript API; header not observed"
+                  : "Not detected in request header";
+          } catch (_) {
+            gpcStatus = typeof gpcApiValue === "boolean"
+              ? (gpcApiValue ? "Enabled in JavaScript API; header check unavailable" : "Not detected (header check unavailable)")
+              : "Unable to verify request header";
+          }
+          dntEl.textContent = `GPC: ${gpcStatus} | DNT: ${dntStatus}`;
 
           const cookiesEl = document.getElementById("recon-cookies");
           cookiesEl.textContent = navigator.cookieEnabled
