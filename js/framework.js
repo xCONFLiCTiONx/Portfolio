@@ -100,11 +100,13 @@
                     name: "xCONFLiCTiONx",
                     title: "xCONFLiCTiONx Portfolio",
                     description: "Software Developer Portfolio",
-                    author: "xCONFLiCTiONx"
+                    author: "xCONFLiCTiONx",
+                    avatar: "https://avatars.githubusercontent.com/u/12835195?v=4"
                 },
                 github: {
                     username: "xCONFLiCTiONx",
-                    profileUrl: "https://github.com/xCONFLiCTiONx"
+                    profileUrl: "https://github.com/xCONFLiCTiONx",
+                    avatarUrl: "https://avatars.githubusercontent.com/u/12835195?v=4"
                 },
                 navigation: [
                     { label: "Overview", path: "index.html", icon: "im im-home" },
@@ -240,6 +242,37 @@
     /**
      * Renders Header component
      */
+    /**
+     * Resolves the user avatar URL prioritizing GitHub user profile avatar
+     */
+    function getAvatarUrl(config) {
+        const username = (config?.github && config.github.username) || config?.github_username || 'xCONFLiCTiONx';
+
+        // 1. Check cached GitHub API user profile if available
+        try {
+            const cached = JSON.parse(localStorage.getItem(`github-profile:${username.toLowerCase()}`) || 'null');
+            if (cached && cached.data && cached.data.avatar_url) {
+                return cached.data.avatar_url;
+            }
+        } catch (_) {}
+
+        // 2. Direct avatar from config if provided
+        if (config?.github && config.github.avatarUrl) {
+            return config.github.avatarUrl;
+        }
+        if (config?.site && config.site.avatar) {
+            return config.site.avatar;
+        }
+
+        // 3. GitHub direct user avatar endpoint
+        if (username) {
+            return `https://github.com/${username}.png`;
+        }
+
+        // 4. Fallback to favicon
+        return toRelativeUrl(config?.site?.favicon || 'assets/favicon.ico');
+    }
+
     function renderHeader(config) {
         let headerEl = document.querySelector('header.site-header');
         if (!headerEl) {
@@ -268,13 +301,20 @@
         }).join('');
 
         const homeUrl = toRelativeUrl(config.navigation[0]?.path || 'index.html');
-        const defaultAvatarUrl = toRelativeUrl(config.site.ogImage || 'android-chrome-256x256.png');
+        const defaultAvatarUrl = getAvatarUrl(config);
+        const fallbackIcon = toRelativeUrl(config?.site?.favicon || 'assets/favicon.ico');
+
+        // Preserve already populated avatar if present
+        const existingAvatarImg = headerEl.querySelector('#header-avatar img');
+        const currentAvatarSrc = (existingAvatarImg && existingAvatarImg.src && !existingAvatarImg.src.endsWith(fallbackIcon))
+            ? existingAvatarImg.src
+            : defaultAvatarUrl;
 
         headerEl.innerHTML = `
             <nav class="nav-content">
                 <div class="nav-brand">
                     <a href="${homeUrl}">
-                        <span id="header-avatar" class="nav-logo"><img src="${defaultAvatarUrl}" alt="${config.site.name}"></span>
+                        <span id="header-avatar" class="nav-logo"><img src="${currentAvatarSrc}" alt="${config.site.name}" onerror="if(this.src!=='${fallbackIcon}')this.src='${fallbackIcon}';"></span>
                         <span class="user-name-js">${config.site.name}</span>
                     </a>
                 </div>
@@ -321,9 +361,10 @@
 
         if (sidebarEl) {
             if (!sidebarEl.innerHTML.trim()) {
-                const defaultAvatarUrl = toRelativeUrl(config.site.ogImage || 'assets/android-chrome-256x256.png');
+                const defaultAvatarUrl = getAvatarUrl(config);
+                const fallbackIcon = toRelativeUrl(config?.site?.favicon || 'assets/favicon.ico');
                 sidebarEl.innerHTML = `
-                    <div id="profile-avatar" class="profile-avatar"><img src="${defaultAvatarUrl}" alt="${config.site.name}"></div>
+                    <div id="profile-avatar" class="profile-avatar"><img src="${defaultAvatarUrl}" alt="${config.site.name}" onerror="if(this.src!=='${fallbackIcon}')this.src='${fallbackIcon}';"></div>
                     <h1 id="profile-name" class="profile-name user-name-js">${config.site.name}</h1>
                     <span id="profile-handle" class="profile-handle">Software Developer</span>
                     <p id="profile-bio" class="profile-bio">${config.site.description}</p>
@@ -449,7 +490,10 @@
 
         const faviconEl = document.getElementById('favicon-js');
         if (faviconEl) {
-            faviconEl.setAttribute('href', toRelativeUrl(config.site.favicon || 'favicon.ico'));
+            const currentHref = faviconEl.getAttribute('href');
+            if (!currentHref || (!currentHref.includes('github') && !currentHref.includes('avatars'))) {
+                faviconEl.setAttribute('href', toRelativeUrl(config.site.favicon || 'assets/favicon.ico'));
+            }
         }
 
         const metaDesc = document.getElementById('meta-description-js');
@@ -469,7 +513,12 @@
         applyLayout(config, null);
         const adsHtml = await getAdsSnippet(config);
         if (adsHtml) {
-            applyLayout(config, adsHtml);
+            const { layout } = resolvePageLayout(config);
+            if (layout.footer) {
+                renderFooter(config, layout.ads ? adsHtml : null);
+            } else if (layout.ads) {
+                renderStandaloneAds(adsHtml);
+            }
         }
         populateIdentity(config);
         return config;
@@ -479,6 +528,7 @@
     window.PortfolioFramework = {
         getRootPrefix,
         toRelativeUrl,
+        getAvatarUrl,
         getConfig: getPortfolioConfig,
         init: initFramework,
         getAdsSnippet,

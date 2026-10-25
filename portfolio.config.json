@@ -6,12 +6,14 @@
     "author": "xCONFLiCTiONx",
     "themeColor": "#0b0d10",
     "favicon": "assets/favicon.ico",
+    "avatar": "https://avatars.githubusercontent.com/u/12835195?v=4",
     "canonicalBase": "https://xconflictionx.cc",
     "ogImage": "assets/og-image.png"
   },
   "github": {
     "username": "xCONFLiCTiONx",
-    "profileUrl": "https://github.com/xCONFLiCTiONx"
+    "profileUrl": "https://github.com/xCONFLiCTiONx",
+    "avatarUrl": "https://avatars.githubusercontent.com/u/12835195?v=4"
   },
   "navigation": [
     {

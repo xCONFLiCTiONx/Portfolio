@@ -78,6 +78,13 @@ async function initPortfolio() {
             populateProfile(userData, username, hasSidebar);
         } catch (_) {
             document.querySelectorAll('.user-name-js').forEach(el => el.textContent = username);
+            const fallbackAvatar = config.github?.avatarUrl || config.site?.avatar || `https://github.com/${username}.png`;
+            populateProfile({
+                avatar_url: fallbackAvatar,
+                name: (config.site && config.site.name) || username,
+                login: username,
+                bio: (config.site && config.site.description) || 'Building tools for freedom & productivity.'
+            }, username, hasSidebar);
         }
 
         const repoContainer = document.getElementById(REPO_CONTAINER_ID);
@@ -121,7 +128,8 @@ function populateProfile(data, username, hasSidebar = true) {
     const favicon = document.getElementById(FAVICON_ID);
 
     if (data.avatar_url) {
-        const imgHtml = `<img src="${data.avatar_url}" alt="${data.name || username}">`;
+        const fallbackIcon = (window.PortfolioFramework && window.PortfolioFramework.toRelativeUrl) ? window.PortfolioFramework.toRelativeUrl('assets/favicon.ico') : 'assets/favicon.ico';
+        const imgHtml = `<img src="${data.avatar_url}" alt="${data.name || username}" onerror="if(this.src!=='${fallbackIcon}')this.src='${fallbackIcon}';">`;
         if (headerAvatar) headerAvatar.innerHTML = imgHtml;
         if (favicon) favicon.setAttribute('href', data.avatar_url);
     }
@@ -144,7 +152,8 @@ function populateProfile(data, username, hasSidebar = true) {
 
     const avatarContainer = document.getElementById(AVATAR_CONTAINER_ID);
     if (data.avatar_url && avatarContainer) {
-        avatarContainer.innerHTML = `<img src="${data.avatar_url}" alt="${data.name || username}">`;
+        const fallbackIcon = (window.PortfolioFramework && window.PortfolioFramework.toRelativeUrl) ? window.PortfolioFramework.toRelativeUrl('assets/favicon.ico') : 'assets/favicon.ico';
+        avatarContainer.innerHTML = `<img src="${data.avatar_url}" alt="${data.name || username}" onerror="if(this.src!=='${fallbackIcon}')this.src='${fallbackIcon}';">`;
     }
 
     const metadataContainer = document.getElementById(METADATA_CONTAINER_ID);
