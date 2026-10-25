@@ -1,6 +1,6 @@
 /**
  * Dynamic GitHub Data Fetcher
- * Version: 25 (Portable Framework Integration)
+ * Version: 26 (Cached GitHub API Requests)
  */
 
 const REPO_CONTAINER_ID = 'github-repos';
@@ -37,10 +37,35 @@ async function initPortfolio() {
     const username = (config.github && config.github.username) || config.github_username || DEFAULT_USERNAME;
     const token = config.github ? config.github.token : config.github_token;
 
+    const CACHE_MS = 6 * 60 * 60 * 1000;
     const fetchOptions = {
         headers: getGithubHeaders(token),
-        cache: 'no-cache'
+        cache: 'default'
     };
+
+    // Reuse public GitHub responses across page reloads to avoid exhausting
+    // GitHub's unauthenticated API rate limit. Never cache authenticated data.
+    async function fetchGitHubJson(url, cacheKey) {
+        if (!token) {
+            try {
+                const cached = JSON.parse(localStorage.getItem(cacheKey) || 'null');
+                if (cached && cached.savedAt && Date.now() - cached.savedAt < CACHE_MS && cached.data) {
+                    return cached.data;
+                }
+            } catch (_) {}
+        }
+
+        const response = await fetch(url, fetchOptions);
+        if (!response.ok) throw new Error(`GitHub API request failed: ${response.status}`);
+        const data = await response.json();
+
+        if (!token) {
+            try {
+                localStorage.setItem(cacheKey, JSON.stringify({ savedAt: Date.now(), data }));
+            } catch (_) {}
+        }
+        return data;
+    }
 
     const layoutInfo = window.PortfolioFramework?.resolvePageLayout?.(config);
     const hasSidebar = layoutInfo ? layoutInfo.layout.sidebar : !document.body.classList.contains('no-sidebar');
@@ -48,11 +73,10 @@ async function initPortfolio() {
     let userData = null;
     try {
         const userURL = `https://api.github.com/users/${username}`;
-        const userResponse = await fetch(userURL, fetchOptions);
-        if (userResponse.ok) {
-            userData = await userResponse.json();
+        try {
+            userData = await fetchGitHubJson(userURL, `github-profile:${username.toLowerCase()}`);
             populateProfile(userData, username, hasSidebar);
-        } else {
+        } catch (_) {
             document.querySelectorAll('.user-name-js').forEach(el => el.textContent = username);
         }
 
@@ -61,15 +85,16 @@ async function initPortfolio() {
 
         if (repoContainer || contactRepoSelector) {
             const reposURL = `https://api.github.com/users/${username}/repos?sort=updated&per_page=100`;
-            const reposResponse = await fetch(reposURL, fetchOptions);
-            if (reposResponse.ok) {
-                const repos = await reposResponse.json();
+            try {
+                const repos = await fetchGitHubJson(reposURL, `github-repos:${username.toLowerCase()}`);
 
                 // If on main page, render repo cards
                 if (repoContainer) renderRepos(repoContainer, repos);
 
                 // If on contact page, populate dropdown
                 if (contactRepoSelector) populateRepoSelector(contactRepoSelector, repos, username);
+            } catch (_) {
+                // Keep the rest of the portfolio usable when GitHub is rate-limited.
             }
         }
 
