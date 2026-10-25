@@ -69,10 +69,25 @@ async function initPortfolio() {
 
     const layoutInfo = window.PortfolioFramework?.resolvePageLayout?.(config);
     const hasSidebar = layoutInfo ? layoutInfo.layout.sidebar : !document.body.classList.contains('no-sidebar');
+    const repoContainer = document.getElementById(REPO_CONTAINER_ID);
+    const contactRepoSelector = document.getElementById('contact-repo-selector');
+    const hasProfileElements = hasSidebar || !!document.getElementById(AVATAR_CONTAINER_ID) || !!document.getElementById('profile-name');
+
+    // 1. Inject static link configuration immediately
+    const githubLink = document.getElementById('contact-github-js');
+    if (githubLink) {
+        githubLink.href = (config.github && config.github.profileUrl) || `https://github.com/${username}`;
+    }
+
+    // 2. Skip all GitHub API calls if this page doesn't have profile/repo containers
+    if (!hasProfileElements && !repoContainer && !contactRepoSelector) {
+        return;
+    }
 
     let userData = null;
     try {
-        const userURL = `https://api.github.com/users/${username}`;
+        if (hasProfileElements) {
+            const userURL = `https://api.github.com/users/${username}`;
         try {
             userData = await fetchGitHubJson(userURL, `github-profile:${username.toLowerCase()}`);
             populateProfile(userData, username, hasSidebar);
@@ -85,6 +100,12 @@ async function initPortfolio() {
                 login: username,
                 bio: (config.site && config.site.description) || 'Building tools for freedom & productivity.'
             }, username, hasSidebar);
+        }
+
+        const metaDesc = document.getElementById('meta-description-js');
+        if (metaDesc) {
+            metaDesc.content = `Software Developer Portfolio for ${(userData && userData.name) || username} - Building tools for freedom & productivity.`;
+        }
         }
 
         const repoContainer = document.getElementById(REPO_CONTAINER_ID);

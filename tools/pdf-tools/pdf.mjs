@@ -18234,11 +18234,11 @@ class CanvasGraphics {
     } else {
       if (fillStrokeMode === TextRenderingMode.FILL || fillStrokeMode === TextRenderingMode.FILL_STROKE) {
         ctx.fillText(character, x, y);
-        this.dependencyTracker?.recordCharacterBBox(opIdx, ctx, font, fontSize, x, y, () => ctx.measureText(character));
+        this.dependencyTracker?.recordCharacterBBox(opIdx, ctx, font, fontSize, x, y, () => (typeof ctx.measureText === "function" ? ctx.measureText(character) : { width: 0 }));
       }
       if (fillStrokeMode === TextRenderingMode.STROKE || fillStrokeMode === TextRenderingMode.FILL_STROKE) {
         if (this.dependencyTracker) {
-          this.dependencyTracker?.recordCharacterBBox(opIdx, ctx, font, fontSize, x, y, () => ctx.measureText(character)).recordDependencies(opIdx, Dependencies.stroke);
+          this.dependencyTracker?.recordCharacterBBox(opIdx, ctx, font, fontSize, x, y, () => (typeof ctx.measureText === "function" ? ctx.measureText(character) : { width: 0 })).recordDependencies(opIdx, Dependencies.stroke);
         }
         ctx.strokeText(character, x, y);
       }
@@ -18357,7 +18357,7 @@ class CanvasGraphics {
       const joinedChars = chars.join("");
       ctx.fillText(joinedChars, 0, 0);
       if (this.dependencyTracker !== null) {
-        const measure = ctx.measureText(joinedChars);
+        const measure = typeof ctx.measureText === "function" ? ctx.measureText(joinedChars) : { actualBoundingBoxLeft: 0, actualBoundingBoxRight: 0, actualBoundingBoxAscent: 0, actualBoundingBoxDescent: 0 };
         this.dependencyTracker.recordBBox(opIdx, this.ctx, -measure.actualBoundingBoxLeft, measure.actualBoundingBoxRight, -measure.actualBoundingBoxAscent, measure.actualBoundingBoxDescent).recordShowTextOperation(opIdx);
       }
       current.x += width * widthAdvanceScale * textHScale;
@@ -18393,7 +18393,17 @@ class CanvasGraphics {
       }
       let measure;
       if (font.remeasure && width > 0) {
-        measure = ctx.measureText(character);
+        measure = typeof ctx.measureText === "function" ? ctx.measureText(character) : null;
+        if (!measure) {
+          const fallbackW = (width * fontSize) / (1000 * fontSizeScale);
+          measure = {
+            width: fallbackW,
+            actualBoundingBoxLeft: 0,
+            actualBoundingBoxRight: fallbackW,
+            actualBoundingBoxAscent: (fontSize * 0.8) / fontSizeScale,
+            actualBoundingBoxDescent: (fontSize * 0.2) / fontSizeScale
+          };
+        }
         const measuredWidth = measure.width * 1000 / fontSize * fontSizeScale;
         if (width < measuredWidth && this.isFontSubpixelAAEnabled) {
           const characterScaleX = width / measuredWidth;
@@ -18410,7 +18420,7 @@ class CanvasGraphics {
           ctx.fillText(character, scaledX, scaledY);
           this.dependencyTracker?.recordCharacterBBox(opIdx, ctx, measure ? {
             bbox: null
-          } : font, fontSize / fontSizeScale, scaledX, scaledY, () => measure ?? ctx.measureText(character));
+          } : font, fontSize / fontSizeScale, scaledX, scaledY, () => measure ?? (typeof ctx.measureText === "function" ? ctx.measureText(character) : { width: width || 0 }));
         } else {
           this.paintChar(opIdx, character, scaledX, scaledY, patternFillTransform, patternStrokeTransform);
           if (accent) {

@@ -1030,6 +1030,38 @@
     <script src="../../js/framework.js"></script>
     <script src="../../js/jquery-3.2.1.min.js"></script>
     <script src="../../js/github-fetch.js?v=25"></script>
+    <script>
+      // Canvas measureText safeguard for privacy shields or missing prototype methods
+      (function() {
+        var fallbackMeasure = function(text) {
+          var fontSize = parseFloat(this.font) || 16;
+          var str = text !== undefined && text !== null ? String(text) : '';
+          var width = str.length * (fontSize * 0.6);
+          return {
+            width: width,
+            actualBoundingBoxLeft: 0,
+            actualBoundingBoxRight: width,
+            actualBoundingBoxAscent: fontSize * 0.8,
+            actualBoundingBoxDescent: fontSize * 0.2,
+            fontBoundingBoxAscent: fontSize * 0.8,
+            fontBoundingBoxDescent: fontSize * 0.2
+          };
+        };
+        if (typeof CanvasRenderingContext2D !== 'undefined' && typeof CanvasRenderingContext2D.prototype.measureText !== 'function') {
+          CanvasRenderingContext2D.prototype.measureText = fallbackMeasure;
+        }
+        if (typeof HTMLCanvasElement !== 'undefined') {
+          var origGetCtx = HTMLCanvasElement.prototype.getContext;
+          HTMLCanvasElement.prototype.getContext = function() {
+            var ctx = origGetCtx.apply(this, arguments);
+            if (ctx && typeof ctx.measureText !== 'function') {
+              ctx.measureText = fallbackMeasure;
+            }
+            return ctx;
+          };
+        }
+      })();
+    </script>
     <script type="module" src="index.js"></script>
   </body>
 

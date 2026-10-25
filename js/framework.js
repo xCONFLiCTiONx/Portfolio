@@ -72,6 +72,16 @@
         if (cachedConfig) return cachedConfig;
         if (configPromise) return configPromise;
 
+        // Check sessionStorage first for instantaneous transitions between pages
+        try {
+            const stored = sessionStorage.getItem('portfolio_config');
+            if (stored) {
+                cachedConfig = JSON.parse(stored);
+                window.PortfolioConfig = cachedConfig;
+                return cachedConfig;
+            }
+        } catch (_) {}
+
         configPromise = (async () => {
             const rootPrefix = getRootPrefix();
             const configUrls = [
@@ -83,10 +93,11 @@
 
             for (const url of configUrls) {
                 try {
-                    const res = await fetch(url, { cache: 'no-cache' });
+                    const res = await fetch(url);
                     if (res.ok) {
                         cachedConfig = await res.json();
                         window.PortfolioConfig = cachedConfig;
+                        try { sessionStorage.setItem('portfolio_config', JSON.stringify(cachedConfig)); } catch (_) {}
                         return cachedConfig;
                     }
                 } catch (e) {
@@ -147,6 +158,14 @@
         if (cachedAdsHtml !== null) return cachedAdsHtml;
         if (adsPromise) return adsPromise;
 
+        try {
+            const stored = sessionStorage.getItem('portfolio_ads_html');
+            if (stored !== null) {
+                cachedAdsHtml = stored;
+                return cachedAdsHtml;
+            }
+        } catch (_) {}
+
         adsPromise = (async () => {
             const rootPrefix = getRootPrefix();
             const templateFile = config?.ads?.template || 'ads.config.html';
@@ -160,11 +179,12 @@
 
             for (const url of adUrls) {
                 try {
-                    const res = await fetch(url, { cache: 'no-cache' });
+                    const res = await fetch(url);
                     if (res.ok) {
                         const html = await res.text();
                         if (html && html.trim()) {
                             cachedAdsHtml = normalizeAdProtocols(html.trim());
+                            try { sessionStorage.setItem('portfolio_ads_html', cachedAdsHtml); } catch (_) {}
                             return cachedAdsHtml;
                         }
                     }
@@ -510,14 +530,16 @@
         earlyLayoutCheck();
         const config = await getPortfolioConfig();
         // Immediately apply structural layout (header and sidebar) so sidebar does not flash while awaiting ads snippet
+        const { layout } = resolvePageLayout(config);
         applyLayout(config, null);
-        const adsHtml = await getAdsSnippet(config);
-        if (adsHtml) {
-            const { layout } = resolvePageLayout(config);
-            if (layout.footer) {
-                renderFooter(config, layout.ads ? adsHtml : null);
-            } else if (layout.ads) {
-                renderStandaloneAds(adsHtml);
+        if (layout.ads) {
+            const adsHtml = await getAdsSnippet(config);
+            if (adsHtml) {
+                if (layout.footer) {
+                    renderFooter(config, adsHtml);
+                } else {
+                    renderStandaloneAds(adsHtml);
+                }
             }
         }
         populateIdentity(config);

@@ -52,6 +52,27 @@ function hideLoading() {
   loadingModal.classList.remove('active');
 }
 
+// Helper: Ensure 2D context has a working measureText implementation
+function ensureMeasureText(ctx) {
+  if (ctx && typeof ctx.measureText !== 'function') {
+    ctx.measureText = function(text) {
+      const fontSize = parseFloat(this.font) || 16;
+      const str = text !== undefined && text !== null ? String(text) : '';
+      const width = str.length * (fontSize * 0.6);
+      return {
+        width,
+        actualBoundingBoxLeft: 0,
+        actualBoundingBoxRight: width,
+        actualBoundingBoxAscent: fontSize * 0.8,
+        actualBoundingBoxDescent: fontSize * 0.2,
+        fontBoundingBoxAscent: fontSize * 0.8,
+        fontBoundingBoxDescent: fontSize * 0.2
+      };
+    };
+  }
+  return ctx;
+}
+
 // Helper: Render a PDF or Image page to a new canvas inside a container
 async function renderPageToContainer(pageInfo, container, targetWidth = null) {
   const { file, type, pageIndex, rotation } = pageInfo;
@@ -59,7 +80,7 @@ async function renderPageToContainer(pageInfo, container, targetWidth = null) {
   const zoomScale = 2.0; // Higher scale for preview quality
 
   const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d');
+  const ctx = ensureMeasureText(canvas.getContext('2d'));
   canvas.style.boxShadow = '0 20px 40px rgba(0, 0, 0, 0.5)';
   canvas.style.background = 'white';
   container.appendChild(canvas);
@@ -401,7 +422,7 @@ async function processPdfFile(file) {
       canvas.style.width = `${viewport.width / dpr}px`;
       canvas.style.height = `${viewport.height / dpr}px`;
 
-      const context = canvas.getContext('2d');
+      const context = ensureMeasureText(canvas.getContext('2d'));
       if (context) {
         await page.render({ canvasContext: context, viewport: viewport }).promise;
       }
