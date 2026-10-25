@@ -1,6 +1,6 @@
 /**
  * Dynamic Privacy Policy Fetcher
- * Version: 29 (Rate-Limit Resistant Policy Discovery)
+ * Version: 30 (Low-Request Policy Discovery)
  */
 
 async function initPrivacy() {
@@ -9,7 +9,7 @@ async function initPrivacy() {
     const selector = $(SELECTOR_ID);
     const content = $(CONTENT_ID);
     const copyBtn = $('#copyLinkBtn');
-    const CATALOG_CACHE_MS = 6 * 60 * 60 * 1000;
+    const CATALOG_CACHE_MS = 24 * 60 * 60 * 1000;
 
     if (!selector.length) return;
 
@@ -67,7 +67,7 @@ async function initPrivacy() {
         // 2. DISCOVERY: Fetch repository names once, then probe raw files.
         const fetchOptions = {
             headers: typeof getGithubHeaders === 'function' ? getGithubHeaders(token) : {},
-            cache: 'no-cache'
+            cache: 'default'
         };
 
         let foundPolicies = cachedCatalog;
@@ -105,7 +105,7 @@ async function initPrivacy() {
             if (foundPolicies === null) {
                 foundPolicies = [];
                 let nextRepo = 0;
-                const workers = Array.from({ length: Math.min(8, repos.length) }, async () => {
+                const workers = Array.from({ length: Math.min(3, repos.length) }, async () => {
                     while (nextRepo < repos.length) {
                         const repo = repos[nextRepo++];
                         const owner = repo.owner && repo.owner.login ? repo.owner.login : username;
@@ -117,7 +117,7 @@ async function initPrivacy() {
                         try {
                             for (const privacyName of privacyNames) {
                                 const rawUrl = `https://raw.githubusercontent.com/${encodeURIComponent(owner)}/${encodeURIComponent(repo.name)}/${branch}/${privacyName}`;
-                                const response = await fetch(rawUrl, { method: 'HEAD', cache: 'no-cache' });
+                                const response = await fetch(rawUrl, { method: 'HEAD', cache: 'default' });
                                 if (response.ok) {
                                     foundPolicies.push({
                                         name: repo.name,
