@@ -21,17 +21,19 @@ async function initPrivacy() {
         const urlParams = new URLSearchParams(window.location.search);
         const targetPolicy = (urlParams.get('p') || urlParams.get('policy') || '').toLowerCase();
 
-        // 1. Setup Change Listener
-        selector.off('change').on('change', async function () {
-            const downloadUrl = $(this).val();
-            const selectedSlug = $(this).find(':selected').data('slug');
+        const thisProjectPolicy = {
+            name: 'Portfolio',
+            url: (window.PortfolioFramework && window.PortfolioFramework.toRelativeUrl) ? window.PortfolioFramework.toRelativeUrl('PRIVACY.md') : '../PRIVACY.md',
+            slug: 'portfolio'
+        };
+
+        async function loadPolicy(downloadUrl, selectedSlug, updateHistory = true) {
             if (!downloadUrl) return;
-
-            window.history.pushState({ path: selectedSlug }, '', '?p=' + selectedSlug);
-            content.html('<div class="repo-loader"><i class="im im-spinner im-spin"></i> Loading policy content...</div>');
-
+            if (updateHistory && selectedSlug) {
+                window.history.pushState({ path: selectedSlug }, '', '?p=' + selectedSlug);
+            }
             try {
-                const response = await fetch(downloadUrl, { cache: 'no-cache' });
+                const response = await fetch(downloadUrl);
                 if (response.ok) {
                     const text = await response.text();
                     if (typeof marked !== 'undefined') {
@@ -39,14 +41,32 @@ async function initPrivacy() {
                     } else {
                         content.html('<pre style="white-space: pre-wrap;">' + text + '</pre>');
                     }
-                    $('html, body').animate({ scrollTop: content.offset().top - 100 }, 400);
                 } else {
                     content.html(`<p class="error">Error: Could not load text (HTTP ${response.status}).</p>`);
                 }
             } catch (e) {
                 content.html('<p class="error">Network error while fetching policy.</p>');
             }
+        }
+
+        // Setup Change Listener
+        selector.off('change').on('change', function () {
+            const downloadUrl = $(this).val();
+            const selectedSlug = $(this).find(':selected').data('slug');
+            if (downloadUrl) {
+                content.html('<div class="repo-loader"><i class="im im-spinner im-spin"></i> Loading policy content...</div>');
+                loadPolicy(downloadUrl, selectedSlug, true);
+                $('html, body').animate({ scrollTop: content.offset().top - 100 }, 400);
+            }
         });
+
+        // Immediately load this project's privacy policy by default if no query param or 'portfolio'
+        if (!targetPolicy || targetPolicy === 'portfolio') {
+            selector.html(`<option value="${thisProjectPolicy.url}" data-slug="portfolio" selected>Portfolio</option>`);
+            loadPolicy(thisProjectPolicy.url, thisProjectPolicy.slug, false);
+        } else {
+            selector.html(`<option value="" disabled selected>Searching for ${targetPolicy} policy...</option>`);
+        }
 
         // Reuse the repository catalog briefly to avoid repeated GitHub API calls.
         const cacheKey = `privacy-policy-catalog:${username.toLowerCase()}`;
@@ -64,7 +84,7 @@ async function initPrivacy() {
             console.warn('Privacy: Could not read cached policy catalog.', error);
         }
 
-        // 2. DISCOVERY: Fetch repository names once, then probe raw files.
+        // DISCOVERY: Fetch repository names once, then probe raw files.
         const fetchOptions = {
             headers: typeof getGithubHeaders === 'function' ? getGithubHeaders(token) : {},
             cache: 'default'
@@ -89,7 +109,11 @@ async function initPrivacy() {
                     const detail = reposResponse.status === 403 && rateLimitRemaining === '0'
                         ? 'GitHub API rate limit reached. Please try again after it resets.'
                         : `GitHub Error (${reposResponse.status})`;
-                    selector.html(`<option value="" disabled selected>${detail}</option>`);
+                    if (!targetPolicy || targetPolicy === 'portfolio') {
+                        selector.append(`<option value="" disabled>${detail}</option>`);
+                    } else {
+                        selector.html(`<option value="" disabled selected>${detail}</option>`);
+                    }
                     return;
                 }
                 const pageRepos = await reposResponse.json();
@@ -149,27 +173,18 @@ async function initPrivacy() {
             }
         }
 
-        if (foundPolicies.length === 0) {
-            const message = failedRepoChecks
-                ? `Could not check ${failedRepoChecks} repositories. Some results may be missing.`
-                : 'No root privacy.md found in any repository.';
-            selector.html(`<option value="" disabled selected>${message}</option>`);
-            return;
+        // Ensure this project's policy is always present at the top of policy list
+        const policyList = foundPolicies ? [...foundPolicies] : [];
+        const existingPortfolioIndex = policyList.findIndex(p => p.slug === 'portfolio');
+        if (existingPortfolioIndex >= 0) {
+            policyList.splice(existingPortfolioIndex, 1);
         }
+        policyList.unshift(thisProjectPolicy);
 
-        const selectorLabel = usingCachedCatalog
-            ? '-- Showing cached policy list --'
-            : failedRepoChecks
-                ? `-- ${foundPolicies.length} policies found; ${failedRepoChecks} repositories could not be checked --`
-                : '-- Select a Project Policy --';
-        selector.empty().append($('<option>', {
-            value: '',
-            text: selectorLabel,
-            disabled: true,
-            selected: true
-        }));
-        foundPolicies.forEach(policy => {
-            const isSelected = targetPolicy === policy.slug;
+        const activeSlug = targetPolicy || 'portfolio';
+        selector.empty();
+        policyList.forEach(policy => {
+            const isSelected = activeSlug === policy.slug;
             const option = $('<option>', {
                 value: policy.url,
                 text: policy.name,
@@ -178,21 +193,30 @@ async function initPrivacy() {
             selector.append(option);
         });
 
-        if (selector.val()) {
-            selector.trigger('change');
+        // If target policy was specified and not 'portfolio', load it now
+        if (targetPolicy && targetPolicy !== 'portfolio') {
+            const matchedPolicy = policyList.find(p => p.slug === targetPolicy);
+            if (matchedPolicy) {
+                loadPolicy(matchedPolicy.url, matchedPolicy.slug, false);
+            } else {
+                content.html(`<p class="error">Privacy policy for "${targetPolicy}" was not found.</p>`);
+            }
         }
     } catch (e) {
         console.error('[DEBUG] Privacy: Initialization error', e);
         selector.html('<option value="" disabled selected>Could not load privacy policies. Check the console for details.</option>');
     }
 
-    // 3. Handle copy link button
+    // Handle copy link button
     copyBtn.off('click').on('click', async function () {
         try {
             await navigator.clipboard.writeText(window.location.href);
-            const originalHtml = $(this).html(); $(this).addClass('copied').html('<i class="im im-check-mark"></i> Copied!');
+            const originalHtml = $(this).html();
+            $(this).addClass('copied').html('<i class="im im-check-mark"></i> Copied!');
             setTimeout(() => { $(this).removeClass('copied').html(originalHtml); }, 2000);
-        } catch (err) { console.error('Copy failed', err); }
+        } catch (err) {
+            console.error('Copy failed', err);
+        }
     });
 }
 
