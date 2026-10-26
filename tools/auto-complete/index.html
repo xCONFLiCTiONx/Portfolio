@@ -1716,7 +1716,8 @@
                 </div>
             </form>
 
-            <!-- Dynamic SPA Modal -->
+            <!-- Dynamic SPA Modal Template: cloned into the live DOM only when the launch button is clicked. -->
+            <template id="spaModalTemplate">
             <div class="modal-overlay" id="spaModal">
                 <div class="modal-card">
                     <div class="modal-header">
@@ -1755,6 +1756,7 @@
                     </div>
                 </div>
             </div>
+            </template>
 
             <!-- Live Diagnostic Activity Console -->
             <div class="activity-console">
@@ -1947,22 +1949,60 @@
         });
 
         // SPA Modal logic
-        const spaModal = document.getElementById("spaModal");
-        const openSpaModal = () => {
-            if (spaModal) spaModal.classList.add("active");
-            logConsole("SPA", "Dynamic modal spawned into DOM.");
-        };
-
-        document.getElementById("btnOpenSpaModal")?.addEventListener("click", openSpaModal);
-        document.getElementById("btnOpenSpaModal2")?.addEventListener("click", openSpaModal);
+        // Mount the modal from a template on demand so this genuinely tests dynamic DOM hydration.
+        let spaModal = null;
 
         function closeSpaModal() {
-            if (spaModal) spaModal.classList.remove("active");
-            logConsole("SPA", "Dynamic modal closed.");
+            if (spaModal) {
+                spaModal.remove();
+                spaModal = null;
+            }
+            logConsole("SPA", "Dynamic modal closed and removed from DOM.");
         }
 
-        document.getElementById("btnCloseSpaModal")?.addEventListener("click", closeSpaModal);
-        document.getElementById("btnCloseModalBtn")?.addEventListener("click", closeSpaModal);
+        function openSpaModal() {
+            // Reuse the active instance if the launch button is clicked more than once.
+            if (spaModal && spaModal.isConnected) {
+                spaModal.classList.add("active");
+                return;
+            }
+
+            const template = document.getElementById("spaModalTemplate");
+            if (!template || !template.content) {
+                console.error("[AutoCompleteTest] Dynamic modal template is missing.");
+                logConsole("Error", "Dynamic modal template is missing.");
+                return;
+            }
+
+            const fragment = template.content.cloneNode(true);
+            spaModal = fragment.querySelector("#spaModal");
+            if (!spaModal) {
+                console.error("[AutoCompleteTest] Modal root was not found in template.");
+                logConsole("Error", "Modal root was not found in template.");
+                return;
+            }
+
+            spaModal.classList.add("active");
+            document.body.appendChild(fragment);
+
+            // Modal controls are created dynamically, so use delegated event handling.
+            spaModal.addEventListener("click", (event) => {
+                if (event.target === spaModal ||
+                    event.target.closest("#btnCloseSpaModal, #btnCloseModalBtn")) {
+                    closeSpaModal();
+                }
+            });
+
+            logConsole("SPA", "Dynamic modal mounted into DOM; hydration test ready.");
+        }
+
+        // Delegate launch clicks so the action remains reliable if scenario markup is re-rendered.
+        document.addEventListener("click", (event) => {
+            const launchButton = event.target.closest("#btnOpenSpaModal, #btnOpenSpaModal2");
+            if (!launchButton) return;
+            event.preventDefault();
+            openSpaModal();
+        });
 
         // Security Audit Runner
         const btnRunSecurityAudit = document.getElementById("btnRunSecurityAudit");
