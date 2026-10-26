@@ -4,39 +4,24 @@
   "description": "Software Developer Portfolio - Building tools for freedom & productivity.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0b0d10",
   "theme_color": "#0b0d10",
+  "background_color": "#0b0d10",
   "orientation": "any",
   "icons": [
     {
-      "src": "assets/favicon-16.png",
-      "sizes": "16x16",
-      "type": "image/png"
-    },
-    {
-      "src": "assets/favicon-32.png",
-      "sizes": "32x32",
-      "type": "image/png"
-    },
-    {
-      "src": "icon-192.png",
+      "src": "assets/android-chrome-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "assets/icon-512.png",
+      "src": "assets/android-chrome-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "assets/apple-touch-icon.png",
-      "sizes": "180x180",
-      "type": "image/png"
-    },
-    {
-      "src": "assets/favicon.ico",
+      "src": "https://xconflictionx.cc/assets/favicon.ico",
       "sizes": "any",
       "type": "image/x-icon"
     }

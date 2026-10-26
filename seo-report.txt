@@ -1,0 +1,24 @@
+STATIC WEBSITE SEO REPORT
+==========================
+Generated: 2026-10-26T01:16:45.370Z
+Site: https://xconflictionx.cc
+
+Discovered URLs: 15
+Analyzed pages: 15
+Sitemap entries: 15
+Maximum crawl depth: 2
+
+ERRORS
+------
+None
+
+WARNINGS
+--------
+https://xconflictionx.cc/tools/allow-copy-paste — missing H1
+https://xconflictionx.cc/tools/zero-hour — description longer than 160 characters (168 chars)
+https://xconflictionx.cc/tools/blackbox — title longer than 60 characters (69 chars)
+https://xconflictionx.cc/tools/blackbox — description longer than 160 characters (226 chars)
+https://xconflictionx.cc/tools/blackbox — missing H1
+https://xconflictionx.cc/tools/code-tools — title longer than 60 characters (68 chars)
+https://xconflictionx.cc/tools/code-tools — description longer than 160 characters (247 chars)
+https://xconflictionx.cc/tools/code-tools — missing H1
