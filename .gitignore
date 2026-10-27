@@ -21,3 +21,6 @@ yarn-error.log*
 dist/
 build/
 temp/
+.wrangler/
+.dev.vars
+.env*
