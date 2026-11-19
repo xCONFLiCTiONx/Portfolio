@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BlackBox Shell — Progressive CLI Diagnostic Workbench | xCONFLiCTiONx</title>
+  <meta
+    name="description"
+    content="Progressive CLI diagnostic workbench and morphing systems anomaly shell. Discover hidden utilities via the terminal, run live network/DNS/WebRTC diagnostics, and resolve procedural kernel, BGP, SCADA, and cryptographic faults."
+  />
+  <meta name="portfolio-tool-id" content="blackbox" />
+  <link rel="canonical" href="https://xconflictionx.cc/tools/blackbox/" />
+  <meta name="theme-color" content="#05070a" />
+  <link rel="manifest" href="../../site.webmanifest" />
+  <link rel="stylesheet" href="../../css/main.css" />
+  <link rel="stylesheet" href="./blackbox.css" />
+  <link rel="icon" id="favicon-js" href="../../assets/favicon.ico" type="image/x-icon" />
+  <link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png" />
+
+  <!-- Open Graph / Social Metadata -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="BlackBox Shell — Progressive CLI Diagnostic Workbench | xCONFLiCTiONx" />
+  <meta
+    property="og:description"
+    content="Progressive CLI diagnostic workbench and morphing systems anomaly shell. Discover hidden utilities via the terminal and resolve procedural infrastructure faults."
+  />
+  <meta property="og:url" content="https://xconflictionx.cc/tools/blackbox/" />
+  <meta property="og:site_name" content="xCONFLiCTiONx" />
+  <meta property="og:image" content="https://xconflictionx.cc/assets/og-image.png" />
+
+  <!-- X / Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="BlackBox Shell — Progressive CLI Diagnostic Workbench | xCONFLiCTiONx" />
+  <meta
+    name="twitter:description"
+    content="Progressive CLI diagnostic workbench and morphing systems anomaly shell. Discover hidden utilities via the terminal and resolve procedural infrastructure faults."
+  />
+  <meta name="twitter:image" content="https://xconflictionx.cc/assets/og-image.png" />
+</head>
+<body id="top" data-tool-id="blackbox">
+  <main class="container">
+    <div id="blackbox-app" data-theme="amber-crt">
+      <div class="bb-shell-wrap">
+        <!-- TOP SYSTEM TELEMETRY & CLEARANCE BAR -->
+        <header class="bb-topbar" aria-label="System Architecture & Clearance Status">
+          <div class="bb-sys-id">
+            <span class="bb-status-beacon" id="bb-beacon" title="Subsystem Health Beacon"></span>
+            <div>
+              <div class="bb-sys-title" id="bb-sys-title">IBM-390 // AIX KERNEL CORE</div>
+              <div class="bb-sys-sub" id="bb-sys-sub">MAINFRAME IPC &amp; MEMORY SUBSYSTEM</div>
+            </div>
+          </div>
+
+          <div class="bb-top-metrics">
+            <div class="bb-pill" title="Saved in Browser Cookies: Total Systems Resolved">
+              <span>RESOLVED:</span>
+              <strong id="bb-stat-solved">0</strong>
+            </div>
+            <div class="bb-pill" title="Saved in Browser Cookies: Fastest Resolution Time">
+              <span>FASTEST:</span>
+              <strong id="bb-stat-best">--</strong>
+            </div>
+            <div class="bb-pill" title="Saved in Browser Cookies: Engineering Clearance Tier">
+              <span>CLEARANCE:</span>
+              <strong id="bb-stat-rank">L1 ANALYST</strong>
+            </div>
+            <button class="bb-btn" id="bb-btn-morph" title="Morph into a brand-new system architecture, visual theme, and engineering problem">
+              ↻ Morph System
+            </button>
+            <button class="bb-btn" id="bb-btn-fullscreen" title="Toggle Native Fullscreen">
+              ⛶ Fullscreen
+            </button>
+          </div>
+        </header>
+
+        <!-- MAIN WORKSPACE GRID -->
+        <div class="bb-main-grid">
+          <!-- LEFT COLUMN: TELEMETRY MONITOR + PROGRESSIVE DISCOVERED MODULES -->
+          <aside class="bb-left-col" aria-label="Live Telemetry and Discovered Modules">
+            <section class="bb-card">
+              <div class="bb-card-header">
+                <span>SUBSYSTEM TELEMETRY</span>
+                <span>LIVE</span>
+              </div>
+              <div class="bb-telemetry-box" id="bb-telemetry-mount"></div>
+            </section>
+
+            <section class="bb-card">
+              <div class="bb-card-header">
+                <span>MOUNTED /OPT/TOOLS</span>
+                <span id="bb-modules-count">0 / 10</span>
+              </div>
+              <div class="bb-modules-list" id="bb-modules-mount"></div>
+            </section>
+          </aside>
+
+          <!-- RIGHT COLUMN: BASH.WS-STYLE PROGRESSIVE SHELL -->
+          <section class="bb-card bb-terminal-card" aria-label="Interactive Diagnostic Shell">
+            <div class="bb-term-tabbar">
+              <div class="bb-term-dots">
+                <span class="bb-term-dot"></span>
+                <span class="bb-term-dot"></span>
+                <span class="bb-term-dot"></span>
+                <span style="margin-left:8px;font-size:11.5px;color:var(--bb-primary-bright);font-weight:700;">
+                  TTY-01 // PROGRESSIVE DIAGNOSTIC SHELL (TAB AUTOCOMPLETE ENABLED)
+                </span>
+              </div>
+              <span style="font-size:11px;color:var(--bb-muted);">
+                Type <code>ls -la</code>, <code>dmesg</code>, or <code>ls /opt/tools</code>
+              </span>
+            </div>
+
+            <div class="bb-term-body" id="bb-term-body"></div>
+
+            <div class="bb-input-bar">
+              <span id="bb-prompt-label"><span class="bb-prompt-str">operator@node</span>:<span class="bb-path-str">/home/operator</span>$</span>
+              <input
+                type="text"
+                class="bb-cmd-input"
+                id="bb-cmd-input"
+                placeholder="Enter command (press TAB to autocomplete commands & file paths)..."
+                autocomplete="off"
+                spellcheck="false"
+                autofocus
+              />
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Scripts -->
+  <script src="../../js/framework.js"></script>
+  <script src="../../js/jquery-3.2.1.min.js"></script>
+  <script src="../../js/github-fetch.js?v=25"></script>
+  <script src="./blackbox.js"></script>
+</body>
+</html>

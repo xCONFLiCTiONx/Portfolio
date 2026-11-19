@@ -1,0 +1,298 @@
+/**
+ * Dynamic GitHub Data Fetcher
+ * Version: 26 (Cached GitHub API Requests)
+ */
+
+const REPO_CONTAINER_ID = 'github-repos';
+const AVATAR_CONTAINER_ID = 'profile-avatar';
+const HEADER_AVATAR_ID = 'header-avatar';
+const HANDLE_CONTAINER_ID = 'profile-handle';
+const BIO_CONTAINER_ID = 'profile-bio';
+const METADATA_CONTAINER_ID = 'profile-metadata';
+const FAVICON_ID = 'favicon-js';
+
+const LANG_COLORS = {
+    'C#': '#178600', 'HTML': '#e34c26', 'CSS': '#563d7c', 'JavaScript': '#f1e05a',
+    'Kotlin': '#A97BFF', 'Java': '#b07219', 'Python': '#3572A5', 'Shell': '#89e051'
+};
+
+const DEFAULT_USERNAME = 'xCONFLiCTiONx';
+
+/**
+ * Returns official GitHub headers
+ */
+function getGithubHeaders(token) {
+    const headers = {
+        'Accept': 'application/vnd.github.v3+json'
+    };
+    if (token) {
+        headers['Authorization'] = `token ${token}`;
+    }
+    return headers;
+}
+window.getGithubHeaders = getGithubHeaders;
+
+async function initPortfolio() {
+    const config = window.PortfolioFramework ? await window.PortfolioFramework.getConfig() : (window.getPortfolioConfig ? await window.getPortfolioConfig() : {});
+    const username = (config.github && config.github.username) || config.github_username || DEFAULT_USERNAME;
+    const token = config.github ? config.github.token : config.github_token;
+
+    const CACHE_MS = 6 * 60 * 60 * 1000;
+    const fetchOptions = {
+        headers: getGithubHeaders(token),
+        cache: 'default'
+    };
+
+    // Reuse public GitHub responses across page reloads to avoid exhausting
+    // GitHub's unauthenticated API rate limit. Never cache authenticated data.
+    async function fetchGitHubJson(url, cacheKey) {
+        if (!token) {
+            try {
+                const cached = JSON.parse(localStorage.getItem(cacheKey) || 'null');
+                if (cached && cached.savedAt && Date.now() - cached.savedAt < CACHE_MS && cached.data) {
+                    return cached.data;
+                }
+            } catch (_) {}
+        }
+
+        const response = await fetch(url, fetchOptions);
+        if (!response.ok) throw new Error(`GitHub API request failed: ${response.status}`);
+        const data = await response.json();
+
+        if (!token) {
+            try {
+                localStorage.setItem(cacheKey, JSON.stringify({ savedAt: Date.now(), data }));
+            } catch (_) {}
+        }
+        return data;
+    }
+
+    const layoutInfo = window.PortfolioFramework?.resolvePageLayout?.(config);
+    const hasSidebar = layoutInfo ? layoutInfo.layout.sidebar : !document.body.classList.contains('no-sidebar');
+    const repoContainer = document.getElementById(REPO_CONTAINER_ID);
+    const contactRepoSelector = document.getElementById('contact-repo-selector');
+    const hasProfileElements = hasSidebar || !!document.getElementById(AVATAR_CONTAINER_ID) || !!document.getElementById('profile-name');
+
+    // 1. Inject static link configuration immediately
+    const githubLink = document.getElementById('contact-github-js');
+    if (githubLink) {
+        githubLink.href = (config.github && config.github.profileUrl) || `https://github.com/${username}`;
+    }
+
+    // 2. Skip all GitHub API calls if this page doesn't have profile/repo containers
+    if (!hasProfileElements && !repoContainer && !contactRepoSelector) {
+        return;
+    }
+
+    let userData = null;
+    try {
+        if (hasProfileElements) {
+            const userURL = `https://api.github.com/users/${username}`;
+        try {
+            userData = await fetchGitHubJson(userURL, `github-profile:${username.toLowerCase()}`);
+            populateProfile(userData, username, hasSidebar);
+        } catch (_) {
+            document.querySelectorAll('.user-name-js').forEach(el => el.textContent = username);
+            const fallbackAvatar = config.github?.avatarUrl || config.site?.avatar || `https://github.com/${username}.png`;
+            populateProfile({
+                avatar_url: fallbackAvatar,
+                name: (config.site && config.site.name) || username,
+                login: username,
+                bio: (config.site && config.site.description) || 'Building tools for freedom & productivity.'
+            }, username, hasSidebar);
+        }
+
+        const metaDesc = document.getElementById('meta-description-js');
+        if (metaDesc) {
+            metaDesc.content = `Software Developer Portfolio for ${(userData && userData.name) || username} - Building tools for freedom & productivity.`;
+        }
+        }
+
+        const repoContainer = document.getElementById(REPO_CONTAINER_ID);
+        const contactRepoSelector = document.getElementById('contact-repo-selector');
+
+        if (repoContainer || contactRepoSelector) {
+            const reposURL = `https://api.github.com/users/${username}/repos?sort=updated&per_page=100`;
+            try {
+                const repos = await fetchGitHubJson(reposURL, `github-repos:${username.toLowerCase()}`);
+
+                // If on main page, render repo cards
+                if (repoContainer) renderRepos(repoContainer, repos);
+
+                // If on contact page, populate dropdown
+                if (contactRepoSelector) populateRepoSelector(contactRepoSelector, repos, username);
+            } catch (_) {
+                // Keep the rest of the portfolio usable when GitHub is rate-limited.
+            }
+        }
+
+        // 3. Inject Dynamic Configuration
+        const githubLink = document.getElementById('contact-github-js');
+        if (githubLink) {
+            githubLink.href = `https://github.com/${username}`;
+        }
+
+        const metaDesc = document.getElementById('meta-description-js');
+        if (metaDesc) {
+            metaDesc.content = `Software Developer Portfolio for ${(userData && userData.name) || username} - Building tools for freedom & productivity.`;
+        }
+
+    } catch (error) {
+        console.error('Portfolio: Connection Error', error);
+    }
+}
+
+function populateProfile(data, username, hasSidebar = true) {
+    document.querySelectorAll('.user-name-js').forEach(el => el.textContent = data.name || username);
+
+    const headerAvatar = document.getElementById(HEADER_AVATAR_ID);
+    const favicon = document.getElementById(FAVICON_ID);
+
+    if (data.avatar_url) {
+        const fallbackIcon = (window.PortfolioFramework && window.PortfolioFramework.toRelativeUrl) ? window.PortfolioFramework.toRelativeUrl('assets/favicon.ico') : 'assets/favicon.ico';
+        const imgHtml = `<img src="${data.avatar_url}" alt="${data.name || username}" onerror="if(this.src!=='${fallbackIcon}')this.src='${fallbackIcon}';">`;
+        if (headerAvatar) headerAvatar.innerHTML = imgHtml;
+        if (favicon) favicon.setAttribute('href', data.avatar_url);
+    }
+
+    if (!hasSidebar) return;
+
+    const openGithub = () => window.open(`https://github.com/${username}`, '_blank');
+    const ids = [AVATAR_CONTAINER_ID, 'profile-name', HANDLE_CONTAINER_ID, BIO_CONTAINER_ID];
+
+    ids.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.onclick = openGithub;
+            el.style.cursor = 'pointer';
+        }
+    });
+
+    if (document.getElementById(HANDLE_CONTAINER_ID)) document.getElementById(HANDLE_CONTAINER_ID).textContent = data.login || username;
+    if (document.getElementById(BIO_CONTAINER_ID)) document.getElementById(BIO_CONTAINER_ID).textContent = data.bio || 'Building tools for freedom & productivity.';
+
+    const avatarContainer = document.getElementById(AVATAR_CONTAINER_ID);
+    if (data.avatar_url && avatarContainer) {
+        const fallbackIcon = (window.PortfolioFramework && window.PortfolioFramework.toRelativeUrl) ? window.PortfolioFramework.toRelativeUrl('assets/favicon.ico') : 'assets/favicon.ico';
+        avatarContainer.innerHTML = `<img src="${data.avatar_url}" alt="${data.name || username}" onerror="if(this.src!=='${fallbackIcon}')this.src='${fallbackIcon}';">`;
+    }
+
+    const metadataContainer = document.getElementById(METADATA_CONTAINER_ID);
+    if (metadataContainer) renderMetadata(metadataContainer, data);
+}
+
+function renderMetadata(container, data) {
+    let html = '';
+    if (data.location) html += `<li><i class="im im-location"></i> <span>${data.location}</span></li>`;
+    html += `<li><i class="im im-users"></i> <span><strong>${data.followers}</strong> followers &middot; <strong>${data.following}</strong> following</span></li>`;
+    if (data.blog) {
+        const url = data.blog.startsWith('http') ? data.blog : `https://${data.blog}`;
+        html += `<li><i class="im im-link"></i> <a href="${url}" target="_blank">${data.blog.replace(/^https?:\/\//, '')}</a></li>`;
+    }
+    container.innerHTML = html;
+}
+
+function populateRepoSelector(selector, repos, username) {
+    let options = '<option value="" disabled selected>-- Select a project --</option>';
+
+    // Sort repos by name
+    const sortedRepos = repos.sort((a, b) => a.name.localeCompare(b.name));
+
+    sortedRepos.forEach(repo => {
+        options += `<option value="${repo.name}">${repo.name}</option>`;
+    });
+
+    selector.innerHTML = options;
+
+    const goBtn = document.getElementById('go-to-issues-btn');
+    const discBtn = document.getElementById('go-to-discussions-btn');
+
+    if (goBtn || discBtn) {
+        selector.onchange = () => {
+            const hasValue = !!selector.value;
+            if (goBtn) goBtn.disabled = !hasValue;
+            if (discBtn) discBtn.disabled = !hasValue;
+        };
+
+        if (goBtn) {
+            goBtn.onclick = () => {
+                const selectedRepo = selector.value;
+                if (selectedRepo) {
+                    window.open(`https://github.com/${username}/${selectedRepo}/issues`, '_blank');
+                }
+            };
+        }
+
+        if (discBtn) {
+            discBtn.onclick = () => {
+                const selectedRepo = selector.value;
+                if (selectedRepo) {
+                    window.open(`https://github.com/${username}/${selectedRepo}/discussions`, '_blank');
+                }
+            };
+        }
+    }
+}
+
+function renderRepos(container, repos) {
+    container.innerHTML = '';
+    repos.forEach(repo => {
+        const div = document.createElement('div');
+        div.className = 'repo-item';
+        const langColor = LANG_COLORS[repo.language] || '#8b949e';
+        const updatedDate = new Date(repo.updated_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        const sshUrl = repo.clone_url.replace('https://github.com/', 'git@github.com:');
+
+        div.innerHTML = `
+            <div class="repo-item__header"><a href="${repo.html_url}" target="_blank" class="repo-item__name">${repo.name}</a><span class="repo-item__badge">Public</span></div>
+            ${repo.description ? `<p class="repo-item__description">${repo.description}</p>` : ''}
+            <div class="repo-actions">
+                <button class="repo-code-btn" onclick="toggleCloneBox(this)">Code <i class="im im-angle-down"></i></button>
+                <div class="repo-clone-box">
+                    <div class="clone-box__header"><i class="im im-code"></i> Clone</div>
+                    <div class="clone-box__tabs">
+                        <button class="clone-box__tab active" onclick="switchCloneTab(this, 'https', '${repo.clone_url}')">HTTPS</button>
+                        <button class="clone-box__tab" onclick="switchCloneTab(this, 'ssh', '${sshUrl}')">SSH</button>
+                    </div>
+                    <div class="clone-box__url-container">
+                        <input class="clone-box__input" type="text" value="${repo.clone_url}" readonly>
+                        <button class="clone-box__copy-btn" onclick="copyCloneUrl(this)"><i class="im im-copy"></i></button>
+                    </div>
+                </div>
+            </div>
+            <div class="repo-item__footer">
+                ${repo.language ? `<div class="repo-item__lang"><span class="repo-item__lang-dot" style="background-color: ${langColor}"></span><span>${repo.language}</span></div>` : ''}
+                <div><i class="im im-star"></i><span>${repo.stargazers_count}</span></div>
+                <div><i class="im im-share"></i><span>${repo.forks_count}</span></div>
+                <div><span>Updated on ${updatedDate}</span></div>
+            </div>
+        `;
+        container.appendChild(div);
+    });
+}
+
+function toggleCloneBox(btn) {
+    const box = btn.nextElementSibling;
+    const isActive = box.classList.contains('active');
+    document.querySelectorAll('.repo-clone-box').forEach(b => b.classList.remove('active'));
+    if (!isActive) box.classList.add('active');
+}
+
+function switchCloneTab(tabBtn, type, url) {
+    const box = tabBtn.closest('.repo-clone-box');
+    box.querySelectorAll('.clone-box__tab').forEach(t => t.classList.remove('active'));
+    tabBtn.classList.add('active');
+    box.querySelector('.clone-box__input').value = url;
+}
+
+async function copyCloneUrl(btn) {
+    const input = btn.previousElementSibling;
+    try {
+        await navigator.clipboard.writeText(input.value);
+        const icon = btn.querySelector('i');
+        icon.className = 'im im-check-mark';
+        setTimeout(() => { icon.className = 'im im-copy'; }, 2000);
+    } catch (err) { console.error('Copy failed', err); }
+}
+
+document.addEventListener('DOMContentLoaded', initPortfolio);

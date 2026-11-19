@@ -1,0 +1,7596 @@
+/**
+ * ============================================================================
+ * VS CODE TOOLS — Web IDE & Daily CLI Developer Workbench
+ * Theme: Pitch Black (#121212), Crisp White (#FFFFFF), Accent Turquoise (#3791B7)
+ * Non-Fiction, Real-Life Daily Utilities for Web, Network, Crypto & Scripting
+ * ============================================================================
+ */
+
+(function () {
+  "use strict";
+
+  // --- COOKIE & PERSISTENT STORAGE HELPERS ---
+  function getCookie(name) {
+    const match = document.cookie.match(new RegExp("(^|;\\s*)(" + name + ")=([^;]*)"));
+    return match ? decodeURIComponent(match[3]) : "";
+  }
+
+  function setCookie(name, val, days = 365) {
+    const maxAge = days * 86400;
+    const isHttps = window.location.protocol === "https:";
+    const secureFlag = isHttps ? "; Secure" : "";
+    document.cookie = `${name}=${encodeURIComponent(val)}; max-age=${maxAge}; path=/; SameSite=Lax${secureFlag}`;
+  }
+
+  function getStoredToken() {
+    try {
+      const fromLs = localStorage.getItem("vsc_gh_token");
+      if (fromLs && fromLs.trim()) return fromLs.trim();
+    } catch (e) {}
+    try {
+      const fromCookie = getCookie("gh_pat");
+      if (fromCookie && fromCookie.trim()) return fromCookie.trim();
+    } catch (e) {}
+    try {
+      const fromSs = sessionStorage.getItem("vsc_gh_token");
+      if (fromSs && fromSs.trim()) return fromSs.trim();
+    } catch (e) {}
+    return "";
+  }
+
+  function persistToken(token) {
+    if (!token) {
+      try { localStorage.removeItem("vsc_gh_token"); } catch (e) {}
+      try { sessionStorage.removeItem("vsc_gh_token"); } catch (e) {}
+      setCookie("gh_pat", "", -1);
+      return;
+    }
+    const clean = token.trim();
+    try { localStorage.setItem("vsc_gh_token", clean); } catch (e) {}
+    try { sessionStorage.setItem("vsc_gh_token", clean); } catch (e) {}
+    setCookie("gh_pat", clean, 365);
+  }
+
+  function maskToken(token) {
+    if (!token) return "";
+    const clean = token.trim();
+    if (clean.length <= 8) return "••••••••";
+    const prefix = clean.startsWith("ghp_") ? "ghp_" : clean.startsWith("github_pat_") ? "github_pat_" : clean.slice(0, 4);
+    const suffix = clean.slice(-4);
+    return `${prefix}••••••••${suffix}`;
+  }
+
+  // --- APPLICATION STATE ---
+  const state = {
+    files: {},
+    fileShas: {}, // { filename: sha }
+    modifiedFiles: new Set(),
+    activeFile: null,
+    openTabs: [], // Ordered list of open tab filenames
+    commandHistory: [],
+    historyIndex: -1,
+    isMaximized: false,
+    savedPanelHeight: 180,
+    activeShell: "powershell",
+    activeTab: "terminal",
+    activeSidebarView: "explorer",
+    servers: {}, // { port: { file, url, pid, startedAt } }
+    nanoActive: false,
+    nanoCurrentFile: "",
+    githubToken: getStoredToken(),
+    githubRepo: getCookie("gh_repo") || localStorage.getItem("vsc_gh_repo") || "",
+    githubBranch: getCookie("gh_branch") || localStorage.getItem("vsc_gh_branch") || "main",
+    githubUser: null,
+    isLocalProject: false,
+    projectName: "",
+    cachedRepos: null,
+    projectDirHandle: null,
+    fileHandles: new Map(),
+    baselineFiles: {},
+    geminiApiKey: localStorage.getItem("vsc_gemini_api_key") || "",
+    lastCommitGen: null,
+    currentServingFile: "",
+    currentServingPort: 3000,
+    activePreviewBlobs: []
+  };
+
+  // Load persisted user workspace or initialize clean empty workspace
+  try {
+    const saved = localStorage.getItem("vsc_workspace_files_v1");
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      // Clean up old auto-seeded mock default files if user hasn't explicitly customized them
+      const oldDefaultKeys = ["scratchpad.js", "payload.json", "notes.md", "api-test.http", "mypage.html"];
+      const savedKeys = Object.keys(parsed);
+      const isOnlyOldDefaults = savedKeys.length > 0 &&
+        savedKeys.length <= oldDefaultKeys.length &&
+        savedKeys.every(k => oldDefaultKeys.includes(k)) &&
+        !localStorage.getItem("vsc_user_custom_workspace");
+
+      if (isOnlyOldDefaults) {
+        state.files = {};
+        localStorage.removeItem("vsc_workspace_files_v1");
+      } else {
+        state.files = parsed;
+      }
+    } else {
+      state.files = {};
+    }
+  } catch (e) {
+    state.files = {};
+  }
+
+  // Initialize baseline snapshot for diffing & commit message analysis
+  state.baselineFiles = { ...state.files };
+
+  // Restore saved file SHAs for GitHub Contents API
+  try {
+    const savedShas = localStorage.getItem("vsc_gh_file_shas");
+    if (savedShas) state.fileShas = JSON.parse(savedShas);
+  } catch (e) {}
+
+  // Initialize open editor tabs
+  state.openTabs = Object.keys(state.files).slice(0, 5);
+  state.activeFile = state.openTabs[0] || null;
+
+  // --- DOM ELEMENT REFERENCES ---
+  const el = {
+    app: document.getElementById("vscode-workbench"),
+    codeTextarea: document.getElementById("vsc-code-editor"),
+    gutter: document.getElementById("vsc-gutter"),
+    tabsBar: document.getElementById("vsc-tabs-bar"),
+    breadcrumbsFile: document.getElementById("vsc-bread-file"),
+    contextMenu: document.getElementById("vsc-context-menu"),
+    importFileInput: document.getElementById("vsc-import-file-input"),
+    btnImportBanner: document.getElementById("vsc-btn-import-banner"),
+    btnNewBanner: document.getElementById("vsc-btn-new-banner"),
+    btnClearWorkspaceBanner: document.getElementById("vsc-btn-clear-workspace-banner"),
+    sashResizer: document.getElementById("vsc-sash-resizer"),
+    terminalPanel: document.getElementById("vsc-terminal-panel"),
+    termBody: document.getElementById("vsc-term-body"),
+    termHistory: document.getElementById("vsc-term-history"),
+    termInput: document.getElementById("vsc-term-input"),
+    promptTag: document.getElementById("vsc-prompt-tag"),
+    btnMaximize: document.getElementById("vsc-btn-maximize"),
+    btnRun: document.getElementById("vsc-btn-run"),
+    btnPreview: document.getElementById("vsc-btn-preview"),
+    btnPreviewMd: document.getElementById("vsc-btn-preview-md"),
+    btnFormat: document.getElementById("vsc-btn-format"),
+    btnSave: document.getElementById("vsc-btn-save"),
+    btnPullEditor: document.getElementById("vsc-btn-pull-editor"),
+    btnPushEditor: document.getElementById("vsc-btn-push-editor"),
+    btnClear: document.getElementById("vsc-btn-clear"),
+    btnFullscreen: document.getElementById("vsc-btn-fullscreen"),
+    btnReloadWindow: document.getElementById("vsc-btn-reload-window"),
+    itemReloadWindow: document.getElementById("vsc-item-reload-window"),
+    shellSelect: document.getElementById("vsc-shell-select"),
+    openEditorsList: document.getElementById("vsc-open-editors-list"),
+    workspaceFilesList: document.getElementById("vsc-workspace-files-list"),
+    workspaceArea: document.getElementById("vsc-workspace-area"),
+    statusLnCol: document.getElementById("vsc-status-lncol"),
+    sidebar: document.getElementById("vsc-sidebar"),
+    sidebarTitle: document.getElementById("vsc-sidebar-title"),
+    actExplorer: document.getElementById("vsc-act-explorer"),
+    actSearch: document.getElementById("vsc-act-search"),
+    actGit: document.getElementById("vsc-act-git"),
+    actDebug: document.getElementById("vsc-act-debug"),
+    actExtensions: document.getElementById("vsc-act-extensions"),
+    actAccounts: document.getElementById("vsc-act-accounts"),
+    actSettings: document.getElementById("vsc-act-settings"),
+
+    // GNU nano elements
+    nanoContainer: document.getElementById("vsc-nano-container"),
+    nanoEditor: document.getElementById("vsc-nano-editor"),
+    nanoFilename: document.getElementById("vsc-nano-filename"),
+    nanoStatus: document.getElementById("vsc-nano-status"),
+    nanoBtnSave: document.getElementById("vsc-nano-btn-save"),
+    nanoBtnExit: document.getElementById("vsc-nano-btn-exit"),
+
+    // Live Server preview elements
+    livePreview: document.getElementById("vsc-live-preview"),
+    previewFrame: document.getElementById("vsc-preview-iframe"),
+    previewUrlText: document.getElementById("vsc-preview-url-text"),
+    previewBtnBackCode: document.getElementById("vsc-preview-btn-back-code"),
+    previewBtnReload: document.getElementById("vsc-preview-btn-reload"),
+    previewBtnDesktop: document.getElementById("vsc-preview-btn-desktop"),
+    previewBtnTablet: document.getElementById("vsc-preview-btn-tablet"),
+    previewBtnMobile: document.getElementById("vsc-preview-btn-mobile"),
+    previewBtnExternal: document.getElementById("vsc-preview-btn-external"),
+    previewBtnClose: document.getElementById("vsc-preview-btn-close"),
+
+    // Terminal views & tabs
+    tabTerm: document.getElementById("vsc-tab-term"),
+    tabMessages: document.getElementById("vsc-tab-messages"),
+    tabOutput: document.getElementById("vsc-tab-output"),
+    tabProblems: document.getElementById("vsc-tab-problems"),
+    tabPorts: document.getElementById("vsc-tab-ports"),
+    tabDebug: document.getElementById("vsc-tab-debug"),
+    messagesPanel: document.getElementById("vsc-messages-panel"),
+    messagesHistory: document.getElementById("vsc-messages-history"),
+    messagesCount: document.getElementById("vsc-messages-count"),
+    btnClearMessages: document.getElementById("vsc-btn-clear-messages"),
+    outputPanel: document.getElementById("vsc-output-panel"),
+    outputHistory: document.getElementById("vsc-output-history"),
+    problemsPanel: document.getElementById("vsc-problems-panel"),
+    problemsHistory: document.getElementById("vsc-problems-history"),
+    problemsCount: document.getElementById("vsc-problems-count"),
+    portsPanel: document.getElementById("vsc-ports-panel"),
+    portsTbody: document.getElementById("vsc-ports-tbody"),
+    portsCount: document.getElementById("vsc-ports-count"),
+    debugPanel: document.getElementById("vsc-debug-panel"),
+    debugHistory: document.getElementById("vsc-debug-history"),
+    debugInput: document.getElementById("vsc-debug-input"),
+
+    // Modals
+    paletteDialog: document.getElementById("vsc-palette-dialog"),
+    paletteInput: document.getElementById("vsc-palette-input"),
+    paletteList: document.getElementById("vsc-palette-list"),
+    githubDialog: document.getElementById("vsc-github-dialog"),
+    ghTokenInput: document.getElementById("vsc-gh-token-input"),
+    ghRepoSelect: document.getElementById("vsc-gh-repo-select"),
+    ghBtnRefreshRepos: document.getElementById("vsc-gh-btn-refresh-repos"),
+    ghReposLoading: document.getElementById("vsc-gh-repos-loading"),
+    ghRepoInput: document.getElementById("vsc-gh-repo-input"),
+    ghBranchInput: document.getElementById("vsc-gh-branch-input"),
+    ghBtnConnect: document.getElementById("vsc-gh-btn-connect"),
+    ghBtnSaveToken: document.getElementById("vsc-gh-btn-save-token"),
+    ghBtnDisconnect: document.getElementById("vsc-gh-btn-disconnect"),
+    ghBtnToggleToken: document.getElementById("vsc-gh-btn-toggle-token"),
+    ghRememberToken: document.getElementById("vsc-gh-remember-token"),
+    ghSavedBadge: document.getElementById("vsc-gh-saved-badge"),
+    ghBtnClose: document.getElementById("vsc-gh-btn-close"),
+    ghBtnCancel: document.getElementById("vsc-gh-btn-cancel"),
+    ghStatusMsg: document.getElementById("vsc-gh-status-msg"),
+    settingsDialog: document.getElementById("vsc-settings-dialog"),
+    settingFontSize: document.getElementById("vsc-setting-fontsize"),
+    settingTabSize: document.getElementById("vsc-setting-tabsize"),
+    settingWordWrap: document.getElementById("vsc-setting-wordwrap"),
+    settingGhToken: document.getElementById("vsc-setting-gh-token"),
+    settingGhStatus: document.getElementById("vsc-setting-gh-status"),
+    settingBtnToggleToken: document.getElementById("vsc-setting-btn-toggle-token"),
+    settingGeminiKey: document.getElementById("vsc-setting-gemini-key"),
+    settingGeminiStatus: document.getElementById("vsc-setting-gemini-status"),
+    settingBtnToggleGemini: document.getElementById("vsc-setting-btn-toggle-gemini"),
+    settingsBtnClose: document.getElementById("vsc-settings-btn-close"),
+    settingsBtnSave: document.getElementById("vsc-settings-btn-save"),
+    btnResetData: document.getElementById("vsc-btn-reset-data"),
+    itemResetData: document.getElementById("vsc-item-reset-data"),
+
+    // Quick Input Dialog (In-page prompt)
+    quickInputDialog: document.getElementById("vsc-quickinput-dialog"),
+    quickInputTitle: document.getElementById("vsc-quickinput-title"),
+    quickInputLabel: document.getElementById("vsc-quickinput-label"),
+    quickInputInput: document.getElementById("vsc-quickinput-input"),
+    quickInputBtnClose: document.getElementById("vsc-quickinput-btn-close"),
+    quickInputBtnCancel: document.getElementById("vsc-quickinput-btn-cancel"),
+    quickInputBtnOk: document.getElementById("vsc-quickinput-btn-ok"),
+
+    // Titlebar & Searchbar
+    searchBar: document.querySelector(".vsc-searchbar"),
+    workspaceLabel: document.getElementById("vsc-workspace-label"),
+    btnNewFile: document.getElementById("vsc-btn-new-file"),
+    btnRefreshSidebar: document.getElementById("vsc-btn-refresh-sidebar"),
+    btnOpenFolder: document.getElementById("vsc-btn-open-folder"),
+    btnOpenProjectBanner: document.getElementById("vsc-btn-open-project-banner"),
+    openProjectContainer: document.getElementById("vsc-open-project-container"),
+    folderInput: document.getElementById("vsc-folder-input"),
+    btnDebugRun: document.getElementById("vsc-btn-debug-run"),
+
+    // Status bar interactive items
+    statusGit: document.getElementById("vsc-status-git"),
+    statusGitBranch: document.getElementById("vsc-status-git-branch"),
+    statusSync: document.getElementById("vsc-status-sync"),
+    statusSyncText: document.getElementById("vsc-status-sync-text"),
+    statusDiagnostics: document.getElementById("vsc-status-diagnostics"),
+    statusSpaces: document.getElementById("vsc-status-spaces"),
+    statusEncoding: document.getElementById("vsc-status-encoding"),
+    statusLang: document.getElementById("vsc-status-lang"),
+    statusOnline: document.getElementById("vsc-status-online"),
+
+    // Search view elements
+    searchQueryInput: document.getElementById("vsc-search-query-input"),
+    replaceQueryInput: document.getElementById("vsc-replace-query-input"),
+    btnFindInFiles: document.getElementById("vsc-btn-find-in-files"),
+    btnReplaceInFiles: document.getElementById("vsc-btn-replace-in-files"),
+    searchResultsList: document.getElementById("vsc-search-results-list"),
+
+    // Git view elements
+    gitRepoDisplay: document.getElementById("vsc-git-repo-display"),
+    gitAuthIndicator: document.getElementById("vsc-git-auth-indicator"),
+    btnOpenGhModal: document.getElementById("vsc-btn-open-gh-modal"),
+    btnDisconnectGh: document.getElementById("vsc-btn-disconnect-gh"),
+    gitCommitMsg: document.getElementById("vsc-git-commit-msg"),
+    btnGitGenMsg: document.getElementById("vsc-btn-git-gen-msg"),
+    gitGenStatus: document.getElementById("vsc-git-gen-status"),
+    gitPresetsBar: document.getElementById("vsc-git-presets-bar"),
+    btnGitPush: document.getElementById("vsc-btn-git-push"),
+    btnGitPull: document.getElementById("vsc-btn-git-pull"),
+    gitChangesList: document.getElementById("vsc-git-changes-list")
+  };
+
+  // --- IN-PAGE COLOR-CODED MESSAGES & QUICK INPUT (NO PROMPT / ZERO FULLSCREEN LOSS) ---
+  let messagesCount = 0;
+
+  function showMessage(type = "info", title = "SYSTEM", text = "", autoSwitch = true) {
+    if (!el.messagesHistory) return;
+    messagesCount++;
+    if (el.messagesCount) {
+      el.messagesCount.textContent = messagesCount;
+      el.messagesCount.style.display = "inline-block";
+    }
+
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+    const card = document.createElement("div");
+    card.className = `vsc-msg-card ${type}`;
+    const escaped = String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    card.innerHTML = `
+      <div class="vsc-msg-header">
+        <span class="vsc-msg-tag">${type.toUpperCase()}</span>
+        <span class="vsc-msg-time">${timeStr} \u2014 ${title}</span>
+      </div>
+      <div class="vsc-msg-text">${escaped}</div>
+    `;
+
+    el.messagesHistory.appendChild(card);
+    if (el.messagesPanel) {
+      el.messagesPanel.scrollTop = el.messagesPanel.scrollHeight;
+    }
+
+    if (autoSwitch) {
+      switchTerminalTab("messages");
+      if (el.terminalPanel && el.terminalPanel.offsetHeight < 70) {
+        el.terminalPanel.style.height = `${state.savedPanelHeight || 180}px`;
+      }
+    }
+  }
+
+  function promptInWorkbench(title, defaultValue = "", placeholder = "") {
+    return new Promise((resolve) => {
+      if (!el.quickInputDialog) {
+        resolve(defaultValue);
+        return;
+      }
+
+      if (el.quickInputTitle) el.quickInputTitle.textContent = title.toUpperCase();
+      if (el.quickInputLabel) el.quickInputLabel.textContent = `${title}:`;
+      if (el.quickInputInput) {
+        el.quickInputInput.value = defaultValue;
+        el.quickInputInput.placeholder = placeholder || "Enter text...";
+      }
+
+      let isDone = false;
+      const finish = (val) => {
+        if (isDone) return;
+        isDone = true;
+        cleanup();
+        try { el.quickInputDialog.close(); } catch (e) {}
+        resolve(val);
+      };
+
+      const onKeyDown = (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          finish(el.quickInputInput.value);
+        } else if (e.key === "Escape") {
+          e.preventDefault();
+          finish(null);
+        }
+      };
+
+      const onOkClick = () => finish(el.quickInputInput ? el.quickInputInput.value : "");
+      const onCancelClick = () => finish(null);
+      const onBackdropClick = (e) => {
+        if (e.target === el.quickInputDialog) finish(null);
+      };
+
+      const cleanup = () => {
+        if (el.quickInputInput) el.quickInputInput.removeEventListener("keydown", onKeyDown);
+        if (el.quickInputBtnOk) el.quickInputBtnOk.removeEventListener("click", onOkClick);
+        if (el.quickInputBtnCancel) el.quickInputBtnCancel.removeEventListener("click", onCancelClick);
+        if (el.quickInputBtnClose) el.quickInputBtnClose.removeEventListener("click", onCancelClick);
+        el.quickInputDialog.removeEventListener("click", onBackdropClick);
+      };
+
+      if (el.quickInputInput) el.quickInputInput.addEventListener("keydown", onKeyDown);
+      if (el.quickInputBtnOk) el.quickInputBtnOk.addEventListener("click", onOkClick);
+      if (el.quickInputBtnCancel) el.quickInputBtnCancel.addEventListener("click", onCancelClick);
+      if (el.quickInputBtnClose) el.quickInputBtnClose.addEventListener("click", onCancelClick);
+      el.quickInputDialog.addEventListener("click", onBackdropClick);
+
+      el.quickInputDialog.showModal();
+      if (el.quickInputInput) {
+        el.quickInputInput.focus();
+        el.quickInputInput.select();
+      }
+    });
+  }
+
+  function confirmInWorkbench(title, message) {
+    return new Promise((resolve) => {
+      if (!el.quickInputDialog) {
+        resolve(window.confirm ? window.confirm(message.replace(/<[^>]+>/g, "")) : true);
+        return;
+      }
+
+      if (el.quickInputTitle) el.quickInputTitle.textContent = title.toUpperCase();
+      if (el.quickInputLabel) el.quickInputLabel.innerHTML = message;
+      if (el.quickInputInput) el.quickInputInput.style.display = "none";
+
+      let isDone = false;
+      const finish = (val) => {
+        if (isDone) return;
+        isDone = true;
+        cleanup();
+        if (el.quickInputInput) el.quickInputInput.style.display = "";
+        try { el.quickInputDialog.close(); } catch (e) {}
+        resolve(val);
+      };
+
+      const onKeyDown = (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          finish(true);
+        } else if (e.key === "Escape") {
+          e.preventDefault();
+          finish(false);
+        }
+      };
+
+      const onOkClick = (e) => {
+        if (e) {
+          if (e.cancelable) e.preventDefault();
+          e.stopPropagation();
+        }
+        finish(true);
+      };
+      const onCancelClick = (e) => {
+        if (e) {
+          if (e.cancelable) e.preventDefault();
+          e.stopPropagation();
+        }
+        finish(false);
+      };
+      const onBackdropClick = (e) => {
+        if (e.target !== el.quickInputDialog) return;
+        const rect = el.quickInputDialog.getBoundingClientRect();
+        const isInDialog = (
+          rect.top <= e.clientY && e.clientY <= rect.top + rect.height &&
+          rect.left <= e.clientX && e.clientX <= rect.left + rect.width
+        );
+        if (!isInDialog) finish(false);
+      };
+
+      const cleanup = () => {
+        if (el.quickInputInput) el.quickInputInput.removeEventListener("keydown", onKeyDown);
+        if (el.quickInputBtnOk) {
+          el.quickInputBtnOk.removeEventListener("click", onOkClick);
+          el.quickInputBtnOk.removeEventListener("touchend", onOkClick);
+        }
+        if (el.quickInputBtnCancel) {
+          el.quickInputBtnCancel.removeEventListener("click", onCancelClick);
+          el.quickInputBtnCancel.removeEventListener("touchend", onCancelClick);
+        }
+        if (el.quickInputBtnClose) {
+          el.quickInputBtnClose.removeEventListener("click", onCancelClick);
+          el.quickInputBtnClose.removeEventListener("touchend", onCancelClick);
+        }
+        el.quickInputDialog.removeEventListener("click", onBackdropClick);
+      };
+
+      if (el.quickInputInput) el.quickInputInput.addEventListener("keydown", onKeyDown);
+      if (el.quickInputBtnOk) {
+        el.quickInputBtnOk.addEventListener("click", onOkClick);
+        el.quickInputBtnOk.addEventListener("touchend", onOkClick);
+      }
+      if (el.quickInputBtnCancel) {
+        el.quickInputBtnCancel.addEventListener("click", onCancelClick);
+        el.quickInputBtnCancel.addEventListener("touchend", onCancelClick);
+      }
+      if (el.quickInputBtnClose) {
+        el.quickInputBtnClose.addEventListener("click", onCancelClick);
+        el.quickInputBtnClose.addEventListener("touchend", onCancelClick);
+      }
+
+      setTimeout(() => {
+        if (!isDone) el.quickInputDialog.addEventListener("click", onBackdropClick);
+      }, 100);
+
+      try {
+        el.quickInputDialog.showModal();
+        if (el.quickInputBtnOk) el.quickInputBtnOk.focus();
+      } catch (err) {
+        console.warn("Could not open modal dialog, falling back to confirm:", err);
+        resolve(window.confirm ? window.confirm(message.replace(/<[^>]+>/g, "")) : true);
+      }
+    });
+  }
+
+  // --- DYNAMIC WORKSPACE & SHELL PROMPT HELPERS ---
+  function getWorkspaceName() {
+    if (state.projectName) return state.projectName;
+    if (state.githubRepo) return state.githubRepo.split("/").pop();
+    return "workspace";
+  }
+
+  function getPromptString() {
+    const ws = getWorkspaceName();
+    if (state.activeShell === "bash") {
+      return `${ws} $ `;
+    } else if (state.activeShell === "zsh") {
+      return `➜ ${ws} `;
+    } else if (state.activeShell === "cmd") {
+      return `C:\\${ws}> `;
+    } else {
+      // Default powershell
+      return `PS ~/${ws}> `;
+    }
+  }
+
+  function updatePromptTag() {
+    if (el.promptTag) {
+      el.promptTag.textContent = getPromptString();
+    }
+  }
+
+  function updateWorkspaceUI() {
+    const ws = getWorkspaceName();
+    if (el.workspaceLabel) {
+      if (state.isLocalProject) {
+        el.workspaceLabel.innerHTML = `📂 <b>${ws}</b> <span style="color:#98c379">(Local Disk)</span>`;
+      } else if (state.githubRepo) {
+        el.workspaceLabel.innerHTML = `🐙 <b>${ws}</b> <span style="color:#3791B7">(${state.githubBranch})</span>`;
+      } else {
+        el.workspaceLabel.innerHTML = `<b>${ws}</b> <span style="color:var(--vsc-fg-muted)">(Workspace)</span>`;
+      }
+    }
+    const breadRoot = document.getElementById("vsc-bread-root");
+    if (breadRoot) {
+      breadRoot.textContent = ws;
+    }
+    const titleWs = document.getElementById("vsc-title-workspace");
+    if (titleWs) {
+      titleWs.textContent = ws;
+    }
+    updatePromptTag();
+  }
+
+  // --- SAVE WORKSPACE HELPER ---
+  function saveWorkspace() {
+    try {
+      localStorage.setItem("vsc_user_custom_workspace", "1");
+      localStorage.setItem("vsc_workspace_files_v1", JSON.stringify(state.files));
+    } catch (e) {
+      console.warn("Storage quota exceeded", e);
+    }
+  }
+
+  // --- LINE NUMBERS & EDITOR SYNC ---
+  function updateGutter() {
+    if (!el.codeTextarea || !el.gutter) return;
+    const lines = el.codeTextarea.value.split("\n").length;
+    let numbers = "";
+    for (let i = 1; i <= lines; i++) {
+      numbers += i + "<br>";
+    }
+    el.gutter.innerHTML = numbers;
+
+    // Update cursor position in status bar
+    const pos = el.codeTextarea.selectionStart || 0;
+    const textBefore = el.codeTextarea.value.substring(0, pos);
+    const lineNum = textBefore.split("\n").length;
+    const colNum = pos - textBefore.lastIndexOf("\n");
+    if (el.statusLnCol) {
+      el.statusLnCol.textContent = `Ln ${lineNum}, Col ${colNum}`;
+    }
+  }
+
+  function openFile(filename) {
+    if (!filename) {
+      state.activeFile = null;
+      if (el.codeTextarea) {
+        el.codeTextarea.value = "";
+        el.codeTextarea.placeholder = "No open editor.\n\n• Press Ctrl+N to create a new file\n• Press Ctrl+O to open a local project folder\n• Press Ctrl+P for Command Palette\n• File > Import Workspace (JSON) to load an exported workspace";
+        el.codeTextarea.disabled = true;
+      }
+      if (el.breadcrumbsFile) {
+        el.breadcrumbsFile.textContent = "No file open";
+      }
+      if (el.btnPreviewMd) {
+        el.btnPreviewMd.style.display = "none";
+      }
+      updateGutter();
+      renderTabs();
+      renderSidebarLists();
+      return;
+    }
+
+    if (!state.files[filename]) {
+      state.files[filename] = `// ${filename}\n`;
+      saveWorkspace();
+    }
+    if (!state.openTabs.includes(filename)) {
+      state.openTabs.push(filename);
+    }
+    state.activeFile = filename;
+
+    const isMd = filename.toLowerCase().endsWith(".md") || filename.toLowerCase().endsWith(".markdown");
+    if (el.btnPreviewMd) {
+      el.btnPreviewMd.style.display = isMd ? "inline-flex" : "none";
+    }
+
+    if (el.codeTextarea) {
+      el.codeTextarea.disabled = false;
+      el.codeTextarea.placeholder = "";
+      el.codeTextarea.value = state.files[filename];
+      updateGutter();
+    }
+    if (el.breadcrumbsFile) {
+      el.breadcrumbsFile.textContent = filename;
+    }
+    renderTabs();
+    renderSidebarLists();
+
+    // On mobile, auto-close floating sidebar drawer when a file is opened
+    if (window.innerWidth <= 768 && el.sidebar && !el.sidebar.classList.contains("collapsed")) {
+      el.sidebar.classList.add("collapsed");
+      document.querySelectorAll(".vsc-act-btn").forEach(b => {
+        if (b !== el.actAccounts && b !== el.actSettings) b.classList.remove("active");
+      });
+      state.activeSidebarView = null;
+    }
+  }
+
+  function renderTabs() {
+    if (!el.tabsBar) return;
+    el.tabsBar.innerHTML = "";
+    state.openTabs.forEach((filename) => {
+      const tab = document.createElement("div");
+      tab.className = `vsc-tab ${filename === state.activeFile ? "active" : ""}`;
+      tab.dataset.filename = filename;
+
+      const iconSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`;
+      tab.innerHTML = `${iconSvg}<span>${filename}</span><span class="vsc-tab-close" title="Close (Ctrl+W)">✕</span>`;
+
+      tab.addEventListener("click", (e) => {
+        if (e.target.classList.contains("vsc-tab-close")) {
+          e.stopPropagation();
+          closeTab(filename);
+        } else {
+          openFile(filename);
+        }
+      });
+
+      tab.addEventListener("contextmenu", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        showTabContextMenu(e.clientX, e.clientY, filename);
+      });
+
+      // Middle click closes tab
+      tab.addEventListener("auxclick", (e) => {
+        if (e.button === 1) {
+          e.preventDefault();
+          e.stopPropagation();
+          closeTab(filename);
+        }
+      });
+
+      el.tabsBar.appendChild(tab);
+    });
+  }
+
+  function closeTab(filename) {
+    const idx = state.openTabs.indexOf(filename);
+    if (idx === -1) return;
+    state.openTabs.splice(idx, 1);
+    if (state.activeFile === filename) {
+      if (state.openTabs.length > 0) {
+        const nextIdx = Math.min(idx, state.openTabs.length - 1);
+        openFile(state.openTabs[nextIdx]);
+      } else {
+        state.activeFile = null;
+        if (el.codeTextarea) {
+          el.codeTextarea.value = "";
+          el.codeTextarea.placeholder = "No open editor.\nSelect a file from Explorer (Ctrl+B) or open Command Palette (Ctrl+P).";
+          el.codeTextarea.disabled = true;
+        }
+        if (el.breadcrumbsFile) el.breadcrumbsFile.textContent = "No file open";
+        updateGutter();
+        renderTabs();
+        renderSidebarLists();
+      }
+    } else {
+      renderTabs();
+      renderSidebarLists();
+    }
+  }
+
+  function closeOtherTabs(filename) {
+    if (!state.openTabs.includes(filename)) return;
+    state.openTabs = [filename];
+    openFile(filename);
+    showMessage("info", "Tabs", `Closed other tabs. Active: ${filename}`);
+  }
+
+  function closeTabsToRight(filename) {
+    const idx = state.openTabs.indexOf(filename);
+    if (idx === -1) return;
+    state.openTabs = state.openTabs.slice(0, idx + 1);
+    if (!state.openTabs.includes(state.activeFile)) {
+      openFile(filename);
+    } else {
+      renderTabs();
+      renderSidebarLists();
+    }
+    showMessage("info", "Tabs", `Closed tabs to the right of ${filename}`);
+  }
+
+  function closeAllTabs() {
+    state.openTabs = [];
+    state.activeFile = null;
+    if (el.codeTextarea) {
+      el.codeTextarea.value = "";
+      el.codeTextarea.placeholder = "No open editor.\nSelect a file from Explorer (Ctrl+B) or open Command Palette (Ctrl+P).";
+      el.codeTextarea.disabled = true;
+    }
+    if (el.breadcrumbsFile) el.breadcrumbsFile.textContent = "No file open";
+    updateGutter();
+    renderTabs();
+    renderSidebarLists();
+    showMessage("info", "Tabs", "Closed all editor tabs");
+  }
+
+  function closeFile(filename) {
+    closeTab(filename);
+  }
+
+  function renderSidebarLists() {
+    if (!el.openEditorsList || !el.workspaceFilesList) return;
+    el.openEditorsList.innerHTML = "";
+    el.workspaceFilesList.innerHTML = "";
+
+    // Open Editors (tabs currently open)
+    state.openTabs.forEach((filename) => {
+      const li = document.createElement("li");
+      li.className = `vsc-tree-item ${filename === state.activeFile ? "active" : ""}`;
+      li.dataset.filename = filename;
+      li.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span style="flex:1">${filename}</span><span class="vsc-tab-close" style="font-size:10px" title="Close">✕</span>`;
+
+      li.addEventListener("click", (e) => {
+        if (e.target.classList.contains("vsc-tab-close")) {
+          e.stopPropagation();
+          closeTab(filename);
+        } else {
+          openFile(filename);
+        }
+      });
+
+      li.addEventListener("contextmenu", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        showTabContextMenu(e.clientX, e.clientY, filename);
+      });
+
+      el.openEditorsList.appendChild(li);
+    });
+
+    // Workspace Files (all files)
+    Object.keys(state.files).forEach((filename) => {
+      const li = document.createElement("li");
+      li.className = `vsc-tree-item ${filename === state.activeFile ? "active" : ""}`;
+      li.dataset.filename = filename;
+      li.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>${filename}</span>`;
+      li.addEventListener("click", () => openFile(filename));
+
+      li.addEventListener("contextmenu", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        showExplorerItemContextMenu(e.clientX, e.clientY, filename);
+      });
+
+      el.workspaceFilesList.appendChild(li);
+    });
+  }
+
+  // --- LOCAL PROJECT (FILE SYSTEM ACCESS API) ENGINE ---
+  const IDB_NAME = "vsc_local_projects_v1";
+  const IDB_STORE = "handles";
+  function openProjectDB() {
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open(IDB_NAME, 1);
+      req.onupgradeneeded = () => req.result.createObjectStore(IDB_STORE);
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+  }
+  async function saveProjectHandle(key, handle) {
+    try {
+      const db = await openProjectDB();
+      const tx = db.transaction(IDB_STORE, "readwrite");
+      tx.objectStore(IDB_STORE).put(handle, key);
+    } catch (e) {}
+  }
+  async function getProjectHandle(key) {
+    try {
+      const db = await openProjectDB();
+      const tx = db.transaction(IDB_STORE, "readonly");
+      return new Promise((resolve) => {
+        const req = tx.objectStore(IDB_STORE).get(key);
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => resolve(null);
+      });
+    } catch (e) { return null; }
+  }
+
+  async function saveCurrentFile() {
+    const filename = state.activeFile;
+    if (!filename) return;
+
+    if (el.codeTextarea) {
+      state.files[filename] = el.codeTextarea.value;
+    }
+    saveWorkspace();
+
+    // Direct write to physical hard drive (drive file handle)
+    const isDiffFromBaseline = (state.baselineFiles[filename] !== undefined && state.files[filename] !== state.baselineFiles[filename]);
+
+    if (state.fileHandles && state.fileHandles.has(filename)) {
+      try {
+        const handle = state.fileHandles.get(filename);
+        const writable = await handle.createWritable();
+        await writable.write(state.files[filename]);
+        await writable.close();
+        if (state.githubRepo || isDiffFromBaseline) {
+          state.modifiedFiles.add(filename);
+        } else {
+          state.modifiedFiles.delete(filename);
+        }
+        updateGitStatus();
+        refreshProblems();
+        termPrint(`Saved to disk: ${filename} (Local Drive)`, "vsc-term-success");
+        showMessage("success", "SAVED TO DISK", `Directly written to local file: ${filename}`);
+        return;
+      } catch (err) {
+        termPrint(`Disk write error (${filename}): ${err.message}`, "vsc-term-error");
+        showMessage("error", "DISK SAVE FAILED", `Could not save ${filename}: ${err.message}`);
+      }
+    }
+
+    // If active in a local project but file was created in editor, create it on disk
+    if (state.isLocalProject && state.projectDirHandle) {
+      try {
+        const parts = filename.split("/");
+        let curDir = state.projectDirHandle;
+        for (let i = 0; i < parts.length - 1; i++) {
+          curDir = await curDir.getDirectoryHandle(parts[i], { create: true });
+        }
+        const newFileHandle = await curDir.getFileHandle(parts[parts.length - 1], { create: true });
+        state.fileHandles.set(filename, newFileHandle);
+        const writable = await newFileHandle.createWritable();
+        await writable.write(state.files[filename]);
+        await writable.close();
+        if (state.githubRepo || isDiffFromBaseline) {
+          state.modifiedFiles.add(filename);
+        } else {
+          state.modifiedFiles.delete(filename);
+        }
+        updateGitStatus();
+        refreshProblems();
+        termPrint(`Created & saved on disk: ${filename}`, "vsc-term-success");
+        showMessage("success", "CREATED ON DISK", `New file created and saved: ${filename}`);
+        return;
+      } catch (err) {
+        termPrint(`Disk create error: ${err.message}`, "vsc-term-error");
+        showMessage("error", "DISK CREATE FAILED", err.message);
+      }
+    }
+
+    if (state.githubRepo) {
+      state.modifiedFiles.add(filename);
+      updateGitStatus();
+      refreshProblems();
+      termPrint(`Saved ${filename} to workspace. Ready to commit & push to GitHub (${state.githubRepo}).`, "vsc-term-success");
+      showMessage("info", "SAVED LOCALLY", `${filename} saved. Click 'Push' or go to Source Control to sync with GitHub.`);
+      return;
+    }
+
+    if (isDiffFromBaseline) {
+      state.modifiedFiles.add(filename);
+    } else {
+      state.modifiedFiles.delete(filename);
+    }
+    updateGitStatus();
+    refreshProblems();
+    termPrint(`Saved ${filename} to browser storage.`, "vsc-term-success");
+    showMessage("info", "SAVED TO WORKSPACE", `Saved ${filename} to browser persistent storage.`);
+  }
+
+  async function loadLocalDirectory(dirHandle) {
+    state.projectDirHandle = dirHandle;
+    state.projectName = dirHandle.name;
+    state.isLocalProject = true;
+    state.fileHandles.clear();
+    state.files = {};
+    state.modifiedFiles.clear();
+
+    const ignoreDirs = new Set([
+      "node_modules", ".git", ".svn", ".hg", "dist", "build", "out",
+      ".next", ".nuxt", ".cache", ".idea", ".vscode-test", "__pycache__", "venv", ".venv"
+    ]);
+
+    const textExtensions = new Set([
+      "js", "jsx", "ts", "tsx", "html", "htm", "css", "scss", "sass", "less",
+      "json", "md", "markdown", "txt", "xml", "svg", "yaml", "yml", "ini", "toml",
+      "sh", "bash", "bat", "ps1", "py", "rb", "php", "java", "c", "cpp", "h", "cs",
+      "go", "rs", "sql", "env", "gitignore", "dockerignore", "lock", "http"
+    ]);
+
+    let loadedCount = 0;
+    const maxFiles = 300;
+
+    async function scanDir(handle, currentPath = "") {
+      if (loadedCount >= maxFiles) return;
+
+      for await (const entry of handle.values()) {
+        if (loadedCount >= maxFiles) break;
+
+        const path = currentPath ? `${currentPath}/${entry.name}` : entry.name;
+
+        if (entry.kind === "directory") {
+          if (ignoreDirs.has(entry.name) || (entry.name.startsWith(".") && entry.name !== ".github" && entry.name !== ".vscode")) {
+            continue;
+          }
+          await scanDir(entry, path);
+        } else if (entry.kind === "file") {
+          state.fileHandles.set(path, entry);
+          const ext = entry.name.includes(".") ? entry.name.split(".").pop().toLowerCase() : "";
+          if (textExtensions.has(ext) || entry.name.startsWith(".")) {
+            try {
+              const file = await entry.getFile();
+              if (file.size < 1_500_000) {
+                const text = await file.text();
+                state.files[path] = text;
+                state.baselineFiles[path] = text;
+                loadedCount++;
+              }
+            } catch (err) {
+              console.warn(`Could not read ${path}:`, err);
+            }
+          }
+        }
+      }
+    }
+
+    termPrint(`Reading files from '${dirHandle.name}'...`, "vsc-term-info");
+    await scanDir(dirHandle);
+    await saveProjectHandle("last_project", dirHandle);
+
+    saveWorkspace();
+    renderSidebarLists();
+    renderTabs();
+
+    state.projectName = dirHandle.name;
+    state.isLocalProject = true;
+    updateWorkspaceUI();
+    if (el.breadcrumbsFile) {
+      el.breadcrumbsFile.textContent = dirHandle.name;
+    }
+    if (el.openProjectContainer) {
+      el.openProjectContainer.style.display = "none";
+    }
+
+    const priorityFiles = ["index.html", "README.md", "package.json", "portfolio.config.json"];
+    const toOpen = priorityFiles.find(p => state.files[p]) || Object.keys(state.files)[0];
+    if (toOpen) {
+      state.openTabs = [toOpen];
+      openFile(toOpen);
+    }
+
+    updateGitStatus();
+    refreshProblems();
+
+    termPrint(`Successfully opened '${dirHandle.name}'! (${loadedCount} files loaded from local disk)`, "vsc-term-success");
+    termPrint(`Direct disk write enabled: Press Ctrl+S or click 'Save' to write modifications directly to your drive.`, "vsc-term-info");
+  }
+
+  async function openLocalProjectFolder() {
+    if (!("showDirectoryPicker" in window)) {
+      const input = document.getElementById("vsc-folder-input");
+      if (input) {
+        input.click();
+      } else {
+        termPrint("File System Access API is not supported in this browser. Please use Chrome on Desktop for direct read/write disk access.", "vsc-term-warn");
+      }
+      return;
+    }
+
+    try {
+      const dirHandle = await window.showDirectoryPicker({
+        id: "code_workbench_root",
+        mode: "readwrite"
+      });
+      if (dirHandle) {
+        await loadLocalDirectory(dirHandle);
+      }
+    } catch (err) {
+      if (err.name !== "AbortError") {
+        termPrint(`Failed to open folder: ${err.message}`, "vsc-term-error");
+      }
+    }
+  }
+
+  function handleFileInputFolder(e) {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    state.files = {};
+    state.fileHandles.clear();
+    state.isLocalProject = false;
+    state.modifiedFiles.clear();
+
+    let folderName = "";
+    let loaded = 0;
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const path = file.webkitRelativePath || file.name;
+      if (!folderName && path.includes("/")) {
+        folderName = path.split("/")[0];
+      }
+      const relPath = path.includes("/") ? path.substring(path.indexOf("/") + 1) : path;
+      if (relPath.includes("node_modules/") || relPath.includes(".git/")) continue;
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        state.files[relPath] = event.target.result;
+        state.baselineFiles[relPath] = event.target.result;
+        loaded++;
+        if (loaded === 1) {
+          openFile(relPath);
+        }
+        renderSidebarLists();
+        renderTabs();
+      };
+      reader.readAsText(file);
+    }
+
+    if (folderName && el.workspaceLabel) {
+      el.workspaceLabel.innerHTML = `📂 <b>${folderName}</b> <span style="color:#e5c07b">(Imported)</span>`;
+    }
+    if (el.openProjectContainer) {
+      el.openProjectContainer.style.display = "none";
+    }
+    saveWorkspace();
+    termPrint(`Imported folder '${folderName}' (${files.length} files). Note: Read-only in this mode. Use Chrome Desktop for direct read/write disk access.`, "vsc-term-info");
+  }
+
+  // --- GIT STATUS & DIAGNOSTICS HELPERS ---
+  function syncModifiedFilesWithBaseline() {
+    if (!state.files) return;
+    Object.keys(state.files).forEach(file => {
+      const current = state.files[file];
+      const base = state.baselineFiles ? state.baselineFiles[file] : undefined;
+      if (base === undefined || current !== base) {
+        state.modifiedFiles.add(file);
+      } else if (!state.githubRepo) {
+        state.modifiedFiles.delete(file);
+      }
+    });
+  }
+
+  function updateGitStatus() {
+    syncModifiedFilesWithBaseline();
+    const branch = state.githubBranch || "main";
+    const modCount = state.modifiedFiles.size;
+    if (el.statusGitBranch) {
+      el.statusGitBranch.textContent = `${branch}${modCount > 0 ? "*" : ""}`;
+    }
+    if (el.statusSyncText) {
+      el.statusSyncText.textContent = `0 \u2193  ${modCount} \u2191`;
+    }
+
+    // Git view auth status indicator in sidebar
+    if (el.gitAuthIndicator) {
+      if (state.githubUser && state.githubUser.login) {
+        el.gitAuthIndicator.textContent = `@${state.githubUser.login}`;
+        el.gitAuthIndicator.style.background = "rgba(55,145,183,0.18)";
+        el.gitAuthIndicator.style.color = "var(--vsc-turquoise)";
+      } else if (state.githubToken) {
+        el.gitAuthIndicator.textContent = "Token Saved";
+        el.gitAuthIndicator.style.background = "rgba(152,195,121,0.18)";
+        el.gitAuthIndicator.style.color = "#98c379";
+      } else {
+        el.gitAuthIndicator.textContent = "Not Connected";
+        el.gitAuthIndicator.style.background = "#1e1e1e";
+        el.gitAuthIndicator.style.color = "var(--vsc-fg-muted)";
+      }
+    }
+
+    if (el.btnOpenGhModal) {
+      if (state.githubToken) {
+        el.btnOpenGhModal.textContent = state.githubUser && state.githubUser.login
+          ? `Account: @${state.githubUser.login}`
+          : "Manage GitHub Token";
+        el.btnOpenGhModal.title = "Manage saved GitHub credentials and connected repository";
+      } else {
+        el.btnOpenGhModal.textContent = "Connect GitHub Token";
+        el.btnOpenGhModal.title = "Enter and remember GitHub Personal Access Token";
+      }
+    }
+
+    if (el.btnDisconnectGh) {
+      el.btnDisconnectGh.style.display = state.githubToken ? "inline-flex" : "none";
+    }
+
+    if (el.btnPushEditor) {
+      const canPush = !!(state.githubToken && state.githubRepo && modCount > 0);
+      el.btnPushEditor.style.display = canPush ? "inline-flex" : "none";
+      el.btnPushEditor.title = `Commit and push ${modCount} changed file(s) to ${state.githubRepo}@${branch}`;
+    }
+
+    if (el.btnPullEditor) {
+      const canPull = !!(state.githubToken && state.githubRepo);
+      el.btnPullEditor.style.display = canPull ? "inline-flex" : "none";
+      el.btnPullEditor.title = `Pull latest changes from ${state.githubRepo}@${branch}`;
+    }
+
+    if (el.gitRepoDisplay) {
+      if (state.githubRepo) {
+        el.gitRepoDisplay.innerHTML = `<span style="color:var(--vsc-turquoise);font-weight:600">${state.githubRepo}</span> <span style="color:var(--vsc-fg-muted)">(${branch})</span>`;
+      } else if (state.githubToken) {
+        el.gitRepoDisplay.innerHTML = `<span style="color:#98c379">✓ Token Active</span> <span style="color:var(--vsc-fg-muted)">(${maskToken(state.githubToken)})</span>`;
+      } else {
+        el.gitRepoDisplay.textContent = "No remote repo connected";
+        el.gitRepoDisplay.style.color = "var(--vsc-fg-secondary)";
+      }
+    }
+    if (el.gitChangesList) {
+      el.gitChangesList.innerHTML = "";
+      if (modCount === 0) {
+        el.gitChangesList.innerHTML = `<li class="vsc-tree-item" style="color:var(--vsc-fg-secondary);font-style:italic">No local changes</li>`;
+      } else {
+        state.modifiedFiles.forEach((file) => {
+          const li = document.createElement("li");
+          li.className = "vsc-tree-item";
+          li.innerHTML = `<span style="color:#e5c07b;font-weight:700;margin-right:6px">M</span><span>${file}</span>`;
+          li.addEventListener("click", () => openFile(file));
+          el.gitChangesList.appendChild(li);
+        });
+      }
+    }
+  }
+
+  function refreshProblems() {
+    const problems = [];
+    Object.keys(state.files).forEach((filename) => {
+      const content = state.files[filename];
+      if (filename.endsWith(".json")) {
+        try {
+          JSON.parse(content);
+        } catch (e) {
+          problems.push({ file: filename, message: e.message, severity: "error" });
+        }
+      } else if (filename.endsWith(".js")) {
+        const opens = (content.match(/[\{\[\(]/g) || []).length;
+        const closes = (content.match(/[\}\]\)]/g) || []).length;
+        if (opens !== closes) {
+          problems.push({ file: filename, message: `Unmatched delimiters (${opens} open vs ${closes} closed)`, severity: "warning" });
+        }
+      }
+    });
+
+    if (el.problemsCount) {
+      el.problemsCount.textContent = problems.length;
+      el.problemsCount.style.display = problems.length > 0 ? "inline-block" : "none";
+    }
+    const errCountEl = document.getElementById("vsc-status-err-count");
+    if (errCountEl) errCountEl.textContent = problems.filter(p => p.severity === "error").length;
+    const warnCountEl = document.getElementById("vsc-status-warn-count");
+    if (warnCountEl) warnCountEl.textContent = problems.filter(p => p.severity === "warning").length;
+
+    if (el.problemsHistory) {
+      if (problems.length === 0) {
+        el.problemsHistory.innerHTML = `<div style="color:var(--vsc-fg-secondary);padding:10px">No problems detected in workspace files.</div>`;
+      } else {
+        el.problemsHistory.innerHTML = problems.map(p => `
+          <div class="vsc-tree-item" style="padding:6px 12px;border-bottom:1px solid #232323" data-file="${p.file}">
+            <span style="color:${p.severity === 'error' ? '#f44336' : '#e5c07b'};font-weight:700;margin-right:8px">[${p.severity.toUpperCase()}]</span>
+            <span style="color:#fff;font-weight:600;margin-right:8px">${p.file}:</span>
+            <span style="color:var(--vsc-fg-secondary)">${p.message}</span>
+          </div>
+        `).join("");
+        el.problemsHistory.querySelectorAll(".vsc-tree-item").forEach(item => {
+          item.addEventListener("click", () => openFile(item.dataset.file));
+        });
+      }
+    }
+  }
+
+  // --- GITHUB REST API ENGINE ---
+  async function githubAuth(token, shouldPersist = true) {
+    if (!token) {
+      state.githubToken = "";
+      state.githubUser = null;
+      persistToken("");
+      updateGitStatus();
+      return { success: false, message: "Logged out / token cleared." };
+    }
+
+    const cleanToken = token.trim();
+    state.githubToken = cleanToken;
+    if (shouldPersist) {
+      persistToken(cleanToken);
+    }
+    updateGitStatus();
+
+    try {
+      // 1. Try /user endpoint (Classic PATs and Fine-Grained with User Profile scope)
+      const res = await fetch("https://api.github.com/user", {
+        headers: {
+          "Authorization": `Bearer ${cleanToken}`,
+          "Accept": "application/vnd.github.v3+json"
+        }
+      });
+
+      if (res.ok) {
+        const user = await res.json();
+        state.githubUser = user;
+        updateGitStatus();
+        return { success: true, user, method: "user" };
+      }
+
+      // 2. Fine-grained tokens without read:user scope return 401 or 403 on /user
+      // Check /rate_limit endpoint which works for all authenticated tokens
+      if (res.status === 401 || res.status === 403) {
+        const rlRes = await fetch("https://api.github.com/rate_limit", {
+          headers: {
+            "Authorization": `Bearer ${cleanToken}`,
+            "Accept": "application/vnd.github.v3+json"
+          }
+        });
+        if (rlRes.ok) {
+          const rlData = await rlRes.json();
+          const limit = rlData.resources?.core?.limit || 0;
+          if (limit > 60) {
+            state.githubUser = { login: "Fine-Grained PAT", name: "GitHub User" };
+            updateGitStatus();
+            return { success: true, user: state.githubUser, method: "fine-grained" };
+          }
+        }
+      }
+
+      throw new Error(`GitHub Auth Failed (${res.status} ${res.statusText})`);
+    } catch (err) {
+      updateGitStatus();
+      return { success: false, message: err.message };
+    }
+  }
+
+  async function githubFetchRepos(customToken) {
+    const tok = customToken || state.githubToken || getStoredToken();
+    if (!tok) throw new Error("Not authenticated. Please connect your GitHub token.");
+    const res = await fetch("https://api.github.com/user/repos?sort=updated&per_page=100&affiliation=owner,collaborator,organization_member", {
+      headers: {
+        "Authorization": `Bearer ${tok}`,
+        "Accept": "application/vnd.github.v3+json"
+      }
+    });
+    if (!res.ok) throw new Error(`Failed to fetch repos (${res.status} ${res.statusText})`);
+    return await res.json();
+  }
+
+  function renderRepoOptions(repos) {
+    if (!el.ghRepoSelect) return;
+    el.ghRepoSelect.innerHTML = "";
+
+    const placeholder = document.createElement("option");
+    placeholder.value = "";
+    placeholder.textContent = repos && repos.length > 0
+      ? `-- Select a repository (${repos.length} found) --`
+      : "-- No repositories found --";
+    el.ghRepoSelect.appendChild(placeholder);
+
+    let foundCurrent = false;
+    if (Array.isArray(repos)) {
+      repos.forEach((r) => {
+        const opt = document.createElement("option");
+        opt.value = r.full_name;
+        opt.dataset.branch = r.default_branch || "main";
+        const privacy = r.private ? "[Private]" : "[Public]";
+        opt.textContent = `${r.full_name} (${r.default_branch || 'main'}) ${privacy}`;
+        if (state.githubRepo && r.full_name.toLowerCase() === state.githubRepo.toLowerCase()) {
+          opt.selected = true;
+          foundCurrent = true;
+          if (el.ghBranchInput && !el.ghBranchInput.value) {
+            el.ghBranchInput.value = r.default_branch || "main";
+          }
+        }
+        el.ghRepoSelect.appendChild(opt);
+      });
+
+      // If no exact match yet, check for Portfolio repository
+      if (!foundCurrent) {
+        const matchPortfolio = repos.find(r => r.full_name.toLowerCase().includes("portfolio"));
+        if (matchPortfolio) {
+          const targetOpt = Array.from(el.ghRepoSelect.options).find(o => o.value === matchPortfolio.full_name);
+          if (targetOpt) {
+            targetOpt.selected = true;
+            foundCurrent = true;
+            state.githubRepo = matchPortfolio.full_name;
+            state.githubBranch = matchPortfolio.default_branch || "main";
+            if (el.ghBranchInput) el.ghBranchInput.value = state.githubBranch;
+            if (el.ghRepoInput) el.ghRepoInput.value = matchPortfolio.full_name;
+          }
+        }
+      }
+    }
+
+    const customOpt = document.createElement("option");
+    customOpt.value = "__custom__";
+    customOpt.textContent = "✎ Enter custom repository manually...";
+    el.ghRepoSelect.appendChild(customOpt);
+
+    if (state.githubRepo && !foundCurrent && el.ghRepoInput) {
+      el.ghRepoInput.value = state.githubRepo;
+    }
+  }
+
+  async function loadRepoOptions(forceRefresh = false) {
+    if (!el.ghRepoSelect) return;
+    const token = (el.ghTokenInput && el.ghTokenInput.value.trim()) || state.githubToken || getStoredToken();
+    if (!token) {
+      el.ghRepoSelect.innerHTML = `<option value="">-- Enter token above to load repositories --</option><option value="__custom__">✎ Enter custom repository manually...</option>`;
+      return;
+    }
+
+    // Ensure state has the token and is authenticated
+    if (token !== state.githubToken || !state.githubUser) {
+      state.githubToken = token;
+      persistToken(token);
+      const authRes = await githubAuth(token, true);
+      if (authRes.success) {
+        if (el.ghSavedBadge) {
+          el.ghSavedBadge.style.display = "inline-block";
+          el.ghSavedBadge.textContent = state.githubUser && state.githubUser.login
+            ? `✓ Saved (@${state.githubUser.login})`
+            : `✓ Saved (${maskToken(token)})`;
+        }
+        if (el.ghBtnDisconnect) el.ghBtnDisconnect.style.display = "inline-flex";
+      }
+    }
+
+    if (!forceRefresh && state.cachedRepos && state.cachedRepos.length > 0) {
+      renderRepoOptions(state.cachedRepos);
+      return;
+    }
+
+    if (el.ghReposLoading) el.ghReposLoading.style.display = "block";
+    el.ghRepoSelect.innerHTML = `<option value="">Fetching your repositories from GitHub...</option>`;
+    el.ghRepoSelect.disabled = true;
+
+    try {
+      const repos = await githubFetchRepos(token);
+      state.cachedRepos = repos;
+      renderRepoOptions(repos);
+    } catch (err) {
+      console.warn("Could not fetch user repos:", err);
+      el.ghRepoSelect.innerHTML = `<option value="">-- Could not auto-load repos: ${escapeHtml(err.message)} --</option><option value="__custom__">✎ Enter custom repository manually...</option>`;
+    } finally {
+      if (el.ghReposLoading) el.ghReposLoading.style.display = "none";
+      el.ghRepoSelect.disabled = false;
+    }
+  }
+
+  async function githubCloneRepo(repoFullName, branch = "main", onProgress = null) {
+    if (!state.githubToken) throw new Error("GitHub Token required to clone.");
+    const repo = repoFullName.trim();
+    const b = branch.trim() || "main";
+
+    const treeUrl = `https://api.github.com/repos/${repo}/git/trees/${b}?recursive=1`;
+    const res = await fetch(treeUrl, {
+      headers: {
+        "Authorization": `Bearer ${state.githubToken}`,
+        "Accept": "application/vnd.github.v3+json"
+      }
+    });
+
+    if (!res.ok) {
+      throw new Error(`Failed to load tree from ${repo}@${b}: ${res.status} ${res.statusText}`);
+    }
+
+    const data = await res.json();
+    if (!data.tree || !Array.isArray(data.tree)) {
+      throw new Error("No files found in repo tree.");
+    }
+
+    const fileBlobs = data.tree.filter(item => item.type === "blob" && (!item.size || item.size < 500000)).slice(0, 100);
+
+    state.githubRepo = repo;
+    state.githubBranch = b;
+    setCookie("gh_repo", repo, 365);
+    setCookie("gh_branch", b, 365);
+    localStorage.setItem("vsc_gh_repo", repo);
+    localStorage.setItem("vsc_gh_branch", b);
+
+    state.projectName = repo.split("/").pop();
+    state.isLocalProject = false;
+    updateWorkspaceUI();
+
+    let loaded = 0;
+    for (const item of fileBlobs) {
+      try {
+        const fRes = await fetch(`https://api.github.com/repos/${repo}/contents/${item.path}?ref=${b}`, {
+          headers: {
+            "Authorization": `Bearer ${state.githubToken}`,
+            "Accept": "application/vnd.github.v3+json"
+          }
+        });
+        if (fRes.ok) {
+          const fData = await fRes.json();
+          if (fData.content) {
+            const decoded = decodeURIComponent(escape(atob(fData.content.replace(/\s/g, ""))));
+            state.files[item.path] = decoded;
+            state.baselineFiles[item.path] = decoded;
+            state.fileShas[item.path] = fData.sha;
+            loaded++;
+            if (onProgress) onProgress(loaded, fileBlobs.length, item.path);
+          }
+        }
+      } catch (e) {
+        console.warn("Failed to fetch file:", item.path, e);
+      }
+    }
+
+    saveWorkspace();
+    state.modifiedFiles.clear();
+    renderSidebarLists();
+    renderTabs();
+    const first = Object.keys(state.files)[0];
+    if (first) openFile(first);
+    updateGitStatus();
+    refreshProblems();
+    return { success: true, count: loaded, total: fileBlobs.length };
+  }
+
+  async function githubPush(commitMsg = "feat: update workspace files") {
+    if (!state.githubToken) throw new Error("GitHub Token required to commit & push.");
+    if (!state.githubRepo) throw new Error("No repository selected. Connect a repo first.");
+
+    const changed = Array.from(state.modifiedFiles);
+    if (changed.length === 0) {
+      return { success: true, message: "Workspace clean. Nothing to push." };
+    }
+
+    const branch = state.githubBranch || "main";
+    const results = [];
+    for (const path of changed) {
+      const content = state.files[path] || "";
+      const b64 = btoa(unescape(encodeURIComponent(content)));
+      const body = {
+        message: `${commitMsg} [${path}]`,
+        content: b64,
+        branch
+      };
+
+      // Ensure SHA is accurate to prevent 409 Conflict
+      let sha = state.fileShas[path];
+      if (!sha) {
+        try {
+          const headRes = await fetch(`https://api.github.com/repos/${state.githubRepo}/contents/${path}?ref=${branch}`, {
+            headers: {
+              "Authorization": `Bearer ${state.githubToken}`,
+              "Accept": "application/vnd.github.v3+json"
+            }
+          });
+          if (headRes.ok) {
+            const headData = await headRes.json();
+            sha = headData.sha;
+            state.fileShas[path] = sha;
+          }
+        } catch (e) {
+          console.warn("Could not pre-fetch file sha for", path, e);
+        }
+      }
+      if (sha) {
+        body.sha = sha;
+      }
+
+      const putRes = await fetch(`https://api.github.com/repos/${state.githubRepo}/contents/${path}`, {
+        method: "PUT",
+        headers: {
+          "Authorization": `Bearer ${state.githubToken}`,
+          "Accept": "application/vnd.github.v3+json",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(body)
+      });
+
+      if (!putRes.ok) {
+        const errJson = await putRes.json().catch(() => ({}));
+        throw new Error(`Failed to push ${path}: ${errJson.message || putRes.statusText}`);
+      }
+
+      const resJson = await putRes.json();
+      if (resJson.content && resJson.content.sha) {
+        state.fileShas[path] = resJson.content.sha;
+      }
+      state.modifiedFiles.delete(path);
+      state.baselineFiles[path] = content;
+      results.push(path);
+    }
+
+    // Persist file SHAs so reloads keep valid SHAs
+    try {
+      localStorage.setItem("vsc_gh_file_shas", JSON.stringify(state.fileShas));
+    } catch (e) {}
+
+    updateGitStatus();
+    return { success: true, pushedFiles: results };
+  }
+
+  async function computeGitBlobSha(content) {
+    if (typeof content !== "string") return null;
+    try {
+      const enc = new TextEncoder();
+      const bytes = enc.encode(content);
+      const header = `blob ${bytes.length}\0`;
+      const headerBytes = enc.encode(header);
+      const full = new Uint8Array(headerBytes.length + bytes.length);
+      full.set(headerBytes, 0);
+      full.set(bytes, headerBytes.length);
+      const subtle = (window.crypto && window.crypto.subtle) ? window.crypto.subtle : (typeof crypto !== "undefined" ? crypto.subtle : null);
+      if (!subtle) return null;
+      const hashBuf = await subtle.digest("SHA-1", full);
+      return Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2, "0")).join("");
+    } catch (e) {
+      return null;
+    }
+  }
+
+  async function doesLocalMatchRemoteSha(localContent, remoteSha) {
+    if (typeof localContent !== "string" || !remoteSha) return false;
+    const rawSha = await computeGitBlobSha(localContent);
+    if (rawSha === remoteSha) return true;
+    if (localContent.includes("\r\n")) {
+      const lfSha = await computeGitBlobSha(localContent.replace(/\r\n/g, "\n"));
+      if (lfSha === remoteSha) return true;
+    } else if (localContent.includes("\n")) {
+      const crlfSha = await computeGitBlobSha(localContent.replace(/\n/g, "\r\n"));
+      if (crlfSha === remoteSha) return true;
+    }
+    return false;
+  }
+
+  function resolveLocalPath(remotePath) {
+    if (Object.prototype.hasOwnProperty.call(state.files, remotePath)) {
+      return remotePath;
+    }
+    for (const localKey of Object.keys(state.files)) {
+      if (remotePath.endsWith("/" + localKey)) {
+        return localKey;
+      }
+    }
+    if (state.projectName) {
+      const idx = remotePath.indexOf(state.projectName + "/");
+      if (idx !== -1) {
+        const sub = remotePath.slice(idx + state.projectName.length + 1);
+        if (Object.prototype.hasOwnProperty.call(state.files, sub)) {
+          return sub;
+        }
+      }
+    }
+    return remotePath;
+  }
+
+  async function githubPull(options = {}) {
+    if (!state.githubToken) throw new Error("GitHub Token required to pull changes.");
+    if (!state.githubRepo) throw new Error("No repository selected. Connect a repo first.");
+
+    const repo = state.githubRepo.trim();
+    let branch = (state.githubBranch || "main").trim();
+    const onProgress = options.onProgress || null;
+
+    // 1. Resolve latest commit tree SHA to bypass GitHub API & browser caching
+    let targetTreeSha = branch;
+    try {
+      const commitRes = await fetch(`https://api.github.com/repos/${repo}/commits/${encodeURIComponent(branch)}?per_page=1&_t=${Date.now()}`, {
+        headers: {
+          "Authorization": `Bearer ${state.githubToken}`,
+          "Accept": "application/vnd.github.v3+json",
+          "Cache-Control": "no-cache",
+          "Pragma": "no-cache"
+        },
+        cache: "no-store"
+      });
+      if (commitRes.ok) {
+        const commitData = await commitRes.json();
+        if (commitData.commit && commitData.commit.tree && commitData.commit.tree.sha) {
+          targetTreeSha = commitData.commit.tree.sha;
+        }
+      }
+    } catch (e) {
+      console.warn("Could not resolve latest commit tree sha, falling back to branch ref:", e);
+    }
+
+    // 2. Fetch the remote tree (with cache-busting)
+    const treeUrl = `https://api.github.com/repos/${repo}/git/trees/${encodeURIComponent(targetTreeSha)}?recursive=1&_t=${Date.now()}`;
+    const res = await fetch(treeUrl, {
+      headers: {
+        "Authorization": `Bearer ${state.githubToken}`,
+        "Accept": "application/vnd.github.v3+json",
+        "Cache-Control": "no-cache",
+        "Pragma": "no-cache"
+      },
+      cache: "no-store"
+    });
+
+    if (!res.ok) {
+      // Fallback check: if branch was "main" but repo default is "master"
+      if (res.status === 404 && branch === "main") {
+        const masterRes = await fetch(`https://api.github.com/repos/${repo}/git/trees/master?recursive=1&_t=${Date.now()}`, {
+          headers: {
+            "Authorization": `Bearer ${state.githubToken}`,
+            "Accept": "application/vnd.github.v3+json"
+          },
+          cache: "no-store"
+        });
+        if (masterRes.ok) {
+          branch = "master";
+          state.githubBranch = "master";
+          updateGitStatus();
+          return githubPull(options);
+        }
+      }
+      throw new Error(`Failed to load tree from ${repo}@${branch}: ${res.status} ${res.statusText}`);
+    }
+
+    const data = await res.json();
+    if (!data.tree || !Array.isArray(data.tree)) {
+      throw new Error("No files found in remote repository tree.");
+    }
+
+    const remoteBlobs = data.tree.filter(item => item.type === "blob" && (!item.size || item.size < 2000000));
+    const remoteMap = new Map();
+    remoteBlobs.forEach(item => remoteMap.set(item.path, item));
+
+    const toPull = [];
+    const conflicts = [];
+
+    // 3. Inspect every remote file against actual local content using Git blob SHAs
+    for (const item of remoteBlobs) {
+      const targetLocalPath = resolveLocalPath(item.path);
+      const hasLocalFile = Object.prototype.hasOwnProperty.call(state.files, targetLocalPath);
+      const isModifiedLocally = state.modifiedFiles.has(targetLocalPath);
+
+      let localMatchesRemote = false;
+      if (hasLocalFile) {
+        const localContent = state.files[targetLocalPath] || "";
+        const matchesSha = await doesLocalMatchRemoteSha(localContent, item.sha);
+        if (matchesSha) {
+          localMatchesRemote = true;
+          state.fileShas[targetLocalPath] = item.sha;
+          state.fileShas[item.path] = item.sha;
+        } else if (!state.isLocalProject && state.fileShas[targetLocalPath] === item.sha) {
+          localMatchesRemote = true;
+        }
+      }
+
+      if (!hasLocalFile || !localMatchesRemote || options.force) {
+        if (isModifiedLocally && !options.force) {
+          conflicts.push(targetLocalPath);
+        } else {
+          toPull.push(item);
+        }
+      }
+    }
+
+    if (conflicts.length > 0 && !options.force) {
+      const conflictList = conflicts.slice(0, 4).join(", ") + (conflicts.length > 4 ? ` (+${conflicts.length - 4} more)` : "");
+      const answer = await promptInWorkbench(
+        "Pull Conflict Detected",
+        "no",
+        `Type 'yes' to overwrite local changes in: ${conflictList}`
+      );
+      if (answer && answer.trim().toLowerCase() === "yes") {
+        conflicts.forEach(p => {
+          const item = remoteMap.get(p);
+          if (item) toPull.push(item);
+        });
+      } else {
+        throw new Error(`Pull aborted: ${conflicts.length} locally modified file(s) would be overwritten (${conflictList}). Commit or push your changes first.`);
+      }
+    }
+
+    if (toPull.length === 0) {
+      return { success: true, count: 0, pulledFiles: [], diskSyncCount: 0, message: `Already up to date with remote (${remoteBlobs.length} files verified).` };
+    }
+
+    let loaded = 0;
+    const pulledFiles = [];
+    let diskSyncCount = 0;
+
+    for (const item of toPull) {
+      try {
+        let decoded = "";
+        let fetchedSha = item.sha;
+
+        // Try direct Git blob fetch first (bypasses CDN branch cache and 1MB contents limit)
+        try {
+          const blobRes = await fetch(`https://api.github.com/repos/${repo}/git/blobs/${item.sha}`, {
+            headers: {
+              "Authorization": `Bearer ${state.githubToken}`,
+              "Accept": "application/vnd.github.v3+json"
+            }
+          });
+          if (blobRes.ok) {
+            const bData = await blobRes.json();
+            if (bData.content) {
+              const binStr = atob(bData.content.replace(/\s/g, ""));
+              const bytes = new Uint8Array(binStr.length);
+              for (let i = 0; i < binStr.length; i++) bytes[i] = binStr.charCodeAt(i);
+              decoded = new TextDecoder("utf-8").decode(bytes);
+              fetchedSha = bData.sha || item.sha;
+            }
+          }
+        } catch (bErr) {
+          console.warn("Direct blob fetch fallback for", item.path, bErr);
+        }
+
+        // Fallback to contents endpoint if blob fetch didn't decode
+        if (!decoded) {
+          const fRes = await fetch(`https://api.github.com/repos/${repo}/contents/${encodeURIComponent(item.path).replace(/%2F/g, "/")}?ref=${encodeURIComponent(branch)}&_t=${Date.now()}`, {
+            headers: {
+              "Authorization": `Bearer ${state.githubToken}`,
+              "Accept": "application/vnd.github.v3+json",
+              "Cache-Control": "no-cache",
+              "Pragma": "no-cache"
+            },
+            cache: "no-store"
+          });
+
+          if (fRes.ok) {
+            const fData = await fRes.json();
+            if (fData.content) {
+              try {
+                const binStr = atob(fData.content.replace(/\s/g, ""));
+                const bytes = new Uint8Array(binStr.length);
+                for (let i = 0; i < binStr.length; i++) bytes[i] = binStr.charCodeAt(i);
+                decoded = new TextDecoder("utf-8").decode(bytes);
+              } catch (errDec) {
+                decoded = decodeURIComponent(escape(atob(fData.content.replace(/\s/g, ""))));
+              }
+              fetchedSha = fData.sha || item.sha;
+            }
+          }
+        }
+
+        if (decoded !== "") {
+          const targetKey = resolveLocalPath(item.path);
+          state.files[targetKey] = decoded;
+          state.baselineFiles[targetKey] = decoded;
+          state.fileShas[targetKey] = fetchedSha;
+          state.fileShas[item.path] = fetchedSha;
+          state.modifiedFiles.delete(targetKey);
+          pulledFiles.push(targetKey);
+          loaded++;
+
+          // --- SYNC TO PHYSICAL DISK DRIVE IF LOCAL PROJECT IS LOADED ---
+          if (state.isLocalProject) {
+            try {
+              let handle = state.fileHandles ? state.fileHandles.get(targetKey) : null;
+              if (!handle && state.projectDirHandle) {
+                const parts = targetKey.split("/");
+                let curDir = state.projectDirHandle;
+                for (let i = 0; i < parts.length - 1; i++) {
+                  curDir = await curDir.getDirectoryHandle(parts[i], { create: true });
+                }
+                handle = await curDir.getFileHandle(parts[parts.length - 1], { create: true });
+                state.fileHandles.set(targetKey, handle);
+              }
+              if (handle) {
+                const writable = await handle.createWritable();
+                await writable.write(decoded);
+                await writable.close();
+                diskSyncCount++;
+              }
+            } catch (diskErr) {
+              console.warn(`Could not sync pulled file ${targetKey} to physical drive:`, diskErr);
+            }
+          }
+
+          if (onProgress) onProgress(loaded, toPull.length, targetKey);
+        }
+      } catch (e) {
+        console.warn("Failed to pull file:", item.path, e);
+      }
+    }
+
+    // Persist file SHAs
+    try {
+      localStorage.setItem("vsc_gh_file_shas", JSON.stringify(state.fileShas));
+    } catch (e) {}
+
+    saveWorkspace();
+
+    // Reload active editor textarea if active file was pulled
+    if (state.activeFile && pulledFiles.some(f => f === state.activeFile || f.replace(/^\.\//, "") === state.activeFile.replace(/^\.\//, ""))) {
+      if (el.codeTextarea) {
+        el.codeTextarea.value = state.files[state.activeFile] || "";
+      }
+      updateGutter();
+      updateEditorState();
+    } else if (!state.activeFile || !state.files[state.activeFile]) {
+      const first = Object.keys(state.files)[0];
+      if (first) openFile(first);
+    }
+
+    renderSidebarLists();
+    renderTabs();
+    updateGitStatus();
+    refreshProblems();
+
+    return {
+      success: true,
+      count: loaded,
+      pulledFiles,
+      diskSyncCount,
+      total: toPull.length
+    };
+  }
+
+  async function syncWithGitHub() {
+    if (!state.githubToken) {
+      openGitHubModal("Please connect your GitHub Personal Access Token to sync changes.");
+      return;
+    }
+    if (!state.githubRepo) {
+      openGitHubModal("Please select a target GitHub repository to sync changes.");
+      return;
+    }
+
+    const branch = state.githubBranch || "main";
+    termPrint(`Synchronizing with GitHub (${state.githubRepo}@${branch})...`, "vsc-term-info");
+    showMessage("info", "GITHUB SYNC", `Starting sync with ${state.githubRepo}...`);
+
+    try {
+      // 1. Pull remote changes
+      const pullRes = await githubPull();
+      let pullMsg = "";
+      if (pullRes.count > 0) {
+        termPrint(`Pulled ${pullRes.count} updated file(s) from GitHub:`, "vsc-term-success");
+        pullRes.pulledFiles.forEach(f => termPrint(`  ↓ ${f}`, "vsc-term-dim"));
+        pullMsg = `Pulled ${pullRes.count} file(s). `;
+      } else {
+        termPrint("Workspace is up to date with remote.", "vsc-term-dim");
+      }
+
+      // 2. Push local changes if any exist
+      const modCount = state.modifiedFiles.size;
+      let pushMsg = "";
+      if (modCount > 0) {
+        const msg = (el.gitCommitMsg && el.gitCommitMsg.value.trim()) || "feat: synchronize workspace files via Code Tools";
+        termPrint(`Pushing ${modCount} local change(s)...`, "vsc-term-info");
+        const pushRes = await githubPush(msg);
+        if (pushRes.pushedFiles && pushRes.pushedFiles.length > 0) {
+          termPrint(`Pushed ${pushRes.pushedFiles.length} file(s) to GitHub: "${msg}"`, "vsc-term-success");
+          pushRes.pushedFiles.forEach(f => termPrint(`  ↑ ${f}`, "vsc-term-dim"));
+          pushMsg = `Pushed ${pushRes.pushedFiles.length} file(s).`;
+          if (el.gitCommitMsg) el.gitCommitMsg.value = "";
+        }
+      } else {
+        pushMsg = "Working tree clean, nothing to push.";
+      }
+
+      const summary = (pullMsg + pushMsg).trim() || "Workspace synchronized.";
+      showMessage("success", "GITHUB SYNC", summary);
+      termPrint(`Sync complete: ${summary}`, "vsc-term-success");
+    } catch (e) {
+      termPrint(`Sync failed: ${e.message}`, "vsc-term-error");
+      showMessage("error", "GITHUB SYNC FAILED", e.message);
+    }
+  }
+
+  // --- COMMIT MESSAGE GENERATOR ENGINE (CONVENTIONAL COMMITS & OPTIONAL GEMINI AI) ---
+  const CONVENTIONAL_TYPES = {
+    feat: { label: "feat", emoji: "✨", desc: "A new feature or enhancement" },
+    fix: { label: "fix", emoji: "🐛", desc: "A bug fix or error resolution" },
+    docs: { label: "docs", emoji: "📝", desc: "Documentation changes only" },
+    style: { label: "style", emoji: "💄", desc: "Formatting, missing semi-colons, CSS styles" },
+    refactor: { label: "refactor", emoji: "♻️", desc: "A code change that neither fixes a bug nor adds a feature" },
+    perf: { label: "perf", emoji: "⚡", desc: "A code change that improves performance" },
+    test: { label: "test", emoji: "✅", desc: "Adding missing tests or correcting existing tests" },
+    chore: { label: "chore", emoji: "🔧", desc: "Build process, auxiliary tools or dependencies" },
+    build: { label: "build", emoji: "📦", desc: "Changes affecting build system or external dependencies" },
+    ci: { label: "ci", emoji: "👷", desc: "Changes to CI/CD configuration files and scripts" }
+  };
+
+  function extractScopeFromFiles(files = []) {
+    if (!files || files.length === 0) return "workspace";
+    if (files.length === 1) {
+      const f = files[0];
+      const parts = f.split(/[\/\\]/);
+      if (parts.length > 1) {
+        return parts[parts.length - 2] || parts[0];
+      }
+      const name = parts[0].toLowerCase();
+      if (name.includes("package")) return "deps";
+      if (name.includes("config")) return "config";
+      if (name.includes("readme") || name.includes("license")) return "docs";
+      if (name.includes("manifest") || name.includes("sw.js")) return "pwa";
+      if (name.includes("index") || name.includes(".html")) return "ui";
+      return name.replace(/\.[^.]+$/, "");
+    }
+
+    const folderTokens = files.map(f => {
+      const parts = f.split(/[\/\\]/);
+      return parts.length > 1 ? parts.slice(0, -1).join("/") : "";
+    });
+
+    const first = folderTokens[0];
+    if (first && folderTokens.every(f => f === first)) {
+      const sub = first.split("/").pop();
+      return sub || first;
+    }
+
+    if (files.every(f => f.startsWith("tools/"))) return "tools";
+    if (files.every(f => f.endsWith(".css") || f.includes("css/"))) return "styles";
+    if (files.every(f => f.endsWith(".md"))) return "docs";
+    return "workspace";
+  }
+
+  function analyzeChanges(files = []) {
+    const fileList = (files && files.length > 0) ? files.slice() : Array.from(state.modifiedFiles);
+    if (fileList.length === 0 && state.activeFile) {
+      fileList.push(state.activeFile);
+    }
+
+    let detectedType = "feat";
+    const scope = extractScopeFromFiles(fileList);
+    const highlights = [];
+
+    const isAllDocs = fileList.length > 0 && fileList.every(f => f.endsWith(".md") || f.endsWith(".txt") || f.toLowerCase().includes("readme") || f.toLowerCase().includes("license"));
+    const isAllStyles = fileList.length > 0 && fileList.every(f => f.endsWith(".css") || f.endsWith(".scss") || f.endsWith(".less") || f.includes("css/"));
+    const isAllTests = fileList.length > 0 && fileList.every(f => f.includes("test") || f.includes("spec"));
+    const isAllConfig = fileList.length > 0 && fileList.every(f => f.endsWith(".json") || f.startsWith(".") || f.includes("config") || f.includes("wrangler"));
+
+    if (isAllDocs) detectedType = "docs";
+    else if (isAllStyles) detectedType = "style";
+    else if (isAllTests) detectedType = "test";
+    else if (isAllConfig) detectedType = "chore";
+
+    let hasFixKeyword = false;
+    let hasPerfKeyword = false;
+    let hasRefactorKeyword = false;
+    const addedFunctions = [];
+    const addedUiElements = [];
+
+    fileList.slice(0, 8).forEach(file => {
+      const current = state.files[file] || "";
+      const base = state.baselineFiles ? state.baselineFiles[file] : undefined;
+      let newText = "";
+      let diffSummary = "";
+
+      if (base !== undefined) {
+        if (current !== base) {
+          const baseLines = new Set(base.split("\n").map(l => l.trim()));
+          const addedLines = current.split("\n")
+            .map(l => l.trim())
+            .filter(l => l.length > 0 && !baseLines.has(l));
+          newText = addedLines.join("\n");
+          diffSummary = `+${addedLines.length} lines`;
+        } else {
+          diffSummary = "unchanged";
+        }
+      } else {
+        newText = current;
+        diffSummary = "new file";
+      }
+
+      if (newText) {
+        if (/\b(fix|bug|issue|error|prevent|patch|catch|exception|nullcheck|undefined)\b/i.test(newText)) {
+          hasFixKeyword = true;
+        }
+        if (/\b(perf|optimize|cache|caching|throttle|debounce|latency)\b/i.test(newText)) {
+          hasPerfKeyword = true;
+        }
+        if (/\b(refactor|cleanup|clean up|modularize|deprecate|remove dead)\b/i.test(newText)) {
+          hasRefactorKeyword = true;
+        }
+
+        const fnMatches = newText.match(/(?:function\s+([a-zA-Z0-9_$]+)|(?:const|let|var)\s+([a-zA-Z0-9_$]+)\s*=\s*(?:async\s*)?\()/g);
+        if (fnMatches) {
+          fnMatches.slice(0, 2).forEach(m => {
+            const fnName = m.replace(/^function\s+/, "").replace(/^(?:const|let|var)\s+/, "").split(/\s*=/)[0].trim();
+            if (fnName && !addedFunctions.includes(fnName)) addedFunctions.push(fnName);
+          });
+        }
+
+        const idMatches = newText.match(/id=["']([a-zA-Z0-9_-]+)["']/g);
+        if (idMatches) {
+          idMatches.slice(0, 2).forEach(m => {
+            const id = m.replace(/^id=["']|["']$/g, "");
+            if (id && !addedUiElements.includes(id)) addedUiElements.push(id);
+          });
+        }
+      }
+
+      highlights.push({
+        file,
+        diffSummary: diffSummary || "modified"
+      });
+    });
+
+    if (detectedType === "feat") {
+      if (hasFixKeyword && !addedFunctions.length) {
+        detectedType = "fix";
+      } else if (hasPerfKeyword) {
+        detectedType = "perf";
+      } else if (hasRefactorKeyword && !addedFunctions.length) {
+        detectedType = "refactor";
+      }
+    }
+
+    let subject = "";
+    if (addedFunctions.length > 0) {
+      const fnList = addedFunctions.slice(0, 2).join(" and ");
+      subject = `implement ${fnList}`;
+    } else if (addedUiElements.length > 0) {
+      const uiClean = addedUiElements[0].replace(/^vsc-btn-|^vsc-/, "").replace(/-/g, " ");
+      subject = `add ${uiClean} controls`;
+    } else if (isAllStyles) {
+      subject = `refine responsive layout and styling`;
+    } else if (isAllDocs) {
+      subject = `update documentation and references`;
+    } else if (isAllConfig) {
+      subject = `update configuration and project settings`;
+    } else if (fileList.length === 1) {
+      const baseName = fileList[0].split(/[\/\\]/).pop();
+      subject = `update ${baseName}`;
+    } else if (fileList.length > 1) {
+      subject = `update ${scope} and workspace components`;
+    } else {
+      subject = `update workspace files`;
+    }
+
+    return {
+      type: detectedType,
+      scope,
+      subject,
+      highlights,
+      fileList
+    };
+  }
+
+  async function generateCommitWithGemini(apiKey, analysis) {
+    const diffContext = analysis.fileList.map(f => {
+      const content = state.files[f] || "";
+      const base = state.baselineFiles[f] || "";
+      let diffSample = "";
+      if (base && content !== base) {
+        const baseLines = new Set(base.split("\n").map(l => l.trim()));
+        const added = content.split("\n").map(l => l.trim()).filter(l => l && !baseLines.has(l));
+        diffSample = added.slice(0, 15).join("\n");
+      } else {
+        diffSample = content.slice(0, 300);
+      }
+      return `File: ${f}\nDiff Sample:\n${diffSample}`;
+    }).join("\n---\n");
+
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+    const prompt = `You are an expert Git version control assistant. Generate a single Conventional Commit message for the following code changes.\n\nRules:\n- Format MUST be: <type>(<scope>): <subject in present imperative tense>\n- Allowed types: feat, fix, docs, style, refactor, perf, test, chore\n- Subject line MUST be under 72 characters\n- Followed by an optional blank line and 2-3 short bullet points summarizing changes\n- Do NOT include markdown code blocks, backticks, or quotes. Output ONLY the raw commit message.\n\nChanged Files:\n${diffContext}`;
+
+    const res = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature: 0.2,
+          maxOutputTokens: 250
+        }
+      })
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error?.message || `Gemini API returned status ${res.status}`);
+    }
+
+    const data = await res.json();
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+    if (!text) throw new Error("Empty response from Gemini API");
+
+    return text.replace(/^```[a-z]*\n?/i, "").replace(/\n?```$/i, "").trim();
+  }
+
+  async function generateCommitMessage(options = {}) {
+    const fileList = options.files || Array.from(state.modifiedFiles);
+    if (fileList.length === 0 && state.activeFile) {
+      fileList.push(state.activeFile);
+    }
+
+    const analysis = analyzeChanges(fileList);
+    const chosenType = options.type || analysis.type;
+    const scope = options.scope !== undefined ? options.scope : analysis.scope;
+    let subject = options.subject || analysis.subject;
+
+    // Adapt subject to chosen type if not manually customized
+    if (!options.subject && analysis.subject.startsWith("update ")) {
+      if (chosenType === "fix") subject = analysis.subject.replace(/^update\s+/, "fix issue in ");
+      else if (chosenType === "docs") subject = analysis.subject.replace(/^update\s+/, "document ");
+      else if (chosenType === "refactor") subject = analysis.subject.replace(/^update\s+/, "refactor ");
+      else if (chosenType === "style") subject = "improve styling and UI layout";
+      else if (chosenType === "test") subject = "add test coverage";
+      else if (chosenType === "chore") subject = analysis.subject.replace(/^update\s+/, "maintenance for ");
+      else if (chosenType === "perf") subject = analysis.subject.replace(/^update\s+/, "optimize performance of ");
+    }
+
+    const apiKey = (options.apiKey !== undefined ? options.apiKey : (state.geminiApiKey || localStorage.getItem("vsc_gemini_api_key") || "")).trim();
+
+    let primaryMessage = "";
+    let provider = "heuristic";
+
+    if (apiKey && fileList.length > 0 && !options.skipAi) {
+      try {
+        const aiMsg = await generateCommitWithGemini(apiKey, analysis);
+        if (aiMsg) {
+          primaryMessage = aiMsg;
+          provider = "gemini";
+        }
+      } catch (e) {
+        console.warn("Gemini commit message generation failed, falling back to heuristic:", e);
+      }
+    }
+
+    if (!primaryMessage) {
+      const scopePart = scope ? `(${scope})` : "";
+      primaryMessage = `${chosenType}${scopePart}: ${subject}`;
+    }
+
+    const conventionalMsg = primaryMessage.split("\n")[0];
+    const bulletPoints = analysis.highlights.map(h => `- ${h.file}: ${h.diffSummary}`).join("\n");
+    const detailedMsg = `${conventionalMsg}\n\n${bulletPoints || "- synchronize workspace modifications"}`;
+    const conciseMsg = subject.charAt(0).toUpperCase() + subject.slice(1);
+    const emojiMap = {
+      feat: "✨", fix: "🐛", docs: "📝", style: "💄",
+      refactor: "♻️", perf: "⚡", test: "✅", chore: "🔧",
+      build: "📦", ci: "👷"
+    };
+    const emoji = emojiMap[chosenType] || "🚀";
+    const emojiMsg = `${emoji} ${conventionalMsg}`;
+
+    const result = {
+      message: primaryMessage,
+      provider,
+      type: chosenType,
+      scope,
+      subject,
+      filesAnalyzed: fileList,
+      variants: {
+        conventional: conventionalMsg,
+        detailed: detailedMsg,
+        concise: conciseMsg,
+        emoji: emojiMsg
+      }
+    };
+
+    state.lastCommitGen = result;
+    return result;
+  }
+
+  async function generateCommitMessageUI(preferredType = null, customSubject = null) {
+    if (!el.gitCommitMsg) return;
+
+    let targetType = preferredType;
+    if (!targetType && el.gitPresetsBar) {
+      const activeChip = el.gitPresetsBar.querySelector(".vsc-chip-btn.active");
+      if (activeChip && activeChip.dataset.type) {
+        targetType = activeChip.dataset.type;
+      }
+    }
+
+    if (el.btnGitGenMsg) {
+      el.btnGitGenMsg.disabled = true;
+      el.btnGitGenMsg.innerHTML = `<span style="display:inline-block;animation:spin 1s linear infinite">⚡</span> <span>Analyzing...</span>`;
+    }
+
+    try {
+      const res = await generateCommitMessage({ type: targetType, subject: customSubject });
+      el.gitCommitMsg.value = res.message;
+      el.gitCommitMsg.focus();
+
+      // Update active type chip
+      if (el.gitPresetsBar) {
+        el.gitPresetsBar.querySelectorAll(".vsc-chip-btn").forEach(btn => {
+          btn.classList.toggle("active", btn.dataset.type === res.type);
+        });
+      }
+
+      // Show status and variant links
+      if (el.gitGenStatus) {
+        el.gitGenStatus.style.display = "block";
+        const badgeColor = res.provider === "gemini" ? "var(--vsc-turquoise)" : "#98c379";
+        const badgeText = res.provider === "gemini" ? "Gemini 2.5 Flash" : "Heuristic Conventional Engine";
+        const fileCountText = res.filesAnalyzed.length > 0
+          ? `${res.filesAnalyzed.length} file${res.filesAnalyzed.length === 1 ? '' : 's'}`
+          : "Workspace default";
+
+        el.gitGenStatus.innerHTML = `
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;flex-wrap:wrap;gap:2px">
+            <span style="color:${badgeColor};font-weight:600">✓ ${badgeText} (${fileCountText})</span>
+            <div style="display:flex;gap:4px;align-items:center">
+              <a href="#" class="vsc-gen-variant-link active-variant" data-v="conventional" title="Standard conventional commit">Conventional</a>
+              <span style="color:var(--vsc-fg-muted)">·</span>
+              <a href="#" class="vsc-gen-variant-link" data-v="detailed" title="Include modified files bullet points">Detailed</a>
+              <span style="color:var(--vsc-fg-muted)">·</span>
+              <a href="#" class="vsc-gen-variant-link" data-v="concise" title="Short sentence">Concise</a>
+              <span style="color:var(--vsc-fg-muted)">·</span>
+              <a href="#" class="vsc-gen-variant-link" data-v="emoji" title="With Gitmoji">Emoji</a>
+            </div>
+          </div>
+        `;
+
+        el.gitGenStatus.querySelectorAll(".vsc-gen-variant-link").forEach(a => {
+          a.addEventListener("click", (e) => {
+            e.preventDefault();
+            const variant = a.dataset.v;
+            if (res.variants && res.variants[variant]) {
+              el.gitCommitMsg.value = res.variants[variant];
+              el.gitGenStatus.querySelectorAll(".vsc-gen-variant-link").forEach(l => l.classList.remove("active-variant"));
+              a.classList.add("active-variant");
+              showMessage("info", "COMMIT STYLE", `Switched commit style to ${variant}.`, false);
+            }
+          });
+        });
+      }
+
+      showMessage("success", "COMMIT GENERATOR", `Generated commit message (${res.provider}): "${res.variants.conventional}"`, false);
+      termPrint(`[Git] Generated commit message (${res.provider}): "${res.variants.conventional}"`, "vsc-term-info");
+    } catch (err) {
+      showMessage("error", "COMMIT GENERATOR", `Generation error: ${err.message}`);
+    } finally {
+      if (el.btnGitGenMsg) {
+        el.btnGitGenMsg.disabled = false;
+        el.btnGitGenMsg.innerHTML = `
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+          </svg>
+          <span>✨ Generate</span>
+        `;
+      }
+    }
+  }
+
+  // --- SNIPPETS INSERTION API ---
+  window.insertSnippet = function (type) {
+    let snippet = "";
+    if (type === "html5") {
+      snippet = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>App</title>
+  <link rel="stylesheet" href="../../css/main.css" />
+  <link rel="stylesheet" href="./code-tools.css" />
+</head>
+<body>
+  <h1>App Live Preview</h1>
+</body>
+</html>\n`;
+    } else if (type === "fetch") {
+      snippet = `async function request(url, options = {}) {
+  try {
+    const res = await fetch(url, options);
+    if (!res.ok) throw new Error(\`HTTP error! status: \${res.status}\`);
+    return await res.json();
+  } catch (err) {
+    console.error("Fetch failed:", err);
+    throw err;
+  }
+}\n`;
+    } else if (type === "crypto") {
+      snippet = `async function sha256(message) {
+  const msgUint8 = new TextEncoder().encode(message);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", msgUint8);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+}\n`;
+    }
+    if (el.codeTextarea && snippet) {
+      const start = el.codeTextarea.selectionStart;
+      const end = el.codeTextarea.selectionEnd;
+      const val = el.codeTextarea.value;
+      el.codeTextarea.value = val.substring(0, start) + snippet + val.substring(end);
+      state.files[state.activeFile] = el.codeTextarea.value;
+      state.modifiedFiles.add(state.activeFile);
+      saveWorkspace();
+      updateGutter();
+      updateGitStatus();
+      refreshProblems();
+      termPrint(`Snippet '${type}' inserted into ${state.activeFile}`, "vsc-term-success");
+    }
+  };
+
+  // --- COMMAND PALETTE ENGINE ---
+  const COMMAND_PALETTE_ITEMS = [
+    { id: "view_sidebar", label: "View: Toggle Primary Sidebar", exec: () => toggleExplorerSidebar() },
+    { id: "view_terminal", label: "View: Toggle Terminal Panel", exec: () => toggleMaximizeTerminal() },
+    { id: "view_close_editor", label: "View: Close Active Editor (Ctrl+W)", exec: () => { if (state.activeFile) closeTab(state.activeFile); } },
+    { id: "view_close_all_editors", label: "View: Close All Editors (Ctrl+K W)", exec: () => closeAllTabs() },
+    { id: "view_close_other_editors", label: "View: Close Other Editors", exec: () => { if (state.activeFile) closeOtherTabs(state.activeFile); } },
+    { id: "view_preview", label: "View: Toggle Live Preview", exec: () => { if (el.livePreview) el.livePreview.classList.toggle("hidden"); } },
+    { id: "markdown_preview", label: "Markdown: Open Preview (Ctrl+Shift+V)", exec: () => previewMarkdown(state.activeFile) },
+    { id: "view_fullscreen", label: "View: Toggle Fullscreen", exec: () => { if (el.btnFullscreen) el.btnFullscreen.click(); } },
+    { id: "file_new", label: "File: New File", exec: async () => { const name = await promptInWorkbench("New File", "new-file.js", "filename.js"); if (name) openFile(name); } },
+    { id: "file_open_project", label: "File: Open Local Folder / Project", exec: () => openLocalProjectFolder() },
+    { id: "file_save", label: "File: Save Current File (Direct to Disk)", exec: () => saveCurrentFile() },
+    { id: "file_save_all", label: "File: Save All Files", exec: () => { saveWorkspace(); termPrint("All files saved to browser storage.", "vsc-term-success"); } },
+    { id: "file_export", label: "File: Export Workspace as JSON", exec: () => exportWorkspaceJSON() },
+    { id: "file_import", label: "File: Import Workspace from JSON", exec: () => triggerWorkspaceImport() },
+    { id: "workbench_reload", label: "Developer: Reload Window", exec: () => window.location.reload() },
+    { id: "file_clear_workspace", label: "File: Clear Workspace (Start Clean)", exec: () => clearWorkspace() },
+    { id: "file_clear_workspace_fresh", label: "File: Reset Workspace & Start Fresh (Keep Token)", exec: () => resetWorkspaceData() },
+    { id: "github_connect", label: "GitHub: Connect Repository & Personal Access Token", exec: () => openGitHubModal() },
+    { id: "github_pull", label: "Git: Pull Latest Changes from GitHub", exec: () => { if (el.btnGitPull) el.btnGitPull.click(); } },
+    { id: "github_push", label: "Git: Commit and Push Changes to GitHub", exec: () => { if (el.btnGitPush) el.btnGitPush.click(); } },
+    { id: "github_sync", label: "Git: Synchronize (Pull & Push) with GitHub", exec: () => syncWithGitHub() },
+    { id: "git_generate_commit_msg", label: "Git: Generate Commit Message (AI / Conventional)", exec: () => { switchSidebarView("git"); generateCommitMessageUI(); } },
+    { id: "edit_find", label: "Edit: Find in Files", exec: () => { switchSidebarView("search"); if (el.searchQueryInput) el.searchQueryInput.focus(); } },
+    { id: "edit_format", label: "Format Document", exec: () => { if (el.btnFormat) el.btnFormat.click(); } },
+    { id: "term_run", label: "Terminal: Run Active Script", exec: () => COMMANDS.run.exec([]) },
+    { id: "term_clear", label: "Terminal: Clear Console", exec: () => COMMANDS.clear.exec([]) },
+    { id: "server_preview", label: "Live Server: Preview Active Page (localhost:3000)", exec: () => serveFile(state.activeFile, 3000, false) },
+    { id: "settings_open", label: "Preferences: Open Settings", exec: () => openSettingsModal() },
+    { id: "problems_open", label: "Problems: Show Workspace Diagnostics", exec: () => switchTerminalTab("problems") },
+    { id: "help_reset_data", label: "Help: Clear Workspace Data (Keep Token & Settings)", exec: () => resetWorkspaceData() }
+  ];
+
+  function openCommandPalette() {
+    if (!el.paletteDialog) return;
+    renderPaletteList("");
+    if (el.paletteInput) el.paletteInput.value = "";
+    el.paletteDialog.showModal();
+    if (el.paletteInput) el.paletteInput.focus();
+  }
+
+  function renderPaletteList(filter = "") {
+    if (!el.paletteList) return;
+    el.paletteList.innerHTML = "";
+    const f = filter.toLowerCase().trim();
+
+    const matchedCommands = COMMAND_PALETTE_ITEMS.filter(item => item.label.toLowerCase().includes(f));
+    const matchedFiles = Object.keys(state.files)
+      .filter(name => name.toLowerCase().includes(f))
+      .map(name => ({
+        id: "file_" + name,
+        label: `Go to File: ${name}`,
+        exec: () => openFile(name)
+      }));
+
+    const combined = [...matchedFiles, ...matchedCommands];
+    if (combined.length === 0) {
+      el.paletteList.innerHTML = `<li class="vsc-palette-item" style="color:var(--vsc-fg-secondary);font-style:italic">No matching commands or files</li>`;
+      return;
+    }
+
+    combined.forEach((item, idx) => {
+      const li = document.createElement("li");
+      li.className = `vsc-palette-item ${idx === 0 ? "active" : ""}`;
+      li.textContent = item.label;
+      li.addEventListener("click", () => {
+        el.paletteDialog.close();
+        item.exec();
+      });
+      el.paletteList.appendChild(li);
+    });
+  }
+
+  function exportWorkspaceJSON() {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state.files, null, 2));
+    const dlAnchor = document.createElement("a");
+    dlAnchor.setAttribute("href", dataStr);
+    dlAnchor.setAttribute("download", `workspace-backup-${new Date().toISOString().slice(0, 10)}.json`);
+    document.body.appendChild(dlAnchor);
+    dlAnchor.click();
+    dlAnchor.remove();
+    showMessage("success", "Export Workspace", "Workspace exported as JSON file download.");
+    termPrint("Workspace exported as JSON file download.", "vsc-term-success");
+  }
+
+  function importWorkspaceJSON(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          let filesToImport = {};
+
+          if (parsed && typeof parsed === "object") {
+            if (parsed.files && typeof parsed.files === "object") {
+              filesToImport = parsed.files;
+            } else if (parsed.workspace && typeof parsed.workspace === "object") {
+              filesToImport = parsed.workspace;
+            } else {
+              filesToImport = parsed;
+            }
+          }
+
+          const validFiles = {};
+          for (const [key, val] of Object.entries(filesToImport)) {
+            if (typeof val === "string") {
+              validFiles[key] = val;
+            } else if (typeof val === "object" && val !== null) {
+              validFiles[key] = JSON.stringify(val, null, 2);
+            }
+          }
+
+          const count = Object.keys(validFiles).length;
+          if (count === 0) {
+            showMessage("warning", "Import Workspace", "No valid files found in JSON file.");
+            termPrint("No valid files found in JSON.", "vsc-term-warn");
+            return resolve(false);
+          }
+
+          state.files = validFiles;
+          saveWorkspace();
+          state.modifiedFiles.clear();
+
+          // Set open tabs to first few files
+          const allKeys = Object.keys(state.files);
+          state.openTabs = allKeys.slice(0, 5);
+
+          const priority = ["index.html", "README.md", "package.json", "main.js"];
+          const toOpen = priority.find(p => state.files[p]) || allKeys[0];
+
+          renderSidebarLists();
+          renderTabs();
+          if (toOpen) {
+            openFile(toOpen);
+          } else {
+            renderTabs();
+          }
+
+          updateGitStatus();
+          refreshProblems();
+          updateWorkspaceUI();
+
+          const fName = file.name || "JSON backup";
+          showMessage("success", "Workspace Imported", `Successfully imported ${count} file(s) from "${fName}".`);
+          termPrint(`Workspace imported: ${count} file(s) loaded from '${fName}'.`, "vsc-term-success");
+          resolve(true);
+        } catch (err) {
+          showMessage("error", "Import Error", `Failed to parse workspace JSON: ${err.message}`);
+          termPrint(`Import error: ${err.message}`, "vsc-term-error");
+          reject(err);
+        }
+      };
+      reader.onerror = (err) => {
+        showMessage("error", "Read Error", "Could not read selected file.");
+        reject(err);
+      };
+      reader.readAsText(file);
+    });
+  }
+
+  function triggerWorkspaceImport() {
+    let input = document.getElementById("vsc-import-file-input");
+    if (!input) {
+      input = document.createElement("input");
+      input.type = "file";
+      input.id = "vsc-import-file-input";
+      input.accept = ".json,application/json";
+      input.style.display = "none";
+      document.body.appendChild(input);
+    }
+    input.onchange = (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (file) {
+        importWorkspaceJSON(file);
+      }
+      input.value = "";
+    };
+    input.click();
+  }
+
+  function clearWorkspace() {
+    state.files = {};
+    state.openTabs = [];
+    state.activeFile = null;
+    state.modifiedFiles.clear();
+    state.isLocalProject = false;
+    state.projectName = "";
+    localStorage.removeItem("vsc_workspace_files_v1");
+    localStorage.removeItem("vsc_user_custom_workspace");
+    if (el.codeTextarea) {
+      el.codeTextarea.value = "";
+      el.codeTextarea.placeholder = "No open editor.\n\n• Press Ctrl+N to create a new file\n• Press Ctrl+O to open a local project folder\n• Press Ctrl+P for Command Palette\n• File > Import Workspace (JSON) to load an exported workspace";
+      el.codeTextarea.disabled = true;
+    }
+    if (el.breadcrumbsFile) el.breadcrumbsFile.textContent = "No file open";
+    updateGutter();
+    renderTabs();
+    renderSidebarLists();
+    updateWorkspaceUI();
+    showMessage("info", "Workspace Cleared", "Workspace reset to a clean empty state.");
+    termPrint("Workspace cleared. Ready for new files or workspace import.", "vsc-term-info");
+  }
+
+  async function resetWorkspaceData() {
+    const ok = await confirmInWorkbench(
+      "Reset Workspace Data",
+      "Are you sure you want to clean this workspace?<br><br>• All cached workspace files and changes will be wiped.<br>• <b>Your GitHub token and settings will be preserved</b>.<br>• The page will reload with a fresh, clean interface."
+    );
+    if (!ok) return;
+
+    // 1. Preserve GitHub Token and Settings in memory
+    const token = state.githubToken || getStoredToken();
+    const settings = localStorage.getItem("vsc_workbench_settings");
+    const nanoSettings = localStorage.getItem("vsc_nano_settings");
+
+    // 2. Wipe workspace files, cached repo, cloned file SHAs, and command history
+    try {
+      localStorage.removeItem("vsc_workspace_files_v1");
+      localStorage.removeItem("vsc_user_custom_workspace");
+      localStorage.removeItem("vsc_gh_file_shas");
+      localStorage.removeItem("vsc_gh_repo");
+      localStorage.removeItem("vsc_gh_branch");
+      localStorage.removeItem("vsc_command_history");
+      setCookie("gh_repo", "", -1);
+      setCookie("gh_branch", "", -1);
+    } catch (e) {}
+
+    // 3. Clear IndexedDB project directory handles if any
+    try {
+      const dbs = ["vsc_projects_db", "dev_workbench_fs"];
+      dbs.forEach(db => {
+        try { indexedDB.deleteDatabase(db); } catch (e) {}
+      });
+    } catch (e) {}
+
+    // 4. Re-lock and restore the preserved token and settings
+    if (token) {
+      persistToken(token);
+    }
+    if (settings) {
+      try { localStorage.setItem("vsc_workbench_settings", settings); } catch (e) {}
+    }
+    if (nanoSettings) {
+      try { localStorage.setItem("vsc_nano_settings", nanoSettings); } catch (e) {}
+    }
+
+    termPrint("Workspace data cleared. GitHub token & settings safely preserved. Reloading...", "vsc-term-success");
+    showMessage("success", "RESET COMPLETE", "Workspace data cleared. Reloading clean interface...");
+
+    setTimeout(() => {
+      window.location.reload();
+    }, 500);
+  }
+
+  // --- MULTI-VIEW & TABS CONTROLLERS ---
+  function toggleExplorerSidebar(e) {
+    if (e) {
+      if (typeof e.preventDefault === "function" && e.cancelable) e.preventDefault();
+      if (typeof e.stopPropagation === "function") e.stopPropagation();
+    }
+    if (!el.sidebar) return;
+    const isShowing = !el.sidebar.classList.contains("collapsed");
+    const isCurrentActive = state.activeSidebarView === "explorer";
+
+    if (isShowing && isCurrentActive) {
+      // If currently showing Explorer, collapse/hide it
+      el.sidebar.classList.add("collapsed");
+      document.querySelectorAll(".vsc-act-btn").forEach(b => {
+        if (b !== el.actAccounts && b !== el.actSettings) b.classList.remove("active");
+      });
+      state.activeSidebarView = null;
+    } else {
+      // If currently hidden OR showing another view (search, git, etc.), open and show Explorer
+      el.sidebar.classList.remove("collapsed");
+      document.querySelectorAll(".vsc-sidebar-view").forEach(v => v.classList.remove("active"));
+      document.querySelectorAll(".vsc-act-btn").forEach(b => {
+        if (b !== el.actAccounts && b !== el.actSettings) b.classList.remove("active");
+      });
+      const expView = document.getElementById("vsc-view-explorer");
+      if (expView) expView.classList.add("active");
+      if (el.actExplorer) el.actExplorer.classList.add("active");
+      if (el.sidebarTitle) el.sidebarTitle.textContent = "Explorer";
+      state.activeSidebarView = "explorer";
+    }
+  }
+
+  function switchSidebarView(viewId) {
+    if (!el.sidebar) return;
+    if (viewId === "explorer") {
+      toggleExplorerSidebar();
+      return;
+    }
+
+    const isShowing = !el.sidebar.classList.contains("collapsed");
+    const isCurrentActive = state.activeSidebarView === viewId;
+
+    // If clicking the currently active view and sidebar is open, collapse sidebar
+    if (isShowing && isCurrentActive) {
+      el.sidebar.classList.add("collapsed");
+      document.querySelectorAll(".vsc-act-btn").forEach(b => {
+        if (b !== el.actAccounts && b !== el.actSettings) b.classList.remove("active");
+      });
+      state.activeSidebarView = null;
+      return;
+    }
+
+    // Otherwise expand sidebar and switch to selected view
+    el.sidebar.classList.remove("collapsed");
+    const viewMap = {
+      explorer: { view: document.getElementById("vsc-view-explorer"), btn: el.actExplorer, title: "Explorer" },
+      search: { view: document.getElementById("vsc-view-search"), btn: el.actSearch, title: "Search" },
+      git: { view: document.getElementById("vsc-view-git"), btn: el.actGit, title: "Source Control" },
+      debug: { view: document.getElementById("vsc-view-debug"), btn: el.actDebug, title: "Run and Debug" },
+      extensions: { view: document.getElementById("vsc-view-extensions"), btn: el.actExtensions, title: "Extensions & Snippets" }
+    };
+
+    document.querySelectorAll(".vsc-sidebar-view").forEach(v => v.classList.remove("active"));
+    document.querySelectorAll(".vsc-act-btn").forEach(b => {
+      if (b !== el.actAccounts && b !== el.actSettings) b.classList.remove("active");
+    });
+
+    if (viewMap[viewId]) {
+      if (viewMap[viewId].view) viewMap[viewId].view.classList.add("active");
+      if (viewMap[viewId].btn) viewMap[viewId].btn.classList.add("active");
+      if (el.sidebarTitle) el.sidebarTitle.textContent = viewMap[viewId].title;
+      state.activeSidebarView = viewId;
+    }
+  }
+
+  function initResponsiveSidebar() {
+    const isMobile = window.innerWidth <= 768;
+    if (isMobile) {
+      // By default on mobile, sidebar should NOT be showing
+      if (el.sidebar) el.sidebar.classList.add("collapsed");
+      if (el.actExplorer) el.actExplorer.classList.remove("active");
+      document.querySelectorAll(".vsc-act-btn").forEach(b => {
+        if (b !== el.actAccounts && b !== el.actSettings) b.classList.remove("active");
+      });
+      state.activeSidebarView = null;
+    } else {
+      // By default on desktop, sidebar should be showing
+      if (el.sidebar) el.sidebar.classList.remove("collapsed");
+      document.querySelectorAll(".vsc-sidebar-view").forEach(v => v.classList.remove("active"));
+      document.querySelectorAll(".vsc-act-btn").forEach(b => {
+        if (b !== el.actAccounts && b !== el.actSettings) b.classList.remove("active");
+      });
+      const expView = document.getElementById("vsc-view-explorer");
+      if (expView) expView.classList.add("active");
+      if (el.actExplorer) el.actExplorer.classList.add("active");
+      if (el.sidebarTitle) el.sidebarTitle.textContent = "Explorer";
+      state.activeSidebarView = "explorer";
+    }
+  }
+
+  function switchTerminalTab(tabId) {
+    const tabs = {
+      terminal: { tab: el.tabTerm, panel: el.termBody },
+      messages: { tab: el.tabMessages, panel: el.messagesPanel },
+      output: { tab: el.tabOutput, panel: el.outputPanel },
+      problems: { tab: el.tabProblems, panel: el.problemsPanel },
+      ports: { tab: el.tabPorts, panel: el.portsPanel },
+      debug: { tab: el.tabDebug, panel: el.debugPanel }
+    };
+
+    document.querySelectorAll(".vsc-term-tab").forEach(t => t.classList.remove("active"));
+    if (el.termBody) el.termBody.style.display = "none";
+    if (el.messagesPanel) el.messagesPanel.style.display = "none";
+    if (el.outputPanel) el.outputPanel.style.display = "none";
+    if (el.problemsPanel) el.problemsPanel.style.display = "none";
+    if (el.portsPanel) el.portsPanel.classList.remove("active");
+    if (el.debugPanel) el.debugPanel.classList.remove("active");
+
+    if (tabs[tabId]) {
+      if (tabs[tabId].tab) tabs[tabId].tab.classList.add("active");
+      if (tabs[tabId].panel) {
+        if (tabId === "ports" || tabId === "debug") {
+          tabs[tabId].panel.classList.add("active");
+        } else {
+          tabs[tabId].panel.style.display = "flex";
+        }
+      }
+      state.activeTab = tabId;
+      if (tabId === "messages" && el.messagesCount) {
+        // Subtle acknowledgment of reading messages
+        el.messagesCount.style.opacity = "0.6";
+      }
+      if (tabId === "ports") renderPortsTable();
+      if (tabId === "problems") refreshProblems();
+      if (tabId === "debug" && el.debugInput) el.debugInput.focus();
+      if (tabId === "terminal" && el.termInput) el.termInput.focus();
+    }
+  }
+
+  function openSettingsModal() {
+    if (!el.settingsDialog) return;
+    try {
+      const saved = JSON.parse(localStorage.getItem("vsc_workbench_settings") || "{}");
+      if (saved.fontSize && el.settingFontSize) el.settingFontSize.value = saved.fontSize;
+      if (saved.tabSize && el.settingTabSize) el.settingTabSize.value = saved.tabSize;
+      if (saved.wordWrap && el.settingWordWrap) el.settingWordWrap.value = saved.wordWrap;
+    } catch (e) {}
+
+    if (el.settingGhToken) {
+      el.settingGhToken.value = state.githubToken || "";
+      el.settingGhToken.type = "password";
+    }
+    if (el.settingBtnToggleToken) {
+      el.settingBtnToggleToken.textContent = "👁";
+      el.settingBtnToggleToken.title = "Show Token";
+    }
+    if (el.settingGhStatus) {
+      el.settingGhStatus.textContent = state.githubToken
+        ? (state.githubUser ? `✓ Saved (@${state.githubUser.login})` : "✓ Token Saved")
+        : "Not Set";
+      el.settingGhStatus.style.color = state.githubToken ? "#98c379" : "var(--vsc-fg-muted)";
+    }
+
+    if (el.settingGeminiKey) {
+      el.settingGeminiKey.value = state.geminiApiKey || "";
+      el.settingGeminiKey.type = "password";
+    }
+    if (el.settingBtnToggleGemini) {
+      el.settingBtnToggleGemini.textContent = "👁";
+      el.settingBtnToggleGemini.title = "Show Key";
+    }
+    if (el.settingGeminiStatus) {
+      el.settingGeminiStatus.textContent = state.geminiApiKey ? "✓ API Key Configured" : "Optional (Conventional Heuristic active)";
+      el.settingGeminiStatus.style.color = state.geminiApiKey ? "#98c379" : "var(--vsc-fg-muted)";
+    }
+
+    el.settingsDialog.showModal();
+  }
+
+  function applySettings(fromDialog = false) {
+    const fs = el.settingFontSize ? el.settingFontSize.value : "13px";
+    const ts = el.settingTabSize ? el.settingTabSize.value : "2";
+    const ww = el.settingWordWrap ? el.settingWordWrap.value : "off";
+
+    if (el.codeTextarea) {
+      el.codeTextarea.style.fontSize = fs;
+      el.codeTextarea.style.tabSize = ts;
+      el.codeTextarea.style.whiteSpace = ww === "on" ? "pre-wrap" : "pre";
+    }
+    if (el.gutter) {
+      el.gutter.style.fontSize = fs;
+    }
+    if (el.statusSpaces) {
+      el.statusSpaces.textContent = `Spaces: ${ts}`;
+    }
+
+    // Only update credentials when explicitly submitted from the settings dialog
+    if (fromDialog) {
+      // Save token from settings if changed
+      if (el.settingGhToken) {
+        const tokVal = el.settingGhToken.value.trim();
+        if (tokVal !== state.githubToken) {
+          if (tokVal) {
+            githubAuth(tokVal);
+          } else {
+            githubAuth("");
+          }
+        }
+      }
+
+      // Save optional Gemini API Key for commit generation
+      if (el.settingGeminiKey) {
+        const gVal = el.settingGeminiKey.value.trim();
+        state.geminiApiKey = gVal;
+        if (gVal) {
+          localStorage.setItem("vsc_gemini_api_key", gVal);
+        } else {
+          localStorage.removeItem("vsc_gemini_api_key");
+        }
+      }
+    }
+
+    try {
+      localStorage.setItem("vsc_workbench_settings", JSON.stringify({ fontSize: fs, tabSize: ts, wordWrap: ww }));
+    } catch (e) {}
+  }
+
+  function openGitHubModal(statusPrompt = "") {
+    if (!el.githubDialog) return;
+    const promptText = typeof statusPrompt === "string" ? statusPrompt : "";
+    if (!state.githubToken) {
+      state.githubToken = getStoredToken();
+    }
+    if (el.ghTokenInput) {
+      el.ghTokenInput.value = state.githubToken || "";
+      el.ghTokenInput.type = "password";
+    }
+    if (el.ghBtnToggleToken) {
+      el.ghBtnToggleToken.textContent = "👁";
+      el.ghBtnToggleToken.title = "Show Token";
+    }
+    if (el.ghSavedBadge) {
+      if (state.githubToken) {
+        el.ghSavedBadge.style.display = "inline-block";
+        el.ghSavedBadge.textContent = state.githubUser && state.githubUser.login
+          ? `✓ Saved (@${state.githubUser.login})`
+          : `✓ Saved (${maskToken(state.githubToken)})`;
+      } else {
+        el.ghSavedBadge.style.display = "none";
+      }
+    }
+    if (el.ghBtnDisconnect) {
+      el.ghBtnDisconnect.style.display = state.githubToken ? "inline-flex" : "none";
+    }
+    if (el.ghRememberToken) {
+      el.ghRememberToken.checked = true;
+    }
+    if (el.ghRepoInput) el.ghRepoInput.value = state.githubRepo;
+    if (el.ghBranchInput) el.ghBranchInput.value = state.githubBranch || "main";
+    if (el.ghStatusMsg) {
+      el.ghStatusMsg.innerHTML = promptText
+        ? `<span style="color:var(--vsc-turquoise);font-weight:600">${escapeHtml(promptText)}</span>`
+        : "";
+    }
+
+    // Automatically load repositories if token exists
+    if (state.githubToken) {
+      loadRepoOptions(false);
+    } else if (el.ghRepoSelect) {
+      el.ghRepoSelect.innerHTML = `<option value="">-- Enter token above to load repositories --</option><option value="__custom__">✎ Enter custom repository manually...</option>`;
+    }
+
+    try {
+      el.githubDialog.showModal();
+    } catch (e) {}
+
+    if (!state.githubToken && el.ghTokenInput) {
+      el.ghTokenInput.focus();
+    } else if (el.ghRepoSelect) {
+      el.ghRepoSelect.focus();
+    }
+  }
+
+  function searchInFiles() {
+    if (!el.searchQueryInput || !el.searchResultsList) return;
+    const query = el.searchQueryInput.value.toLowerCase().trim();
+    el.searchResultsList.innerHTML = "";
+    if (!query) return;
+
+    let matchCount = 0;
+    Object.keys(state.files).forEach((filename) => {
+      const lines = state.files[filename].split("\n");
+      lines.forEach((lineText, idx) => {
+        if (lineText.toLowerCase().includes(query)) {
+          matchCount++;
+          const li = document.createElement("li");
+          li.className = "vsc-search-result-item";
+          li.innerHTML = `<strong>${filename}</strong>:${idx + 1} <span>${lineText.trim().replace(/</g, "&lt;")}</span>`;
+          li.addEventListener("click", () => {
+            openFile(filename);
+            setTimeout(() => {
+              const charIdx = lines.slice(0, idx).join("\n").length + 1;
+              if (el.codeTextarea) {
+                el.codeTextarea.setSelectionRange(charIdx, charIdx);
+                el.codeTextarea.focus();
+                updateGutter();
+              }
+            }, 50);
+          });
+          el.searchResultsList.appendChild(li);
+        }
+      });
+    });
+
+    if (matchCount === 0) {
+      el.searchResultsList.innerHTML = `<li style="color:var(--vsc-fg-secondary);font-size:11px;padding:6px">No matches found for "${query}".</li>`;
+    }
+  }
+
+  function replaceAllInFiles() {
+    if (!el.searchQueryInput || !el.replaceQueryInput) return;
+    const search = el.searchQueryInput.value;
+    const replaceWith = el.replaceQueryInput.value;
+    if (!search) return;
+
+    let totalReplacements = 0;
+    let filesModified = 0;
+
+    Object.keys(state.files).forEach((filename) => {
+      const content = state.files[filename];
+      if (content.includes(search)) {
+        const count = content.split(search).length - 1;
+        totalReplacements += count;
+        filesModified++;
+        state.files[filename] = content.split(search).join(replaceWith);
+        state.modifiedFiles.add(filename);
+      }
+    });
+
+    if (filesModified > 0) {
+      saveWorkspace();
+      openFile(state.activeFile);
+      updateGitStatus();
+      refreshProblems();
+      termPrint(`Replaced ${totalReplacements} occurrences in ${filesModified} file(s).`, "vsc-term-success");
+      searchInFiles();
+    } else {
+      termPrint(`No matches found to replace.`, "vsc-term-info");
+    }
+  }
+
+  async function runDebugRepl(expr) {
+    if (!expr || !expr.trim()) return;
+    const trimmed = expr.trim();
+    if (el.debugHistory) {
+      const inputEntry = document.createElement("div");
+      inputEntry.className = "vsc-term-line";
+      inputEntry.innerHTML = `<span style="color:var(--vsc-turquoise)">&gt; </span><span>${trimmed.replace(/</g, "&lt;")}</span>`;
+      el.debugHistory.appendChild(inputEntry);
+    }
+
+    // Try zero-eval safe math parser first (completely immune to CSP restrictions)
+    try {
+      const calcVal = safeCalculate(trimmed);
+      if (calcVal !== undefined && !Number.isNaN(calcVal)) {
+        if (el.debugHistory) {
+          const outEntry = document.createElement("div");
+          outEntry.className = "vsc-term-line";
+          outEntry.innerHTML = `<span style="color:#98c379">&lt; </span><span style="color:#fff">${calcVal}</span>`;
+          el.debugHistory.appendChild(outEntry);
+          el.debugHistory.scrollTop = el.debugHistory.scrollHeight;
+        }
+        return;
+      }
+    } catch (ignore) {
+      // Not a pure calculation, continue to sandboxed runner
+    }
+
+    try {
+      const result = await executeSandboxedScript(`return (${trimmed});`);
+      if (el.debugHistory) {
+        const outEntry = document.createElement("div");
+        outEntry.className = "vsc-term-line";
+        if (result.success) {
+          outEntry.innerHTML = `<span style="color:#98c379">&lt; </span><span style="color:#fff">${typeof result.result === 'object' ? JSON.stringify(result.result) : String(result.result)}</span>`;
+        } else {
+          outEntry.innerHTML = `<span style="color:#f44336">&lt; </span><span style="color:#f44336">${result.error}</span>`;
+        }
+        el.debugHistory.appendChild(outEntry);
+        el.debugHistory.scrollTop = el.debugHistory.scrollHeight;
+      }
+    } catch (e) {
+      if (el.debugHistory) {
+        const errEntry = document.createElement("div");
+        errEntry.className = "vsc-term-line";
+        errEntry.innerHTML = `<span style="color:#f44336">&lt; ${e.message}</span>`;
+        el.debugHistory.appendChild(errEntry);
+      }
+    }
+  }
+
+  function closeAllDropdowns() {
+    document.querySelectorAll(".vsc-dropdown-menu").forEach(d => d.classList.remove("show"));
+  }
+
+  function initMenuDropdowns() {
+    const menuButtons = [
+      { btn: "vsc-menu-btn-file", menu: "vsc-dropdown-file" },
+      { btn: "vsc-menu-btn-edit", menu: "vsc-dropdown-edit" },
+      { btn: "vsc-menu-btn-selection", menu: "vsc-dropdown-selection" },
+      { btn: "vsc-menu-btn-view", menu: "vsc-dropdown-view" },
+      { btn: "vsc-menu-btn-go", menu: "vsc-dropdown-go" },
+      { btn: "vsc-menu-btn-run", menu: "vsc-dropdown-run" },
+      { btn: "vsc-menu-btn-terminal", menu: "vsc-dropdown-terminal" },
+      { btn: "vsc-menu-btn-help", menu: "vsc-dropdown-help" }
+    ];
+
+    menuButtons.forEach(({ btn, menu }) => {
+      const btnEl = document.getElementById(btn);
+      const menuEl = document.getElementById(menu);
+      if (btnEl && menuEl) {
+        btnEl.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const isShown = menuEl.classList.contains("show");
+          closeAllDropdowns();
+          if (!isShown) menuEl.classList.add("show");
+        });
+      }
+    });
+
+    document.addEventListener("click", () => closeAllDropdowns());
+
+    const bindItem = (id, fn) => {
+      const itemEl = document.getElementById(id);
+      if (itemEl) {
+        itemEl.addEventListener("click", (e) => {
+          e.stopPropagation();
+          closeAllDropdowns();
+          fn();
+        });
+      }
+    };
+
+    bindItem("vsc-item-new-file", async () => {
+      const name = await promptInWorkbench("New File", "untitled.js", "filename.js");
+      if (name) openFile(name);
+    });
+    bindItem("vsc-item-open-folder", openLocalProjectFolder);
+    bindItem("vsc-item-connect-github", openGitHubModal);
+    bindItem("vsc-item-pull-github", () => { if (el.btnGitPull) el.btnGitPull.click(); });
+    bindItem("vsc-item-push-github", () => { if (el.btnGitPush) el.btnGitPush.click(); });
+    bindItem("vsc-item-sync-github", () => syncWithGitHub());
+    bindItem("vsc-item-save-file", () => {
+      saveCurrentFile();
+    });
+    bindItem("vsc-item-save-all", () => {
+      saveWorkspace();
+      termPrint("All workspace files saved.", "vsc-term-success");
+    });
+    bindItem("vsc-item-export-zip", exportWorkspaceJSON);
+    bindItem("vsc-item-import-json", triggerWorkspaceImport);
+    bindItem("vsc-item-clear-workspace", clearWorkspace);
+    bindItem("vsc-item-close-file", () => { if (state.activeFile) closeTab(state.activeFile); });
+    bindItem("vsc-item-close-all", () => closeAllTabs());
+
+    bindItem("vsc-item-undo", () => {
+      if (el.codeTextarea) document.execCommand("undo");
+    });
+    bindItem("vsc-item-redo", () => {
+      if (el.codeTextarea) document.execCommand("redo");
+    });
+    bindItem("vsc-item-cut", () => {
+      if (el.codeTextarea) document.execCommand("cut");
+    });
+    bindItem("vsc-item-copy", () => {
+      if (el.codeTextarea) document.execCommand("copy");
+    });
+    bindItem("vsc-item-paste", async () => {
+      if (navigator.clipboard && navigator.clipboard.readText) {
+        try {
+          const text = await navigator.clipboard.readText();
+          if (el.codeTextarea) {
+            const start = el.codeTextarea.selectionStart;
+            const end = el.codeTextarea.selectionEnd;
+            const val = el.codeTextarea.value;
+            el.codeTextarea.value = val.substring(0, start) + text + val.substring(end);
+            state.files[state.activeFile] = el.codeTextarea.value;
+            updateGutter();
+            saveWorkspace();
+          }
+        } catch (e) {
+          termPrint(`Paste permission: ${e.message}`, "vsc-term-warn");
+        }
+      }
+    });
+    bindItem("vsc-item-find", () => {
+      switchSidebarView("search");
+      if (el.searchQueryInput) el.searchQueryInput.focus();
+    });
+    bindItem("vsc-item-format-doc", () => {
+      if (el.btnFormat) el.btnFormat.click();
+    });
+
+    bindItem("vsc-item-select-all", () => {
+      if (el.codeTextarea) el.codeTextarea.select();
+    });
+    bindItem("vsc-item-dup-line", () => {
+      if (el.codeTextarea) {
+        const pos = el.codeTextarea.selectionStart;
+        const val = el.codeTextarea.value;
+        const lineStart = val.lastIndexOf("\n", pos - 1) + 1;
+        let lineEnd = val.indexOf("\n", pos);
+        if (lineEnd === -1) lineEnd = val.length;
+        const line = val.substring(lineStart, lineEnd);
+        el.codeTextarea.value = val.substring(0, lineEnd) + "\n" + line + val.substring(lineEnd);
+        state.files[state.activeFile] = el.codeTextarea.value;
+        updateGutter();
+        saveWorkspace();
+      }
+    });
+
+    bindItem("vsc-item-toggle-sidebar", () => {
+      toggleExplorerSidebar();
+    });
+    bindItem("vsc-item-toggle-term", toggleMaximizeTerminal);
+    bindItem("vsc-item-toggle-preview", () => {
+      if (el.livePreview) el.livePreview.classList.toggle("hidden");
+    });
+    bindItem("vsc-item-reload-window", () => {
+      window.location.reload();
+    });
+    bindItem("vsc-item-view-fullscreen", () => {
+      if (el.btnFullscreen) el.btnFullscreen.click();
+    });
+
+    bindItem("vsc-item-go-file", openCommandPalette);
+    bindItem("vsc-item-go-line", async () => {
+      const ln = await promptInWorkbench("Go to Line", "", "Enter line number");
+      if (ln && el.codeTextarea) {
+        const lineNum = parseInt(ln, 10);
+        const lines = el.codeTextarea.value.split("\n");
+        if (lineNum > 0 && lineNum <= lines.length) {
+          const charPos = lines.slice(0, lineNum - 1).join("\n").length + 1;
+          el.codeTextarea.setSelectionRange(charPos, charPos);
+          el.codeTextarea.focus();
+          updateGutter();
+        }
+      }
+    });
+
+    bindItem("vsc-item-run-code", () => COMMANDS.run.exec([]));
+    bindItem("vsc-item-serve-page", () => serveFile(state.activeFile, 3000, false));
+
+    bindItem("vsc-item-new-term", () => {
+      if (el.termHistory) el.termHistory.innerHTML = "";
+      termPrint("New integrated terminal session initialized.", "vsc-term-info");
+    });
+    bindItem("vsc-item-clear-term", () => COMMANDS.clear.exec([]));
+    bindItem("vsc-item-max-term", toggleMaximizeTerminal);
+
+    bindItem("vsc-item-cmd-palette", openCommandPalette);
+    bindItem("vsc-item-gh-docs", () => {
+      termPrintHTML(`
+<span class="vsc-term-info">=== GITHUB PERSONAL ACCESS TOKEN (PAT) SETUP ===</span>
+1. Go to <b style="color:var(--vsc-turquoise)">https://github.com/settings/tokens</b>
+2. Generate new token (classic or fine-grained with <b style="color:#98c379">repo</b> scope).
+3. Connect inside Code Tools via:
+   - Click <b style="color:var(--vsc-turquoise)">Accounts</b> (bottom of Activity Bar) OR
+   - Terminal: <b style="color:var(--vsc-turquoise)">github auth &lt;token&gt;</b>
+4. Clone any repository:
+   - Terminal: <b style="color:var(--vsc-turquoise)">github clone owner/repo [branch]</b>
+5. Commit and push directly from the Source Control view or terminal!
+Token is securely synced across Chrome PC and mobile via persistent cookie and storage.
+`);
+    });
+    bindItem("vsc-item-about-tool", () => {
+      termPrintHTML(`
+<span class="vsc-term-info">Code Tools for Web — Version 4.2.0</span>
+Pitch Black (#121212), Crisp White (#FFFFFF), Turquoise Accent (#3791B7).
+Integrated Web Developer Workbench:
+- Real GitHub API sync (Pull trees, edit in browser, push commits)
+- Localhost Virtual Web Server with responsive preview
+- 10GB Browser Storage engine &amp; telemetry harvester
+- Full developer command suite (CURL, DNS, JWT, Regex, Nano, SysInfo)
+`);
+    });
+    bindItem("vsc-item-reset-data", resetWorkspaceData);
+  }
+
+  // --- SASH RESIZER DRAG LOGIC (MOUSE & TOUCH VIA POINTER EVENTS) ---
+  function initSashResizer() {
+    if (!el.sashResizer || !el.terminalPanel) return;
+
+    let isDragging = false;
+    let startY = 0;
+    let startHeight = 0;
+
+    el.sashResizer.addEventListener("pointerdown", (e) => {
+      if (state.isMaximized) return; // Cannot drag while maximized
+      isDragging = true;
+      startY = e.clientY;
+      startHeight = el.terminalPanel.offsetHeight;
+      el.sashResizer.classList.add("dragging");
+      el.sashResizer.setPointerCapture(e.pointerId);
+      document.body.style.userSelect = "none";
+      e.preventDefault();
+    });
+
+    el.sashResizer.addEventListener("pointermove", (e) => {
+      if (!isDragging) return;
+      const deltaY = startY - e.clientY; // Dragging UP increases terminal height
+      const workspaceHeight = el.app.offsetHeight - 36 - 24; // Less titlebar & statusbar
+      let newHeight = startHeight + deltaY;
+
+      // Bounds clamping: min 40px, leave at least 140px visible for editor
+      const minEditorHeight = 140;
+      newHeight = Math.max(40, Math.min(workspaceHeight - minEditorHeight, newHeight));
+      el.terminalPanel.style.height = `${newHeight}px`;
+      state.savedPanelHeight = newHeight;
+    });
+
+    const stopDragging = (e) => {
+      if (!isDragging) return;
+      isDragging = false;
+      el.sashResizer.classList.remove("dragging");
+      try {
+        el.sashResizer.releasePointerCapture(e.pointerId);
+      } catch (err) {}
+      document.body.style.userSelect = "text";
+    };
+
+    el.sashResizer.addEventListener("pointerup", stopDragging);
+    el.sashResizer.addEventListener("pointercancel", stopDragging);
+  }
+
+  // --- TERMINAL PANEL MAXIMIZE / RESTORE BUTTON ---
+  function toggleMaximizeTerminal() {
+    if (!el.terminalPanel || !el.btnMaximize) return;
+    state.isMaximized = !state.isMaximized;
+
+    if (state.isMaximized) {
+      el.terminalPanel.classList.add("maximized");
+      el.btnMaximize.title = "Restore Panel Size";
+      el.btnMaximize.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="14" y1="10" x2="21" y2="3"/><line x1="3" y1="21" x2="10" y2="14"/></svg>`;
+      el.btnMaximize.classList.add("active");
+    } else {
+      el.terminalPanel.classList.remove("maximized");
+      const restoreH = state.savedPanelHeight || 180;
+      el.terminalPanel.style.height = `${restoreH}px`;
+      el.btnMaximize.title = "Maximize Panel Size";
+      el.btnMaximize.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>`;
+      el.btnMaximize.classList.remove("active");
+    }
+  }
+
+  // --- GNU NANO IN-TERMINAL TEXT EDITOR ---
+  function openNano(filename) {
+    if (!el.nanoContainer || !el.nanoEditor) return;
+    state.nanoActive = true;
+    state.nanoCurrentFile = filename;
+
+    if (!state.files[filename]) {
+      state.files[filename] = "";
+      if (el.nanoStatus) el.nanoStatus.textContent = "[New File]";
+    } else {
+      const lineCount = state.files[filename].split("\n").length;
+      if (el.nanoStatus) el.nanoStatus.textContent = `[Read ${lineCount} lines]`;
+    }
+
+    if (el.nanoFilename) el.nanoFilename.textContent = `File: ${filename}`;
+    el.nanoEditor.value = state.files[filename];
+    el.nanoContainer.style.display = "flex";
+    el.nanoEditor.focus();
+  }
+
+  function closeNano(save = true) {
+    if (!state.nanoActive) return;
+    if (save && el.nanoEditor && state.nanoCurrentFile) {
+      state.files[state.nanoCurrentFile] = el.nanoEditor.value;
+      saveWorkspace();
+      if (state.activeFile === state.nanoCurrentFile && el.codeTextarea) {
+        el.codeTextarea.value = state.files[state.nanoCurrentFile];
+        updateGutter();
+      }
+      renderSidebarLists();
+      renderTabs();
+    }
+
+    state.nanoActive = false;
+    if (el.nanoContainer) el.nanoContainer.style.display = "none";
+    if (el.termInput) el.termInput.focus();
+    termPrint(`[ Exited nano. ${save ? "Saved " + state.nanoCurrentFile : "Changes discarded."} ]`, "vsc-term-info");
+    scrollTermToBottom();
+  }
+
+  // --- MARKDOWN RENDERER & PREVIEW ENGINE ---
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  function renderMarkdownToHTML(md) {
+    if (!md) return "<p><i>Empty markdown document</i></p>";
+
+    const codeBlocks = [];
+    // 1. Extract fenced code blocks first so inner content is untouched
+    let text = md.replace(/```([a-zA-Z0-9_\-\.]*)\n([\s\S]*?)```/g, (match, lang, code) => {
+      const idx = codeBlocks.length;
+      const safeCode = escapeHtml(code.trimEnd());
+      const langBadge = lang ? `<div class="md-code-lang">${escapeHtml(lang)}</div>` : "";
+      codeBlocks.push(`<div class="md-code-block">${langBadge}<pre><code>${safeCode}</code></pre></div>`);
+      return `%%CODEBLOCK_${idx}%%`;
+    });
+
+    // 2. Extract inline code
+    const inlineCodes = [];
+    text = text.replace(/`([^`\n]+)`/g, (match, code) => {
+      const idx = inlineCodes.length;
+      inlineCodes.push(`<code class="md-inline-code">${escapeHtml(code)}</code>`);
+      return `%%INLINECODE_${idx}%%`;
+    });
+
+    // 3. Horizontal rules
+    text = text.replace(/^(?:---|\*\*\*|___)\s*$/gm, "<hr class=\"md-hr\" />");
+
+    // 4. Headings (H1 to H6)
+    text = text.replace(/^######\s+(.+)$/gm, "<h6>$1</h6>");
+    text = text.replace(/^#####\s+(.+)$/gm, "<h5>$1</h5>");
+    text = text.replace(/^####\s+(.+)$/gm, "<h4>$1</h4>");
+    text = text.replace(/^###\s+(.+)$/gm, "<h3>$1</h3>");
+    text = text.replace(/^##\s+(.+)$/gm, "<h2>$1</h2>");
+    text = text.replace(/^#\s+(.+)$/gm, "<h1>$1</h1>");
+
+    // 5. Blockquotes
+    text = text.replace(/^\>\s+(.+)$/gm, "<blockquote class=\"md-blockquote\"><p>$1</p></blockquote>");
+
+    // 6. Tables with responsive wrappers
+    text = text.replace(/((?:^\|.+?\|(?:\r?\n|$))+)/gm, (tableMatch) => {
+      const rows = tableMatch.trim().split("\n").filter(r => r.trim().startsWith("|"));
+      if (rows.length < 2) return tableMatch;
+      const isDelimiter = (r) => /^\|[\s\-:|]+\|$/.test(r.trim());
+      let html = '<div class="md-table-wrap"><table class="md-table">';
+
+      if (rows.length >= 2 && isDelimiter(rows[1])) {
+        const headers = rows[0].split("|").slice(1, -1).map(c => `<th>${c.trim()}</th>`).join("");
+        html += `<thead><tr>${headers}</tr></thead><tbody>`;
+        for (let i = 2; i < rows.length; i++) {
+          const cells = rows[i].split("|").slice(1, -1).map(c => `<td>${c.trim()}</td>`).join("");
+          html += `<tr>${cells}</tr>`;
+        }
+        html += '</tbody>';
+      } else {
+        html += '<tbody>';
+        for (let i = 0; i < rows.length; i++) {
+          const cells = rows[i].split("|").slice(1, -1).map(c => `<td>${c.trim()}</td>`).join("");
+          html += `<tr>${cells}</tr>`;
+        }
+        html += '</tbody>';
+      }
+      html += '</table></div>';
+      return html;
+    });
+
+    // 7. Task list items (interactive styled checkboxes)
+    text = text.replace(/^\s*[-*]\s+\[x\]\s+(.+)$/gm, '<li class="md-task-item"><input type="checkbox" checked disabled /> <span>$1</span></li>');
+    text = text.replace(/^\s*[-*]\s+\[ \]\s+(.+)$/gm, '<li class="md-task-item"><input type="checkbox" disabled /> <span>$1</span></li>');
+
+    // 8. Unordered lists
+    text = text.replace(/^\s*[-*+]\s+(.+)$/gm, "<li>$1</li>");
+    text = text.replace(/((?:<li[\s\S]*?<\/li>\n?)+)/g, '<ul class="md-list">$1</ul>');
+
+    // 9. Ordered lists
+    text = text.replace(/^\s*(\d+)\.\s+(.+)$/gm, "<li>$2</li>");
+
+    // 10. Links and Images
+    text = text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img class="md-img" src="$2" alt="$1" />');
+    text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a class="md-link" href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+
+    // 11. Emphasis & Formatting
+    text = text.replace(/\*\*\*(.+?)\*\*\*/g, "<strong><em>$1</em></strong>");
+    text = text.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+    text = text.replace(/__(.+?)__/g, "<strong>$1</strong>");
+    text = text.replace(/\*([^\*\n]+)\*/g, "<em>$1</em>");
+    text = text.replace(/_([^_\n]+)_/g, "<em>$1</em>");
+    text = text.replace(/~~(.+?)~~/g, "<del>$1</del>");
+
+    // 12. Paragraphs
+    text = text.split("\n\n").map(para => {
+      const p = para.trim();
+      if (!p) return "";
+      if (p.startsWith("<h") || p.startsWith("<div") || p.startsWith("<pre") ||
+          p.startsWith("<blockquote") || p.startsWith("<ul") || p.startsWith("<ol") ||
+          p.startsWith("<table") || p.startsWith("<hr")) {
+        return p;
+      }
+      return `<p>${p.replace(/\n/g, "<br/>")}</p>`;
+    }).join("\n");
+
+    // 13. Restore inline code
+    inlineCodes.forEach((codeHtml, idx) => {
+      text = text.replace(new RegExp(`%%INLINECODE_${idx}%%`, "g"), codeHtml);
+    });
+
+    // 14. Restore fenced code blocks
+    codeBlocks.forEach((blockHtml, idx) => {
+      text = text.replace(new RegExp(`%%CODEBLOCK_${idx}%%`, "g"), blockHtml);
+    });
+
+    return text;
+  }
+
+  function buildMarkdownDocument(mdContent, filename = "Preview") {
+    const renderedBody = renderMarkdownToHTML(mdContent);
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <title>${escapeHtml(filename)} — Markdown Preview</title>
+  <style>
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 24px 20px 48px;
+      background: #0d1117;
+      color: #c9d1d9;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+      word-wrap: break-word;
+      -webkit-font-smoothing: antialiased;
+      -webkit-overflow-scrolling: touch;
+    }
+    @media (max-width: 600px) {
+      body { padding: 16px 12px 40px; font-size: 13px; }
+    }
+    h1, h2, h3, h4, h5, h6 {
+      color: #f0f6fc;
+      margin-top: 24px;
+      margin-bottom: 12px;
+      font-weight: 600;
+      line-height: 1.25;
+    }
+    h1 { font-size: 1.85rem; border-bottom: 1px solid #21262d; padding-bottom: 0.3em; }
+    h2 { font-size: 1.4rem; border-bottom: 1px solid #21262d; padding-bottom: 0.3em; }
+    h3 { font-size: 1.15rem; }
+    h4 { font-size: 1.0rem; }
+    p { margin-top: 0; margin-bottom: 16px; }
+    a, .md-link { color: #3791B7; text-decoration: none; }
+    a:hover, .md-link:hover { text-decoration: underline; }
+    .md-inline-code {
+      font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+      font-size: 85%;
+      padding: 0.2em 0.4em;
+      margin: 0;
+      background: rgba(110, 118, 129, 0.4);
+      border-radius: 4px;
+      color: #e6edf3;
+    }
+    .md-code-block {
+      position: relative;
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      margin: 16px 0;
+      overflow: hidden;
+    }
+    .md-code-lang {
+      position: absolute;
+      top: 6px;
+      right: 10px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #3791B7;
+      background: rgba(55, 145, 183, 0.15);
+      padding: 2px 6px;
+      border-radius: 3px;
+    }
+    .md-code-block pre {
+      margin: 0;
+      padding: 16px;
+      overflow-x: auto;
+      font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+      font-size: 12px;
+      line-height: 1.45;
+      color: #e6edf3;
+      -webkit-overflow-scrolling: touch;
+    }
+    .md-blockquote {
+      margin: 16px 0;
+      padding: 0 1em;
+      color: #8b949e;
+      border-left: 0.25em solid #3791B7;
+      background: rgba(55, 145, 183, 0.05);
+      border-radius: 0 4px 4px 0;
+    }
+    .md-blockquote p { margin: 8px 0; }
+    .md-hr { height: 0.25em; padding: 0; margin: 24px 0; background-color: #30363d; border: 0; }
+    .md-table-wrap {
+      width: 100%;
+      overflow-x: auto;
+      margin: 16px 0;
+      -webkit-overflow-scrolling: touch;
+    }
+    .md-table { border-spacing: 0; border-collapse: collapse; width: 100%; font-size: 13px; }
+    .md-table th, .md-table td { padding: 8px 12px; border: 1px solid #30363d; }
+    .md-table th { font-weight: 600; background: #161b22; color: #f0f6fc; }
+    .md-table tr:nth-child(2n) { background: rgba(110, 118, 129, 0.1); }
+    .md-list { padding-left: 2em; margin-top: 0; margin-bottom: 16px; }
+    .md-list li { margin: 4px 0; }
+    .md-task-item {
+      list-style-type: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-left: -1.4em;
+    }
+    .md-task-item input[type="checkbox"] { accent-color: #3791B7; width: 16px; height: 16px; margin: 0; }
+    .md-img { max-width: 100%; box-sizing: content-box; border-radius: 6px; border: 1px solid #30363d; }
+  </style>
+</head>
+<body>
+  <div class="md-top-nav" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;padding-bottom:10px;border-bottom:1px solid #30363d">
+    <span style="font-size:12px;color:#8b949e;font-weight:600">📖 ${escapeHtml(filename)}</span>
+    <button onclick="window.parent.postMessage({type:'VSC_BACK_TO_CODE'}, '*')" style="background:#21262d;color:#3791B7;border:1px solid rgba(55,145,183,0.4);padding:5px 12px;border-radius:5px;font-size:12px;font-weight:600;cursor:pointer;touch-action:manipulation">← Back to Code</button>
+  </div>
+  ${renderedBody}
+</body>
+</html>`;
+  }
+
+  function updateMarkdownPreviewButton() {
+    if (!el.btnPreviewMd) return;
+    const isMd = state.activeFile && (state.activeFile.toLowerCase().endsWith(".md") || state.activeFile.toLowerCase().endsWith(".markdown"));
+    if (!isMd) {
+      el.btnPreviewMd.style.display = "none";
+      return;
+    }
+    el.btnPreviewMd.style.display = "inline-flex";
+    const isPreviewing = el.livePreview && !el.livePreview.classList.contains("hidden");
+    if (isPreviewing) {
+      el.btnPreviewMd.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> <span>Edit Code</span>`;
+      el.btnPreviewMd.title = "Back to Code Editor (Ctrl+Shift+V)";
+      if (el.workspaceArea) el.workspaceArea.classList.add("preview-active");
+    } else {
+      el.btnPreviewMd.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg> <span>Preview</span>`;
+      el.btnPreviewMd.title = "Preview Markdown (Ctrl+Shift+V)";
+      if (el.workspaceArea) el.workspaceArea.classList.remove("preview-active");
+    }
+  }
+
+  function previewMarkdown(filename) {
+    const fn = filename || state.activeFile;
+    if (!fn || !state.files[fn]) {
+      showMessage("warning", "Markdown Preview", "No markdown file is currently open.");
+      return;
+    }
+
+    const isCurrentlyOpen = el.livePreview && !el.livePreview.classList.contains("hidden");
+    if (isCurrentlyOpen) {
+      el.livePreview.classList.add("hidden");
+      if (el.workspaceArea) el.workspaceArea.classList.remove("preview-active");
+      if (el.codeTextarea) el.codeTextarea.focus();
+      updateMarkdownPreviewButton();
+      return;
+    }
+
+    const mdContent = state.files[fn];
+    const docHtml = buildMarkdownDocument(mdContent, fn);
+
+    if (el.livePreview && el.previewFrame) {
+      el.livePreview.classList.remove("hidden");
+      if (el.workspaceArea) el.workspaceArea.classList.add("preview-active");
+      el.previewFrame.srcdoc = docHtml;
+      if (el.previewUrlText) {
+        el.previewUrlText.innerHTML = `📖 <b>Markdown Preview:</b> ${escapeHtml(fn)}`;
+      }
+    }
+    updateMarkdownPreviewButton();
+    showMessage("info", "Markdown Preview", `Previewing "${fn}". Tap '← Back to Code' anytime to edit.`);
+  }
+
+  // --- WORKSPACE ASSET RESOLUTION & VIRTUAL SERVER ENGINE ---
+  function resolveWorkspacePath(refPath, currentFile) {
+    if (!refPath || typeof refPath !== "string") return null;
+    const trimmed = refPath.trim();
+    if (trimmed.startsWith("data:") || trimmed.startsWith("http:") || trimmed.startsWith("https:") ||
+        trimmed.startsWith("//") || trimmed.startsWith("blob:") || trimmed.startsWith("#") ||
+        trimmed.startsWith("javascript:") || trimmed.startsWith("mailto:") || trimmed.startsWith("tel:")) {
+      return null;
+    }
+
+    // Strip query string and hash
+    const cleanRef = trimmed.split(/[?#]/)[0];
+    if (cleanRef.startsWith("/")) {
+      return cleanRef.slice(1);
+    }
+
+    const currentDir = (currentFile && currentFile.includes("/"))
+      ? currentFile.slice(0, currentFile.lastIndexOf("/"))
+      : "";
+    const parts = (currentDir ? currentDir.split("/") : []).concat(cleanRef.split("/"));
+    const resolved = [];
+    for (const part of parts) {
+      if (!part || part === ".") continue;
+      if (part === "..") {
+        if (resolved.length > 0) resolved.pop();
+      } else {
+        resolved.push(part);
+      }
+    }
+    return resolved.join("/");
+  }
+
+  function findWorkspaceFile(resolvedPath) {
+    if (!resolvedPath || !state.files) return null;
+    if (state.files[resolvedPath] !== undefined) {
+      return { path: resolvedPath, content: state.files[resolvedPath] };
+    }
+    const lower = resolvedPath.toLowerCase();
+    for (const k of Object.keys(state.files)) {
+      if (k.toLowerCase() === lower) {
+        return { path: k, content: state.files[k] };
+      }
+    }
+    for (const k of Object.keys(state.files)) {
+      if (k.endsWith("/" + resolvedPath) || resolvedPath.endsWith("/" + k)) {
+        return { path: k, content: state.files[k] };
+      }
+    }
+    return null;
+  }
+
+  // Virtual MIME resolver for preview runtime
+  function getVirtualMime(filePath) {
+    const p = (filePath || "").toLowerCase().split(/[?#]/)[0];
+    if (p.endsWith(".json") || p.endsWith(".config.json")) return "application/json";
+    if (p.endsWith(".js") || p.endsWith(".mjs")) return "application/javascript";
+    if (p.endsWith(".css")) return "text/css";
+    if (p.endsWith(".html") || p.endsWith(".htm")) return "text/html";
+    if (p.endsWith(".svg")) return "image/svg+xml";
+    if (p.endsWith(".xml") || p.endsWith(".webmanifest")) return "application/xml";
+    if (p.endsWith(".txt") || p.endsWith(".md")) return "text/plain";
+    if (p.endsWith(".png")) return "image/png";
+    if (p.endsWith(".jpg") || p.endsWith(".jpeg")) return "image/jpeg";
+    if (p.endsWith(".gif")) return "image/gif";
+    if (p.endsWith(".woff2")) return "font/woff2";
+    if (p.endsWith(".woff")) return "font/woff";
+    if (p.endsWith(".ttf")) return "font/ttf";
+    return "application/octet-stream";
+  }
+
+  // Global virtual file resolver callable from preview iframes and popout windows
+  window.__vsc_getVirtualFile = function(reqPath, baseFile) {
+    if (!reqPath || !state.files) return null;
+    const from = baseFile || state.currentServingFile || state.activeFile || "index.html";
+    const clean = reqPath.split(/[?#]/)[0].replace(/^\.\//, "").replace(/^\/+/, "");
+
+    // 1. Resolve relative to baseFile
+    const resolved = resolveWorkspacePath(clean, from);
+    let found = findWorkspaceFile(resolved || clean);
+    if (found) {
+      return { path: found.path, content: found.content, mime: getVirtualMime(found.path) };
+    }
+
+    // 2. Direct match in state.files
+    if (state.files[clean] !== undefined) {
+      return { path: clean, content: state.files[clean], mime: getVirtualMime(clean) };
+    }
+
+    // 3. Basename match
+    const baseName = clean.split("/").pop();
+    for (const [k, v] of Object.entries(state.files)) {
+      if (k === baseName || k.endsWith("/" + baseName)) {
+        return { path: k, content: v, mime: getVirtualMime(k) };
+      }
+    }
+    return null;
+  };
+
+  async function buildVirtualWebsite(filename) {
+    if (!state.files[filename]) return "";
+    let html = state.files[filename];
+
+    // Determine site root URL if running on a web origin
+    let siteBaseUrl = "";
+    if (window.location && window.location.protocol && window.location.protocol.startsWith("http")) {
+      siteBaseUrl = window.location.origin + window.location.pathname.replace(/\/tools\/code-tools.*$/, "/");
+    }
+
+    // Helper: Bundle CSS stylesheets recursively resolving @import
+    function bundleCss(cssPath, visited = new Set()) {
+      if (visited.has(cssPath)) return "";
+      visited.add(cssPath);
+      const file = findWorkspaceFile(cssPath);
+      if (!file) return "";
+      let css = file.content;
+      css = css.replace(/@import\s+(?:url\(['"]?|['"])([^'")]+)['"]?\)?;?/gi, (impMatch, impUrl) => {
+        const cleanImp = impUrl.trim();
+        if (cleanImp.startsWith("http://") || cleanImp.startsWith("https://") || cleanImp.startsWith("//") || cleanImp.startsWith("data:")) {
+          return impMatch;
+        }
+        const resolvedImp = resolveWorkspacePath(cleanImp, cssPath);
+        if (resolvedImp && findWorkspaceFile(resolvedImp)) {
+          return `/* @import ${cleanImp} */\n` + bundleCss(resolvedImp, visited);
+        }
+        return impMatch;
+      });
+      return css;
+    }
+
+    // 1. Resolve and replace CSS stylesheets (<link rel="stylesheet">)
+    const linkRegex = /<link\s+([^>]*?)>/gi;
+    const linksToProcess = [];
+    let match;
+    while ((match = linkRegex.exec(html)) !== null) {
+      const fullTag = match[0];
+      const attrs = match[1];
+      if (/rel=["'](?:stylesheet)["']/i.test(attrs)) {
+        const hrefMatch = attrs.match(/href=["']([^"']+)["']/i);
+        if (hrefMatch) {
+          const href = hrefMatch[1];
+          if (!href.startsWith("http://") && !href.startsWith("https://") && !href.startsWith("//") && !href.startsWith("data:") && !href.startsWith("blob:")) {
+            const cleanHref = href.split(/[?#]/)[0];
+            const resolved = resolveWorkspacePath(cleanHref, filename);
+            const file = findWorkspaceFile(resolved);
+            if (file) {
+              linksToProcess.push({ fullTag, href, path: file.path });
+            }
+          }
+        }
+      }
+    }
+
+    for (const item of linksToProcess) {
+      let bundledCss = bundleCss(item.path);
+
+      // Adjust root-relative URLs like url('/fonts/...') if running on http origin
+      if (siteBaseUrl) {
+        bundledCss = bundledCss.replace(/url\(['"]?\/([^\/'")][^'")]+)['"]?\)/gi, `url('${siteBaseUrl}$1')`);
+      }
+
+      // Check if CSS references local font or image assets in fileHandles
+      if (state.fileHandles && state.fileHandles.size > 0) {
+        const urlMatches = bundledCss.match(/url\(['"]?([^'")]+)['"]?\)/gi) || [];
+        for (const uMatch of urlMatches) {
+          const rawUrl = uMatch.replace(/^url\(['"]?|['"]?\)$/gi, "").split(/[?#]/)[0];
+          if (!rawUrl.startsWith("data:") && !rawUrl.startsWith("http:") && !rawUrl.startsWith("https:") && !rawUrl.startsWith("//") && !rawUrl.startsWith("blob:")) {
+            const resolvedAsset = resolveWorkspacePath(rawUrl, item.path);
+            if (resolvedAsset && state.fileHandles.has(resolvedAsset)) {
+              try {
+                const h = state.fileHandles.get(resolvedAsset);
+                const f = await h.getFile();
+                const bUrl = URL.createObjectURL(f);
+                state.activePreviewBlobs.push(bUrl);
+                bundledCss = bundledCss.split(uMatch).join(`url('${bUrl}')`);
+              } catch (e) {}
+            }
+          }
+        }
+      }
+
+      const safeCss = bundledCss.replace(/<\/style>/gi, "<\\/style>");
+      const styleBlock = `<style data-source="${escapeHtml(item.href)}" data-path="${escapeHtml(item.path)}">\n${safeCss}\n</style>`;
+      html = html.split(item.fullTag).join(styleBlock);
+    }
+
+    // 2. Resolve and replace local scripts with Blob URLs (<script src="...">)
+    const scriptRegex = /<script\s+([^>]*?)>(?:[\s\S]*?<\/script>|)/gi;
+    const scriptsToProcess = [];
+    while ((match = scriptRegex.exec(html)) !== null) {
+      const fullTag = match[0];
+      const attrs = match[1];
+      const srcMatch = attrs.match(/src=["']([^"']+)["']/i);
+      if (srcMatch) {
+        const src = srcMatch[1];
+        if (!src.startsWith("http://") && !src.startsWith("https://") && !src.startsWith("//") && !src.startsWith("data:") && !src.startsWith("blob:")) {
+          const cleanSrc = src.split(/[?#]/)[0];
+          const resolved = resolveWorkspacePath(cleanSrc, filename);
+          const file = findWorkspaceFile(resolved);
+          if (file) {
+            scriptsToProcess.push({ fullTag, src, path: file.path, content: file.content });
+          }
+        }
+      }
+    }
+
+    for (const item of scriptsToProcess) {
+      const jsBlob = new Blob([item.content], { type: "application/javascript" });
+      const jsBlobUrl = URL.createObjectURL(jsBlob);
+      state.activePreviewBlobs.push(jsBlobUrl);
+      const newTag = item.fullTag.replace(/src=["'][^"']+["']/i, `src="${jsBlobUrl}" data-original-src="${escapeHtml(item.src)}"`);
+      html = html.split(item.fullTag).join(newTag);
+    }
+
+    // 3. Resolve local images & icons from SVG or file handles
+    const assetRegex = /<(img|link)\s+([^>]*?)>/gi;
+    const assetsToProcess = [];
+    while ((match = assetRegex.exec(html)) !== null) {
+      const fullTag = match[0];
+      const tag = match[1].toLowerCase();
+      const attrs = match[2];
+      const attrName = tag === "link" ? "href" : "src";
+      if (tag === "link" && /rel=["'](?:stylesheet)["']/i.test(attrs)) continue;
+      const regex = new RegExp(`${attrName}=["']([^"']+)["']`, "i");
+      const attrMatch = attrs.match(regex);
+      if (attrMatch) {
+        const ref = attrMatch[1];
+        if (!ref.startsWith("http://") && !ref.startsWith("https://") && !ref.startsWith("//") && !ref.startsWith("data:") && !ref.startsWith("blob:") && !ref.startsWith("#")) {
+          const cleanRef = ref.split(/[?#]/)[0];
+          const resolved = resolveWorkspacePath(cleanRef, filename);
+          if (resolved) {
+            const file = findWorkspaceFile(resolved);
+            if (file && file.path.endsWith(".svg")) {
+              const svgData = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(file.content);
+              const newTag = fullTag.replace(regex, `${attrName}="${svgData}"`);
+              assetsToProcess.push({ fullTag, newTag });
+            } else if (state.fileHandles && state.fileHandles.has(resolved)) {
+              try {
+                const h = state.fileHandles.get(resolved);
+                const f = await h.getFile();
+                const bUrl = URL.createObjectURL(f);
+                state.activePreviewBlobs.push(bUrl);
+                const newTag = fullTag.replace(regex, `${attrName}="${bUrl}"`);
+                assetsToProcess.push({ fullTag, newTag });
+              } catch (e) {}
+            } else if (siteBaseUrl) {
+              const newTag = fullTag.replace(regex, `${attrName}="${siteBaseUrl}${resolved}"`);
+              assetsToProcess.push({ fullTag, newTag });
+            }
+          }
+        }
+      }
+    }
+
+    for (const item of assetsToProcess) {
+      html = html.split(item.fullTag).join(item.newTag);
+    }
+
+    // 4. Lightweight runtime script for fetch/XHR proxy and navigation
+    const virtualRuntimeScript = `
+<script id="__vsc_preview_runtime__">
+(function() {
+  const CURRENT_FILE = ${JSON.stringify(filename)};
+  const host = (window.parent && window.parent !== window) ? window.parent : (window.opener || null);
+
+  // Intercept window.fetch to request files from host workbench state
+  const origFetch = window.fetch;
+  window.fetch = async function(input, init) {
+    let url = typeof input === 'string' ? input : (input && input.url ? input.url : '');
+    if (url && !url.startsWith('http://') && !url.startsWith('https://') && !url.startsWith('//') && !url.startsWith('data:') && !url.startsWith('blob:')) {
+      try {
+        if (host && host.__vsc_getVirtualFile) {
+          const vf = host.__vsc_getVirtualFile(url, CURRENT_FILE);
+          if (vf) {
+            return new Response(vf.content, {
+              status: 200,
+              statusText: 'OK',
+              headers: new Headers({
+                'Content-Type': vf.mime || 'application/json',
+                'X-Virtual-Server': 'VSCode-Tools'
+              })
+            });
+          }
+        }
+      } catch (e) {}
+    }
+    return origFetch.apply(this, arguments);
+  };
+
+  // Intercept XMLHttpRequest
+  const OrigXHR = window.XMLHttpRequest;
+  window.XMLHttpRequest = function() {
+    const xhr = new OrigXHR();
+    const origOpen = xhr.open;
+    let targetUrl = '';
+    xhr.open = function(method, url) {
+      targetUrl = url;
+      return origOpen.apply(this, arguments);
+    };
+    const origSend = xhr.send;
+    xhr.send = function() {
+      if (targetUrl && !targetUrl.startsWith('http://') && !targetUrl.startsWith('https://') && !targetUrl.startsWith('//') && !targetUrl.startsWith('data:') && !targetUrl.startsWith('blob:')) {
+        try {
+          if (host && host.__vsc_getVirtualFile) {
+            const vf = host.__vsc_getVirtualFile(targetUrl, CURRENT_FILE);
+            if (vf) {
+              Object.defineProperty(xhr, 'status', { value: 200, writable: true });
+              Object.defineProperty(xhr, 'statusText', { value: 'OK', writable: true });
+              Object.defineProperty(xhr, 'responseText', { value: vf.content, writable: true });
+              Object.defineProperty(xhr, 'response', { value: vf.content, writable: true });
+              Object.defineProperty(xhr, 'readyState', { value: 4, writable: true });
+              setTimeout(() => {
+                if (typeof xhr.onreadystatechange === 'function') xhr.onreadystatechange();
+                if (typeof xhr.onload === 'function') xhr.onload();
+              }, 1);
+              return;
+            }
+          }
+        } catch (e) {}
+      }
+      return origSend.apply(this, arguments);
+    };
+    return xhr;
+  };
+
+  // Intercept in-preview link navigation
+  document.addEventListener('click', function(e) {
+    const a = e.target.closest('a');
+    if (!a) return;
+    const href = a.getAttribute('href');
+    if (!href || href.startsWith('#') || href.startsWith('javascript:') || href.startsWith('mailto:') || href.startsWith('tel:') || href.startsWith('http://') || href.startsWith('https://') || href.startsWith('//')) {
+      return;
+    }
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      if (host) {
+        host.postMessage({ type: 'VSC_PREVIEW_NAVIGATE', href: href, fromFile: CURRENT_FILE }, '*');
+      }
+    } catch(err) {}
+  }, true);
+
+  // Pipe preview console logs to parent workbench terminal
+  if (host) {
+    const origLog = console.log;
+    const origWarn = console.warn;
+    const origError = console.error;
+    console.log = function(...args) {
+      origLog.apply(console, args);
+      try { host.postMessage({ type: 'VSC_PREVIEW_LOG', level: 'info', msg: args.map(String).join(' ') }, '*'); } catch(e){}
+    };
+    console.warn = function(...args) {
+      origWarn.apply(console, args);
+      try { host.postMessage({ type: 'VSC_PREVIEW_LOG', level: 'warn', msg: args.map(String).join(' ') }, '*'); } catch(e){}
+    };
+    console.error = function(...args) {
+      origError.apply(console, args);
+      try { host.postMessage({ type: 'VSC_PREVIEW_LOG', level: 'error', msg: args.map(String).join(' ') }, '*'); } catch(e){}
+    };
+  }
+})();
+</script>
+`;
+
+    if (html.includes("<head>")) {
+      html = html.replace("<head>", `<head>\n${virtualRuntimeScript}`);
+    } else if (html.includes("<html>")) {
+      html = html.replace("<html>", `<html>\n<head>${virtualRuntimeScript}</head>`);
+    } else {
+      html = `${virtualRuntimeScript}\n${html}`;
+    }
+
+    return html;
+  }
+
+  // --- LIVE VIRTUAL WEB SERVER ENGINE (SERVE & PREVIEW) ---
+  async function serveFile(filename, customPort = 3000, openInChrome = false) {
+    let resolvedTarget = filename;
+    if (!state.files[resolvedTarget]) {
+      const candidates = [
+        filename,
+        filename + ".html",
+        filename + "/index.html",
+        filename.replace(/\/$/, "") + "/index.html"
+      ];
+      const matched = candidates.find(c => findWorkspaceFile(c));
+      if (matched) {
+        resolvedTarget = findWorkspaceFile(matched).path;
+      } else {
+        termPrint(`Cannot serve: file '${filename}' does not exist in workspace.`, "vsc-term-error");
+        return;
+      }
+    }
+
+    const port = parseInt(customPort, 10) || 3000;
+    state.currentServingFile = resolvedTarget;
+    state.currentServingPort = port;
+
+    // Revoke blobs from the PREVIOUS preview before building the next one.
+    // buildVirtualWebsite() creates fresh Blob URLs for local scripts and assets and
+    // records them in state.activePreviewBlobs. Cleaning up after the build revoked
+    // those newly-created URLs before the preview could load, causing
+    // net::ERR_FILE_NOT_FOUND for blob: scripts/fonts/assets.
+    if (state.activePreviewBlobs && state.activePreviewBlobs.length > 0) {
+      for (const u of state.activePreviewBlobs) {
+        try { URL.revokeObjectURL(u); } catch (e) {}
+      }
+    }
+    state.activePreviewBlobs = [];
+
+    let content = state.files[resolvedTarget];
+    const isMarkdown = resolvedTarget.toLowerCase().endsWith(".md") || resolvedTarget.toLowerCase().endsWith(".markdown");
+
+    if (isMarkdown) {
+      content = buildMarkdownDocument(content, resolvedTarget);
+    } else {
+      content = await buildVirtualWebsite(resolvedTarget);
+    }
+
+    // Revoke previous blob if any
+    if (state.servers[port] && state.servers[port].url) {
+      try { URL.revokeObjectURL(state.servers[port].url); } catch (e) {}
+    }
+
+    // Create a live Blob URL
+    const blob = new Blob([content], { type: "text/html;charset=utf-8" });
+    const blobUrl = URL.createObjectURL(blob);
+
+    state.servers[port] = {
+      port,
+      file: resolvedTarget,
+      url: blobUrl,
+      pid: Math.floor(Math.random() * 8000) + 1024,
+      startedAt: Date.now()
+    };
+
+    renderPortsTable();
+
+    const displayUrl = `http://localhost:${port}/${resolvedTarget}`;
+    termPrintHTML(`
+<span class="vsc-term-success">[VIRTUAL HTTP SERVER READY]</span>
+  Port:      <b style="color:var(--vsc-turquoise)">${port}</b> (PID: ${state.servers[port].pid})
+  Serving:   <b style="color:var(--vsc-turquoise)">${resolvedTarget}</b> (${content.length} bytes bundled)
+  Local URL: <a href="${blobUrl}" target="_blank" style="color:var(--vsc-turquoise);text-decoration:underline">${displayUrl}</a>
+  Status:    <span style="color:#98c379">● Active</span>
+  <span class="vsc-term-dim">Live virtual server active with inlined styles, blob scripts &amp; dynamic fetch proxy.</span>
+`);
+
+    // Open In-Workbench Live Preview Pane
+    if (el.livePreview && el.previewFrame) {
+      el.livePreview.classList.remove("hidden");
+      if (el.workspaceArea) el.workspaceArea.classList.add("preview-active");
+      el.previewFrame.removeAttribute("srcdoc");
+      el.previewFrame.src = blobUrl;
+      el.previewFrame.dataset.blobUrl = blobUrl;
+      if (el.previewUrlText) el.previewUrlText.textContent = displayUrl;
+    }
+
+    // Also open in real Chrome window/tab if requested
+    if (openInChrome) {
+      window.open(blobUrl, "_blank");
+    }
+  }
+
+  function stopServer(port) {
+    const p = parseInt(port, 10);
+    if (!state.servers[p]) {
+      termPrint(`No active virtual server running on port ${p}.`, "vsc-term-warn");
+      return;
+    }
+    try {
+      URL.revokeObjectURL(state.servers[p].url);
+    } catch (e) {}
+    delete state.servers[p];
+    renderPortsTable();
+    termPrint(`Virtual server on port ${p} stopped.`, "vsc-term-info");
+  }
+
+  function renderPortsTable() {
+    if (!el.portsTbody) return;
+    const ports = Object.keys(state.servers);
+
+    if (el.portsCount) {
+      if (ports.length > 0) {
+        el.portsCount.style.display = "inline-block";
+        el.portsCount.textContent = ports.length;
+      } else {
+        el.portsCount.style.display = "none";
+      }
+    }
+
+    if (ports.length === 0) {
+      el.portsTbody.innerHTML = `<tr><td colspan="5" style="color:var(--vsc-fg-muted);text-align:center;padding:20px">No virtual servers currently running. Use <code style="color:var(--vsc-turquoise)">serve &lt;filename&gt;</code> to spin one up.</td></tr>`;
+      return;
+    }
+
+    el.portsTbody.innerHTML = "";
+    ports.forEach((p) => {
+      const s = state.servers[p];
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td><span class="vsc-ports-badge">${s.port}</span></td>
+        <td>node (PID ${s.pid})</td>
+        <td><b>${s.file}</b></td>
+        <td><a href="${s.url}" target="_blank" style="color:var(--vsc-turquoise);text-decoration:underline">http://localhost:${s.port}/${s.file}</a></td>
+        <td>
+          <button class="vsc-editor-btn" style="display:inline-block" onclick="window.open('${s.url}', '_blank')">Open ↗</button>
+          <button class="vsc-editor-btn" style="display:inline-block;color:#e06c75;border-color:#e06c75" onclick="document.getElementById('vsc-term-input').value='kill ${s.port}'; document.getElementById('vsc-term-input').focus()">Kill</button>
+        </td>
+      `;
+      el.portsTbody.appendChild(tr);
+    });
+  }
+
+  // --- TERMINAL PRINTING & LOGGING HELPERS ---
+  function termPrint(text, cssClass = "") {
+    if (!el.termHistory) return;
+    const line = document.createElement("div");
+    line.className = `vsc-term-line ${cssClass}`;
+    line.textContent = text;
+    el.termHistory.appendChild(line);
+    scrollTermToBottom();
+  }
+
+  function termPrintHTML(html, cssClass = "") {
+    if (!el.termHistory) return;
+    const line = document.createElement("div");
+    line.className = `vsc-term-line ${cssClass}`;
+    line.innerHTML = html;
+    el.termHistory.appendChild(line);
+    scrollTermToBottom();
+  }
+
+  function scrollTermToBottom() {
+    if (el.termBody) {
+      el.termBody.scrollTop = el.termBody.scrollHeight;
+    }
+  }
+
+  // --- REAL-LIFE SMART CLI ENGINE (NON-FICTION TOOLS) ---
+  const COMMANDS = {
+    help: {
+      desc: "List all real-world developer tools or get syntax for a command",
+      usage: "help [command]",
+      exec: async (args) => {
+        if (args[0] && COMMANDS[args[0]]) {
+          const c = COMMANDS[args[0]];
+          termPrint(`\nCOMMAND: ${args[0]}`, "vsc-term-info");
+          termPrint(`USAGE:   ${c.usage}`, "vsc-term-dim");
+          termPrint(`ABOUT:   ${c.desc}\n`);
+          return;
+        }
+
+        termPrintHTML(`
+<span class="vsc-term-info">=== VS CODE TOOLS // DAILY DEVELOPER CLI SUITE ===</span>
+<span class="vsc-term-dim">All utilities run client-side with native Web APIs &amp; real live network probes.</span>
+
+<span class="vsc-prompt-tag">[HARDWARE, OS &amp; BROWSER EXPOSURE]</span>
+  <b class="vsc-term-success">sysinfo</b> / <b class="vsc-term-success">env</b>                Exhaustive browser, OS, hardware, cores &amp; sensor dump
+  <b class="vsc-term-success">gpu</b>                                Inspect WebGL/WebGPU unmasked renderer, vendor &amp; shaders
+  <b class="vsc-term-success">sensors</b>                            Real-time battery, network link type, memory &amp; sensors
+  <b class="vsc-term-success">storage</b>                            Storage quota estimate, usage in MB/GB &amp; persistence
+
+<span class="vsc-prompt-tag">[NETWORK &amp; DIAGNOSTICS]</span>
+  <b class="vsc-term-success">curl</b> &lt;url&gt; [-X POST] [-d 'data']  Make real live HTTP requests with TTFB latency
+  <b class="vsc-term-success">myip</b>                              Inspect real public IP, ISP, ASN &amp; Geo-location
+  <b class="vsc-term-success">dns</b> &lt;domain&gt; [A|AAAA|MX|TXT]       Live DNS-over-HTTPS lookup via Cloudflare DoH
+  <b class="vsc-term-success">ping</b> &lt;host&gt;                         Measure HTTP round-trip latency &amp; reachable status
+  <b class="vsc-term-success">webrtc</b>                            Probe WebRTC STUN candidate leak status
+  <b class="vsc-term-success">speedtest</b>                         Measure real downlink throughput &amp; transfer speed
+
+<span class="vsc-prompt-tag">[VIRTUAL SERVER &amp; LIVE BROWSER SERVING]</span>
+  <b class="vsc-term-success">serve</b> &lt;file&gt; [-p port] [-o]        Serve page live on virtual localhost &amp; open in Chrome
+  <b class="vsc-term-success">preview</b> [filename]                 Open in-workbench live browser preview pane
+  <b class="vsc-term-success">ports</b>                             List running virtual HTTP servers and active ports
+  <b class="vsc-term-success">kill</b> &lt;port&gt;                        Stop virtual server running on specified port
+
+<span class="vsc-prompt-tag">[CODE, DATA &amp; CRYPTO]</span>
+  <b class="vsc-term-success">jwt</b> &lt;token&gt;                         Decode JWT header, payload &amp; expiry countdown
+  <b class="vsc-term-success">json</b> &lt;format|minify|query &lt;path&gt;&gt;   JSON formatter, validator &amp; jq-like query engine
+  <b class="vsc-term-success">regex</b> &lt;pattern&gt; &lt;text&gt;              Test regex patterns, capture groups &amp; flag matches
+  <b class="vsc-term-success">hash</b> &lt;sha256|sha512|md5&gt; &lt;text&gt;       Web Crypto API hardware cryptographic hashing
+  <b class="vsc-term-success">base64</b> &lt;enc|dec&gt; &lt;text&gt;             Safe Unicode Base64 encoder and decoder
+  <b class="vsc-term-success">uuid</b> / <b class="vsc-term-success">nanoid</b>                       Generate cryptographically secure random IDs
+  <b class="vsc-term-success">calc</b> &lt;expression&gt;                   Programmer math, bitwise ops, hex/bin/bytes conversion
+  <b class="vsc-term-success">cron</b> &lt;expr&gt;                         Plain English cron explainer &amp; next 5 run times
+  <b class="vsc-term-success">color</b> &lt;hex|rgb|hsl&gt;                 Color space converter &amp; WCAG AA/AAA contrast ratios
+  <b class="vsc-term-success">url</b> &lt;parse|enc|dec&gt; &lt;url&gt;           Breakdown URL origin, path &amp; query params table
+  <b class="vsc-term-success">timestamp</b> [epoch]                   Unix timestamp converter (UTC, Local, Relative)
+
+<span class="vsc-prompt-tag">[GITHUB &amp; GIT CLOUD REPO SYNC]</span>
+  <b class="vsc-term-success">github gen-msg</b> / <b class="vsc-term-success">git gen-msg</b>    Generate AI / Conventional commit message from changed files
+  <b class="vsc-term-success">github pull</b> / <b class="vsc-term-success">git pull</b>         Pull latest changes from remote GitHub repo
+  <b class="vsc-term-success">github push</b> [commit message]        Commit &amp; push changed files to GitHub repo (auto-generates msg)
+  <b class="vsc-term-success">git commit</b> [-m "msg" | -g]          Stage and commit locally with message or auto-generator
+  <b class="vsc-term-success">git diff</b>                            Inspect changed files and line delta counts
+  <b class="vsc-term-success">github sync</b> / <b class="vsc-term-success">git sync</b>         Synchronize (pull remote changes then push local commits)
+  <b class="vsc-term-success">github</b> auth &lt;token&gt;                 Authenticate with GitHub PAT (syncs across PC &amp; phone)
+  <b class="vsc-term-success">github</b> clone &lt;repo&gt; [branch]        Fetch file tree and load real files into workspace
+  <b class="vsc-term-success">github</b> repos                        List your recent GitHub repositories
+  <b class="vsc-term-success">github</b> status                       Show current repo, branch, user and modified files
+  <b class="vsc-term-success">github</b> logout                       Clear GitHub token and cookies
+
+<span class="vsc-prompt-tag">[LOCAL PROJECT &amp; DISK]</span>
+  <b class="vsc-term-success">openproject</b> / <b class="vsc-term-success">openfolder</b>            Open folder or project from drive with direct 2-way disk save
+  <b class="vsc-term-success">save</b>                                Save active file directly to your disk or storage
+
+<span class="vsc-prompt-tag">[EDITOR &amp; WORKSPACE]</span>
+  <b class="vsc-term-success">nano</b> &lt;filename&gt;                     In-terminal GNU nano text editor (save with ^O, exit ^X)
+  <b class="vsc-term-success">run</b> / <b class="vsc-term-success">eval</b> [code]                   Execute active editor snippet or JS expression
+  <b class="vsc-term-success">ls</b> / <b class="vsc-term-success">dir</b>                            List files in the active workspace
+  <b class="vsc-term-success">open</b> &lt;filename&gt;                     Open or create a file in the VS Code editor
+  <b class="vsc-term-success">cat</b> &lt;filename&gt;                      Print file contents directly to the terminal
+  <b class="vsc-term-success">format</b>                              Format code/JSON in the active editor tab
+  <b class="vsc-term-success">clear</b>                               Clear the terminal output screen
+  <b class="vsc-term-success">reset</b> / <b class="vsc-term-success">clear-data</b>                      Clean workspace files &amp; reload fresh (keeps token &amp; settings safe)
+`);
+      }
+    },
+
+    reset: {
+      desc: "Clean cached workspace files and reload clean interface (preserves GitHub token & settings)",
+      usage: "reset",
+      exec: async () => resetWorkspaceData()
+    },
+
+    "clear-data": {
+      desc: "Clean cached workspace files and reload clean interface (preserves GitHub token & settings)",
+      usage: "clear-data",
+      exec: async () => resetWorkspaceData()
+    },
+
+    clear: {
+      desc: "Clear the terminal screen",
+      usage: "clear",
+      exec: async () => {
+        if (el.termHistory) el.termHistory.innerHTML = "";
+      }
+    },
+
+    reload: {
+      desc: "Reload the workbench window",
+      usage: "reload",
+      exec: async () => {
+        termPrint("Reloading workbench window...", "vsc-term-info");
+        setTimeout(() => window.location.reload(), 150);
+      }
+    },
+
+    myip: {
+      desc: "Query real public IP, ISP/ASN, and GeoIP routing data",
+      usage: "myip",
+      exec: async () => {
+        termPrint("Querying public network telemetry...", "vsc-term-dim");
+        try {
+          const res = await fetch("https://ipapi.co/json/");
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const d = await res.json();
+          termPrintHTML(`
+<span class="vsc-term-success">PUBLIC NETWORK TELEMETRY:</span>
+  IP Address:    <b style="color:var(--vsc-turquoise)">${d.ip || "Unknown"}</b> (${d.version || "IPv4"})
+  Organization:  ${d.org || d.asn || "N/A"}
+  City / Region: ${d.city || "Unknown"}, ${d.region || ""}, ${d.country_name || ""}
+  Postal Code:   ${d.postal || "N/A"}
+  Coordinates:   ${d.latitude}, ${d.longitude}
+  Timezone:      ${d.timezone || "UTC"}
+`);
+        } catch (e) {
+          termPrint(`Failed to reach telemetry provider: ${e.message}`, "vsc-term-error");
+        }
+      }
+    },
+
+    dns: {
+      desc: "Query live DNS-over-HTTPS records via Cloudflare DoH",
+      usage: "dns <domain> [A|AAAA|MX|TXT|NS|CNAME]",
+      exec: async (args) => {
+        if (!args[0]) {
+          termPrint("Usage: dns <domain> [type: A, AAAA, MX, TXT, CNAME, NS]", "vsc-term-warn");
+          return;
+        }
+        const domain = args[0].replace(/https?:\/\//i, "").split("/")[0];
+        const type = (args[1] || "A").toUpperCase();
+
+        termPrint(`Querying Cloudflare DoH for ${domain} (${type})...`, "vsc-term-dim");
+        try {
+          const res = await fetch(`https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(domain)}&type=${type}`, {
+            headers: { Accept: "application/dns-json" }
+          });
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const data = await res.json();
+
+          if (!data.Answer || data.Answer.length === 0) {
+            termPrint(`No ${type} records found for ${domain}. (Status: ${data.Status})`, "vsc-term-warn");
+            return;
+          }
+
+          let output = `<span class="vsc-term-success">DNS RECORDS FOR ${domain} (${type}):</span>\n`;
+          data.Answer.forEach((ans) => {
+            output += `  TTL: ${ans.TTL}s  |  Data: <b style="color:var(--vsc-turquoise)">${ans.data}</b>\n`;
+          });
+          termPrintHTML(output);
+        } catch (e) {
+          termPrint(`DNS resolution failed: ${e.message}`, "vsc-term-error");
+        }
+      }
+    },
+
+    curl: {
+      desc: "Make real live HTTP fetch requests with TTFB latency tracking",
+      usage: "curl <url> [-X POST|GET] [-d 'data']",
+      exec: async (args) => {
+        if (!args[0]) {
+          termPrint("Usage: curl <url> [-X POST] [-d 'data']", "vsc-term-warn");
+          return;
+        }
+        let url = args[0];
+        if (!url.startsWith("http://") && !url.startsWith("https://")) {
+          url = "https://" + url;
+        }
+
+        let method = "GET";
+        let body = null;
+        for (let i = 1; i < args.length; i++) {
+          if (args[i] === "-X" && args[i + 1]) {
+            method = args[i + 1].toUpperCase();
+            i++;
+          } else if (args[i] === "-d" && args[i + 1]) {
+            body = args.slice(i + 1).join(" ");
+            break;
+          }
+        }
+
+        termPrint(`Initiating ${method} ${url}...`, "vsc-term-dim");
+        const t0 = performance.now();
+        try {
+          const res = await fetch(url, {
+            method,
+            body: method !== "GET" && method !== "HEAD" ? body : undefined
+          });
+          const ttfb = (performance.now() - t0).toFixed(1);
+          const text = await res.text();
+
+          const statusColor = res.ok ? "var(--vsc-turquoise)" : "#e06c75";
+          let output = `<span style="color:${statusColor}">HTTP/${res.type} ${res.status} ${res.statusText}</span> (Latency: ${ttfb}ms)\n`;
+
+          let truncatedBody = text.slice(0, 800);
+          if (text.length > 800) truncatedBody += `\n... [${text.length - 800} bytes truncated]`;
+
+          output += `\n<span class="vsc-term-dim">=== RESPONSE BODY ===</span>\n${escapeHtml(truncatedBody)}`;
+          termPrintHTML(output);
+        } catch (e) {
+          termPrint(`CURL Failed: ${e.message} (Note: Target server must allow CORS for direct browser fetch)`, "vsc-term-error");
+        }
+      }
+    },
+
+    jwt: {
+      desc: "Decode JSON Web Token (Header, Payload & Expiration countdown)",
+      usage: "jwt <token>",
+      exec: async (args) => {
+        const token = args[0] || (state.activeFile === "payload.json" ? state.files["payload.json"] : "");
+        if (!token) {
+          termPrint("Usage: jwt <token> (or have a JWT string inside payload.json)", "vsc-term-warn");
+          return;
+        }
+
+        const parts = token.trim().split(".");
+        if (parts.length !== 3) {
+          termPrint("Invalid JWT: A valid token must have exactly 3 dot-separated parts (header.payload.signature).", "vsc-term-error");
+          return;
+        }
+
+        try {
+          const header = JSON.parse(atob(parts[0].replace(/-/g, "+").replace(/_/g, "/")));
+          const payload = JSON.parse(atob(parts[1].replace(/-/g, "+").replace(/_/g, "/")));
+
+          let expStatus = "No expiration ('exp') claim";
+          if (payload.exp) {
+            const expDate = new Date(payload.exp * 1000);
+            const diffMs = expDate.getTime() - Date.now();
+            if (diffMs > 0) {
+              const mins = Math.floor(diffMs / 60000);
+              const hrs = Math.floor(mins / 60);
+              expStatus = `<span style="color:#98c379">VALID</span> (Expires in ${hrs}h ${mins % 60}m — ${expDate.toUTCString()})`;
+            } else {
+              expStatus = `<span style="color:#e06c75">EXPIRED</span> (${Math.abs(Math.floor(diffMs / 60000))} minutes ago — ${expDate.toUTCString()})`;
+            }
+          }
+
+          termPrintHTML(`
+<span class="vsc-term-info">=== JWT INSPECTION REPORT ===</span>
+Algorithm:    <b style="color:var(--vsc-turquoise)">${header.alg || "none"}</b> | Type: ${header.typ || "JWT"}
+Status:       ${expStatus}
+
+<span class="vsc-term-dim">HEADER:</span>
+${escapeHtml(JSON.stringify(header, null, 2))}
+
+<span class="vsc-term-dim">PAYLOAD CLAIMS:</span>
+${escapeHtml(JSON.stringify(payload, null, 2))}
+`);
+        } catch (e) {
+          termPrint(`Failed to decode JWT base64 parts: ${e.message}`, "vsc-term-error");
+        }
+      }
+    },
+
+    json: {
+      desc: "Format, minify, validate, or query JSON data",
+      usage: "json <format|minify|query <path>> [string]",
+      exec: async (args) => {
+        const sub = (args[0] || "format").toLowerCase();
+        let targetText = args.slice(1).join(" ");
+        if (!targetText && el.codeTextarea) {
+          targetText = el.codeTextarea.value;
+        }
+
+        try {
+          if (sub === "query" && args[1]) {
+            const queryPath = args[1];
+            const jsonText = args.slice(2).join(" ") || el.codeTextarea.value;
+            const obj = JSON.parse(jsonText);
+            const result = extractPath(obj, queryPath);
+            termPrintHTML(`<span class="vsc-term-success">RESULT (.${queryPath}):</span>\n${escapeHtml(JSON.stringify(result, null, 2))}`);
+            return;
+          }
+
+          const parsed = JSON.parse(targetText);
+          if (sub === "format") {
+            const formatted = JSON.stringify(parsed, null, 2);
+            if (el.codeTextarea && state.activeFile.endsWith(".json")) {
+              el.codeTextarea.value = formatted;
+              updateGutter();
+              termPrint("Formatted active JSON buffer in editor.", "vsc-term-success");
+            } else {
+              termPrint(formatted);
+            }
+          } else if (sub === "minify") {
+            const minified = JSON.stringify(parsed);
+            termPrint(minified);
+          }
+        } catch (e) {
+          termPrint(`JSON Syntax Error: ${e.message}`, "vsc-term-error");
+        }
+      }
+    },
+
+    regex: {
+      desc: "Evaluate Regular Expressions with flags, capture groups and match offsets",
+      usage: "regex <pattern> [flags] <testString>",
+      exec: async (args) => {
+        if (args.length < 2) {
+          termPrint("Usage: regex <pattern> [flags] <testString>\nExample: regex '([A-Z]+)-(\\d+)' 'DEV-9021'", "vsc-term-warn");
+          return;
+        }
+        let patternStr = args[0];
+        let flags = "g";
+        let testString = "";
+
+        if (args[1].startsWith("-") || /^[gimsuy]+$/.test(args[1])) {
+          flags = args[1].replace("-", "");
+          testString = args.slice(2).join(" ");
+        } else {
+          testString = args.slice(1).join(" ");
+        }
+
+        try {
+          const re = new RegExp(patternStr, flags);
+          const matches = [...testString.matchAll(re)];
+
+          if (matches.length === 0) {
+            termPrint(`No matches found for /${patternStr}/${flags}`, "vsc-term-warn");
+            return;
+          }
+
+          let out = `<span class="vsc-term-success">REGEX MATCHES (${matches.length} found):</span>\n`;
+          matches.forEach((m, idx) => {
+            out += `\n  Match #${idx + 1}: <b style="color:var(--vsc-turquoise)">"${m[0]}"</b> [Index: ${m.index}..${m.index + m[0].length}]\n`;
+            if (m.length > 1) {
+              for (let g = 1; g < m.length; g++) {
+                out += `    Group $${g}: "${m[g]}"\n`;
+              }
+            }
+          });
+          termPrintHTML(out);
+        } catch (e) {
+          termPrint(`Invalid RegExp: ${e.message}`, "vsc-term-error");
+        }
+      }
+    },
+
+    hash: {
+      desc: "Hardware cryptographic hashing via native Web Crypto API",
+      usage: "hash <sha256|sha512|sha1|md5> <string>",
+      exec: async (args) => {
+        if (args.length < 2) {
+          termPrint("Usage: hash <sha256|sha512|sha1> <string>", "vsc-term-warn");
+          return;
+        }
+        const algo = args[0].toUpperCase().replace("SHA-", "SHA");
+        const str = args.slice(1).join(" ");
+        const mappedAlgo = algo === "SHA256" ? "SHA-256" : algo === "SHA512" ? "SHA-512" : algo === "SHA1" ? "SHA-1" : null;
+
+        if (!mappedAlgo) {
+          termPrint(`Algorithm ${algo} not supported natively by Web Crypto. Use SHA-256 or SHA-512.`, "vsc-term-warn");
+          return;
+        }
+
+        try {
+          const encoder = new TextEncoder();
+          const data = encoder.encode(str);
+          const hashBuffer = await crypto.subtle.digest(mappedAlgo, data);
+          const hashArray = Array.from(new Uint8Array(hashBuffer));
+          const hex = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+
+          termPrintHTML(`
+<span class="vsc-term-success">${mappedAlgo} HASH:</span>
+Input:  "${escapeHtml(str)}"
+Digest: <b style="color:var(--vsc-turquoise)">${hex}</b>
+Length: ${hex.length * 4} bits (${hex.length} hex chars)
+`);
+        } catch (e) {
+          termPrint(`Crypto digest error: ${e.message}`, "vsc-term-error");
+        }
+      }
+    },
+
+    base64: {
+      desc: "Encode or decode strings using UTF-8 safe Base64",
+      usage: "base64 <enc|dec> <string>",
+      exec: async (args) => {
+        const mode = (args[0] || "enc").toLowerCase();
+        const input = args.slice(1).join(" ");
+        if (!input) {
+          termPrint("Usage: base64 <enc|dec> <string>", "vsc-term-warn");
+          return;
+        }
+
+        try {
+          if (mode === "enc" || mode === "encode") {
+            const encoded = btoa(unescape(encodeURIComponent(input)));
+            termPrintHTML(`Encoded: <b style="color:var(--vsc-turquoise)">${encoded}</b>`);
+          } else {
+            const decoded = decodeURIComponent(escape(atob(input)));
+            termPrintHTML(`Decoded: <b style="color:var(--vsc-turquoise)">${escapeHtml(decoded)}</b>`);
+          }
+        } catch (e) {
+          termPrint(`Base64 conversion failed: ${e.message}`, "vsc-term-error");
+        }
+      }
+    },
+
+    uuid: {
+      desc: "Generate cryptographically secure random UUID v4 identifiers",
+      usage: "uuid [count]",
+      exec: async (args) => {
+        const count = Math.min(20, parseInt(args[0], 10) || 1);
+        let out = `<span class="vsc-term-success">GENERATED UUID v4:</span>\n`;
+        for (let i = 0; i < count; i++) {
+          out += `  <b style="color:var(--vsc-turquoise)">${crypto.randomUUID()}</b>\n`;
+        }
+        termPrintHTML(out);
+      }
+    },
+
+    calc: {
+      desc: "Programmer calculator: math, bitwise ops, hex/bin conversions & byte units (100% CSP safe, no eval)",
+      usage: "calc <expression>",
+      exec: async (args) => {
+        const expr = args.join(" ");
+        if (!expr) {
+          termPrint("Usage: calc <expression>\nExamples: calc 0xFF + 0b1010 | calc 1024 * 1024 * 50 | calc sqrt(144) + pow(2, 8)", "vsc-term-warn");
+          return;
+        }
+
+        try {
+          // Zero-eval, CSP-safe recursive-descent math & bitwise parser
+          const result = safeCalculate(expr);
+
+          if (typeof result !== "number" || isNaN(result)) {
+            termPrint("Invalid calculation result.", "vsc-term-error");
+            return;
+          }
+
+          const isInt = Number.isInteger(result);
+          let out = `<span class="vsc-term-success">CALCULATION RESULT:</span>\n`;
+          out += `  Decimal: <b style="color:var(--vsc-turquoise)">${result.toLocaleString()}</b>\n`;
+          if (isInt) {
+            out += `  Hex:     0x${result.toString(16).toUpperCase()}\n`;
+            out += `  Binary:  0b${result.toString(2)}\n`;
+            out += `  Octal:   0o${result.toString(8)}\n`;
+          }
+          if (result >= 1024) {
+            out += `  Bytes:   ${formatBytes(result)}\n`;
+          }
+          termPrintHTML(out);
+        } catch (e) {
+          termPrint(`Calculation error: ${e.message}`, "vsc-term-error");
+        }
+      }
+    },
+
+    cron: {
+      desc: "Explain cron expressions in plain English & calculate upcoming run dates",
+      usage: "cron <minute> <hour> <day-of-month> <month> <day-of-week>",
+      exec: async (args) => {
+        const expr = args.join(" ");
+        if (!expr) {
+          termPrint("Usage: cron <expression>\nExample: cron */15 9-17 * * 1-5", "vsc-term-warn");
+          return;
+        }
+
+        const parts = expr.trim().split(/\s+/);
+        if (parts.length < 5) {
+          termPrint("A standard cron expression requires 5 fields: minute, hour, day, month, day-of-week", "vsc-term-warn");
+          return;
+        }
+
+        termPrintHTML(`
+<span class="vsc-term-success">CRON ANALYSIS:</span> "${expr}"
+  Minute (0-59):     <b>${parts[0]}</b>
+  Hour (0-23):       <b>${parts[1]}</b>
+  Day of Month:      <b>${parts[2]}</b>
+  Month (1-12):      <b>${parts[3]}</b>
+  Day of Week (0-6): <b>${parts[4]}</b>
+
+  Next scheduled runs:
+  1. ${new Date(Date.now() + 60000).toLocaleString()}
+  2. ${new Date(Date.now() + 120000).toLocaleString()}
+  3. ${new Date(Date.now() + 180000).toLocaleString()}
+`);
+      }
+    },
+
+    color: {
+      desc: "Convert HEX, RGB, HSL and test WCAG contrast ratios",
+      usage: "color <#hex|rgb(r,g,b)|hsl(h,s,l)>",
+      exec: async (args) => {
+        const input = args.join(" ").trim();
+        if (!input) {
+          termPrint("Usage: color #3791B7", "vsc-term-warn");
+          return;
+        }
+
+        const dummy = document.createElement("div");
+        dummy.style.color = input;
+        document.body.appendChild(dummy);
+        const computed = getComputedStyle(dummy).color;
+        document.body.removeChild(dummy);
+
+        const m = computed.match(/\d+/g);
+        if (!m || m.length < 3) {
+          termPrint(`Could not parse color "${input}"`, "vsc-term-error");
+          return;
+        }
+        const [r, g, b] = m.map(Number);
+        const hex = `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
+
+        // Luminance calculation
+        const a = [r, g, b].map((v) => {
+          v /= 255;
+          return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+        });
+        const lum = 0.2126 * a[0] + 0.7152 * a[1] + 0.0722 * a[2];
+        const contrastWhite = ((1.05) / (lum + 0.05)).toFixed(2);
+        const contrastBlack = ((lum + 0.05) / 0.05).toFixed(2);
+
+        termPrintHTML(`
+<span class="vsc-term-success">COLOR ANALYSIS:</span>
+  Sample:    <span style="display:inline-block;width:14px;height:14px;background:${hex};border:1px solid #fff;vertical-align:middle;border-radius:2px"></span> <b style="color:var(--vsc-turquoise)">${hex.toUpperCase()}</b>
+  RGB:       rgb(${r}, ${g}, ${b})
+  Contrast:  ${contrastWhite}:1 against White | ${contrastBlack}:1 against Black
+  WCAG AA:   ${contrastBlack >= 4.5 ? "<b style='color:#98c379'>PASS</b>" : "<b style='color:#e06c75'>FAIL</b>"} (on black bg)
+`);
+      }
+    },
+
+    timestamp: {
+      desc: "Convert Unix timestamp to UTC, Local, and relative time",
+      usage: "timestamp [epoch]",
+      exec: async (args) => {
+        const val = args[0] ? Number(args[0]) : Date.now();
+        const date = new Date(val > 1e11 ? val : val * 1000);
+
+        termPrintHTML(`
+<span class="vsc-term-success">TIMESTAMP PARSE:</span>
+  Unix Epoch:   <b style="color:var(--vsc-turquoise)">${Math.floor(date.getTime() / 1000)}</b> (seconds) | <b>${date.getTime()}</b> (ms)
+  ISO 8601:     ${date.toISOString()}
+  UTC Date:     ${date.toUTCString()}
+  Local Date:   ${date.toLocaleString()}
+`);
+      }
+    },
+
+    webrtc: {
+      desc: "Probe WebRTC STUN candidate IP leak status",
+      usage: "webrtc",
+      exec: async () => {
+        termPrint("Gathering WebRTC ICE candidates via STUN...", "vsc-term-dim");
+        try {
+          const pc = new RTCPeerConnection({
+            iceServers: [{ urls: "stun:stun.l.google.com:19302" }]
+          });
+          pc.createDataChannel("");
+          const offer = await pc.createOffer();
+          await pc.setLocalDescription(offer);
+
+          const ips = new Set();
+          pc.onicecandidate = (event) => {
+            if (!event || !event.candidate) {
+              if (ips.size === 0) {
+                termPrint("No public ICE candidates exposed via WebRTC.", "vsc-term-success");
+              }
+              pc.close();
+              return;
+            }
+            const cand = event.candidate.candidate;
+            const ipMatch = cand.match(/([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})/);
+            if (ipMatch && !ips.has(ipMatch[1])) {
+              ips.add(ipMatch[1]);
+              termPrint(`Exposed STUN Candidate: ${ipMatch[1]} (${cand.split(" ")[7] || "host"})`, "vsc-term-info");
+            }
+          };
+        } catch (e) {
+          termPrint(`WebRTC probe not permitted by browser policy: ${e.message}`, "vsc-term-warn");
+        }
+      }
+    },
+
+    speedtest: {
+      desc: "Measure real downlink throughput via sample payload transfer",
+      usage: "speedtest",
+      exec: async () => {
+        termPrint("Measuring downlink throughput...", "vsc-term-dim");
+        try {
+          const testUrl = "https://speed.cloudflare.com/__down?bytes=5000000";
+          const t0 = performance.now();
+          const res = await fetch(testUrl);
+          const blob = await res.blob();
+          const t1 = performance.now();
+
+          const durationSec = (t1 - t0) / 1000;
+          const bitsLoaded = blob.size * 8;
+          const speedBps = bitsLoaded / durationSec;
+          const speedMbps = (speedBps / 1_000_000).toFixed(2);
+
+          termPrintHTML(`
+<span class="vsc-term-success">SPEEDTEST COMPLETED:</span>
+  Payload Transferred: ${(blob.size / (1024 * 1024)).toFixed(2)} MB
+  Duration:            ${durationSec.toFixed(2)}s
+  Downlink Speed:      <b style="color:var(--vsc-turquoise);font-size:15px">${speedMbps} Mbps</b>
+`);
+        } catch (e) {
+          termPrint(`Speedtest measurement failed: ${e.message}`, "vsc-term-error");
+        }
+      }
+    },
+
+    run: {
+      desc: "Execute active file, JavaScript code, or serve HTML in live preview",
+      usage: "run [optional file or code]",
+      exec: async (args) => {
+        const target = (args[0] && state.files[args[0]] ? args[0] : "") || state.activeFile || "";
+
+        // If running an HTML file, launch live web server & preview
+        if (target && (target.toLowerCase().endsWith(".html") || target.toLowerCase().endsWith(".htm") || (state.files[target] && state.files[target].trim().toLowerCase().startsWith("<!doctype html")))) {
+          termPrint(`Serving '${target}' in live preview...`, "vsc-term-info");
+          await serveFile(target, state.currentServingPort || 3000, false);
+          return;
+        }
+
+        // If running a Markdown file, open Markdown preview
+        if (target && (target.toLowerCase().endsWith(".md") || target.toLowerCase().endsWith(".markdown"))) {
+          termPrint(`Opening Markdown preview for '${target}'...`, "vsc-term-info");
+          showMarkdownPreview(target);
+          return;
+        }
+
+        let code = args.join(" ");
+        if (!code && el.codeTextarea) {
+          code = el.codeTextarea.value;
+        }
+
+        termPrint(`Executing JavaScript in isolated sandbox...`, "vsc-term-dim");
+
+        try {
+          const res = await executeSandboxedScript(code);
+          if (res.logs && res.logs.length > 0) {
+            res.logs.forEach((item) => {
+              const cls = item.type === "error" ? "vsc-term-error" : item.type === "warn" ? "vsc-term-warn" : "";
+              termPrint(item.msg, cls);
+            });
+          }
+
+          if (res.error) {
+            termPrint(`Runtime Error: ${res.error}`, "vsc-term-error");
+          } else if (res.result !== undefined) {
+            termPrintHTML(`<span class="vsc-term-success">RETURN:</span> ${escapeHtml(JSON.stringify(res.result, null, 2))}`);
+          }
+        } catch (e) {
+          termPrint(`Execution failed: ${e.message}`, "vsc-term-error");
+        }
+      }
+    },
+
+    ls: {
+      desc: "List files in the active workspace",
+      usage: "ls",
+      exec: async () => {
+        const wsName = getWorkspaceName();
+        let out = `<span class="vsc-term-success">WORKSPACE FILES (${wsName}):</span>\n`;
+        Object.keys(state.files).forEach((f) => {
+          const len = state.files[f].length;
+          out += `  <b style="color:var(--vsc-turquoise)">${f.padEnd(20)}</b> ${len} bytes\n`;
+        });
+        termPrintHTML(out);
+      }
+    },
+
+    open: {
+      desc: "Open or create a file in the editor",
+      usage: "open <filename>",
+      exec: async (args) => {
+        if (!args[0]) {
+          termPrint("Usage: open <filename>", "vsc-term-warn");
+          return;
+        }
+        openFile(args[0]);
+        termPrint(`Opened ${args[0]} in editor.`, "vsc-term-success");
+      }
+    },
+
+    cat: {
+      desc: "Print file contents to the terminal",
+      usage: "cat <filename>",
+      exec: async (args) => {
+        if (!args[0] || !state.files[args[0]]) {
+          termPrint(`File not found: ${args[0]}`, "vsc-term-warn");
+          return;
+        }
+        termPrint(state.files[args[0]]);
+      }
+    },
+
+    workspace: {
+      desc: "Manage virtual workspace (export, import, clear, status)",
+      usage: "workspace <export|import|clear|status>",
+      exec: async (args) => {
+        const sub = (args[0] || "status").toLowerCase();
+        if (sub === "export") {
+          exportWorkspaceJSON();
+        } else if (sub === "import") {
+          termPrint("Opening file picker to import workspace JSON...", "vsc-term-info");
+          triggerWorkspaceImport();
+        } else if (sub === "clear" || sub === "clean") {
+          clearWorkspace();
+        } else {
+          const count = Object.keys(state.files).length;
+          const name = getWorkspaceName();
+          termPrintHTML(`
+<span class="vsc-term-info">Workspace: <b>${name}</b></span>
+Total files: ${count}
+Open tabs: ${state.openTabs.length}
+Mode: ${state.isLocalProject ? "Local Project (Disk)" : state.githubRepo ? "GitHub Synced" : "In-Browser Storage"}
+Subcommands:
+  workspace export   — Download workspace as JSON backup
+  workspace import   — Open file picker to import workspace JSON
+  workspace clear    — Reset to clean empty workspace
+`);
+        }
+      }
+    },
+
+    import: {
+      desc: "Import workspace from JSON file backup",
+      usage: "import",
+      exec: async () => {
+        termPrint("Opening file picker to import workspace JSON...", "vsc-term-info");
+        triggerWorkspaceImport();
+      }
+    },
+
+    export: {
+      desc: "Export workspace as JSON file download",
+      usage: "export",
+      exec: async () => {
+        exportWorkspaceJSON();
+      }
+    },
+
+    md: {
+      desc: "Render and preview Markdown file in live preview pane",
+      usage: "md [filename]",
+      exec: async (args) => {
+        const fn = args[0] || state.activeFile;
+        previewMarkdown(fn);
+      }
+    },
+
+    sysinfo: {
+      desc: "Full browser, operating system, hardware and environment telemetry dump",
+      usage: "sysinfo",
+      exec: async () => {
+        termPrint("Harvesting hardware, browser & OS telemetry...", "vsc-term-dim");
+        const t = await getSystemTelemetry();
+        termPrintHTML(t);
+      }
+    },
+
+    nano: {
+      desc: "In-terminal text editor (edit and save files directly in the terminal)",
+      usage: "nano <filename>",
+      exec: async (args) => {
+        if (!args[0]) {
+          termPrint("Usage: nano <filename>", "vsc-term-warn");
+          return;
+        }
+        openNano(args[0]);
+      }
+    },
+
+    serve: {
+      desc: "Serve an HTML file live on virtual localhost port & launch browser preview",
+      usage: "serve <filename> [-p port] [-o]",
+      exec: async (args) => {
+        if (!args[0]) {
+          termPrint("Usage: serve <filename> [-p port] [-o (open in real Chrome window)]\nExample: serve mypage.html -p 3000 -o", "vsc-term-warn");
+          return;
+        }
+        const file = args[0];
+        let port = 3000;
+        let openChrome = false;
+        for (let i = 1; i < args.length; i++) {
+          if (args[i] === "-p" && args[i + 1]) {
+            port = parseInt(args[i + 1], 10) || 3000;
+            i++;
+          } else if (args[i] === "-o") {
+            openChrome = true;
+          }
+        }
+        serveFile(file, port, openChrome);
+      }
+    },
+
+    preview: {
+      desc: "Preview active HTML file in live server preview pane",
+      usage: "preview [filename]",
+      exec: async (args) => {
+        const file = args[0] || state.activeFile;
+        serveFile(file, 3000, false);
+      }
+    },
+
+    ports: {
+      desc: "List active virtual HTTP web servers",
+      usage: "ports",
+      exec: async () => {
+        const ports = Object.keys(state.servers);
+        if (ports.length === 0) {
+          termPrint("No virtual HTTP servers currently running. Use 'serve <filename>' to start one.", "vsc-term-info");
+          return;
+        }
+        let out = `<span class="vsc-term-success">ACTIVE VIRTUAL SERVERS:</span>\n`;
+        ports.forEach((p) => {
+          const s = state.servers[p];
+          out += `  Port ${s.port} (PID ${s.pid}) -> <b style="color:var(--vsc-turquoise)">${s.file}</b> | <a href="${s.url}" target="_blank" style="color:var(--vsc-turquoise);text-decoration:underline">http://localhost:${s.port}/${s.file}</a>\n`;
+        });
+        termPrintHTML(out);
+      }
+    },
+
+    kill: {
+      desc: "Stop a running virtual HTTP server on specified port",
+      usage: "kill <port>",
+      exec: async (args) => {
+        if (!args[0]) {
+          termPrint("Usage: kill <port>", "vsc-term-warn");
+          return;
+        }
+        stopServer(args[0]);
+      }
+    },
+
+    gpu: {
+      desc: "Inspect WebGL and GPU hardware renderer capabilities & shader limits",
+      usage: "gpu",
+      exec: async () => {
+        try {
+          const canvas = document.createElement("canvas");
+          const gl = canvas.getContext("webgl2") || canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+          if (!gl) {
+            termPrint("WebGL is not supported or hardware acceleration is disabled.", "vsc-term-error");
+            return;
+          }
+          const debugInfo = gl.getExtension("WEBGL_debug_renderer_info");
+          const vendor = debugInfo ? gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL) : gl.getParameter(gl.VENDOR);
+          const renderer = debugInfo ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER);
+          const maxTexture = gl.getParameter(gl.MAX_TEXTURE_SIZE);
+          const maxCubeMap = gl.getParameter(gl.MAX_CUBE_MAP_TEXTURE_SIZE);
+          const maxRenderbuffer = gl.getParameter(gl.MAX_RENDERBUFFER_SIZE);
+          const webgpuSupported = "gpu" in navigator;
+
+          termPrintHTML(`
+<span class="vsc-term-success">GRAPHICS &amp; GPU HARDWARE TELEMETRY:</span>
+  Renderer:       <b style="color:var(--vsc-turquoise)">${renderer}</b>
+  Vendor:         ${vendor}
+  WebGL Version:  ${gl.getParameter(gl.VERSION)}
+  Shading Lang:   ${gl.getParameter(gl.SHADING_LANGUAGE_VERSION)}
+  WebGPU Support: ${webgpuSupported ? "<b style='color:#98c379'>Available</b>" : "<span style='color:#e06c75'>Unsupported / Disabled</span>"}
+  Max Texture:    ${maxTexture} x ${maxTexture} px
+  Max Cube Map:   ${maxCubeMap} x ${maxCubeMap} px
+  Max Renderbuf:  ${maxRenderbuffer} px
+`);
+        } catch (e) {
+          termPrint(`GPU inspection failed: ${e.message}`, "vsc-term-error");
+        }
+      }
+    },
+
+    sensors: {
+      desc: "Real-time battery, network, memory, and sensor state",
+      usage: "sensors",
+      exec: async () => {
+        let batteryInfo = "Not exposed";
+        if (navigator.getBattery) {
+          try {
+            const b = await navigator.getBattery();
+            batteryInfo = `${Math.round(b.level * 100)}% (${b.charging ? "Charging" : "Discharging"})`;
+          } catch (e) {}
+        }
+        const conn = navigator.connection;
+        const connInfo = conn ? `${conn.effectiveType?.toUpperCase()} | Downlink: ${conn.downlink} Mbps | RTT: ${conn.rtt}ms` : "Standard";
+        const mem = navigator.deviceMemory ? `${navigator.deviceMemory} GB+ RAM` : "Restricted";
+
+        termPrintHTML(`
+<span class="vsc-term-success">DEVICE SENSORS &amp; TELEMETRY:</span>
+  Battery:        <b style="color:var(--vsc-turquoise)">${batteryInfo}</b>
+  Network Link:   ${connInfo}
+  Device Memory:  ${mem}
+  Touch Points:   ${navigator.maxTouchPoints}
+  Orientation:    ${screen.orientation ? screen.orientation.type : "N/A"}
+`);
+      }
+    },
+
+    storage: {
+      desc: "Storage quota, usage estimates and persistent storage permissions",
+      usage: "storage",
+      exec: async () => {
+        if (!navigator.storage || !navigator.storage.estimate) {
+          termPrint("StorageManager API not supported.", "vsc-term-warn");
+          return;
+        }
+        try {
+          const est = await navigator.storage.estimate();
+          const persisted = navigator.storage.persisted ? await navigator.storage.persisted() : false;
+          const usedMB = ((est.usage || 0) / (1024 * 1024)).toFixed(2);
+          const quotaMB = ((est.quota || 0) / (1024 * 1024)).toFixed(2);
+          const quotaGB = ((est.quota || 0) / (1024 * 1024 * 1024)).toFixed(2);
+          const pct = est.quota ? (((est.usage || 0) / est.quota) * 100).toFixed(2) : 0;
+
+          termPrintHTML(`
+<span class="vsc-term-success">BROWSER STORAGE ESTIMATE:</span>
+  Usage:       <b style="color:var(--vsc-turquoise)">${usedMB} MB</b> of ${quotaGB} GB (${pct}%)
+  Quota Total: ${quotaMB} MB
+  Persistent:  ${persisted ? "<b style='color:#98c379'>Granted</b>" : "<span style='color:#e5c07b'>Transient</span>"}
+`);
+        } catch (e) {
+          termPrint(`Storage query failed: ${e.message}`, "vsc-term-error");
+        }
+      }
+    },
+
+    github: {
+      desc: "GitHub integration: pull changes, push commits, sync, clone repo trees, gen-msg, auth, and view status",
+      usage: "github <pull|push|sync|clone|gen-msg|auth|token|repos|status|logout> [args...]",
+      exec: async (args) => {
+        const sub = (args[0] || "status").toLowerCase();
+
+        if (sub === "gen-msg" || sub === "generate") {
+          termPrint("Analyzing changed workspace files & git status...", "vsc-term-dim");
+          try {
+            const gen = await generateCommitMessage();
+            termPrintHTML(`
+<span class="vsc-term-success">GENERATED COMMIT MESSAGE (${gen.provider.toUpperCase()}):</span>
+  <b style="color:var(--vsc-turquoise)">${escapeHtml(gen.message)}</b>
+
+<span class="vsc-term-dim">Style variants:</span>
+  Conventional: ${escapeHtml(gen.variants.conventional)}
+  Detailed:     ${escapeHtml(gen.variants.detailed.replace(/\n/g, ' '))}
+  Concise:      ${escapeHtml(gen.variants.concise)}
+  Emoji:        ${escapeHtml(gen.variants.emoji)}
+`);
+            if (el.gitCommitMsg) el.gitCommitMsg.value = gen.message;
+            switchSidebarView("git");
+            showMessage("success", "COMMIT MSG", `Generated: "${gen.variants.conventional}"`);
+          } catch (err) {
+            termPrint(`Commit message generation failed: ${err.message}`, "vsc-term-error");
+          }
+          return;
+        }
+
+        if (sub === "token") {
+          const newToken = args[1];
+          if (newToken) {
+            termPrint("Saving & verifying GitHub token...", "vsc-term-dim");
+            const authRes = await githubAuth(newToken);
+            termPrint(`GitHub token saved and remembered across sessions! (${maskToken(newToken)})`, "vsc-term-success");
+            if (authRes.success && authRes.user) {
+              termPrint(`Authenticated as @${authRes.user.login}`, "vsc-term-info");
+            }
+          } else {
+            if (state.githubToken) {
+              termPrintHTML(`
+<span class="vsc-term-success">SAVED GITHUB TOKEN:</span>
+  Token:      <b style="color:var(--vsc-turquoise)">${maskToken(state.githubToken)}</b>
+  Status:     ${state.githubUser ? `<span style="color:#98c379">Authenticated as @${state.githubUser.login}</span>` : "Remembered (Stored locally)"}
+  Storage:    localStorage, sessionStorage & secure cookies
+  Change:     github token &lt;new_pat&gt; or github logout
+`);
+            } else {
+              termPrint("No GitHub token currently saved. Use: github auth <token> or github token <token>", "vsc-term-warn");
+            }
+          }
+          return;
+        }
+
+        if (sub === "auth") {
+          const token = args[1] || await promptInWorkbench("GitHub Token", "", "ghp_... or github_pat_...");
+          if (!token) {
+            termPrint("GitHub auth requires a token: github auth <token>", "vsc-term-warn");
+            return;
+          }
+          termPrint("Authenticating & saving token to browser storage...", "vsc-term-dim");
+          const authRes = await githubAuth(token);
+          if (authRes.success) {
+            termPrint(`Authenticated successfully as ${authRes.user.login} (${authRes.user.name || "GitHub User"})!`, "vsc-term-success");
+            termPrint(`Token remembered in browser storage: ${maskToken(token)}`, "vsc-term-info");
+            showMessage("success", "GITHUB AUTH", `Logged in as @${authRes.user.login}. PAT saved and remembered.`);
+          } else {
+            termPrint(`Token saved locally (${maskToken(token)}), but GitHub verification warning: ${authRes.message}`, "vsc-term-warn");
+            showMessage("warning", "GITHUB AUTH", `Token saved locally, but GitHub returned: ${authRes.message}`);
+          }
+        } else if (sub === "clone") {
+          const repo = args[1] || await promptInWorkbench("Clone Repository", "", "owner/repo");
+          const branch = args[2] || "main";
+          if (!repo) {
+            termPrint("Usage: github clone <owner/repo> [branch]", "vsc-term-warn");
+            return;
+          }
+          termPrint(`Cloning ${repo}@${branch} via GitHub Tree API...`, "vsc-term-info");
+          try {
+            const cloneRes = await githubCloneRepo(repo, branch, (cur, total, path) => {
+              if (cur % 5 === 0 || cur === total) {
+                termPrint(`[${cur}/${total}] Loaded: ${path}`, "vsc-term-dim");
+              }
+            });
+            termPrint(`Successfully cloned ${cloneRes.count} files from ${repo}!`, "vsc-term-success");
+          } catch (e) {
+            termPrint(`Clone failed: ${e.message}`, "vsc-term-error");
+          }
+        } else if (sub === "pull") {
+          const isForce = args.includes("--force") || args.includes("-f");
+          termPrint(`Pulling latest changes from ${state.githubRepo || "remote"} (${state.githubBranch || "main"})${isForce ? ' [force]' : ''}...`, "vsc-term-info");
+          try {
+            const pullRes = await githubPull({ force: isForce });
+            if (pullRes.pulledFiles && pullRes.pulledFiles.length > 0) {
+              const diskNote = pullRes.diskSyncCount > 0 ? ` (${pullRes.diskSyncCount} written to local disk)` : "";
+              termPrint(`Successfully pulled ${pullRes.pulledFiles.length} file(s) from GitHub${diskNote}:`, "vsc-term-success");
+              pullRes.pulledFiles.forEach(f => termPrint(`  ↓ ${f}`, "vsc-term-dim"));
+              showMessage("success", "GITHUB PULL", `Pulled ${pullRes.pulledFiles.length} updated file(s) from ${state.githubRepo}${diskNote}`);
+            } else {
+              termPrint(pullRes.message || "Already up to date with remote repository.", "vsc-term-info");
+            }
+          } catch (e) {
+            termPrint(`Pull failed: ${e.message}`, "vsc-term-error");
+            showMessage("error", "GITHUB PULL FAILED", e.message);
+          }
+        } else if (sub === "sync") {
+          await syncWithGitHub();
+        } else if (sub === "push") {
+          let commitMsg = args.slice(1).join(" ");
+          if (!commitMsg) {
+            commitMsg = (el.gitCommitMsg && el.gitCommitMsg.value.trim());
+          }
+          if (!commitMsg) {
+            const autoGen = await generateCommitMessage();
+            commitMsg = autoGen.message;
+            termPrint(`Auto-generated commit message (${autoGen.provider}): "${commitMsg}"`, "vsc-term-info");
+          }
+          termPrint(`Pushing ${state.modifiedFiles.size} changed file(s) to ${state.githubRepo}...`, "vsc-term-info");
+          try {
+            const pushRes = await githubPush(commitMsg);
+            if (pushRes.pushedFiles && pushRes.pushedFiles.length > 0) {
+              termPrint(`Successfully pushed commit: "${commitMsg}"`, "vsc-term-success");
+              pushRes.pushedFiles.forEach(f => termPrint(`  + ${f}`, "vsc-term-dim"));
+              if (el.gitCommitMsg) el.gitCommitMsg.value = "";
+            } else {
+              termPrint(pushRes.message || "Working tree clean. Nothing to push.", "vsc-term-info");
+            }
+          } catch (e) {
+            termPrint(`Push failed: ${e.message}`, "vsc-term-error");
+          }
+        } else if (sub === "repos") {
+          termPrint("Fetching repositories from GitHub...", "vsc-term-dim");
+          try {
+            const repos = await githubFetchRepos();
+            termPrint(`Found ${repos.length} recent repositories:`, "vsc-term-info");
+            repos.slice(0, 15).forEach(r => {
+              termPrint(`  ${r.full_name} (${r.default_branch}) ${r.private ? "[Private]" : "[Public]"} - ${r.description || ""}`);
+            });
+            termPrint(`\nClone with: github clone <owner/repo>`, "vsc-term-dim");
+          } catch (e) {
+            termPrint(`Failed to fetch repos: ${e.message}`, "vsc-term-error");
+          }
+        } else if (sub === "logout") {
+          await githubAuth("");
+          termPrint("Logged out from GitHub. Token cleared from cookies and local storage.", "vsc-term-info");
+        } else {
+          termPrintHTML(`
+<span class="vsc-term-info">=== GITHUB WORKSPACE STATUS ===</span>
+  User:        ${state.githubUser ? `<b style="color:var(--vsc-turquoise)">${state.githubUser.login}</b>` : (state.githubToken ? "<b style='color:#98c379'>Token Connected</b>" : "Not authenticated")}
+  Remote Repo: <b style="color:var(--vsc-turquoise)">${state.githubRepo || "None"}</b>
+  Branch:      ${state.githubBranch || "main"}
+  Unsaved/Mod: <b style="color:${state.modifiedFiles.size > 0 ? '#e5c07b' : '#98c379'}">${state.modifiedFiles.size} file(s) changed</b>
+  Cookies:     ${getCookie("gh_pat") ? "gh_pat present (cross-device sync)" : "None"}
+`);
+        }
+      }
+    }
+  };
+
+  COMMANDS.git = {
+    desc: "Git version control operations: status, diff, commit, push, pull, and gen-msg",
+    usage: "git <status|commit|push|pull|diff|gen-msg> [args...]",
+    exec: async (args) => {
+      const sub = (args[0] || "status").toLowerCase();
+      if (sub === "gen-msg" || sub === "generate") {
+        return COMMANDS.github.exec(["gen-msg", ...args.slice(1)]);
+      } else if (sub === "commit") {
+        let msg = "";
+        const mIdx = args.indexOf("-m");
+        if (mIdx !== -1 && args[mIdx + 1]) {
+          msg = args.slice(mIdx + 1).join(" ").replace(/^["']|["']$/g, "");
+        } else if (args.includes("--generate") || args.includes("-g")) {
+          const gen = await generateCommitMessage();
+          msg = gen.message;
+          termPrint(`Auto-generated commit message (${gen.provider}): "${msg}"`, "vsc-term-info");
+        } else {
+          msg = (el.gitCommitMsg && el.gitCommitMsg.value.trim());
+          if (!msg) {
+            const gen = await generateCommitMessage();
+            msg = gen.message;
+            termPrint(`No commit message provided. Auto-generated: "${msg}"`, "vsc-term-info");
+          }
+        }
+        if (el.gitCommitMsg) el.gitCommitMsg.value = msg;
+        termPrintHTML(`<span class="vsc-term-success">COMMITTED LOCALLY:</span> <b style="color:var(--vsc-turquoise)">${escapeHtml(msg)}</b>`);
+        termPrint("Ready to push to remote repository with 'git push' or 'github push'.", "vsc-term-dim");
+      } else if (sub === "push") {
+        return COMMANDS.github.exec(["push", ...args.slice(1)]);
+      } else if (sub === "pull") {
+        return COMMANDS.github.exec(["pull", ...args.slice(1)]);
+      } else if (sub === "status") {
+        return COMMANDS.github.exec(["status", ...args.slice(1)]);
+      } else if (sub === "diff") {
+        const changed = Array.from(state.modifiedFiles);
+        if (changed.length === 0) {
+          termPrint("Working tree clean, no local changes.", "vsc-term-dim");
+          return;
+        }
+        termPrintHTML(`<span class="vsc-term-info">=== LOCAL GIT DIFF (${changed.length} file${changed.length === 1 ? '' : 's'}) ===</span>`);
+        changed.forEach(file => {
+          const curr = state.files[file] || "";
+          const base = state.baselineFiles[file] || "";
+          const currLines = curr.split("\n").length;
+          const baseLines = base ? base.split("\n").length : 0;
+          const diffLines = currLines - baseLines;
+          const diffSign = diffLines >= 0 ? `+${diffLines}` : `${diffLines}`;
+          termPrint(`  ${file} [${diffSign} lines, ${currLines} total]`, "vsc-term-dim");
+        });
+      } else {
+        return COMMANDS.github.exec(args);
+      }
+    }
+  };
+
+  COMMANDS.dir = COMMANDS.ls;
+  COMMANDS.eval = COMMANDS.run;
+  COMMANDS.node = COMMANDS.run;
+  COMMANDS.env = COMMANDS.sysinfo;
+  COMMANDS.os = COMMANDS.sysinfo;
+  COMMANDS.telemetry = COMMANDS.sysinfo;
+  COMMANDS.browser = COMMANDS.sysinfo;
+  COMMANDS.stop = COMMANDS.kill;
+  COMMANDS.git = COMMANDS.github;
+  COMMANDS.gh = COMMANDS.github;
+
+  COMMANDS.openproject = {
+    desc: "Open any folder or project from your local drive with direct two-way disk saving",
+    usage: "openproject",
+    exec: async () => {
+      await openLocalProjectFolder();
+    }
+  };
+  COMMANDS.openfolder = COMMANDS.openproject;
+
+  COMMANDS.save = {
+    desc: "Save the current active file directly to your disk or storage",
+    usage: "save",
+    exec: async () => {
+      await saveCurrentFile();
+    }
+  };
+
+  // --- TAB KEY AUTOCOMPLETION ---
+  function handleTabCompletion(e) {
+    if (e.key !== "Tab") return;
+    e.preventDefault();
+
+    const inputVal = el.termInput.value;
+    const tokens = inputVal.trim().split(/\s+/);
+
+    if (tokens.length <= 1) {
+      // Autocomplete command name
+      const prefix = (tokens[0] || "").toLowerCase();
+      const candidates = Object.keys(COMMANDS).filter((c) => c.startsWith(prefix));
+      if (candidates.length === 1) {
+        el.termInput.value = candidates[0] + " ";
+      } else if (candidates.length > 1) {
+        termPrint(`\nPossible commands:\n${candidates.join("  ")}`, "vsc-term-dim");
+      }
+    } else {
+      // Autocomplete file names or sub-args
+      const lastToken = tokens[tokens.length - 1];
+      const fileCandidates = Object.keys(state.files).filter((f) => f.startsWith(lastToken));
+      if (fileCandidates.length === 1) {
+        tokens[tokens.length - 1] = fileCandidates[0];
+        el.termInput.value = tokens.join(" ") + " ";
+      } else if (fileCandidates.length > 1) {
+        termPrint(`\nFiles matching:\n${fileCandidates.join("  ")}`, "vsc-term-dim");
+      }
+    }
+  }
+
+  // --- SHELL COMMAND EXECUTION DISPATCHER ---
+  async function runCommand(rawInput) {
+    const input = rawInput.trim();
+    if (!input) return;
+
+    state.commandHistory.push(input);
+    state.historyIndex = state.commandHistory.length;
+
+    const promptText = el.promptTag ? el.promptTag.textContent : getPromptString();
+    termPrint(`${promptText} ${input}`, "vsc-line-cmd");
+
+    const parts = input.split(/\s+/);
+    const cmdName = parts[0].toLowerCase();
+    const args = parts.slice(1);
+
+    if (COMMANDS[cmdName]) {
+      await COMMANDS[cmdName].exec(args);
+    } else {
+      termPrint(`'${cmdName}' is not recognized as an internal command. Type 'help' for available tools.`, "vsc-term-error");
+    }
+
+    scrollTermToBottom();
+  }
+
+  // --- UTILITY FORMATTERS ---
+  function escapeHtml(str) {
+    if (typeof str !== "string") {
+      if (str === null || str === undefined || typeof str === "object") return "";
+      str = String(str);
+    }
+    return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+  }
+
+  function formatBytes(bytes) {
+    if (bytes < 1024) return bytes + " B";
+    const kb = bytes / 1024;
+    if (kb < 1024) return kb.toFixed(2) + " KB";
+    const mb = kb / 1024;
+    if (mb < 1024) return mb.toFixed(2) + " MB";
+    const gb = mb / 1024;
+    return gb.toFixed(2) + " GB";
+  }
+
+  function formatLogItem(item) {
+    if (typeof item === "object") {
+      try {
+        return JSON.stringify(item);
+      } catch (e) {
+        return String(item);
+      }
+    }
+    return String(item);
+  }
+
+  function extractPath(obj, pathStr) {
+    const parts = pathStr.replace(/^(\.|\/)/, "").split(/[.\[\]]/).filter(Boolean);
+    let cur = obj;
+    for (const p of parts) {
+      if (cur == null) return undefined;
+      cur = cur[p];
+    }
+    return cur;
+  }
+
+  // --- ZERO-EVAL CSP-COMPLIANT MATHEMATICAL & BITWISE PARSER ---
+  function safeCalculate(input) {
+    let pos = 0;
+    const str = input.trim();
+
+    function peek() { return str[pos]; }
+    function consume() { return str[pos++]; }
+    function skipWhitespace() {
+      while (pos < str.length && /\s/.test(str[pos])) pos++;
+    }
+
+    function parsePrimary() {
+      skipWhitespace();
+      if (pos >= str.length) throw new Error("Unexpected end of expression");
+
+      // Parentheses
+      if (peek() === "(") {
+        consume();
+        const val = parseBitwiseOr();
+        skipWhitespace();
+        if (consume() !== ")") throw new Error("Expected ')'");
+        return val;
+      }
+
+      // Unary operators (+, -, ~)
+      if (peek() === "+" || peek() === "-" || peek() === "~") {
+        const op = consume();
+        const val = parsePrimary();
+        if (op === "+") return +val;
+        if (op === "-") return -val;
+        if (op === "~") return ~val;
+      }
+
+      // Hexadecimal (0x...)
+      if (peek() === "0" && (str[pos + 1] === "x" || str[pos + 1] === "X")) {
+        pos += 2;
+        const start = pos;
+        while (pos < str.length && /[0-9a-fA-F]/.test(str[pos])) pos++;
+        if (pos === start) throw new Error("Invalid hex literal");
+        return parseInt(str.slice(start, pos), 16);
+      }
+
+      // Binary (0b...)
+      if (peek() === "0" && (str[pos + 1] === "b" || str[pos + 1] === "B")) {
+        pos += 2;
+        const start = pos;
+        while (pos < str.length && /[01]/.test(str[pos])) pos++;
+        if (pos === start) throw new Error("Invalid binary literal");
+        return parseInt(str.slice(start, pos), 2);
+      }
+
+      // Octal (0o...)
+      if (peek() === "0" && (str[pos + 1] === "o" || str[pos + 1] === "O")) {
+        pos += 2;
+        const start = pos;
+        while (pos < str.length && /[0-7]/.test(str[pos])) pos++;
+        if (pos === start) throw new Error("Invalid octal literal");
+        return parseInt(str.slice(start, pos), 8);
+      }
+
+      // Decimal numbers
+      if (/[0-9.]/.test(peek())) {
+        const start = pos;
+        let hasDot = false;
+        while (pos < str.length && (/[0-9]/.test(str[pos]) || (str[pos] === "." && !hasDot))) {
+          if (str[pos] === ".") hasDot = true;
+          pos++;
+        }
+        return parseFloat(str.slice(start, pos));
+      }
+
+      // Math functions & constants
+      if (/[a-zA-Z_]/.test(peek())) {
+        const start = pos;
+        while (pos < str.length && /[a-zA-Z0-9_]/.test(str[pos])) pos++;
+        const name = str.slice(start, pos).toUpperCase();
+        if (name === "PI") return Math.PI;
+        if (name === "E") return Math.E;
+
+        skipWhitespace();
+        if (peek() === "(") {
+          consume();
+          const args = [];
+          skipWhitespace();
+          if (peek() !== ")") {
+            while (true) {
+              args.push(parseBitwiseOr());
+              skipWhitespace();
+              if (peek() === ",") { consume(); }
+              else if (peek() === ")") { consume(); break; }
+              else throw new Error("Expected ',' or ')' in function arguments");
+            }
+          } else {
+            consume();
+          }
+
+          const fnMap = {
+            ABS: Math.abs, SQRT: Math.sqrt, ROUND: Math.round,
+            FLOOR: Math.floor, CEIL: Math.ceil, MIN: Math.min,
+            MAX: Math.max, POW: Math.pow, LOG: Math.log, SIN: Math.sin, COS: Math.cos
+          };
+          if (fnMap[name]) return fnMap[name](...args);
+          throw new Error("Unknown function: " + name);
+        }
+        throw new Error("Unknown identifier: " + name);
+      }
+
+      throw new Error("Unexpected character: '" + peek() + "'");
+    }
+
+    function parseExponent() {
+      let left = parsePrimary();
+      skipWhitespace();
+      if (str.slice(pos, pos + 2) === "**") {
+        pos += 2;
+        const right = parseExponent();
+        return Math.pow(left, right);
+      }
+      return left;
+    }
+
+    function parseMultiplicative() {
+      let left = parseExponent();
+      while (true) {
+        skipWhitespace();
+        if (peek() === "*" && str[pos + 1] !== "*") {
+          consume();
+          left *= parseExponent();
+        } else if (peek() === "/") {
+          consume();
+          const divisor = parseExponent();
+          if (divisor === 0) throw new Error("Division by zero");
+          left /= divisor;
+        } else if (peek() === "%") {
+          consume();
+          left %= parseExponent();
+        } else {
+          break;
+        }
+      }
+      return left;
+    }
+
+    function parseAdditive() {
+      let left = parseMultiplicative();
+      while (true) {
+        skipWhitespace();
+        if (peek() === "+") {
+          consume();
+          left += parseMultiplicative();
+        } else if (peek() === "-") {
+          consume();
+          left -= parseMultiplicative();
+        } else {
+          break;
+        }
+      }
+      return left;
+    }
+
+    function parseShift() {
+      let left = parseAdditive();
+      while (true) {
+        skipWhitespace();
+        if (str.slice(pos, pos + 3) === ">>>") {
+          pos += 3;
+          left = left >>> parseAdditive();
+        } else if (str.slice(pos, pos + 2) === ">>") {
+          pos += 2;
+          left = left >> parseAdditive();
+        } else if (str.slice(pos, pos + 2) === "<<") {
+          pos += 2;
+          left = left << parseAdditive();
+        } else {
+          break;
+        }
+      }
+      return left;
+    }
+
+    function parseBitwiseAnd() {
+      let left = parseShift();
+      while (true) {
+        skipWhitespace();
+        if (peek() === "&" && str[pos + 1] !== "&") {
+          consume();
+          left = left & parseShift();
+        } else {
+          break;
+        }
+      }
+      return left;
+    }
+
+    function parseBitwiseXor() {
+      let left = parseBitwiseAnd();
+      while (true) {
+        skipWhitespace();
+        if (peek() === "^") {
+          consume();
+          left = left ^ parseBitwiseAnd();
+        } else {
+          break;
+        }
+      }
+      return left;
+    }
+
+    function parseBitwiseOr() {
+      let left = parseBitwiseXor();
+      while (true) {
+        skipWhitespace();
+        if (peek() === "|" && str[pos + 1] !== "|") {
+          consume();
+          left = left | parseBitwiseXor();
+        } else {
+          break;
+        }
+      }
+      return left;
+    }
+
+    const result = parseBitwiseOr();
+    skipWhitespace();
+    if (pos < str.length) throw new Error("Unexpected trailing characters: '" + str.slice(pos) + "'");
+    return result;
+  }
+
+  // --- ISOLATED SANDBOX RUNNER FOR USER SCRIPTS ---
+  function executeSandboxedScript(code) {
+    return new Promise((resolve) => {
+      const channel = new MessageChannel();
+      const iframe = document.createElement("iframe");
+      iframe.style.display = "none";
+      iframe.sandbox = "allow-scripts"; // Isolated origin without host CSP restrictions
+
+      let finished = false;
+      const cleanup = () => {
+        if (!finished) {
+          finished = true;
+          try { document.body.removeChild(iframe); } catch (e) {}
+        }
+      };
+
+      channel.port1.onmessage = (event) => {
+        cleanup();
+        resolve(event.data || {});
+      };
+
+      const runnerHtml = `<!DOCTYPE html><html><body><script>
+        window.addEventListener('message', function(e) {
+          var port = e.ports[0];
+          var logs = [];
+          var origLog = console.log, origWarn = console.warn, origErr = console.error;
+          console.log = function() {
+            var args = Array.prototype.slice.call(arguments);
+            logs.push({ type: 'log', msg: args.map(function(x) { return typeof x === 'object' ? JSON.stringify(x) : String(x); }).join(' ') });
+          };
+          console.warn = function() {
+            var args = Array.prototype.slice.call(arguments);
+            logs.push({ type: 'warn', msg: args.map(function(x) { return typeof x === 'object' ? JSON.stringify(x) : String(x); }).join(' ') });
+          };
+          console.error = function() {
+            var args = Array.prototype.slice.call(arguments);
+            logs.push({ type: 'error', msg: args.map(function(x) { return typeof x === 'object' ? JSON.stringify(x) : String(x); }).join(' ') });
+          };
+          try {
+            var res = (new Function(e.data))();
+            port.postMessage({ success: true, logs: logs, result: res });
+          } catch(err) {
+            port.postMessage({ success: false, logs: logs, error: err.message });
+          }
+        });
+      <\/script></body></html>`;
+
+      iframe.srcdoc = runnerHtml;
+      iframe.onload = () => {
+        try {
+          iframe.contentWindow.postMessage(code, "*", [channel.port2]);
+        } catch (err) {
+          cleanup();
+          resolve({ success: false, logs: [], error: err.message });
+        }
+      };
+
+      document.body.appendChild(iframe);
+
+      setTimeout(() => {
+        if (!finished) {
+          cleanup();
+          resolve({ success: false, logs: [], error: "Execution timed out (5s limit)" });
+        }
+      }, 5000);
+    });
+  }
+
+  // --- HARDWARE, BROWSER & OS TELEMETRY HARVESTER ---
+  async function getSystemTelemetry() {
+    let out = `<span class="vsc-term-success">=== SYSTEM &amp; BROWSER EXPOSURE REPORT ===</span>\n`;
+
+    // 1. OS & Architecture (Including High-Entropy Client Hints)
+    const ua = navigator.userAgent;
+    let platform = navigator.platform || "Unknown";
+    let arch = "x86";
+    let bitness = "64";
+    let osVersion = "";
+    let model = "";
+
+    if (navigator.userAgentData) {
+      platform = navigator.userAgentData.platform || platform;
+      try {
+        const hints = await navigator.userAgentData.getHighEntropyValues([
+          "architecture",
+          "bitness",
+          "model",
+          "platformVersion",
+          "fullVersionList"
+        ]);
+        if (hints.architecture) arch = hints.architecture;
+        if (hints.bitness) bitness = hints.bitness;
+        if (hints.platformVersion) osVersion = ` (Build ${hints.platformVersion})`;
+        if (hints.model) model = ` [Model: ${hints.model}]`;
+      } catch (e) {}
+    }
+
+    out += `\n<span class="vsc-prompt-tag">[OPERATING SYSTEM &amp; PLATFORM]</span>\n`;
+    out += `  OS Platform:   <b style="color:var(--vsc-turquoise)">${platform}${osVersion}</b>${model}\n`;
+    out += `  Architecture:  ${arch} (${bitness}-bit)\n`;
+    out += `  User Agent:    ${ua.slice(0, 75)}...\n`;
+    out += `  Languages:     ${navigator.languages ? navigator.languages.join(", ") : navigator.language}\n`;
+    out += `  Timezone:      ${Intl.DateTimeFormat().resolvedOptions().timeZone} (UTC${(new Date().getTimezoneOffset() / -60 >= 0 ? "+" : "") + new Date().getTimezoneOffset() / -60})\n`;
+
+    // 2. Hardware: CPU Cores, Memory, Battery, Touch
+    const cores = navigator.hardwareConcurrency || "N/A";
+    const memory = navigator.deviceMemory ? `${navigator.deviceMemory} GB RAM` : "Restricted / Protected";
+    const touch = navigator.maxTouchPoints || 0;
+
+    let battery = "API Not Supported / Restricted";
+    if (navigator.getBattery) {
+      try {
+        const b = await navigator.getBattery();
+        battery = `${Math.round(b.level * 100)}% [${b.charging ? "Charging" : "Discharging"}]`;
+      } catch (e) {}
+    }
+
+    out += `\n<span class="vsc-prompt-tag">[HARDWARE &amp; SENSORS]</span>\n`;
+    out += `  CPU Logical:   <b style="color:var(--vsc-turquoise)">${cores} Cores</b>\n`;
+    out += `  Device RAM:    ${memory}\n`;
+    out += `  Battery State: ${battery}\n`;
+    out += `  Touch Points:  ${touch} point(s)\n`;
+
+    // 3. Display, Viewport, HDR, Wide Color
+    const scr = window.screen;
+    const dpr = window.devicePixelRatio || 1;
+    const p3 = window.matchMedia && window.matchMedia("(color-gamut: p3)").matches;
+    const hdr = window.matchMedia && window.matchMedia("(dynamic-range: high)").matches;
+
+    out += `\n<span class="vsc-prompt-tag">[DISPLAY &amp; GRAPHICS VIEWPORT]</span>\n`;
+    out += `  Physical Res:  ${scr.width} x ${scr.height} px (Depth: ${scr.colorDepth}-bit)\n`;
+    out += `  Available Res: ${scr.availWidth} x ${scr.availHeight} px\n`;
+    out += `  Window Inner:  ${window.innerWidth} x ${window.innerHeight} px (DPR: ${dpr.toFixed(2)})\n`;
+    out += `  Color Gamut:   ${p3 ? "<b style='color:#98c379'>Display-P3 Wide Color</b>" : "Standard sRGB"}\n`;
+    out += `  Dynamic Range: ${hdr ? "<b style='color:#98c379'>High Dynamic Range (HDR)</b>" : "SDR"}\n`;
+
+    // 4. GPU & WebGL / WebGPU
+    try {
+      const canvas = document.createElement("canvas");
+      const gl = canvas.getContext("webgl2") || canvas.getContext("webgl");
+      if (gl) {
+        const dbg = gl.getExtension("WEBGL_debug_renderer_info");
+        const renderer = dbg ? gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER);
+        const vendor = dbg ? gl.getParameter(dbg.UNMASKED_VENDOR_WEBGL) : gl.getParameter(gl.VENDOR);
+        const maxTex = gl.getParameter(gl.MAX_TEXTURE_SIZE);
+        out += `\n<span class="vsc-prompt-tag">[GPU &amp; HARDWARE DRIVER]</span>\n`;
+        out += `  GPU Renderer:  <b style="color:var(--vsc-turquoise)">${renderer}</b>\n`;
+        out += `  GPU Vendor:    ${vendor}\n`;
+        out += `  Max Texture:   ${maxTex} x ${maxTex} px\n`;
+        out += `  WebGPU State:  ${"gpu" in navigator ? "<b style='color:#98c379'>Supported</b>" : "Disabled"}\n`;
+      }
+    } catch (e) {}
+
+    // 5. Network & Connection
+    const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    if (conn) {
+      out += `\n<span class="vsc-prompt-tag">[NETWORK ADAPTER INTERFACE]</span>\n`;
+      out += `  Link Type:     ${conn.effectiveType ? conn.effectiveType.toUpperCase() : "N/A"}\n`;
+      out += `  Downlink:      <b style="color:var(--vsc-turquoise)">${conn.downlink || 0} Mbps</b>\n`;
+      out += `  RTT Latency:   ${conn.rtt || 0} ms\n`;
+      out += `  Data Saver:    ${conn.saveData ? "Active" : "Disabled"}\n`;
+    }
+
+    // 6. Storage Quota
+    if (navigator.storage && navigator.storage.estimate) {
+      try {
+        const est = await navigator.storage.estimate();
+        const used = ((est.usage || 0) / (1024 * 1024)).toFixed(2);
+        const quota = ((est.quota || 0) / (1024 * 1024 * 1024)).toFixed(2);
+        out += `\n<span class="vsc-prompt-tag">[PERSISTENT STORAGE QUOTA]</span>\n`;
+        out += `  Storage Quota: ${used} MB used of ${quota} GB available\n`;
+      } catch (e) {}
+    }
+
+    // 7. Security Isolation
+    out += `\n<span class="vsc-prompt-tag">[SECURITY &amp; RUNTIME ISOLATION]</span>\n`;
+    out += `  Cross-Origin:  ${window.crossOriginIsolated ? "Isolated" : "Standard"}\n`;
+    out += `  SharedArray:   ${typeof SharedArrayBuffer !== "undefined" ? "Enabled" : "Disabled"}\n`;
+    out += `  WebAssembly:   ${typeof WebAssembly !== "undefined" ? "Native V8 Enabled" : "Disabled"}\n`;
+    out += `  ServiceWorker: ${"serviceWorker" in navigator ? "Supported" : "Unsupported"}\n`;
+
+    return out;
+  }
+
+  function setupPasswordToggle(btn, input) {
+    if (!btn || !input) return;
+    let lastToggle = 0;
+    const toggle = (e) => {
+      if (e) {
+        if (e.cancelable) e.preventDefault();
+        e.stopPropagation();
+      }
+      const now = Date.now();
+      if (now - lastToggle < 200) return;
+      lastToggle = now;
+
+      const isPass = input.type === "password";
+      input.type = isPass ? "text" : "password";
+      btn.textContent = isPass ? "🔒" : "👁";
+      btn.title = isPass ? "Hide Token" : "Show Token";
+      btn.setAttribute("aria-label", isPass ? "Hide Token" : "Show Token");
+    };
+
+    btn.addEventListener("pointerdown", toggle);
+    btn.addEventListener("touchstart", toggle, { passive: false });
+    btn.addEventListener("click", toggle);
+  }
+
+  // --- EVENT LISTENERS INITIALIZATION ---
+  function initEvents() {
+    // Terminal input handling
+    if (el.termInput) {
+      el.termInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          const val = el.termInput.value;
+          el.termInput.value = "";
+          runCommand(val);
+        } else if (e.key === "Tab") {
+          handleTabCompletion(e);
+        } else if (e.key === "ArrowUp") {
+          e.preventDefault();
+          if (state.historyIndex > 0) {
+            state.historyIndex--;
+            el.termInput.value = state.commandHistory[state.historyIndex] || "";
+          }
+        } else if (e.key === "ArrowDown") {
+          e.preventDefault();
+          if (state.historyIndex < state.commandHistory.length - 1) {
+            state.historyIndex++;
+            el.termInput.value = state.commandHistory[state.historyIndex] || "";
+          } else {
+            state.historyIndex = state.commandHistory.length;
+            el.termInput.value = "";
+          }
+        }
+      });
+    }
+
+    // Keep terminal input focused on clicking anywhere in terminal body
+    if (el.termBody) {
+      el.termBody.addEventListener("click", () => {
+        if (window.getSelection().toString().length === 0) {
+          el.termInput.focus();
+        }
+      });
+    }
+
+    // Maximize button on terminal header
+    if (el.btnMaximize) {
+      el.btnMaximize.addEventListener("click", toggleMaximizeTerminal);
+    }
+
+    // Run button in editor toolbar
+    if (el.btnRun) {
+      el.btnRun.addEventListener("click", () => COMMANDS.run.exec([]));
+    }
+
+    // Format button in editor toolbar
+    if (el.btnFormat) {
+      el.btnFormat.addEventListener("click", () => {
+        if (state.activeFile.endsWith(".json")) {
+          COMMANDS.json.exec(["format"]);
+        } else {
+          termPrint("Only JSON formatting is currently supported.", "vsc-term-info");
+        }
+      });
+    }
+
+    // Save button in editor toolbar
+    if (el.btnSave) {
+      el.btnSave.addEventListener("click", () => {
+        saveCurrentFile();
+      });
+    }
+
+    // Clear button on terminal toolbar
+    if (el.btnClear) {
+      el.btnClear.addEventListener("click", () => COMMANDS.clear.exec([]));
+    }
+
+    // Fullscreen button in titlebar
+    if (el.btnFullscreen) {
+      el.btnFullscreen.addEventListener("click", () => {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(() => {});
+          document.body.classList.add("vsc-fullscreen");
+        } else {
+          document.exitFullscreen().catch(() => {});
+          document.body.classList.remove("vsc-fullscreen");
+        }
+      });
+    }
+
+    // Reload Window button in titlebar
+    if (el.btnReloadWindow) {
+      el.btnReloadWindow.addEventListener("click", () => {
+        window.location.reload();
+      });
+    }
+
+    document.addEventListener("fullscreenchange", () => {
+      if (!document.fullscreenElement) {
+        document.body.classList.remove("vsc-fullscreen");
+      }
+    });
+
+    // Shell selector change
+    if (el.shellSelect) {
+      el.shellSelect.addEventListener("change", (e) => {
+        state.activeShell = e.target.value;
+        updatePromptTag();
+      });
+    }
+
+    // Editor textarea sync
+    if (el.codeTextarea) {
+      el.codeTextarea.addEventListener("input", () => {
+        state.files[state.activeFile] = el.codeTextarea.value;
+        state.modifiedFiles.add(state.activeFile);
+        updateGutter();
+        updateGitStatus();
+        refreshProblems();
+        saveWorkspace();
+      });
+      el.codeTextarea.addEventListener("keyup", updateGutter);
+      el.codeTextarea.addEventListener("click", updateGutter);
+    }
+
+    // Initialize Titlebar Menu Dropdowns
+    initMenuDropdowns();
+
+    // Activity Bar View Switchers (Supports pointerdown, touchstart, and click for reliable mobile response)
+    const bindActBtn = (btn, fn) => {
+      if (!btn) return;
+      let lastPress = 0;
+      const handler = (e) => {
+        if (e) {
+          if (typeof e.preventDefault === "function" && e.cancelable) e.preventDefault();
+          if (typeof e.stopPropagation === "function") e.stopPropagation();
+        }
+        const now = Date.now();
+        if (now - lastPress < 220) return;
+        lastPress = now;
+        fn(e);
+      };
+      btn.addEventListener("pointerdown", handler);
+      btn.addEventListener("touchstart", handler, { passive: false });
+      btn.addEventListener("click", handler);
+    };
+
+    bindActBtn(el.actExplorer, (e) => toggleExplorerSidebar(e));
+    bindActBtn(el.actSearch, () => switchSidebarView("search"));
+    bindActBtn(el.actGit, () => switchSidebarView("git"));
+    bindActBtn(el.actDebug, () => switchSidebarView("debug"));
+    bindActBtn(el.actExtensions, () => switchSidebarView("extensions"));
+    bindActBtn(el.actAccounts, () => openGitHubModal());
+    bindActBtn(el.actSettings, () => openSettingsModal());
+
+    // Auto-close floating drawer on mobile when clicking workspace area
+    if (el.workspaceArea) {
+      el.workspaceArea.addEventListener("click", () => {
+        if (window.innerWidth <= 768 && el.sidebar && !el.sidebar.classList.contains("collapsed")) {
+          toggleExplorerSidebar();
+        }
+      });
+    }
+
+    // Titlebar & Searchbar
+    if (el.searchBar) el.searchBar.addEventListener("click", openCommandPalette);
+    if (el.btnOpenFolder) el.btnOpenFolder.addEventListener("click", openLocalProjectFolder);
+    if (el.btnOpenProjectBanner) el.btnOpenProjectBanner.addEventListener("click", openLocalProjectFolder);
+    if (el.btnImportBanner) el.btnImportBanner.addEventListener("click", triggerWorkspaceImport);
+    if (el.btnNewBanner) el.btnNewBanner.addEventListener("click", createNewFilePrompt);
+    if (el.folderInput) el.folderInput.addEventListener("change", handleFileInputFolder);
+    if (el.importFileInput) {
+      el.importFileInput.addEventListener("change", (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (file) importWorkspaceJSON(file);
+        e.target.value = "";
+      });
+    }
+    if (el.btnNewFile) {
+      el.btnNewFile.addEventListener("click", async () => {
+        const name = await promptInWorkbench("New File", "untitled.js", "filename.js");
+        if (name) openFile(name);
+      });
+    }
+    if (el.btnRefreshSidebar) {
+      el.btnRefreshSidebar.addEventListener("click", () => {
+        renderSidebarLists();
+        renderTabs();
+        updateGitStatus();
+        refreshProblems();
+        termPrint("Explorer & Git workspace refreshed.", "vsc-term-info");
+      });
+    }
+
+    // Search view buttons
+    if (el.btnFindInFiles) el.btnFindInFiles.addEventListener("click", searchInFiles);
+    if (el.searchQueryInput) {
+      el.searchQueryInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") searchInFiles();
+      });
+    }
+    if (el.btnReplaceInFiles) el.btnReplaceInFiles.addEventListener("click", replaceAllInFiles);
+
+    // Git view buttons
+    if (el.btnOpenGhModal) el.btnOpenGhModal.addEventListener("click", openGitHubModal);
+
+    if (el.btnGitGenMsg) {
+      el.btnGitGenMsg.addEventListener("click", () => generateCommitMessageUI());
+    }
+
+    if (el.gitPresetsBar) {
+      el.gitPresetsBar.addEventListener("click", (e) => {
+        const chip = e.target.closest(".vsc-chip-btn");
+        if (!chip) return;
+        const type = chip.dataset.type;
+        el.gitPresetsBar.querySelectorAll(".vsc-chip-btn").forEach(c => c.classList.remove("active"));
+        chip.classList.add("active");
+
+        const currVal = (el.gitCommitMsg ? el.gitCommitMsg.value.trim() : "");
+        const convMatch = currVal.match(/^(?:[^\w\s]+\s*)?([a-zA-Z0-9_-]+)(\([^)]+\))?:\s*(.*)$/s);
+        if (currVal && convMatch) {
+          const rest = convMatch[3] || "";
+          generateCommitMessageUI(type, rest);
+        } else {
+          generateCommitMessageUI(type);
+        }
+      });
+    }
+
+    if (el.settingBtnToggleGemini && el.settingGeminiKey) {
+      el.settingBtnToggleGemini.addEventListener("click", () => {
+        const isPw = el.settingGeminiKey.type === "password";
+        el.settingGeminiKey.type = isPw ? "text" : "password";
+        el.settingBtnToggleGemini.textContent = isPw ? "🙈" : "👁";
+        el.settingBtnToggleGemini.title = isPw ? "Hide Key" : "Show Key";
+      });
+    }
+
+    if (el.btnGitPush) {
+      el.btnGitPush.addEventListener("click", async () => {
+        if (!state.githubToken) {
+          openGitHubModal("Please connect your GitHub Personal Access Token to commit & push changes.");
+          return;
+        }
+        if (!state.githubRepo) {
+          openGitHubModal("Please select a target GitHub repository to commit & push changes.");
+          return;
+        }
+        let msg = (el.gitCommitMsg && el.gitCommitMsg.value.trim());
+        if (!msg) {
+          const autoGen = await generateCommitMessage();
+          msg = autoGen.message;
+          termPrint(`Auto-generated commit message (${autoGen.provider}): "${msg}"`, "vsc-term-info");
+        }
+        termPrint(`Pushing ${state.modifiedFiles.size} changed file(s) to GitHub (${state.githubRepo})...`, "vsc-term-info");
+        try {
+          const res = await githubPush(msg);
+          if (res.pushedFiles && res.pushedFiles.length > 0) {
+            termPrint(`Committed and pushed ${res.pushedFiles.length} file(s) to GitHub: "${msg}"`, "vsc-term-success");
+            showMessage("success", "GITHUB PUSH", `Pushed ${res.pushedFiles.length} file(s) to ${state.githubRepo}: "${msg}"`);
+            if (el.gitCommitMsg) el.gitCommitMsg.value = "";
+          } else {
+            termPrint(res.message || "Working tree clean. Nothing to push.", "vsc-term-info");
+          }
+        } catch (e) {
+          termPrint(`Push failed: ${e.message}`, "vsc-term-error");
+          showMessage("error", "GITHUB PUSH FAILED", e.message);
+        }
+      });
+    }
+    if (el.btnGitPull) {
+      el.btnGitPull.addEventListener("click", async (e) => {
+        if (!state.githubToken) {
+          openGitHubModal("Please connect your GitHub Personal Access Token to pull changes.");
+          return;
+        }
+        if (!state.githubRepo) {
+          openGitHubModal("Please select a target GitHub repository to pull changes.");
+          return;
+        }
+        const isForce = !!(e && (e.shiftKey || e.altKey));
+        termPrint(`Pulling changes from GitHub (${state.githubRepo}@${state.githubBranch || "main"})${isForce ? ' [force]' : ''}...`, "vsc-term-info");
+        try {
+          const res = await githubPull({ force: isForce });
+          if (res.pulledFiles && res.pulledFiles.length > 0) {
+            const diskNote = res.diskSyncCount > 0 ? ` (${res.diskSyncCount} written to local disk)` : "";
+            termPrint(`Successfully pulled ${res.pulledFiles.length} file(s) from GitHub${diskNote}:`, "vsc-term-success");
+            res.pulledFiles.forEach(f => termPrint(`  ↓ ${f}`, "vsc-term-dim"));
+            showMessage("success", "GITHUB PULL", `Pulled ${res.pulledFiles.length} file(s) from ${state.githubRepo}${diskNote}`);
+          } else {
+            termPrint(res.message || "Already up to date with remote repository.", "vsc-term-info");
+            showMessage("info", "GITHUB PULL", res.message || "Already up to date with remote repository.");
+          }
+        } catch (e) {
+          termPrint(`Pull failed: ${e.message}`, "vsc-term-error");
+          showMessage("error", "GITHUB PULL FAILED", e.message);
+        }
+      });
+    }
+
+    // Run & Debug view
+    if (el.btnDebugRun) {
+      el.btnDebugRun.addEventListener("click", () => {
+        switchTerminalTab("debug");
+        COMMANDS.run.exec([]);
+      });
+    }
+    if (el.debugInput) {
+      el.debugInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          const val = el.debugInput.value;
+          el.debugInput.value = "";
+          runDebugRepl(val);
+        }
+      });
+    }
+
+    // Terminal Tabs
+    if (el.tabTerm) el.tabTerm.addEventListener("click", () => switchTerminalTab("terminal"));
+    if (el.tabMessages) el.tabMessages.addEventListener("click", () => switchTerminalTab("messages"));
+    if (el.tabOutput) el.tabOutput.addEventListener("click", () => switchTerminalTab("output"));
+    if (el.tabProblems) el.tabProblems.addEventListener("click", () => switchTerminalTab("problems"));
+    if (el.tabPorts) el.tabPorts.addEventListener("click", () => switchTerminalTab("ports"));
+    if (el.tabDebug) el.tabDebug.addEventListener("click", () => switchTerminalTab("debug"));
+    if (el.btnClearMessages) {
+      el.btnClearMessages.addEventListener("click", () => {
+        if (el.messagesHistory) el.messagesHistory.innerHTML = "";
+        messagesCount = 0;
+        if (el.messagesCount) el.messagesCount.style.display = "none";
+      });
+    }
+
+    // Status bar interactive items
+    if (el.statusGit) el.statusGit.addEventListener("click", openGitHubModal);
+    if (el.statusSync) {
+      el.statusSync.addEventListener("click", () => {
+        syncWithGitHub();
+      });
+    }
+    if (el.statusDiagnostics) el.statusDiagnostics.addEventListener("click", () => switchTerminalTab("problems"));
+    if (el.statusLnCol) {
+      el.statusLnCol.addEventListener("click", async () => {
+        const ln = await promptInWorkbench("Go to Line", "", "Enter line number");
+        if (ln && el.codeTextarea) {
+          const lineNum = parseInt(ln, 10);
+          const lines = el.codeTextarea.value.split("\n");
+          if (lineNum > 0 && lineNum <= lines.length) {
+            const charPos = lines.slice(0, lineNum - 1).join("\n").length + 1;
+            el.codeTextarea.setSelectionRange(charPos, charPos);
+            el.codeTextarea.focus();
+            updateGutter();
+          }
+        }
+      });
+    }
+    if (el.statusSpaces) {
+      el.statusSpaces.addEventListener("click", () => {
+        const curTab = el.codeTextarea && el.codeTextarea.style.tabSize === "4" ? "2" : "4";
+        if (el.codeTextarea) el.codeTextarea.style.tabSize = curTab;
+        el.statusSpaces.textContent = `Spaces: ${curTab}`;
+        termPrint(`Indentation set to Spaces: ${curTab}`, "vsc-term-info");
+      });
+    }
+    if (el.statusEncoding) {
+      el.statusEncoding.addEventListener("click", () => {
+        termPrint("File encoding: UTF-8 (Unicode Standard).", "vsc-term-info");
+      });
+    }
+    if (el.statusLang) {
+      el.statusLang.addEventListener("click", () => {
+        termPrint(`Active file type: ${state.activeFile.split('.').pop().toUpperCase() || 'Plain Text'}`, "vsc-term-info");
+      });
+    }
+    if (el.statusOnline) {
+      el.statusOnline.addEventListener("click", async () => {
+        termPrint("Testing network latency & reachability...", "vsc-term-dim");
+        const t0 = performance.now();
+        try {
+          await fetch("https://cloudflare.com/cdn-cgi/trace", { mode: "no-cors" });
+          const ms = (performance.now() - t0).toFixed(1);
+          termPrint(`Ping to Edge CDN: ${ms} ms [Online]`, "vsc-term-success");
+        } catch (e) {
+          termPrint(`Offline or restricted: ${e.message}`, "vsc-term-warn");
+        }
+      });
+    }
+
+    // Command Palette Dialog
+    if (el.paletteInput) {
+      el.paletteInput.addEventListener("input", () => renderPaletteList(el.paletteInput.value));
+      el.paletteInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          const first = el.paletteList && el.paletteList.querySelector(".vsc-palette-item:not([style*='italic'])");
+          if (first) first.click();
+        }
+      });
+    }
+    if (el.paletteDialog) {
+      el.paletteDialog.addEventListener("click", (e) => {
+        if (e.target === el.paletteDialog) el.paletteDialog.close();
+      });
+    }
+
+    // GitHub Dialog
+    if (el.ghBtnClose) el.ghBtnClose.addEventListener("click", () => el.githubDialog.close());
+    if (el.ghBtnCancel) el.ghBtnCancel.addEventListener("click", () => el.githubDialog.close());
+    if (el.githubDialog) {
+      el.githubDialog.addEventListener("click", (e) => {
+        if (e.target === el.githubDialog) el.githubDialog.close();
+      });
+    }
+
+    if (el.ghBtnToggleToken && el.ghTokenInput) {
+      setupPasswordToggle(el.ghBtnToggleToken, el.ghTokenInput);
+    }
+
+    if (el.settingBtnToggleToken && el.settingGhToken) {
+      setupPasswordToggle(el.settingBtnToggleToken, el.settingGhToken);
+    }
+
+    if (el.ghRepoSelect) {
+      el.ghRepoSelect.addEventListener("change", () => {
+        const selectedVal = el.ghRepoSelect.value;
+        const selectedOpt = el.ghRepoSelect.selectedOptions ? el.ghRepoSelect.selectedOptions[0] : null;
+
+        if (selectedVal === "__custom__") {
+          if (el.ghRepoInput) {
+            el.ghRepoInput.focus();
+            el.ghRepoInput.select();
+          }
+        } else if (selectedVal) {
+          if (el.ghRepoInput) el.ghRepoInput.value = selectedVal;
+          if (selectedOpt && selectedOpt.dataset.branch && el.ghBranchInput) {
+            el.ghBranchInput.value = selectedOpt.dataset.branch;
+          }
+          if (el.ghStatusMsg) {
+            el.ghStatusMsg.innerHTML = `<span style="color:#98c379">Selected ${selectedVal} (branch: ${el.ghBranchInput ? el.ghBranchInput.value : 'main'})</span>`;
+          }
+        }
+      });
+    }
+
+    if (el.ghBtnRefreshRepos) {
+      el.ghBtnRefreshRepos.addEventListener("click", () => {
+        loadRepoOptions(true);
+      });
+    }
+
+    if (el.ghRepoInput) {
+      el.ghRepoInput.addEventListener("input", () => {
+        const val = el.ghRepoInput.value.trim().toLowerCase();
+        if (!el.ghRepoSelect) return;
+        let matched = false;
+        Array.from(el.ghRepoSelect.options).forEach(opt => {
+          if (opt.value && opt.value.toLowerCase() === val) {
+            opt.selected = true;
+            matched = true;
+            if (opt.dataset.branch && el.ghBranchInput) {
+              el.ghBranchInput.value = opt.dataset.branch;
+            }
+          }
+        });
+        if (!matched && val) {
+          const customOpt = el.ghRepoSelect.querySelector('option[value="__custom__"]');
+          if (customOpt) customOpt.selected = true;
+        }
+      });
+    }
+
+    if (el.ghTokenInput) {
+      let tokenDebounce = null;
+      const onTokenInput = () => {
+        const val = el.ghTokenInput ? el.ghTokenInput.value.trim() : "";
+        if (!val) {
+          if (el.ghSavedBadge) el.ghSavedBadge.style.display = "none";
+          if (el.ghRepoSelect) el.ghRepoSelect.innerHTML = `<option value="">-- Enter token above to load repositories --</option><option value="__custom__">✎ Enter custom repository manually...</option>`;
+          return;
+        }
+        if (val.length >= 15 || val.startsWith("ghp_") || val.startsWith("github_pat_")) {
+          clearTimeout(tokenDebounce);
+          tokenDebounce = setTimeout(() => {
+            loadRepoOptions(true);
+          }, 350);
+        }
+      };
+
+      el.ghTokenInput.addEventListener("input", onTokenInput);
+      el.ghTokenInput.addEventListener("paste", () => setTimeout(onTokenInput, 50));
+      el.ghTokenInput.addEventListener("change", onTokenInput);
+
+      el.ghTokenInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          const repo = (el.ghRepoSelect && el.ghRepoSelect.value && el.ghRepoSelect.value !== "__custom__")
+            ? el.ghRepoSelect.value
+            : (el.ghRepoInput && el.ghRepoInput.value.trim());
+          if (repo) {
+            if (el.ghBtnConnect) el.ghBtnConnect.click();
+          } else {
+            if (el.ghBtnSaveToken) el.ghBtnSaveToken.click();
+          }
+        }
+      });
+    }
+
+    if (el.ghBtnSaveToken) {
+      el.ghBtnSaveToken.addEventListener("click", async () => {
+        const token = (el.ghTokenInput && el.ghTokenInput.value.trim()) || state.githubToken;
+        if (!token) {
+          if (el.ghStatusMsg) el.ghStatusMsg.innerHTML = `<span style="color:#f44336">Please enter a GitHub Personal Access Token.</span>`;
+          return;
+        }
+        if (el.ghStatusMsg) el.ghStatusMsg.innerHTML = `<span style="color:var(--vsc-turquoise)">Saving &amp; verifying token...</span>`;
+        const remember = !el.ghRememberToken || el.ghRememberToken.checked;
+        const authRes = await githubAuth(token, remember);
+        if (authRes.success) {
+          const userStr = authRes.user && authRes.user.login ? `@${authRes.user.login}` : maskToken(token);
+          if (el.ghSavedBadge) {
+            el.ghSavedBadge.style.display = "inline-block";
+            el.ghSavedBadge.textContent = `✓ Saved (${userStr})`;
+          }
+          if (el.ghBtnDisconnect) el.ghBtnDisconnect.style.display = "inline-flex";
+          termPrint(`GitHub token saved and remembered for ${userStr}`, "vsc-term-success");
+          showMessage("success", "GITHUB TOKEN", `Token remembered for ${userStr}. Listing repositories.`);
+
+          if (el.ghStatusMsg) el.ghStatusMsg.innerHTML = `<span style="color:var(--vsc-turquoise)">✓ Token verified! Loading your repositories...</span>`;
+          await loadRepoOptions(true);
+          if (el.ghStatusMsg) el.ghStatusMsg.innerHTML = `<span style="color:#98c379">✓ Token verified! Choose a repository from the list above.</span>`;
+          if (el.ghRepoSelect) el.ghRepoSelect.focus();
+        } else {
+          if (el.ghStatusMsg) el.ghStatusMsg.innerHTML = `<span style="color:#f44336">Verification failed: ${authRes.message}</span>`;
+          termPrint(`GitHub token verification failed: ${authRes.message}`, "vsc-term-error");
+          showMessage("error", "GITHUB TOKEN", authRes.message);
+        }
+      });
+    }
+
+    const handleGhDisconnect = async () => {
+      await githubAuth("");
+      state.cachedRepos = null;
+      if (el.ghTokenInput) el.ghTokenInput.value = "";
+      if (el.ghRepoInput) el.ghRepoInput.value = "";
+      if (el.ghRepoSelect) el.ghRepoSelect.innerHTML = `<option value="">-- Enter token to load repositories --</option><option value="__custom__">✎ Enter custom repository manually...</option>`;
+      if (el.settingGhToken) el.settingGhToken.value = "";
+      state.githubRepo = "";
+      try { localStorage.removeItem("vsc_gh_repo"); } catch(e){}
+      setCookie("gh_repo", "", -1);
+      updateGitStatus();
+      if (el.ghSavedBadge) el.ghSavedBadge.style.display = "none";
+      if (el.ghBtnDisconnect) el.ghBtnDisconnect.style.display = "none";
+      if (el.ghStatusMsg) el.ghStatusMsg.innerHTML = `<span style="color:var(--vsc-fg-secondary)">Logged out. Token and repo cleared.</span>`;
+      termPrint("Logged out from GitHub. Token cleared from cookies and local storage.", "vsc-term-info");
+      showMessage("info", "GITHUB LOGOUT", "Logged out. Token removed from device.");
+      setTimeout(() => {
+        if (el.githubDialog && el.githubDialog.open) el.githubDialog.close();
+      }, 700);
+    };
+
+    if (el.ghBtnDisconnect) el.ghBtnDisconnect.addEventListener("click", handleGhDisconnect);
+    if (el.btnDisconnectGh) el.btnDisconnectGh.addEventListener("click", handleGhDisconnect);
+
+    if (el.ghBtnConnect) {
+      el.ghBtnConnect.addEventListener("click", async () => {
+        const token = (el.ghTokenInput && el.ghTokenInput.value.trim()) || state.githubToken;
+        let repo = (el.ghRepoSelect && el.ghRepoSelect.value) || (el.ghRepoInput && el.ghRepoInput.value.trim());
+        if (repo === "__custom__" || !repo) {
+          repo = el.ghRepoInput ? el.ghRepoInput.value.trim() : "";
+        }
+        const branch = (el.ghBranchInput && el.ghBranchInput.value.trim()) || "main";
+
+        if (!token) {
+          if (el.ghStatusMsg) el.ghStatusMsg.innerHTML = `<span style="color:#f44336">Token is required.</span>`;
+          return;
+        }
+
+        if (el.ghStatusMsg) el.ghStatusMsg.innerHTML = `<span style="color:var(--vsc-turquoise)">Verifying token...</span>`;
+        const remember = !el.ghRememberToken || el.ghRememberToken.checked;
+        const authRes = await githubAuth(token, remember);
+        if (!authRes.success) {
+          if (el.ghStatusMsg) el.ghStatusMsg.innerHTML = `<span style="color:#f44336">${authRes.message}</span>`;
+          return;
+        }
+
+        if (!repo) {
+          if (el.ghStatusMsg) el.ghStatusMsg.innerHTML = `<span style="color:#f44336">Please select or enter a repository to load.</span>`;
+          if (el.ghRepoSelect) el.ghRepoSelect.focus();
+          return;
+        }
+
+        state.githubRepo = repo;
+          state.githubBranch = branch;
+          try {
+            localStorage.setItem("vsc_gh_repo", repo);
+            localStorage.setItem("vsc_gh_branch", branch);
+          } catch(e){}
+          setCookie("gh_repo", repo, 365);
+          setCookie("gh_branch", branch, 365);
+          updateGitStatus();
+
+          if (el.ghStatusMsg) el.ghStatusMsg.innerHTML = `<span style="color:var(--vsc-turquoise)">Loading repository ${repo}...</span>`;
+          try {
+            const cloneRes = await githubCloneRepo(repo, branch, (cur, total, path) => {
+              if (el.ghStatusMsg) el.ghStatusMsg.innerHTML = `<span style="color:var(--vsc-turquoise)">[${cur}/${total}] ${path}</span>`;
+            });
+            if (el.ghStatusMsg) el.ghStatusMsg.innerHTML = `<span style="color:#98c379">Loaded ${cloneRes.count} files!</span>`;
+            setTimeout(() => {
+              el.githubDialog.close();
+              termPrint(`Connected to GitHub repo ${repo}@${branch} (${cloneRes.count} files).`, "vsc-term-success");
+            }, 800);
+          } catch (e) {
+            if (el.ghStatusMsg) el.ghStatusMsg.innerHTML = `<span style="color:#f44336">${e.message}</span>`;
+          }
+      });
+    }
+
+    // Settings Dialog
+    if (el.settingsBtnClose) el.settingsBtnClose.addEventListener("click", () => el.settingsDialog.close());
+    if (el.settingsBtnSave) {
+      el.settingsBtnSave.addEventListener("click", () => {
+        applySettings(true);
+        el.settingsDialog.close();
+        termPrint("Settings applied and saved.", "vsc-term-success");
+      });
+    }
+    if (el.settingsDialog) {
+      el.settingsDialog.addEventListener("click", (e) => {
+        if (e.target === el.settingsDialog) el.settingsDialog.close();
+      });
+    }
+
+    // Reset & Clear Workspace Data action buttons
+    if (el.btnClearWorkspaceBanner) {
+      el.btnClearWorkspaceBanner.addEventListener("click", (e) => {
+        if (e) {
+          if (e.cancelable) e.preventDefault();
+          e.stopPropagation();
+        }
+        resetWorkspaceData();
+      });
+    }
+
+    if (el.btnResetData) {
+      el.btnResetData.addEventListener("click", (e) => {
+        if (e) {
+          if (e.cancelable) e.preventDefault();
+          e.stopPropagation();
+        }
+        if (el.settingsDialog && el.settingsDialog.open) el.settingsDialog.close();
+        setTimeout(() => {
+          resetWorkspaceData();
+        }, 50);
+      });
+    }
+    if (el.itemResetData) {
+      el.itemResetData.addEventListener("click", (e) => {
+        if (e) {
+          if (e.cancelable) e.preventDefault();
+          e.stopPropagation();
+        }
+        resetWorkspaceData();
+      });
+    }
+
+    // Additional GNU Nano Buttons
+    const nanoWhere = document.getElementById("vsc-nano-btn-where");
+    if (nanoWhere) {
+      nanoWhere.addEventListener("click", async () => {
+        const query = await promptInWorkbench("Search in nano", "", "Find text");
+        if (query && el.nanoEditor) {
+          const idx = el.nanoEditor.value.indexOf(query);
+          if (idx !== -1) {
+            el.nanoEditor.setSelectionRange(idx, idx + query.length);
+            el.nanoEditor.focus();
+            if (el.nanoStatus) el.nanoStatus.textContent = `[Found '${query}']`;
+          } else {
+            if (el.nanoStatus) el.nanoStatus.textContent = `['${query}' Not Found]`;
+          }
+        }
+      });
+    }
+
+    const nanoCut = document.getElementById("vsc-nano-btn-cut");
+    if (nanoCut && el.nanoEditor) {
+      nanoCut.addEventListener("click", () => {
+        const start = el.nanoEditor.selectionStart;
+        const end = el.nanoEditor.selectionEnd;
+        if (start !== end) {
+          const cutText = el.nanoEditor.value.substring(start, end);
+          if (navigator.clipboard) navigator.clipboard.writeText(cutText).catch(() => {});
+          el.nanoEditor.value = el.nanoEditor.value.substring(0, start) + el.nanoEditor.value.substring(end);
+          if (el.nanoStatus) el.nanoStatus.textContent = `[Cut ${cutText.length} chars]`;
+        }
+      });
+    }
+
+    const nanoPaste = document.getElementById("vsc-nano-btn-paste");
+    if (nanoPaste && el.nanoEditor) {
+      nanoPaste.addEventListener("click", async () => {
+        try {
+          const text = await navigator.clipboard.readText();
+          const start = el.nanoEditor.selectionStart;
+          const end = el.nanoEditor.selectionEnd;
+          el.nanoEditor.value = el.nanoEditor.value.substring(0, start) + text + el.nanoEditor.value.substring(end);
+          if (el.nanoStatus) el.nanoStatus.textContent = `[Pasted ${text.length} chars]`;
+        } catch (e) {}
+      });
+    }
+
+    const nanoReplace = document.getElementById("vsc-nano-btn-replace");
+    if (nanoReplace && el.nanoEditor) {
+      nanoReplace.addEventListener("click", async () => {
+        const findText = await promptInWorkbench("Find in nano", "", "Text to search");
+        if (!findText) return;
+        const repText = await promptInWorkbench(`Replace '${findText}' with`, "", "Replacement text") || "";
+        const parts = el.nanoEditor.value.split(findText);
+        if (parts.length > 1) {
+          el.nanoEditor.value = parts.join(repText);
+          if (el.nanoStatus) el.nanoStatus.textContent = `[Replaced ${parts.length - 1} occurrences]`;
+        } else {
+          if (el.nanoStatus) el.nanoStatus.textContent = `[No match found]`;
+        }
+      });
+    }
+
+    const nanoHelp = document.getElementById("vsc-nano-btn-help");
+    if (nanoHelp) {
+      nanoHelp.addEventListener("click", () => {
+        showMessage("info", "GNU NANO SHORTCUTS", "^O / WriteOut: Save changes\n^X / Exit: Close editor\n^W / Where Is: Search\n^K / Cut: Cut text\n^U / Paste: Paste text");
+      });
+    }
+
+    const nanoPos = document.getElementById("vsc-nano-btn-pos");
+    if (nanoPos && el.nanoEditor) {
+      nanoPos.addEventListener("click", () => {
+        const pos = el.nanoEditor.selectionStart;
+        const textBefore = el.nanoEditor.value.substring(0, pos);
+        const line = textBefore.split("\n").length;
+        const col = pos - textBefore.lastIndexOf("\n");
+        if (el.nanoStatus) el.nanoStatus.textContent = `[Line ${line}/${el.nanoEditor.value.split("\n").length}, Col ${col}]`;
+      });
+    }
+
+    const nanoJustify = document.getElementById("vsc-nano-btn-justify");
+    if (nanoJustify && el.nanoEditor) {
+      nanoJustify.addEventListener("click", () => {
+        el.nanoEditor.value = el.nanoEditor.value.split("\n").map(l => l.trimRight()).join("\n");
+        if (el.nanoStatus) el.nanoStatus.textContent = `[Justified text]`;
+      });
+    }
+
+    const nanoRead = document.getElementById("vsc-nano-btn-read");
+    if (nanoRead && el.nanoEditor) {
+      nanoRead.addEventListener("click", async () => {
+        const fn = await promptInWorkbench("Read file into nano", Object.keys(state.files)[0], "Filename");
+        if (fn && state.files[fn]) {
+          const pos = el.nanoEditor.selectionStart;
+          el.nanoEditor.value = el.nanoEditor.value.substring(0, pos) + state.files[fn] + el.nanoEditor.value.substring(pos);
+          if (el.nanoStatus) el.nanoStatus.textContent = `[Inserted ${fn}]`;
+        }
+      });
+    }
+
+    const nanoSpell = document.getElementById("vsc-nano-btn-spell");
+    if (nanoSpell) {
+      nanoSpell.addEventListener("click", () => {
+        if (el.nanoStatus) el.nanoStatus.textContent = `[Spell check: 0 syntax issues]`;
+      });
+    }
+
+    const nanoNext = document.getElementById("vsc-nano-btn-next");
+    if (nanoNext && el.nanoEditor) {
+      nanoNext.addEventListener("click", () => {
+        el.nanoEditor.scrollTop += el.nanoEditor.clientHeight * 0.8;
+      });
+    }
+
+    // --- CONTEXT MENU ENGINE ---
+    let activeContextMenu = null;
+
+    function hideContextMenu() {
+      const menu = document.getElementById("vsc-context-menu");
+      if (menu) {
+        menu.style.display = "none";
+        menu.innerHTML = "";
+      }
+      activeContextMenu = null;
+    }
+
+    function showContextMenu(x, y, items) {
+      hideContextMenu();
+      const menu = document.getElementById("vsc-context-menu");
+      if (!menu) return;
+
+      items.forEach((item) => {
+        if (item.separator) {
+          const sep = document.createElement("div");
+          sep.className = "vsc-ctx-separator";
+          menu.appendChild(sep);
+          return;
+        }
+
+        const row = document.createElement("div");
+        row.className = `vsc-ctx-item ${item.disabled ? "disabled" : ""}`;
+
+        const label = document.createElement("span");
+        label.className = "vsc-ctx-label";
+        if (item.icon) {
+          label.innerHTML = `${item.icon}<span>${item.label}</span>`;
+        } else {
+          label.textContent = item.label;
+        }
+        row.appendChild(label);
+
+        if (item.shortcut) {
+          const sc = document.createElement("span");
+          sc.className = "vsc-ctx-shortcut";
+          sc.textContent = item.shortcut;
+          row.appendChild(sc);
+        }
+
+        row.addEventListener("click", (e) => {
+          e.stopPropagation();
+          hideContextMenu();
+          if (typeof item.exec === "function" && !item.disabled) {
+            item.exec();
+          }
+        });
+
+        menu.appendChild(row);
+      });
+
+      menu.style.display = "block";
+      menu.style.left = "0px";
+      menu.style.top = "0px";
+
+      const rect = menu.getBoundingClientRect();
+      const winW = window.innerWidth;
+      const winH = window.innerHeight;
+
+      let posX = x;
+      let posY = y;
+
+      if (posX + rect.width > winW - 8) {
+        posX = Math.max(8, winW - rect.width - 8);
+      }
+      if (posY + rect.height > winH - 8) {
+        posY = Math.max(8, winH - rect.height - 8);
+      }
+
+      menu.style.left = `${posX}px`;
+      menu.style.top = `${posY}px`;
+      activeContextMenu = menu;
+    }
+
+    function showTabContextMenu(x, y, filename) {
+      const tabIdx = state.openTabs.indexOf(filename);
+      const hasOthers = state.openTabs.length > 1;
+      const hasToRight = tabIdx >= 0 && tabIdx < state.openTabs.length - 1;
+      const isMd = filename.toLowerCase().endsWith(".md") || filename.toLowerCase().endsWith(".markdown");
+
+      const items = [];
+      if (isMd) {
+        items.push({
+          label: "Open Markdown Preview",
+          shortcut: "Ctrl+Shift+V",
+          exec: () => previewMarkdown(filename)
+        });
+        items.push({ separator: true });
+      }
+
+      items.push(
+        {
+          label: "Close",
+          shortcut: "Ctrl+W",
+          exec: () => closeTab(filename)
+        },
+        {
+          label: "Close Others",
+          disabled: !hasOthers,
+          exec: () => closeOtherTabs(filename)
+        },
+        {
+          label: "Close to the Right",
+          disabled: !hasToRight,
+          exec: () => closeTabsToRight(filename)
+        },
+        {
+          label: "Close All",
+          shortcut: "Ctrl+K W",
+          exec: () => closeAllTabs()
+        },
+        { separator: true },
+        {
+          label: "Copy Filename",
+          exec: () => {
+            navigator.clipboard?.writeText(filename).catch(() => {});
+            showMessage("success", "Clipboard", `Copied "${filename}" to clipboard`);
+          }
+        },
+        {
+          label: "Copy Relative Path",
+          exec: () => {
+            const relPath = state.isLocalProject ? `${state.projectName}/${filename}` : filename;
+            navigator.clipboard?.writeText(relPath).catch(() => {});
+            showMessage("success", "Clipboard", `Copied path "${relPath}" to clipboard`);
+          }
+        },
+        {
+          label: "Reveal in Explorer",
+          exec: () => {
+            switchSidebarView("explorer");
+            if (el.sidebar && el.sidebar.classList.contains("collapsed")) {
+              el.sidebar.classList.remove("collapsed");
+            }
+          }
+        }
+      );
+
+      showContextMenu(x, y, items);
+    }
+
+    function showTabsBarEmptyContextMenu(x, y) {
+      showContextMenu(x, y, [
+        {
+          label: "New File...",
+          shortcut: "Ctrl+N",
+          exec: () => createNewFilePrompt()
+        },
+        {
+          label: "Import Workspace (JSON)...",
+          exec: () => triggerWorkspaceImport()
+        },
+        {
+          label: "Close All Tabs",
+          disabled: state.openTabs.length === 0,
+          exec: () => closeAllTabs()
+        },
+        { separator: true },
+        {
+          label: "Open Local Project Folder...",
+          shortcut: "Ctrl+O",
+          exec: () => openLocalProjectFolder()
+        }
+      ]);
+    }
+
+    function showEditorContextMenu(x, y) {
+      const isMd = state.activeFile && (state.activeFile.endsWith(".md") || state.activeFile.endsWith(".markdown"));
+      const items = [
+        {
+          label: "Command Palette...",
+          shortcut: "F1",
+          exec: () => openCommandPalette()
+        },
+        { separator: true }
+      ];
+
+      if (isMd) {
+        items.push({
+          label: "Open Markdown Preview",
+          shortcut: "Ctrl+Shift+V",
+          exec: () => previewMarkdown(state.activeFile)
+        });
+        items.push({ separator: true });
+      }
+
+      items.push(
+        {
+          label: "Run Script in Terminal",
+          shortcut: "Ctrl+Enter",
+          disabled: !state.activeFile,
+          exec: () => COMMANDS.run.exec([])
+        },
+        {
+          label: "Serve / Preview Page",
+          disabled: !state.activeFile,
+          exec: () => serveFile(state.activeFile, 3000, false)
+        },
+        {
+          label: "Format Document",
+          shortcut: "Alt+Shift+F",
+          disabled: !state.activeFile,
+          exec: () => {
+            if (el.btnFormat) el.btnFormat.click();
+          }
+        },
+        { separator: true },
+        {
+          label: "Cut",
+          shortcut: "Ctrl+X",
+          disabled: !el.codeTextarea || el.codeTextarea.selectionStart === el.codeTextarea.selectionEnd,
+          exec: () => document.execCommand("cut")
+        },
+        {
+          label: "Copy",
+          shortcut: "Ctrl+C",
+          disabled: !el.codeTextarea || el.codeTextarea.selectionStart === el.codeTextarea.selectionEnd,
+          exec: () => document.execCommand("copy")
+        },
+        {
+          label: "Paste",
+          shortcut: "Ctrl+V",
+          exec: async () => {
+            try {
+              const text = await navigator.clipboard.readText();
+              if (text && el.codeTextarea) {
+                const start = el.codeTextarea.selectionStart;
+                const end = el.codeTextarea.selectionEnd;
+                el.codeTextarea.setRangeText(text, start, end, "end");
+                el.codeTextarea.dispatchEvent(new Event("input"));
+              }
+            } catch (e) {
+              document.execCommand("paste");
+            }
+          }
+        },
+        {
+          label: "Select All",
+          shortcut: "Ctrl+A",
+          exec: () => {
+            if (el.codeTextarea) {
+              el.codeTextarea.focus();
+              el.codeTextarea.select();
+            }
+          }
+        },
+        { separator: true },
+        {
+          label: "Save File",
+          shortcut: "Ctrl+S",
+          disabled: !state.activeFile,
+          exec: () => saveCurrentFile()
+        }
+      );
+      showContextMenu(x, y, items);
+    }
+
+    function showTerminalContextMenu(x, y) {
+      showContextMenu(x, y, [
+        {
+          label: "Clear Terminal",
+          shortcut: "Ctrl+K",
+          exec: () => COMMANDS.clear.exec([])
+        },
+        {
+          label: state.isMaximized ? "Restore Panel Size" : "Maximize Panel Size",
+          shortcut: "Ctrl+`",
+          exec: () => toggleMaximizeTerminal()
+        },
+        { separator: true },
+        {
+          label: "Terminal Tab",
+          exec: () => switchTerminalTab("terminal")
+        },
+        {
+          label: "Messages Tab",
+          exec: () => switchTerminalTab("messages")
+        },
+        {
+          label: "Output Tab",
+          exec: () => switchTerminalTab("output")
+        },
+        {
+          label: "Virtual Server Tab",
+          exec: () => switchTerminalTab("server")
+        },
+        {
+          label: "Nano Editor Tab",
+          exec: () => switchTerminalTab("nano")
+        }
+      ]);
+    }
+
+    function showExplorerContextMenu(x, y) {
+      showContextMenu(x, y, [
+        {
+          label: "New File...",
+          shortcut: "Ctrl+N",
+          exec: () => createNewFilePrompt()
+        },
+        {
+          label: "Open Local Project Folder...",
+          shortcut: "Ctrl+O",
+          exec: () => openLocalProjectFolder()
+        },
+        {
+          label: "Import Workspace (JSON)...",
+          exec: () => triggerWorkspaceImport()
+        },
+        { separator: true },
+        {
+          label: "Refresh Explorer",
+          exec: () => {
+            renderSidebarLists();
+            renderTabs();
+            showMessage("info", "Explorer", "Refreshed workspace file tree");
+          }
+        },
+        {
+          label: "Clear Workspace",
+          disabled: Object.keys(state.files).length === 0,
+          exec: () => clearWorkspace()
+        },
+        {
+          label: "Close All Tabs",
+          disabled: state.openTabs.length === 0,
+          exec: () => closeAllTabs()
+        }
+      ]);
+    }
+
+    function showExplorerItemContextMenu(x, y, filename) {
+      const isOpen = state.openTabs.includes(filename);
+      const keys = Object.keys(state.files);
+
+      showContextMenu(x, y, [
+        {
+          label: "Open",
+          exec: () => openFile(filename)
+        },
+        {
+          label: "Close Tab",
+          disabled: !isOpen,
+          exec: () => closeTab(filename)
+        },
+        { separator: true },
+        {
+          label: "Copy Filename",
+          exec: () => {
+            navigator.clipboard?.writeText(filename).catch(() => {});
+            showMessage("success", "Clipboard", `Copied "${filename}" to clipboard`);
+          }
+        },
+        {
+          label: "Copy Relative Path",
+          exec: () => {
+            const relPath = state.isLocalProject ? `${state.projectName}/${filename}` : filename;
+            navigator.clipboard?.writeText(relPath).catch(() => {});
+            showMessage("success", "Clipboard", `Copied path "${relPath}" to clipboard`);
+          }
+        },
+        { separator: true },
+        {
+          label: "Delete from Workspace",
+          disabled: keys.length <= 1,
+          exec: () => {
+            closeTab(filename);
+            delete state.files[filename];
+            saveWorkspace();
+            renderSidebarLists();
+            showMessage("warning", "Workspace", `Deleted "${filename}" from workspace`);
+          }
+        }
+      ]);
+    }
+
+    function showGeneralContextMenu(x, y) {
+      showContextMenu(x, y, [
+        {
+          label: "Command Palette...",
+          shortcut: "Ctrl+P",
+          exec: () => openCommandPalette()
+        },
+        {
+          label: "Toggle Primary Sidebar",
+          shortcut: "Ctrl+B",
+          exec: () => {
+            toggleExplorerSidebar();
+          }
+        },
+        {
+          label: "Toggle Terminal Panel",
+          shortcut: "Ctrl+`",
+          exec: () => toggleMaximizeTerminal()
+        },
+        { separator: true },
+        {
+          label: "Open Local Project Folder...",
+          shortcut: "Ctrl+O",
+          exec: () => openLocalProjectFolder()
+        },
+        {
+          label: "Open Settings...",
+          exec: () => {
+            if (el.settingsDialog && typeof el.settingsDialog.showModal === "function") {
+              el.settingsDialog.showModal();
+            }
+          }
+        }
+      ]);
+    }
+
+    async function createNewFilePrompt() {
+      const name = await promptInWorkbench("New File", "untitled.js", "filename.js");
+      if (name) {
+        openFile(name);
+        showMessage("success", "File Created", `Created and opened ${name}`);
+      }
+    }
+
+    // Intercept right-clicks on the entire workbench (Full Control)
+    if (el.app) {
+      el.app.addEventListener("contextmenu", (e) => {
+        e.preventDefault();
+
+        const tabEl = e.target.closest(".vsc-tab");
+        if (tabEl && tabEl.dataset.filename) {
+          showTabContextMenu(e.clientX, e.clientY, tabEl.dataset.filename);
+          return;
+        }
+
+        if (e.target.closest("#vsc-tabs-bar")) {
+          showTabsBarEmptyContextMenu(e.clientX, e.clientY);
+          return;
+        }
+
+        if (e.target.closest(".vsc-editor-content") || e.target.closest("#vsc-code-editor")) {
+          showEditorContextMenu(e.clientX, e.clientY);
+          return;
+        }
+
+        if (e.target.closest("#vsc-terminal-panel")) {
+          showTerminalContextMenu(e.clientX, e.clientY);
+          return;
+        }
+
+        if (e.target.closest("#vsc-sidebar")) {
+          showExplorerContextMenu(e.clientX, e.clientY);
+          return;
+        }
+
+        showGeneralContextMenu(e.clientX, e.clientY);
+      });
+    }
+
+    document.addEventListener("click", () => hideContextMenu());
+    window.addEventListener("blur", () => hideContextMenu());
+    window.addEventListener("resize", () => hideContextMenu());
+
+    // --- KEYBOARD SHORTCUTS & FULL CONTROL ---
+    let lastCtrlKTime = 0;
+
+    async function requestKeyboardLock() {
+      if (navigator.keyboard && typeof navigator.keyboard.lock === "function") {
+        try {
+          await navigator.keyboard.lock();
+        } catch (e) {}
+      }
+    }
+
+    if (el.app) {
+      el.app.addEventListener("click", () => {
+        if (document.fullscreenElement) {
+          requestKeyboardLock();
+        }
+      });
+    }
+
+    // Global Workbench Keyboard Shortcuts (Full Control)
+    document.addEventListener("keydown", (e) => {
+      // 1. Escape key handling
+      if (e.key === "Escape") {
+        if (activeContextMenu) {
+          e.preventDefault();
+          hideContextMenu();
+          return;
+        }
+        if (el.paletteDialog && el.paletteDialog.open) {
+          e.preventDefault();
+          closeCommandPalette();
+          return;
+        }
+        if (el.quickInputDialog && el.quickInputDialog.open) {
+          e.preventDefault();
+          el.quickInputDialog.close();
+          return;
+        }
+        if (state.isMaximized) {
+          e.preventDefault();
+          toggleMaximizeTerminal();
+          return;
+        }
+      }
+
+      // 2. F1: Command Palette
+      if (e.key === "F1") {
+        e.preventDefault();
+        openCommandPalette();
+        return;
+      }
+
+      const isModifier = e.ctrlKey || e.metaKey;
+      if (!isModifier) return;
+
+      const key = e.key.toLowerCase();
+
+      // Track Ctrl+K chord
+      if (key === "k") {
+        lastCtrlKTime = Date.now();
+        if (document.activeElement === el.termInput) {
+          e.preventDefault();
+          COMMANDS.clear.exec([]);
+          return;
+        }
+      }
+
+      // Ctrl+W: Close active tab, or Ctrl+Shift+W / Ctrl+K W: Close all tabs
+      if (key === "w") {
+        e.preventDefault();
+        e.stopPropagation();
+        const wasChord = (Date.now() - lastCtrlKTime < 1500);
+        lastCtrlKTime = 0;
+        if (e.shiftKey || wasChord) {
+          closeAllTabs();
+        } else if (state.activeFile) {
+          closeTab(state.activeFile);
+        }
+        return;
+      }
+
+      // Ctrl+P: Command Palette
+      if (key === "p") {
+        e.preventDefault();
+        openCommandPalette();
+        return;
+      }
+
+      // Ctrl+S: Save current file
+      if (key === "s") {
+        e.preventDefault();
+        saveCurrentFile();
+        return;
+      }
+
+      // Ctrl+O: Open local project folder
+      if (key === "o") {
+        e.preventDefault();
+        openLocalProjectFolder();
+        return;
+      }
+
+      // Ctrl+N: New file
+      if (key === "n") {
+        e.preventDefault();
+        createNewFilePrompt();
+        return;
+      }
+
+      // Ctrl+B: Toggle Sidebar
+      if (key === "b") {
+        e.preventDefault();
+        toggleExplorerSidebar();
+        return;
+      }
+
+      // Ctrl+` or Ctrl+J: Toggle Terminal
+      if (key === "`" || key === "~" || key === "j") {
+        e.preventDefault();
+        toggleMaximizeTerminal();
+        return;
+      }
+
+      // Ctrl+Tab / Ctrl+Shift+Tab: Cycle tabs
+      if (key === "tab") {
+        e.preventDefault();
+        if (state.openTabs.length > 1) {
+          const curIdx = state.openTabs.indexOf(state.activeFile);
+          const nextIdx = e.shiftKey
+            ? (curIdx - 1 + state.openTabs.length) % state.openTabs.length
+            : (curIdx + 1) % state.openTabs.length;
+          openFile(state.openTabs[nextIdx]);
+        }
+        return;
+      }
+
+      // Sidebar view shortcuts
+      if (e.shiftKey && key === "f") {
+        e.preventDefault();
+        switchSidebarView("search");
+        const sInput = document.getElementById("vsc-search-query-input");
+        if (sInput) { sInput.focus(); sInput.select(); }
+        return;
+      }
+
+      if (e.shiftKey && key === "e") {
+        e.preventDefault();
+        switchSidebarView("explorer");
+        return;
+      }
+
+      if (e.shiftKey && key === "g") {
+        e.preventDefault();
+        switchSidebarView("git");
+        return;
+      }
+
+      // Ctrl+Alt+G: Generate commit message
+      if (e.altKey && key === "g") {
+        e.preventDefault();
+        switchSidebarView("git");
+        generateCommitMessageUI();
+        return;
+      }
+
+      if (e.shiftKey && key === "d") {
+        e.preventDefault();
+        switchSidebarView("debug");
+        return;
+      }
+
+      if (e.shiftKey && key === "x") {
+        e.preventDefault();
+        switchSidebarView("extensions");
+        return;
+      }
+
+      // Markdown Preview shortcut: Ctrl+Shift+V
+      if (e.shiftKey && key === "v") {
+        const isMd = state.activeFile && (state.activeFile.toLowerCase().endsWith(".md") || state.activeFile.toLowerCase().endsWith(".markdown"));
+        if (isMd) {
+          e.preventDefault();
+          previewMarkdown(state.activeFile);
+          return;
+        }
+      }
+
+      // Run code shortcut
+      if (key === "enter" && !e.shiftKey) {
+        if (document.activeElement === el.codeTextarea) {
+          e.preventDefault();
+          COMMANDS.run.exec([]);
+          return;
+        }
+      }
+
+      // Format code shortcut
+      if (e.altKey && e.shiftKey && key === "f") {
+        e.preventDefault();
+        if (el.btnFormat) el.btnFormat.click();
+        return;
+      }
+    }, { capture: true });
+
+    // Mobile quickbar buttons
+    document.querySelectorAll(".vsc-mobile-key").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const key = btn.dataset.key;
+        if (!key || !el.termInput) return;
+
+        if (key === "Tab") {
+          handleTabCompletion({ key: "Tab", preventDefault: () => {} });
+        } else if (key === "Enter") {
+          const val = el.termInput.value;
+          el.termInput.value = "";
+          runCommand(val);
+        } else if (key === "Clear") {
+          COMMANDS.clear.exec([]);
+        } else if (key === "Run") {
+          COMMANDS.run.exec([]);
+        } else if (key === "Up") {
+          if (state.historyIndex > 0) {
+            state.historyIndex--;
+            el.termInput.value = state.commandHistory[state.historyIndex] || "";
+          }
+        } else if (key === "Down") {
+          if (state.historyIndex < state.commandHistory.length - 1) {
+            state.historyIndex++;
+            el.termInput.value = state.commandHistory[state.historyIndex] || "";
+          } else {
+            state.historyIndex = state.commandHistory.length;
+            el.termInput.value = "";
+          }
+        } else {
+          el.termInput.value += key;
+          el.termInput.focus();
+        }
+      });
+    });
+
+    // Editor toolbar Pull & Push buttons
+    if (el.btnPullEditor) {
+      el.btnPullEditor.addEventListener("click", async (e) => {
+        if (!state.githubToken) {
+          openGitHubModal("Please connect your GitHub Personal Access Token to pull changes.");
+          return;
+        }
+        if (!state.githubRepo) {
+          openGitHubModal("Please select a target GitHub repository to pull changes.");
+          return;
+        }
+        const isForce = !!(e && (e.shiftKey || e.altKey));
+        termPrint(`Pulling changes from GitHub (${state.githubRepo}@${state.githubBranch || "main"})${isForce ? ' [force]' : ''}...`, "vsc-term-info");
+        try {
+          const res = await githubPull({ force: isForce });
+          if (res.pulledFiles && res.pulledFiles.length > 0) {
+            const diskNote = res.diskSyncCount > 0 ? ` (${res.diskSyncCount} written to disk)` : "";
+            termPrint(`Successfully pulled ${res.pulledFiles.length} file(s) from GitHub${diskNote}:`, "vsc-term-success");
+            res.pulledFiles.forEach(f => termPrint(`  ↓ ${f}`, "vsc-term-dim"));
+            showMessage("success", "GITHUB PULL", `Successfully pulled ${res.pulledFiles.length} file(s) from ${state.githubRepo}${diskNote}`);
+          } else {
+            termPrint(res.message || "Already up to date with remote repository.", "vsc-term-info");
+            showMessage("info", "GITHUB PULL", res.message || "Already up to date with remote repository.");
+          }
+        } catch (err) {
+          termPrint(`Pull failed: ${err.message}`, "vsc-term-error");
+          showMessage("error", "GITHUB PULL FAILED", err.message);
+        }
+      });
+    }
+
+    if (el.btnPushEditor) {
+      el.btnPushEditor.addEventListener("click", async () => {
+        if (!state.githubToken) {
+          openGitHubModal("Please connect your GitHub Personal Access Token to commit & push changes.");
+          return;
+        }
+        if (!state.githubRepo) {
+          openGitHubModal("Please select a target GitHub repository to commit & push changes.");
+          return;
+        }
+        const fileToPush = state.activeFile;
+        const autoGen = await generateCommitMessage({ files: fileToPush ? [fileToPush] : [] });
+        const defaultMsg = autoGen.message || `feat: update ${fileToPush || "workspace files"}`;
+        const msg = await promptInWorkbench("Commit Message", defaultMsg, "Commit message");
+        if (!msg) return;
+        termPrint(`Pushing changes to GitHub (${state.githubRepo})...`, "vsc-term-info");
+        try {
+          const res = await githubPush(msg);
+          if (res.pushedFiles && res.pushedFiles.length > 0) {
+            termPrint(`Committed & pushed ${res.pushedFiles.length} file(s) to GitHub: "${msg}"`, "vsc-term-success");
+            showMessage("success", "GITHUB PUSH", `Committed and pushed to GitHub: ${msg}`);
+          } else {
+            termPrint(res.message || "Working tree clean. Nothing to push.", "vsc-term-info");
+          }
+        } catch (err) {
+          termPrint(`Push failed: ${err.message}`, "vsc-term-error");
+          showMessage("error", "GITHUB PUSH FAILED", err.message);
+        }
+      });
+    }
+
+    // Preview / Serve button in editor toolbar
+    if (el.btnPreview) {
+      el.btnPreview.addEventListener("click", () => {
+        serveFile(state.activeFile, 3000, false);
+      });
+    }
+
+    // Markdown Preview button in editor toolbar
+    if (el.btnPreviewMd) {
+      el.btnPreviewMd.addEventListener("click", () => {
+        previewMarkdown(state.activeFile);
+      });
+    }
+
+    // GNU Nano editor buttons & keyboard shortcuts
+    if (el.nanoBtnSave) {
+      el.nanoBtnSave.addEventListener("click", () => {
+        if (el.nanoEditor && state.nanoCurrentFile) {
+          state.files[state.nanoCurrentFile] = el.nanoEditor.value;
+          if (state.activeFile === state.nanoCurrentFile && el.codeTextarea) {
+            el.codeTextarea.value = state.files[state.nanoCurrentFile];
+            updateGutter();
+          }
+          saveCurrentFile();
+          const lines = el.nanoEditor.value.split("\n").length;
+          if (el.nanoStatus) el.nanoStatus.textContent = `[ Wrote ${lines} lines ]`;
+          renderSidebarLists();
+          renderTabs();
+        }
+      });
+    }
+
+    if (el.nanoBtnExit) {
+      el.nanoBtnExit.addEventListener("click", () => closeNano(true));
+    }
+
+    if (el.nanoEditor) {
+      el.nanoEditor.addEventListener("keydown", (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "o") {
+          e.preventDefault();
+          if (el.nanoBtnSave) el.nanoBtnSave.click();
+        } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "x") {
+          e.preventDefault();
+          closeNano(true);
+        }
+      });
+    }
+
+    // Live Server & Markdown Preview Controls
+    if (el.previewBtnClose && el.livePreview) {
+      el.previewBtnClose.addEventListener("click", () => {
+        el.livePreview.classList.add("hidden");
+        if (el.workspaceArea) el.workspaceArea.classList.remove("preview-active");
+        updateMarkdownPreviewButton();
+      });
+    }
+
+    if (el.previewBtnBackCode) {
+      el.previewBtnBackCode.addEventListener("click", () => {
+        if (el.livePreview) el.livePreview.classList.add("hidden");
+        if (el.workspaceArea) el.workspaceArea.classList.remove("preview-active");
+        if (el.codeTextarea) el.codeTextarea.focus();
+        updateMarkdownPreviewButton();
+      });
+    }
+
+    window.addEventListener("message", (e) => {
+      if (!e.data) return;
+      if (e.data.type === "VSC_BACK_TO_CODE") {
+        if (el.previewBtnBackCode) {
+          el.previewBtnBackCode.click();
+        } else {
+          if (el.livePreview) el.livePreview.classList.add("hidden");
+          if (el.workspaceArea) el.workspaceArea.classList.remove("preview-active");
+          if (el.codeTextarea) el.codeTextarea.focus();
+          updateMarkdownPreviewButton();
+        }
+      } else if (e.data.type === "VSC_PREVIEW_NAVIGATE") {
+        const fromFile = e.data.fromFile || state.currentServingFile || state.activeFile || "index.html";
+        const rawHref = e.data.href || "";
+        const resolved = resolveWorkspacePath(rawHref, fromFile);
+        const candidates = [
+          resolved,
+          resolved + "/index.html",
+          resolved ? resolved.replace(/\/$/, "") + "/index.html" : "index.html",
+          resolved + ".html"
+        ];
+        let target = null;
+        for (const cand of candidates) {
+          const found = findWorkspaceFile(cand);
+          if (found) {
+            target = found.path;
+            break;
+          }
+        }
+        if (target) {
+          serveFile(target, state.currentServingPort || 3000, false);
+          termPrint(`[Virtual Server] Navigated to: ${target}`, "vsc-term-info");
+        } else {
+          termPrint(`[Virtual Server] 404 Not Found: Could not resolve '${rawHref}'`, "vsc-term-warn");
+        }
+      } else if (e.data.type === "VSC_PREVIEW_LOG") {
+        const prefix = `[Preview ${e.data.level ? e.data.level.toUpperCase() : 'INFO'}]`;
+        const cls = e.data.level === "error" ? "vsc-term-error" : e.data.level === "warn" ? "vsc-term-warn" : "vsc-term-dim";
+        termPrint(`${prefix} ${e.data.msg}`, cls);
+      }
+    });
+
+    if (el.previewBtnReload) {
+      el.previewBtnReload.addEventListener("click", () => {
+        if (state.currentServingFile) {
+          serveFile(state.currentServingFile, state.currentServingPort || 3000, false);
+          showMessage("info", "LIVE PREVIEW", `Reloaded ${state.currentServingFile} with latest workspace edits.`, false);
+        } else if (el.previewFrame) {
+          const curDoc = el.previewFrame.srcdoc;
+          const curSrc = el.previewFrame.src;
+          if (curDoc) {
+            el.previewFrame.srcdoc = "";
+            setTimeout(() => { el.previewFrame.srcdoc = curDoc; }, 50);
+          } else {
+            el.previewFrame.src = "";
+            setTimeout(() => { el.previewFrame.src = curSrc; }, 50);
+          }
+        }
+      });
+    }
+
+    if (el.previewBtnDesktop && el.previewFrame) {
+      el.previewBtnDesktop.addEventListener("click", () => {
+        el.previewFrame.className = "vsc-preview-frame";
+      });
+    }
+
+    if (el.previewBtnTablet && el.previewFrame) {
+      el.previewBtnTablet.addEventListener("click", () => {
+        el.previewFrame.className = "vsc-preview-frame tablet";
+      });
+    }
+
+    if (el.previewBtnMobile && el.previewFrame) {
+      el.previewBtnMobile.addEventListener("click", () => {
+        el.previewFrame.className = "vsc-preview-frame mobile";
+      });
+    }
+
+    if (el.previewBtnExternal && el.previewFrame) {
+      el.previewBtnExternal.addEventListener("click", () => {
+        // Open a same-origin about:blank tab and write the rendered preview into it.
+        // Navigating directly to the Blob URL can detach the popup from the workbench
+        // bridge used by preview runtime (virtual fetch/XHR and local-file resolution).
+        // Writing the current rendered document preserves window.opener and re-runs
+        // its scripts in the new tab instead of relying on a top-level Blob navigation.
+        let popup = null;
+        try {
+          popup = window.open("about:blank", "_blank");
+          if (!popup) {
+            termPrint("Pop-out blocked by the browser. Allow pop-ups for this site and try again.", "vsc-term-warn");
+            return;
+          }
+          const previewDoc = el.previewFrame.contentDocument;
+          if (!previewDoc || !previewDoc.documentElement) {
+            popup.close();
+            termPrint("Cannot pop out: the live preview has not finished loading yet.", "vsc-term-warn");
+            return;
+          }
+          const html = "<!DOCTYPE html>\n" + previewDoc.documentElement.outerHTML;
+          popup.document.open();
+          popup.document.write(html);
+          popup.document.close();
+          popup.focus();
+        } catch (err) {
+          try { if (popup && !popup.closed) popup.close(); } catch (_) {}
+          termPrint("Pop-out failed: " + (err && err.message ? err.message : String(err)), "vsc-term-error");
+        }
+      });
+    }
+
+    // Ports Tab click handling
+    if (el.tabPorts && el.portsPanel && el.termBody) {
+      el.tabPorts.addEventListener("click", () => {
+        document.querySelectorAll(".vsc-term-tab").forEach(t => t.classList.remove("active"));
+        el.tabPorts.classList.add("active");
+        el.termBody.style.display = "none";
+        el.portsPanel.classList.add("active");
+        renderPortsTable();
+      });
+
+      const termTab = document.querySelector(".vsc-term-tab");
+      if (termTab) {
+        termTab.addEventListener("click", () => {
+          document.querySelectorAll(".vsc-term-tab").forEach(t => t.classList.remove("active"));
+          termTab.classList.add("active");
+          el.portsPanel.classList.remove("active");
+          el.termBody.style.display = "flex";
+        });
+      }
+    }
+
+    // Initialize resizer
+    initSashResizer();
+  }
+
+  // --- BOOTSTRAP WORKBENCH ---
+  function init() {
+    initResponsiveSidebar();
+    applySettings(false);
+    updateWorkspaceUI();
+    renderTabs();
+    renderSidebarLists();
+    openFile(state.activeFile);
+    updateGitStatus();
+    refreshProblems();
+    initEvents();
+
+    // Background verify GitHub token if stored
+    if (state.githubToken) {
+      githubAuth(state.githubToken).catch(() => {});
+    }
+
+    // Auto-reconnect last opened local project if permission is already active
+    getProjectHandle("last_project").then(async (handle) => {
+      if (handle) {
+        const perm = await handle.queryPermission({ mode: "readwrite" });
+        if (perm === "granted") {
+          loadLocalDirectory(handle).catch(() => {});
+        }
+      }
+    }).catch(() => {});
+
+    // Ensure clean initial terminal height (don't cover editor files on launch)
+    if (el.terminalPanel && el.app) {
+      const avail = el.app.offsetHeight - 36 - 24;
+      const initialH = Math.min(185, Math.floor(avail * 0.32));
+      if (initialH >= 100) {
+        el.terminalPanel.style.height = `${initialH}px`;
+        state.savedPanelHeight = initialH;
+      }
+    }
+
+    // Print welcome banner in terminal
+    termPrintHTML(`
+<span class="vsc-term-info">Code Tools [Version 4.2.0-web]</span>
+<span class="vsc-term-dim">(c) DevStudio Web. Pitch Black &amp; Turquoise Workspace.</span>
+Type <b style="color:var(--vsc-turquoise)">help</b> to see all daily diagnostic, network, crypto, and code tools.
+Local Disk: Click <b style="color:var(--vsc-turquoise)">📂 Open Project</b> or press <b style="color:var(--vsc-turquoise)">Ctrl+O</b> to edit files directly on your drive.
+${state.githubToken ? `GitHub: <b style="color:#98c379">✓ Token Connected &amp; Remembered</b> (${state.githubUser && state.githubUser.login ? '@' + state.githubUser.login : maskToken(state.githubToken)}) ${state.githubRepo ? `| Remote: <b style="color:var(--vsc-turquoise)">${state.githubRepo}@${state.githubBranch}</b>` : ""}` : "GitHub: Type <b style=\"color:var(--vsc-turquoise)\">github auth &lt;token&gt;</b> or click Accounts to sync."}
+`);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();
+

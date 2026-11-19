@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Code Tools — Web IDE &amp; Daily Developer CLI Workbench | xCONFLiCTiONx</title>
+  <meta
+    name="description"
+    content="Visual Studio Code-inspired Web IDE &amp; non-fiction daily CLI developer workbench. Features resizable maximizable terminal, live HTTP/curl client, JWT inspector, DNS DoH resolver, crypto hashing, programmer calculator, and interactive JS scratchpad."
+  />
+  <meta name="portfolio-tool-id" content="code-tools" />
+  <link rel="canonical" href="https://xconflictionx.cc/tools/code-tools/" />
+  <meta name="theme-color" content="#121212" />
+  <link rel="manifest" href="../../site.webmanifest" />
+  <link rel="stylesheet" href="../../css/main.css" />
+  <link rel="stylesheet" href="./code-tools.css?v=28" />
+  <link rel="icon" id="favicon-js" href="../../assets/favicon.ico" type="image/x-icon" />
+  <link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png" />
+
+  <!-- Open Graph / Social Metadata -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Code Tools — Web IDE &amp; Daily Developer CLI Workbench | xCONFLiCTiONx" />
+  <meta
+    property="og:description"
+    content="Visual Studio Code-inspired Web IDE &amp; non-fiction daily CLI developer workbench. Resizable maximizable terminal, live HTTP/curl client, JWT inspector, DNS DoH resolver, and JS scratchpad."
+  />
+  <meta property="og:url" content="https://xconflictionx.cc/tools/code-tools/" />
+  <meta property="og:site_name" content="xCONFLiCTiONx" />
+  <meta property="og:image" content="https://xconflictionx.cc/assets/og-image.png" />
+
+  <!-- X / Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Code Tools — Web IDE &amp; Daily Developer CLI Workbench | xCONFLiCTiONx" />
+  <meta
+    name="twitter:description"
+    content="Visual Studio Code-inspired Web IDE &amp; non-fiction daily CLI developer workbench. Resizable maximizable terminal, live HTTP/curl client, JWT inspector, DNS DoH resolver, and JS scratchpad."
+  />
+  <meta name="twitter:image" content="https://xconflictionx.cc/assets/og-image.png" />
+</head>
+<body id="top" data-tool-id="code-tools">
+  <main class="container">
+    <div id="vscode-workbench">
+      <!-- 1. TOP TITLEBAR -->
+      <header class="vsc-titlebar" aria-label="Visual Studio Code Menu and Command Palette">
+        <div class="vsc-titlebar-left">
+          <a class="vsc-logo" id="vsc-logo-back" href="../" title="Code Tools" aria-label="Back to previous page" onclick="if (document.referrer && new URL(document.referrer).origin === location.origin && document.referrer !== location.href) { history.back(); return false; }">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="16 18 22 12 16 6" />
+              <polyline points="8 6 2 12 8 18" />
+            </svg>
+            <span>Code</span>
+          </a>
+          <nav class="vsc-menu-bar" aria-label="Editor Menu">
+            <div class="vsc-menu-container">
+              <span class="vsc-menu-item" id="vsc-menu-btn-file">File</span>
+              <div class="vsc-dropdown-menu" id="vsc-dropdown-file">
+                <div class="vsc-dropdown-item" id="vsc-item-new-file"><span>New File</span><kbd>Ctrl+N</kbd></div>
+                <div class="vsc-dropdown-item" id="vsc-item-open-folder"><span>Open Local Project</span><kbd>Ctrl+O</kbd></div>
+                <div class="vsc-dropdown-item" id="vsc-item-connect-github"><span>Connect GitHub Repo...</span></div>
+                <div class="vsc-dropdown-item" id="vsc-item-pull-github"><span>Pull Changes from GitHub</span></div>
+                <div class="vsc-dropdown-item" id="vsc-item-push-github"><span>Commit &amp; Push to GitHub</span></div>
+                <div class="vsc-dropdown-item" id="vsc-item-sync-github"><span>Sync with GitHub</span></div>
+                <div class="vsc-dropdown-divider"></div>
+                <div class="vsc-dropdown-item" id="vsc-item-save-file"><span>Save</span><kbd>Ctrl+S</kbd></div>
+                <div class="vsc-dropdown-item" id="vsc-item-save-all"><span>Save All</span></div>
+                <div class="vsc-dropdown-item" id="vsc-item-export-zip"><span>Export Workspace (JSON)</span></div>
+                <div class="vsc-dropdown-item" id="vsc-item-import-json"><span>Import Workspace (JSON)...</span></div>
+                <div class="vsc-dropdown-item" id="vsc-item-clear-workspace"><span>Clear Workspace</span></div>
+                <div class="vsc-dropdown-divider"></div>
+                <div class="vsc-dropdown-item" id="vsc-item-close-file"><span>Close Editor</span><kbd>Ctrl+W</kbd></div>
+                <div class="vsc-dropdown-item" id="vsc-item-close-all"><span>Close All Editors</span><kbd>Ctrl+K W</kbd></div>
+              </div>
+            </div>
+
+            <div class="vsc-menu-container">
+              <span class="vsc-menu-item" id="vsc-menu-btn-edit">Edit</span>
+              <div class="vsc-dropdown-menu" id="vsc-dropdown-edit">
+                <div class="vsc-dropdown-item" id="vsc-item-undo"><span>Undo</span><kbd>Ctrl+Z</kbd></div>
+                <div class="vsc-dropdown-item" id="vsc-item-redo"><span>Redo</span><kbd>Ctrl+Y</kbd></div>
+                <div class="vsc-dropdown-divider"></div>
+                <div class="vsc-dropdown-item" id="vsc-item-cut"><span>Cut</span><kbd>Ctrl+X</kbd></div>
+                <div class="vsc-dropdown-item" id="vsc-item-copy"><span>Copy</span><kbd>Ctrl+C</kbd></div>
+                <div class="vsc-dropdown-item" id="vsc-item-paste"><span>Paste from Clipboard</span><kbd>Ctrl+V</kbd></div>
+                <div class="vsc-dropdown-divider"></div>
+                <div class="vsc-dropdown-item" id="vsc-item-find"><span>Find in Files</span><kbd>Ctrl+F</kbd></div>
+                <div class="vsc-dropdown-item" id="vsc-item-format-doc"><span>Format Document</span><kbd>Shift+Alt+F</kbd></div>
+              </div>
+            </div>
+
+            <div class="vsc-menu-container">
+              <span class="vsc-menu-item" id="vsc-menu-btn-selection">Selection</span>
+              <div class="vsc-dropdown-menu" id="vsc-dropdown-selection">
+                <div class="vsc-dropdown-item" id="vsc-item-select-all"><span>Select All</span><kbd>Ctrl+A</kbd></div>
+                <div class="vsc-dropdown-item" id="vsc-item-dup-line"><span>Duplicate Line</span><kbd>Shift+Alt+Down</kbd></div>
+              </div>
+            </div>
+
+            <div class="vsc-menu-container">
+              <span class="vsc-menu-item" id="vsc-menu-btn-view">View</span>
+              <div class="vsc-dropdown-menu" id="vsc-dropdown-view">
+                <div class="vsc-dropdown-item" id="vsc-item-toggle-sidebar"><span>Toggle Primary Sidebar</span><kbd>Ctrl+B</kbd></div>
+                <div class="vsc-dropdown-item" id="vsc-item-toggle-term"><span>Toggle Terminal Panel</span><kbd>Ctrl+`</kbd></div>
+                <div class="vsc-dropdown-item" id="vsc-item-toggle-preview"><span>Toggle Live Preview</span></div>
+                <div class="vsc-dropdown-item" id="vsc-item-reload-window"><span>Reload Window</span><kbd>Ctrl+R</kbd></div>
+                <div class="vsc-dropdown-divider"></div>
+                <div class="vsc-dropdown-item" id="vsc-item-view-fullscreen"><span>Toggle Fullscreen</span><kbd>F11</kbd></div>
+              </div>
+            </div>
+
+            <div class="vsc-menu-container">
+              <span class="vsc-menu-item" id="vsc-menu-btn-go">Go</span>
+              <div class="vsc-dropdown-menu" id="vsc-dropdown-go">
+                <div class="vsc-dropdown-item" id="vsc-item-go-file"><span>Go to File...</span><kbd>Ctrl+P</kbd></div>
+                <div class="vsc-dropdown-item" id="vsc-item-go-line"><span>Go to Line...</span><kbd>Ctrl+G</kbd></div>
+              </div>
+            </div>
+
+            <div class="vsc-menu-container">
+              <span class="vsc-menu-item" id="vsc-menu-btn-run">Run</span>
+              <div class="vsc-dropdown-menu" id="vsc-dropdown-run">
+                <div class="vsc-dropdown-item" id="vsc-item-run-code"><span>Run Active Script</span><kbd>Ctrl+Enter</kbd></div>
+                <div class="vsc-dropdown-item" id="vsc-item-serve-page"><span>Serve Page in Browser</span><kbd>Ctrl+F5</kbd></div>
+              </div>
+            </div>
+
+            <div class="vsc-menu-container">
+              <span class="vsc-menu-item" id="vsc-menu-btn-terminal">Terminal</span>
+              <div class="vsc-dropdown-menu" id="vsc-dropdown-terminal">
+                <div class="vsc-dropdown-item" id="vsc-item-new-term"><span>New Terminal</span></div>
+                <div class="vsc-dropdown-item" id="vsc-item-clear-term"><span>Clear Terminal</span></div>
+                <div class="vsc-dropdown-item" id="vsc-item-max-term"><span>Maximize Terminal</span></div>
+              </div>
+            </div>
+
+            <div class="vsc-menu-container">
+              <span class="vsc-menu-item" id="vsc-menu-btn-help">Help</span>
+              <div class="vsc-dropdown-menu" id="vsc-dropdown-help">
+                <div class="vsc-dropdown-item" id="vsc-item-cmd-palette"><span>Command Palette...</span><kbd>Ctrl+Shift+P</kbd></div>
+                <div class="vsc-dropdown-item" id="vsc-item-gh-docs"><span>GitHub Setup Guide</span></div>
+                <div class="vsc-dropdown-item" id="vsc-item-about-tool"><span>About Code Tools</span></div>
+                <div class="vsc-dropdown-divider"></div>
+                <div class="vsc-dropdown-item" id="vsc-item-reset-data" style="color:#f44336"><span>Clear Workspace Data (Keep Token &amp; Settings)...</span></div>
+              </div>
+            </div>
+          </nav>
+        </div>
+
+        <div class="vsc-searchbar" title="Command Palette &amp; Search">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <span><span id="vsc-title-workspace">workspace</span> &gt; Code Tools</span>
+          <kbd>Ctrl+P</kbd>
+        </div>
+
+        <div class="vsc-titlebar-right">
+          <button class="vsc-title-btn" id="vsc-btn-reload-window" title="Reload Window (Ctrl+R / F5)" aria-label="Reload Window">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="23 4 23 10 17 10" />
+              <polyline points="1 20 1 14 7 14" />
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+            </svg>
+          </button>
+          <button class="vsc-title-btn" id="vsc-btn-fullscreen" title="Toggle Fullscreen (⛶)" aria-label="Toggle Fullscreen">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- 2. MAIN BODY (ACTIVITY BAR + SIDEBAR + WORKSPACE) -->
+      <div class="vsc-main-body">
+        <!-- 2A. ACTIVITY BAR -->
+        <aside class="vsc-activity-bar" aria-label="Activity Bar">
+          <div class="vsc-activity-top">
+            <button class="vsc-act-btn active" id="vsc-act-explorer" title="Explorer (Ctrl+Shift+E)" aria-label="Explorer">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            </button>
+            <button class="vsc-act-btn" id="vsc-act-search" title="Search (Ctrl+Shift+F)" aria-label="Search">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </button>
+            <button class="vsc-act-btn" id="vsc-act-git" title="Source Control (Ctrl+Shift+G)" aria-label="Source Control">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/><path d="M6 9v12"/></svg>
+            </button>
+            <button class="vsc-act-btn" id="vsc-act-debug" title="Run and Debug (Ctrl+Shift+D)" aria-label="Run and Debug">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            </button>
+            <button class="vsc-act-btn" id="vsc-act-extensions" title="Extensions &amp; Snippets (Ctrl+Shift+X)" aria-label="Extensions">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            </button>
+          </div>
+          <div class="vsc-activity-bottom">
+            <button class="vsc-act-btn" id="vsc-act-accounts" title="Accounts &amp; GitHub Auth" aria-label="Accounts">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </button>
+            <button class="vsc-act-btn" id="vsc-act-settings" title="Settings (Ctrl+,)" aria-label="Settings">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            </button>
+          </div>
+        </aside>
+
+        <!-- 2B. SIDEBAR (MULTI-VIEW) -->
+        <aside class="vsc-sidebar vsc-scrollable" id="vsc-sidebar" aria-label="Sidebar Primary View">
+          <div class="vsc-sidebar-header">
+            <span id="vsc-sidebar-title">Explorer</span>
+            <div style="display:flex;gap:4px">
+              <button class="vsc-title-btn" id="vsc-btn-open-folder" title="Open Local Project Folder">📂</button>
+              <button class="vsc-title-btn" id="vsc-btn-new-file" title="New File">+</button>
+              <button class="vsc-title-btn" id="vsc-btn-refresh-sidebar" title="Refresh">↻</button>
+            </div>
+          </div>
+
+          <!-- VIEW 1: EXPLORER -->
+          <div class="vsc-sidebar-view active" id="vsc-view-explorer">
+            <div class="vsc-sidebar-content">
+              <!-- OPEN EDITORS -->
+              <div class="vsc-section-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                <span>Open Editors</span>
+              </div>
+              <ul class="vsc-tree" id="vsc-open-editors-list"></ul>
+
+              <!-- ACTIVE WORKSPACE -->
+              <div class="vsc-section-title" style="margin-top:6px">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                <span id="vsc-workspace-label">workspace</span>
+              </div>
+              <div id="vsc-open-project-container" style="padding:6px 10px;display:flex;flex-direction:column;gap:6px">
+                <button class="vsc-editor-btn" id="vsc-btn-open-project-banner" style="width:100%;display:flex;align-items:center;justify-content:center;gap:6px;background:rgba(55,145,183,0.1);border:1px solid rgba(55,145,183,0.35);color:var(--vsc-turquoise);font-weight:600;padding:6px">
+                  <span>📂</span><span>Open Local Project</span>
+                </button>
+                <div style="display:flex;gap:6px">
+                  <button class="vsc-editor-btn" id="vsc-btn-import-banner" style="flex:1;display:flex;align-items:center;justify-content:center;gap:4px;padding:5px;font-size:11px" title="Import Workspace JSON backup">
+                    <span>📥</span><span>Import</span>
+                  </button>
+                  <button class="vsc-editor-btn" id="vsc-btn-new-banner" style="flex:1;display:flex;align-items:center;justify-content:center;gap:4px;padding:5px;font-size:11px" title="Create New File (Ctrl+N)">
+                    <span>➕</span><span>New File</span>
+                  </button>
+                  <button class="vsc-editor-btn" id="vsc-btn-clear-workspace-banner" style="flex:1;display:flex;align-items:center;justify-content:center;gap:4px;padding:5px;font-size:11px;color:#f44336;border-color:rgba(244,67,54,0.3)" title="Clear Workspace &amp; Start Fresh">
+                    <span>🗑️</span><span>Start Fresh</span>
+                  </button>
+                </div>
+              </div>
+              <ul class="vsc-tree" id="vsc-workspace-files-list"></ul>
+              <input type="file" id="vsc-folder-input" webkitdirectory directory multiple style="display:none" />
+              <input type="file" id="vsc-import-file-input" accept=".json,application/json" style="display:none" />
+
+              <!-- DAILY CLI UTILITIES -->
+              <div class="vsc-section-title" style="margin-top:12px">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                <span>Active CLI Tools</span>
+              </div>
+              <ul class="vsc-tree">
+                <li class="vsc-tree-item" onclick="document.getElementById('vsc-term-input').value='curl https://httpbin.org/get'; document.getElementById('vsc-term-input').focus()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                  <span>HTTP Client</span>
+                  <span class="vsc-tool-chip">curl</span>
+                </li>
+                <li class="vsc-tree-item" onclick="document.getElementById('vsc-term-input').value='jwt '; document.getElementById('vsc-term-input').focus()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                  <span>JWT Inspector</span>
+                  <span class="vsc-tool-chip">jwt</span>
+                </li>
+                <li class="vsc-tree-item" onclick="document.getElementById('vsc-term-input').value='dns cloudflare.com A'; document.getElementById('vsc-term-input').focus()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m9.17 14.83-4.24 4.24"/></svg>
+                  <span>DNS-over-HTTPS</span>
+                  <span class="vsc-tool-chip">dns</span>
+                </li>
+                <li class="vsc-tree-item" onclick="document.getElementById('vsc-term-input').value='myip'; document.getElementById('vsc-term-input').focus()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                  <span>IP Telemetry</span>
+                  <span class="vsc-tool-chip">myip</span>
+                </li>
+                <li class="vsc-tree-item" onclick="document.getElementById('vsc-term-input').value='regex '; document.getElementById('vsc-term-input').focus()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21 16-4 4-4-4"/><path d="M17 20V4"/><path d="m3 8 4-4 4 4"/><path d="M7 4v16"/></svg>
+                  <span>Regex Evaluator</span>
+                  <span class="vsc-tool-chip">regex</span>
+                </li>
+                <li class="vsc-tree-item" onclick="document.getElementById('vsc-term-input').value='calc 1024 * 1024 * 50'; document.getElementById('vsc-term-input').focus()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="16" y1="14" x2="16" y2="18"/><path d="M8 10h.01"/><path d="M12 10h.01"/><path d="M16 10h.01"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/></svg>
+                  <span>Programmer Calc</span>
+                  <span class="vsc-tool-chip">calc</span>
+                </li>
+                <li class="vsc-tree-item" onclick="document.getElementById('vsc-term-input').value='hash sha256 '; document.getElementById('vsc-term-input').focus()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                  <span>Crypto Hasher</span>
+                  <span class="vsc-tool-chip">hash</span>
+                </li>
+                <li class="vsc-tree-item" onclick="document.getElementById('vsc-term-input').value='sysinfo'; document.getElementById('vsc-term-input').focus()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                  <span>OS &amp; Browser Telemetry</span>
+                  <span class="vsc-tool-chip">sysinfo</span>
+                </li>
+                <li class="vsc-tree-item" onclick="document.getElementById('vsc-term-input').value='nano mypage.html'; document.getElementById('vsc-term-input').focus()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                  <span>Terminal Nano Editor</span>
+                  <span class="vsc-tool-chip">nano</span>
+                </li>
+                <li class="vsc-tree-item" onclick="document.getElementById('vsc-term-input').value='serve mypage.html'; document.getElementById('vsc-term-input').focus()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                  <span>Live Web Server</span>
+                  <span class="vsc-tool-chip">serve</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- VIEW 2: SEARCH -->
+          <div class="vsc-sidebar-view" id="vsc-view-search">
+            <div class="vsc-search-view-wrap">
+              <input type="text" class="vsc-modal-input" id="vsc-search-query-input" placeholder="Search in files..." />
+              <input type="text" class="vsc-modal-input" id="vsc-replace-query-input" placeholder="Replace with..." />
+              <div style="display:flex;gap:6px">
+                <button class="vsc-editor-btn" id="vsc-btn-find-in-files">Find</button>
+                <button class="vsc-editor-btn" id="vsc-btn-replace-in-files">Replace All</button>
+              </div>
+              <ul class="vsc-search-results-list" id="vsc-search-results-list"></ul>
+            </div>
+          </div>
+
+          <!-- VIEW 3: SOURCE CONTROL (GITHUB GIT) -->
+          <div class="vsc-sidebar-view" id="vsc-view-git">
+            <div class="vsc-git-view-wrap">
+              <div class="vsc-git-status-card">
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                  <span style="font-weight:700;color:var(--vsc-turquoise)">GitHub Integration</span>
+                  <span id="vsc-git-auth-indicator" style="font-size:10px;padding:2px 6px;border-radius:3px;background:#1e1e1e;color:var(--vsc-fg-muted)">Not Connected</span>
+                </div>
+                <div id="vsc-git-repo-display" style="color:var(--vsc-fg-secondary);font-size:11px">No remote repo connected</div>
+                <div style="display:flex;gap:6px;margin-top:6px">
+                  <button class="vsc-editor-btn" id="vsc-btn-open-gh-modal" style="flex:1">Connect GitHub Token</button>
+                  <button class="vsc-editor-btn" id="vsc-btn-disconnect-gh" style="display:none;color:#f44336;border-color:#5c2323" title="Disconnect GitHub Token">Log Out</button>
+                </div>
+              </div>
+              <div class="vsc-input-group">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+                  <label class="vsc-input-label" style="margin-bottom:0">Commit Message:</label>
+                  <button type="button" class="vsc-editor-btn vsc-git-gen-btn" id="vsc-btn-git-gen-msg" title="Generate conventional commit message from changed workspace files (Ctrl+Alt+G)">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+                    </svg>
+                    <span>✨ Generate</span>
+                  </button>
+                </div>
+                <textarea class="vsc-commit-input" id="vsc-git-commit-msg" placeholder="feat: update workspace files"></textarea>
+                <!-- Conventional Commits quick type selector & style variants -->
+                <div class="vsc-git-presets-bar" id="vsc-git-presets-bar">
+                  <button type="button" class="vsc-chip-btn" data-type="feat" title="Feature (feat: ...)">feat</button>
+                  <button type="button" class="vsc-chip-btn" data-type="fix" title="Bug Fix (fix: ...)">fix</button>
+                  <button type="button" class="vsc-chip-btn" data-type="docs" title="Documentation (docs: ...)">docs</button>
+                  <button type="button" class="vsc-chip-btn" data-type="style" title="Styling &amp; Formatting (style: ...)">style</button>
+                  <button type="button" class="vsc-chip-btn" data-type="refactor" title="Refactor (refactor: ...)">refactor</button>
+                  <button type="button" class="vsc-chip-btn" data-type="chore" title="Maintenance / Config (chore: ...)">chore</button>
+                </div>
+                <div id="vsc-git-gen-status" class="vsc-git-gen-status" style="display:none"></div>
+                <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap">
+                  <button class="vsc-editor-btn run" id="vsc-btn-git-push" style="flex:1;min-width:120px">Commit &amp; Push</button>
+                  <button class="vsc-editor-btn" id="vsc-btn-git-pull" style="flex:1;min-width:100px;color:var(--vsc-turquoise);border-color:var(--vsc-turquoise)" title="Pull latest changes from GitHub">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px"><polyline points="8 8 12 12 16 8"/><line x1="12" y1="12" x2="12" y2="3"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+                    <span>Pull Changes</span>
+                  </button>
+                </div>
+              </div>
+              <div class="vsc-section-title" style="margin-top:8px">
+                <span>Changed Files</span>
+              </div>
+              <ul class="vsc-tree" id="vsc-git-changes-list"></ul>
+            </div>
+          </div>
+
+          <!-- VIEW 4: RUN & DEBUG -->
+          <div class="vsc-sidebar-view" id="vsc-view-debug">
+            <div class="vsc-git-view-wrap">
+              <button class="vsc-editor-btn run" id="vsc-btn-debug-run">▶ Start Debugging (Run)</button>
+              <div class="vsc-section-title">
+                <span>Variables &amp; State</span>
+              </div>
+              <div style="font-family:var(--vsc-font-code);font-size:11px;color:var(--vsc-fg-secondary);padding:6px" id="vsc-debug-variables">
+                activeFile: <b style="color:var(--vsc-turquoise)">scratchpad.js</b><br>
+                status: <span style="color:#98c379">ready</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- VIEW 5: EXTENSIONS & SNIPPETS -->
+          <div class="vsc-sidebar-view" id="vsc-view-extensions">
+            <div class="vsc-ext-view-wrap">
+              <span style="font-size:11px;font-weight:700;color:var(--vsc-turquoise)">Quick Code Snippets</span>
+              <div class="vsc-snippet-card">
+                <div class="vsc-snippet-info">
+                  <span class="vsc-snippet-title">HTML5 Boilerplate</span>
+                  <span class="vsc-snippet-desc">Responsive HTML5 layout with site CSS</span>
+                </div>
+                <button class="vsc-editor-btn" onclick="insertSnippet('html5')">Insert</button>
+              </div>
+              <div class="vsc-snippet-card">
+                <div class="vsc-snippet-info">
+                  <span class="vsc-snippet-title">Async Fetch Wrapper</span>
+                  <span class="vsc-snippet-desc">HTTP client with error handling</span>
+                </div>
+                <button class="vsc-editor-btn" onclick="insertSnippet('fetch')">Insert</button>
+              </div>
+              <div class="vsc-snippet-card">
+                <div class="vsc-snippet-info">
+                  <span class="vsc-snippet-title">Web Crypto SHA-256</span>
+                  <span class="vsc-snippet-desc">Fast browser digest hashing</span>
+                </div>
+                <button class="vsc-editor-btn" onclick="insertSnippet('crypto')">Insert</button>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <!-- 2C. WORKSPACE AREA (CONTAINER QUERY AWARE) -->
+        <main class="vsc-workspace-area" id="vsc-workspace-area">
+          <!-- 3. EDITOR PANEL -->
+          <section class="vsc-editor-panel" aria-label="Code Editor Panel">
+            <!-- Tabs Bar -->
+            <div class="vsc-tabs-bar" id="vsc-tabs-bar"></div>
+
+            <!-- Breadcrumbs and Toolbar -->
+            <div class="vsc-editor-subbar">
+              <div class="vsc-breadcrumbs">
+                <span id="vsc-bread-root">workspace</span>
+                <span>&gt;</span>
+                <span class="active" id="vsc-bread-file">scratchpad.js</span>
+              </div>
+              <div class="vsc-editor-actions">
+                <button class="vsc-editor-btn run" id="vsc-btn-run" title="Run Script in Terminal (Ctrl+Enter)">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                  <span>Run</span>
+                </button>
+                <button class="vsc-editor-btn" id="vsc-btn-preview-md" title="Preview Markdown (Ctrl+Shift+V)" style="display:none;color:var(--vsc-turquoise);border-color:var(--vsc-turquoise)">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                  <span>Preview</span>
+                </button>
+                <button class="vsc-editor-btn" id="vsc-btn-preview" title="Serve and Preview Active Page (http://localhost:3000)">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+                  <span>Serve / Preview</span>
+                </button>
+                <button class="vsc-editor-btn" id="vsc-btn-format" title="Format JSON / Code">
+                  <span>Format</span>
+                </button>
+                <button class="vsc-editor-btn" id="vsc-btn-save" title="Save File (Ctrl+S)">
+                  <span>Save</span>
+                </button>
+                <button class="vsc-editor-btn" id="vsc-btn-pull-editor" title="Pull Latest Changes from GitHub" style="display:none;color:var(--vsc-turquoise);border-color:var(--vsc-turquoise)">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="8 8 12 12 16 8"/><line x1="12" y1="12" x2="12" y2="3"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+                  <span>Pull</span>
+                </button>
+                <button class="vsc-editor-btn" id="vsc-btn-push-editor" title="Commit &amp; Push Changes to GitHub" style="display:none;color:var(--vsc-turquoise);border-color:var(--vsc-turquoise)">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+                  <span>Push</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Editor Gutter and Textarea -->
+            <div class="vsc-editor-content">
+              <div class="vsc-gutter" id="vsc-gutter">1</div>
+              <textarea
+                class="vsc-code-textarea vsc-scrollable"
+                id="vsc-code-editor"
+                spellcheck="false"
+                aria-label="Code Editor"
+              ></textarea>
+            </div>
+          </section>
+
+          <!-- 4. SASH RESIZER (BETWEEN EDITOR AND TERMINAL)
+               "in vscode you can pull up from the bar at the top" -->
+          <div
+            class="vsc-sash-resizer"
+            id="vsc-sash-resizer"
+            title="Drag up or down to resize terminal"
+            role="separator"
+            aria-orientation="horizontal"
+          ></div>
+
+          <!-- 5. BOTTOM TERMINAL PANEL
+               "or maximize it using a button right on the header to the right on the terminal itself" -->
+          <section class="vsc-terminal-panel" id="vsc-terminal-panel" aria-label="Integrated Terminal">
+            <!-- Terminal Header -->
+            <header class="vsc-term-header">
+              <div class="vsc-term-tabs" role="tablist">
+                <div class="vsc-term-tab active" id="vsc-tab-term" role="tab" aria-selected="true">
+                  <span>Terminal</span>
+                </div>
+                <div class="vsc-term-tab" id="vsc-tab-messages" role="tab" aria-selected="false">
+                  <span>Messages</span>
+                  <span class="vsc-term-badge" id="vsc-messages-count" style="display:none">0</span>
+                </div>
+                <div class="vsc-term-tab" id="vsc-tab-output" role="tab" aria-selected="false">
+                  <span>Output</span>
+                </div>
+                <div class="vsc-term-tab" id="vsc-tab-problems" role="tab" aria-selected="false">
+                  <span>Problems</span>
+                  <span class="vsc-term-badge" id="vsc-problems-count">0</span>
+                </div>
+                <div class="vsc-term-tab" id="vsc-tab-ports" role="tab" aria-selected="false">
+                  <span>Ports</span>
+                  <span class="vsc-term-badge" id="vsc-ports-count" style="display:none">0</span>
+                </div>
+                <div class="vsc-term-tab" id="vsc-tab-debug" role="tab" aria-selected="false">
+                  <span>Debug Console</span>
+                </div>
+              </div>
+
+              <!-- Terminal Controls (Dropdown + Clear + Maximize Button + Close) -->
+              <div class="vsc-term-actions">
+                <select class="vsc-shell-select" id="vsc-shell-select" aria-label="Select Shell">
+                  <option value="powershell">1: powershell</option>
+                  <option value="bash">2: bash</option>
+                  <option value="node">3: node</option>
+                </select>
+
+                <button class="vsc-term-btn" id="vsc-btn-clear" title="Clear Terminal (trash)" aria-label="Clear Terminal">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                </button>
+
+                <!-- MAXIMIZE / RESTORE BUTTON RIGHT ON THE TERMINAL HEADER -->
+                <button
+                  class="vsc-term-btn"
+                  id="vsc-btn-maximize"
+                  title="Maximize Panel Size (^) / Restore"
+                  aria-label="Maximize or Restore Terminal Panel"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+                </button>
+
+                <button class="vsc-term-btn" title="Close Panel" aria-label="Close Panel" onclick="document.getElementById('vsc-terminal-panel').style.height='40px'">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+              </div>
+            </header>
+
+            <!-- Terminal Output History & Interactive Prompt -->
+            <div class="vsc-term-body vsc-scrollable" id="vsc-term-body">
+              <div class="vsc-term-history" id="vsc-term-history"></div>
+
+              <form class="vsc-input-row" id="vsc-term-form" onsubmit="event.preventDefault(); return false;" autocomplete="off" role="search" data-form-type="other">
+                <span class="vsc-prompt-str" id="vsc-prompt-tag">PS ~/workspace&gt; </span>
+                <input
+                  type="text"
+                  id="vsc-term-input"
+                  class="vsc-term-input"
+                  name="terminal_command"
+                  autocomplete="off"
+                  autocorrect="off"
+                  autocapitalize="none"
+                  spellcheck="false"
+                  inputmode="text"
+                  enterkeyhint="go"
+                  data-form-type="other"
+                  data-lpignore="true"
+                  data-1p-ignore="true"
+                  data-bwignore="true"
+                  aria-label="Terminal Command Line"
+                  placeholder="Type a command (e.g. help, myip, dns, jwt, curl, regex, calc)..."
+                />
+              </form>
+            </div>
+
+            <!-- In-Terminal Messages View -->
+            <div class="vsc-term-body vsc-scrollable" id="vsc-messages-panel" style="display:none">
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 14px;border-bottom:1px solid var(--vsc-border);background:rgba(0,0,0,0.3);position:sticky;top:0;z-index:2">
+                <span style="font-size:11px;font-weight:700;color:var(--vsc-turquoise);text-transform:uppercase;letter-spacing:0.5px">Workbench Messages &amp; Events</span>
+                <button class="vsc-term-btn" id="vsc-btn-clear-messages" title="Clear Messages">Clear</button>
+              </div>
+              <div class="vsc-term-history" id="vsc-messages-history" style="padding:10px 14px">
+                <div class="vsc-msg-card info">
+                  <div class="vsc-msg-header">
+                    <span class="vsc-msg-tag">INFO</span>
+                    <span class="vsc-msg-time">System Ready</span>
+                  </div>
+                  <div class="vsc-msg-text">Workbench initialized. All user notifications, action alerts, and system events stream here without breaking fullscreen.</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- In-Terminal Output View -->
+            <div class="vsc-term-body vsc-scrollable" id="vsc-output-panel" style="display:none">
+              <div class="vsc-term-history" id="vsc-output-history">
+                <div class="vsc-term-line vsc-term-dim">[Virtual Output Stream Ready]</div>
+              </div>
+            </div>
+
+            <!-- In-Terminal Problems / Diagnostics View -->
+            <div class="vsc-term-body vsc-scrollable" id="vsc-problems-panel" style="display:none">
+              <div class="vsc-term-history" id="vsc-problems-history">
+                <div class="vsc-term-line vsc-term-dim">No problems detected in workspace files.</div>
+              </div>
+            </div>
+
+            <!-- In-Terminal Debug Console REPL View -->
+            <div class="vsc-debug-console-panel vsc-scrollable" id="vsc-debug-panel">
+              <div class="vsc-term-history" id="vsc-debug-history">
+                <div class="vsc-term-line vsc-term-dim">[Debug Console REPL — Evaluate JavaScript expressions in sandbox]</div>
+              </div>
+              <div class="vsc-input-row">
+                <span class="vsc-prompt-str">&gt;</span>
+                <input type="text" id="vsc-debug-input" class="vsc-term-input" placeholder="Evaluate JS expression (e.g. 2 + 2)..." />
+              </div>
+            </div>
+
+            <!-- In-Terminal Ports View (When Ports tab clicked or 'ports' run) -->
+            <div class="vsc-ports-panel vsc-scrollable" id="vsc-ports-panel">
+              <table class="vsc-ports-table">
+                <thead>
+                  <tr>
+                    <th>Port</th>
+                    <th>Process</th>
+                    <th>Target Resource</th>
+                    <th>Address</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="vsc-ports-tbody">
+                  <tr>
+                    <td colspan="5" style="color:var(--vsc-fg-muted);text-align:center;padding:20px">No virtual servers currently running. Use <code style="color:var(--vsc-turquoise)">serve &lt;filename&gt;</code> to spin one up.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- In-Terminal GNU Nano Text Editor -->
+            <div class="vsc-nano-container" id="vsc-nano-container" style="display:none">
+              <div class="vsc-nano-topbar">
+                <span>GNU nano 7.2</span>
+                <span class="vsc-nano-filename" id="vsc-nano-filename">File: new-file.html</span>
+                <span class="vsc-nano-status" id="vsc-nano-status">[New File]</span>
+              </div>
+              <textarea class="vsc-nano-editor vsc-scrollable" id="vsc-nano-editor" spellcheck="false"></textarea>
+              <div class="vsc-nano-shortcuts">
+                <button class="vsc-nano-btn" id="vsc-nano-btn-help"><span class="vsc-nano-key">^G</span> Get Help</button>
+                <button class="vsc-nano-btn" id="vsc-nano-btn-save"><span class="vsc-nano-key">^O</span> WriteOut</button>
+                <button class="vsc-nano-btn" id="vsc-nano-btn-where"><span class="vsc-nano-key">^W</span> Where Is</button>
+                <button class="vsc-nano-btn" id="vsc-nano-btn-cut"><span class="vsc-nano-key">^K</span> Cut Text</button>
+                <button class="vsc-nano-btn" id="vsc-nano-btn-justify"><span class="vsc-nano-key">^J</span> Justify</button>
+                <button class="vsc-nano-btn" id="vsc-nano-btn-pos"><span class="vsc-nano-key">^C</span> Cur Pos</button>
+                <button class="vsc-nano-btn" id="vsc-nano-btn-exit"><span class="vsc-nano-key">^X</span> Exit</button>
+                <button class="vsc-nano-btn" id="vsc-nano-btn-read"><span class="vsc-nano-key">^R</span> Read File</button>
+                <button class="vsc-nano-btn" id="vsc-nano-btn-replace"><span class="vsc-nano-key">^\</span> Replace</button>
+                <button class="vsc-nano-btn" id="vsc-nano-btn-paste"><span class="vsc-nano-key">^U</span> Paste</button>
+                <button class="vsc-nano-btn" id="vsc-nano-btn-spell"><span class="vsc-nano-key">^T</span> To Spell</button>
+                <button class="vsc-nano-btn" id="vsc-nano-btn-next"><span class="vsc-nano-key">^V</span> Next Page</button>
+              </div>
+            </div>
+
+            <!-- Mobile Quickbar (For Phone Breaks & Touch Navigation) -->
+            <div class="vsc-mobile-quickbar" aria-label="Mobile Terminal Helper Keys">
+              <button class="vsc-mobile-key" data-key="Tab">Tab ⇥</button>
+              <button class="vsc-mobile-key" data-key="Enter">↵ Enter</button>
+              <button class="vsc-mobile-key" data-key="Run">▶ Run</button>
+              <button class="vsc-mobile-key" data-key="Up">↑ Prev</button>
+              <button class="vsc-mobile-key" data-key="Down">↓ Next</button>
+              <button class="vsc-mobile-key" data-key="Clear">Clear</button>
+              <button class="vsc-mobile-key" data-key="|">|</button>
+              <button class="vsc-mobile-key" data-key="/">/</button>
+              <button class="vsc-mobile-key" data-key="-">-</button>
+              <button class="vsc-mobile-key" data-key="~">~</button>
+            </div>
+          </section>
+          <!-- In-Workbench Live Web Server Preview Pane -->
+          <div class="vsc-live-preview hidden" id="vsc-live-preview">
+            <header class="vsc-preview-header">
+              <div class="vsc-preview-nav">
+                <button class="vsc-preview-btn vsc-preview-back-btn" id="vsc-preview-btn-back-code" title="Return to Code Editor">
+                  ← Back to Code
+                </button>
+                <button class="vsc-preview-btn" id="vsc-preview-btn-reload" title="Reload Page">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                </button>
+              </div>
+              <div class="vsc-preview-address">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                <span id="vsc-preview-url-text">http://localhost:3000/mypage.html</span>
+              </div>
+              <div class="vsc-preview-nav">
+                <button class="vsc-preview-btn" id="vsc-preview-btn-desktop" title="Desktop View (100%)">Desktop</button>
+                <button class="vsc-preview-btn" id="vsc-preview-btn-tablet" title="Tablet View (768px)">Tablet</button>
+                <button class="vsc-preview-btn" id="vsc-preview-btn-mobile" title="Mobile Phone View (375px)">Mobile</button>
+                <button class="vsc-preview-btn" id="vsc-preview-btn-external" title="Open in Chrome Window / New Tab">Open in Chrome ↗</button>
+                <button class="vsc-preview-btn" id="vsc-preview-btn-close" title="Close Preview">✕</button>
+              </div>
+            </header>
+            <div class="vsc-preview-viewport-wrap">
+              <iframe class="vsc-preview-frame" id="vsc-preview-iframe" title="Live Page Preview"></iframe>
+            </div>
+          </div>
+        </main>
+      </div>
+
+      <!-- 6. BOTTOM STATUS BAR -->
+      <footer class="vsc-statusbar" aria-label="Status Bar">
+        <div class="vsc-status-left">
+          <div class="vsc-status-item accent" id="vsc-status-git" title="Git Branch / Remote Repo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/><path d="M6 9v12"/></svg>
+            <span id="vsc-status-git-branch">main*</span>
+          </div>
+          <div class="vsc-status-item" id="vsc-status-sync" title="Synchronize Changes with GitHub">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            <span id="vsc-status-sync-text">0 ↓ 1 ↑</span>
+          </div>
+          <div class="vsc-status-item" id="vsc-status-diagnostics" title="Diagnostics: 0 Errors, 0 Warnings">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+            <span id="vsc-status-err-count">0</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <span id="vsc-status-warn-count">0</span>
+          </div>
+        </div>
+
+        <div class="vsc-status-right">
+          <div class="vsc-status-item" id="vsc-status-lncol">Ln 1, Col 1</div>
+          <div class="vsc-status-item" id="vsc-status-spaces" title="Click to Change Indentation">Spaces: 2</div>
+          <div class="vsc-status-item" id="vsc-status-encoding">UTF-8</div>
+          <div class="vsc-status-item" id="vsc-status-lang">JavaScript / JSON</div>
+          <div class="vsc-status-item accent" id="vsc-status-online" title="DevTools Engine Active">
+            <span class="vsc-pulse-beacon"></span>
+            <span>Online</span>
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <!-- MODAL DIALOG 1: COMMAND PALETTE -->
+    <dialog class="vsc-dialog" id="vsc-palette-dialog" aria-label="Command Palette">
+      <div class="vsc-palette-input-wrap">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" class="vsc-palette-input" id="vsc-palette-input" placeholder="Type a command or file name..." autocomplete="off" />
+      </div>
+      <ul class="vsc-palette-list vsc-scrollable" id="vsc-palette-list"></ul>
+    </dialog>
+
+    <!-- MODAL DIALOG 2: GITHUB CONNECT & REPO LOADER -->
+    <dialog class="vsc-dialog" id="vsc-github-dialog" aria-label="GitHub Repository &amp; Token Connect">
+      <div class="vsc-dialog-header">
+        <span>CONNECT TO GITHUB REPOSITORY</span>
+        <button class="vsc-title-btn" id="vsc-gh-btn-close">✕</button>
+      </div>
+      <div class="vsc-dialog-body">
+        <div class="vsc-input-group">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <label class="vsc-input-label" for="vsc-gh-token-input">GitHub Personal Access Token (PAT):</label>
+            <span id="vsc-gh-saved-badge" style="font-size:10px;color:#98c379;display:none;font-weight:600">✓ Token Remembered</span>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center;position:relative">
+            <input type="password" class="vsc-modal-input" id="vsc-gh-token-input" placeholder="ghp_... or github_pat_..." style="flex:1" autocomplete="off" />
+            <button type="button" class="vsc-editor-btn vsc-token-toggle-btn" id="vsc-gh-btn-toggle-token" title="Show / Hide Token" aria-label="Show / Hide Token">👁</button>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:2px">
+            <input type="checkbox" id="vsc-gh-remember-token" checked style="accent-color:var(--vsc-turquoise);cursor:pointer" />
+            <label for="vsc-gh-remember-token" style="font-size:11px;color:var(--vsc-fg-secondary);cursor:pointer">Remember token on this device (localStorage &amp; cookies)</label>
+          </div>
+        </div>
+        <div class="vsc-input-group" id="vsc-gh-repo-picker-group">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <label class="vsc-input-label" for="vsc-gh-repo-select">Target Repository:</label>
+            <button type="button" class="vsc-editor-btn" id="vsc-gh-btn-refresh-repos" title="Refresh repositories list" style="padding:2px 8px;font-size:10px;height:auto;line-height:1.3">↻ Refresh Repos</button>
+          </div>
+          <div id="vsc-gh-repos-loading" style="font-size:11px;color:var(--vsc-turquoise);display:none;padding:4px 0">
+            <span>Fetching your repositories from GitHub...</span>
+          </div>
+          <select class="vsc-modal-input" id="vsc-gh-repo-select" style="width:100%">
+            <option value="">-- Enter token to load repositories --</option>
+          </select>
+          <div id="vsc-gh-manual-repo-wrap" style="margin-top:6px">
+            <label class="vsc-input-label" for="vsc-gh-repo-input" style="font-size:10px;color:var(--vsc-fg-secondary);font-weight:normal">Or enter custom / third-party repository (owner/repo):</label>
+            <input type="text" class="vsc-modal-input" id="vsc-gh-repo-input" placeholder="e.g. owner/repo" style="width:100%" />
+          </div>
+        </div>
+        <div class="vsc-input-group">
+          <label class="vsc-input-label" for="vsc-gh-branch-input">Branch (default: main):</label>
+          <input type="text" class="vsc-modal-input" id="vsc-gh-branch-input" placeholder="main" value="main" />
+        </div>
+        <div id="vsc-gh-status-msg" style="font-size:11px;min-height:16px;"></div>
+      </div>
+      <div class="vsc-dialog-footer">
+        <button class="vsc-editor-btn" id="vsc-gh-btn-disconnect" style="margin-right:auto;display:none;color:#f44336;border-color:#5c2323">Clear / Log Out</button>
+        <button class="vsc-editor-btn" id="vsc-gh-btn-cancel">Cancel</button>
+        <button class="vsc-editor-btn" id="vsc-gh-btn-save-token" title="Save and remember token without cloning repo">Save Token</button>
+        <button class="vsc-editor-btn run" id="vsc-gh-btn-connect">Connect &amp; Load Repo</button>
+      </div>
+    </dialog>
+
+    <!-- MODAL DIALOG 3: WORKBENCH SETTINGS -->
+    <dialog class="vsc-dialog" id="vsc-settings-dialog" aria-label="Workbench Settings">
+      <div class="vsc-dialog-header">
+        <span>WORKBENCH SETTINGS</span>
+        <button class="vsc-title-btn" id="vsc-settings-btn-close">✕</button>
+      </div>
+      <div class="vsc-dialog-body">
+        <div class="vsc-input-group">
+          <label class="vsc-input-label">Editor Font Size:</label>
+          <select class="vsc-modal-input" id="vsc-setting-fontsize">
+            <option value="12px">12px (Compact)</option>
+            <option value="13px" selected>13px (Default)</option>
+            <option value="14px">14px (Comfortable)</option>
+            <option value="16px">16px (Large)</option>
+          </select>
+        </div>
+        <div class="vsc-input-group">
+          <label class="vsc-input-label">Tab Size / Indentation:</label>
+          <select class="vsc-modal-input" id="vsc-setting-tabsize">
+            <option value="2" selected>2 Spaces</option>
+            <option value="4">4 Spaces</option>
+          </select>
+        </div>
+        <div class="vsc-input-group">
+          <label class="vsc-input-label">Word Wrap:</label>
+          <select class="vsc-modal-input" id="vsc-setting-wordwrap">
+            <option value="off">Off (Horizontal Scroll)</option>
+            <option value="on" selected>On (Wrap lines)</option>
+          </select>
+        </div>
+        <div class="vsc-input-group" style="margin-top:6px;border-top:1px solid #232323;padding-top:10px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <label class="vsc-input-label" for="vsc-setting-gh-token">GitHub Personal Access Token (PAT):</label>
+            <span id="vsc-setting-gh-status" style="font-size:10px;color:var(--vsc-fg-muted)">Persisted locally</span>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center">
+            <input type="password" class="vsc-modal-input" id="vsc-setting-gh-token" placeholder="ghp_... or github_pat_..." style="flex:1" autocomplete="off" />
+            <button type="button" class="vsc-editor-btn vsc-token-toggle-btn" id="vsc-setting-btn-toggle-token" title="Show / Hide Token" aria-label="Show / Hide Token">👁</button>
+          </div>
+          <span style="font-size:10px;color:var(--vsc-fg-muted)">Remembered across browser sessions via localStorage and secure cookies.</span>
+        </div>
+        <div class="vsc-input-group" style="margin-top:6px;border-top:1px solid #232323;padding-top:10px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <label class="vsc-input-label" for="vsc-setting-gemini-key">Gemini AI API Key (Optional):</label>
+            <span id="vsc-setting-gemini-status" style="font-size:10px;color:var(--vsc-fg-muted)">Optional</span>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center">
+            <input type="password" class="vsc-modal-input" id="vsc-setting-gemini-key" placeholder="AIzaSy... (optional for AI commit generation)" style="flex:1" autocomplete="off" />
+            <button type="button" class="vsc-editor-btn vsc-token-toggle-btn" id="vsc-setting-btn-toggle-gemini" title="Show / Hide Key" aria-label="Show / Hide Key">👁</button>
+          </div>
+          <span style="font-size:10px;color:var(--vsc-fg-muted)">If configured, AI commit generation uses Google Gemini 2.5 Flash. Otherwise, the intelligent built-in Conventional Commits engine runs automatically.</span>
+        </div>
+        <div class="vsc-input-group" style="margin-top:6px;border-top:1px solid #232323;padding-top:10px">
+          <label class="vsc-input-label" style="color:#e06c75">Reset &amp; Maintenance:</label>
+          <button type="button" class="vsc-editor-btn" id="vsc-btn-reset-data" style="color:#f44336;border-color:#5c2323;align-self:flex-start">
+            Clear Workspace Data (Keep Token &amp; Settings)...
+          </button>
+          <span style="font-size:10px;color:var(--vsc-fg-muted)">Cleans all cached workspace files and reloads to a fresh interface. Keeps your GitHub token and settings intact.</span>
+        </div>
+      </div>
+      <div class="vsc-dialog-footer">
+        <button class="vsc-editor-btn run" id="vsc-settings-btn-save">Save &amp; Close</button>
+      </div>
+    </dialog>
+
+    <!-- MODAL DIALOG 4: IN-PAGE QUICK INPUT (Preserves fullscreen) -->
+    <dialog class="vsc-dialog" id="vsc-quickinput-dialog" aria-label="Workbench Quick Input">
+      <div class="vsc-dialog-header">
+        <span id="vsc-quickinput-title">PROMPT</span>
+        <button class="vsc-title-btn" id="vsc-quickinput-btn-close">✕</button>
+      </div>
+      <div class="vsc-dialog-body">
+        <div class="vsc-input-group">
+          <label class="vsc-input-label" id="vsc-quickinput-label">Enter value:</label>
+          <input type="text" class="vsc-modal-input" id="vsc-quickinput-input" autocomplete="off" />
+        </div>
+      </div>
+      <div class="vsc-dialog-footer">
+        <button class="vsc-editor-btn" id="vsc-quickinput-btn-cancel">Cancel</button>
+        <button class="vsc-editor-btn run" id="vsc-quickinput-btn-ok">OK</button>
+      </div>
+    </dialog>
+
+    <!-- CUSTOM VS CODE CONTEXT MENU -->
+    <div id="vsc-context-menu" class="vsc-context-menu" style="display:none;" role="menu" aria-label="Workbench Context Menu"></div>
+    </div>
+  </main>
+
+  <!-- Scripts -->
+  <script src="../../js/framework.js"></script>
+  <script src="../../js/jquery-3.2.1.min.js"></script>
+  <script src="../../js/github-fetch.js?v=25"></script>
+  <script src="./code-tools.js?v=28"></script>
+</body>
+</html>
+

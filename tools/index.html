@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title class="user-name-title-js">Web Tools Directory | xCONFLiCTiONx</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" id="meta-description-js" content="Developer web utilities for privacy, security, and document management. 100% local and browser-based.">
+    <link rel="canonical" href="https://xconflictionx.cc/tools/" />
+    <meta name="theme-color" content="#0b0d10">
+    <link rel="manifest" href="../site.webmanifest">
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="icon" id="favicon-js" href="../assets/favicon.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
+
+    <!-- Open Graph / Social Metadata -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Web Tools Directory | xCONFLiCTiONx">
+    <meta property="og:description" content="Developer web utilities for privacy, security, and document management. 100% local and browser-based.">
+    <meta property="og:url" content="https://xconflictionx.cc/tools/">
+    <meta property="og:site_name" content="xCONFLiCTiONx">
+    <meta property="og:image" content="https://xconflictionx.cc/assets/og-image.png">
+
+    <!-- X / Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Web Tools Directory | xCONFLiCTiONx">
+    <meta name="twitter:description" content="Developer web utilities for privacy, security, and document management. 100% local and browser-based.">
+    <meta name="twitter:image" content="https://xconflictionx.cc/assets/og-image.png">
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "@id": "https://xconflictionx.cc/tools/#webpage",
+      "url": "https://xconflictionx.cc/tools/",
+      "name": "Web Tools Directory | xCONFLiCTiONx",
+      "inLanguage": "en",
+      "description": "Developer web utilities for privacy, security, and document management. 100% local and browser-based.",
+      "author": {
+        "@type": "Person",
+        "@id": "https://xconflictionx.cc/#person",
+        "name": "xCONFLiCTiONx"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "@id": "https://xconflictionx.cc/#organization",
+        "name": "xCONFLiCTiONx",
+        "url": "https://xconflictionx.cc/",
+        "sameAs": [
+          "https://github.com/xCONFLiCTiONx"
+        ]
+      }
+    }
+    </script>
+    <style>
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 2.4rem;
+            margin-top: 2rem;
+        }
+
+        .tool-card {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 2.4rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+        }
+
+        .tool-card:hover {
+            border-color: #58a6ff;
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+        }
+
+        .tool-card-icon {
+            font-size: 3.2rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .tool-card h3 {
+            font-size: 2rem;
+            color: #f0f6fc;
+            margin-bottom: 0.8rem;
+        }
+
+        .tool-card p {
+            color: #8b949e;
+            font-size: 1.4rem;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+
+        .tool-card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-top: 1px solid #21262d;
+            padding-top: 1.6rem;
+        }
+
+        .tool-tag {
+            background: rgba(88, 166, 255, 0.1);
+            color: #58a6ff;
+            border: 1px solid rgba(88, 166, 255, 0.3);
+            border-radius: 12px;
+            padding: 0.2rem 0.8rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .launch-btn {
+            background: #238636;
+            color: #ffffff;
+            border: 1px solid rgba(240, 246, 252, 0.1);
+            border-radius: 6px;
+            padding: 0.6rem 1.4rem;
+            font-size: 1.3rem;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            transition: background-color 0.2s;
+        }
+
+        .launch-btn:hover {
+            background-color: #2ea043;
+            text-decoration: none;
+        }
+
+        .github-repo-badge {
+            color: #8b949e;
+            font-size: 1.3rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.3rem 0.8rem;
+            border-radius: 6px;
+            background: rgba(110, 118, 129, 0.1);
+            border: 1px solid rgba(110, 118, 129, 0.2);
+            transition: color 0.2s, background-color 0.2s, border-color 0.2s;
+        }
+
+        .github-repo-badge:hover {
+            color: #58a6ff;
+            background: rgba(88, 166, 255, 0.1);
+            border-color: rgba(88, 166, 255, 0.3);
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body id="top">
+
+    <main class="container">
+
+        <aside class="sidebar profile-sidebar">
+            <div id="profile-avatar" class="profile-avatar"></div>
+            <h1 id="profile-name" class="profile-name user-name-js">Loading...</h1>
+            <span id="profile-handle" class="profile-handle">Software Developer</span>
+
+            <p id="profile-bio" class="profile-bio"></p>
+
+            <ul id="profile-metadata" class="profile-metadata"></ul>
+        </aside>
+
+        <section class="main-content">
+            <h2 class="section-title">Developer Tools Directory</h2>
+
+            <p style="color: #8b949e; font-size: 1.5rem; line-height: 1.6; margin-bottom: 2.4rem;">
+                Select a tool below. All utilities operate <strong>100% locally in your browser memory</strong> with no server processing or tracking.
+            </p>
+
+            <div class="tools-grid">
+                <div class="repo-loader">
+                    <i class="im im-spinner im-spin"></i> Loading tools directory...
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script src="../js/framework.js"></script>
+    <script src="../js/jquery-3.2.1.min.js"></script>
+    <script src="../js/github-fetch.js?v=25"></script>
+    <script>
+        async function renderToolsDirectory() {
+            const config = await window.PortfolioFramework.getConfig();
+            const toolsGrid = document.querySelector('.tools-grid');
+            if (!toolsGrid || !config || !config.tools) return;
+
+            const enabledTools = config.tools.filter(t => t.enabled !== false);
+            if (enabledTools.length === 0) {
+                toolsGrid.innerHTML = '<p style="color: #8b949e; font-size: 1.5rem;">No tools are currently enabled in portfolio.config.json.</p>';
+                return;
+            }
+
+            toolsGrid.innerHTML = enabledTools.map(tool => {
+                const toolUrl = window.PortfolioFramework.toRelativeUrl(tool.path);
+                const hasIconImage = !!tool.iconImage;
+
+                const iconHtml = hasIconImage
+                    ? `<img src="${window.PortfolioFramework.toRelativeUrl(tool.iconImage)}" width="48" height="48" alt="${tool.name} Logo" style="border-radius: 8px;">`
+                    : `<i class="${tool.icon || 'im im-wrench'} tool-card-icon" style="color: #f78166; margin-bottom: 0;"></i>`;
+
+                const githubRepoHtml = tool.githubUrl
+                    ? `<a href="${tool.githubUrl}" target="_blank" class="github-repo-badge" title="View Source Code on GitHub">
+                        <i class="im im-github"></i> GitHub Repo
+                       </a>`
+                    : '';
+
+                const topHeader = `<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.2rem;">
+                    ${iconHtml}
+                    ${githubRepoHtml}
+                   </div>`;
+
+                return `
+                    <div class="tool-card">
+                        <div>
+                            ${topHeader}
+                            <h3>${tool.name}</h3>
+                            <p>${tool.description}</p>
+                        </div>
+                        <div class="tool-card-footer">
+                            <span class="tool-tag">${tool.category || 'Utility'}</span>
+                            <a href="${toolUrl}" class="launch-btn">Launch Tool &rarr;</a>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', renderToolsDirectory);
+        } else {
+            renderToolsDirectory();
+        }
+    </script>
+</body>
+</html>

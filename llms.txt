@@ -1,0 +1,23 @@
+# xCONFLiCTiONx
+
+Software Developer Portfolio - Building tools for freedom & productivity.
+
+Website: https://xconflictionx.cc
+
+## Pages
+
+- [/](https://xconflictionx.cc/)
+- [/about](https://xconflictionx.cc/about)
+- [/contact](https://xconflictionx.cc/contact)
+- [/privacy](https://xconflictionx.cc/privacy)
+- [/tools](https://xconflictionx.cc/tools)
+- [/tools/allow-copy-paste](https://xconflictionx.cc/tools/allow-copy-paste)
+- [/tools/blackbox](https://xconflictionx.cc/tools/blackbox)
+- [/tools/code-tools](https://xconflictionx.cc/tools/code-tools)
+- [/tools/dev-box](https://xconflictionx.cc/tools/dev-box)
+- [/tools/image-tool](https://xconflictionx.cc/tools/image-tool)
+- [/tools/pdf-tools](https://xconflictionx.cc/tools/pdf-tools)
+- [/tools/seo-generator](https://xconflictionx.cc/tools/seo-generator)
+- [/tools/site-grade](https://xconflictionx.cc/tools/site-grade)
+- [/tools/warp-test](https://xconflictionx.cc/tools/warp-test)
+- [/tools/zero-hour](https://xconflictionx.cc/tools/zero-hour)

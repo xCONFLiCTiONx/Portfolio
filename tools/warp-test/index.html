@@ -1,0 +1,1876 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Diagnostic | WARP Test</title>
+    <meta name="description" id="meta-description-js" content="Inspect browser network connectivity, Cloudflare WARP split tunnel routing, and public IP address details.">
+    <meta name="portfolio-tool-id" content="warp-test">
+    <link rel="canonical" href="https://xconflictionx.cc/tools/warp-test/" />
+    <meta name="theme-color" content="#0b0d10">
+    <link rel="manifest" href="../../site.webmanifest">
+    <link rel="stylesheet" href="../../css/main.css">
+    <link rel="icon" id="favicon-js" href="../../assets/favicon.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
+
+    <!-- Open Graph / Social Metadata -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Network Diagnostic | WARP Test">
+    <meta property="og:description" content="Inspect browser network connectivity, Cloudflare WARP split tunnel routing, and public IP address details.">
+    <meta property="og:url" content="https://xconflictionx.cc/tools/warp-test/">
+    <meta property="og:site_name" content="xCONFLiCTiONx">
+    <meta property="og:image" content="https://xconflictionx.cc/assets/og-image.png">
+
+    <!-- X / Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Network Diagnostic | WARP Test">
+    <meta name="twitter:description" content="Inspect browser network connectivity, Cloudflare WARP split tunnel routing, and public IP address details.">
+    <meta name="twitter:image" content="https://xconflictionx.cc/assets/og-image.png">
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "@id": "https://xconflictionx.cc/tools/warp-test/#webpage",
+      "url": "https://xconflictionx.cc/tools/warp-test/",
+      "name": "Network Diagnostic | WARP Test",
+      "inLanguage": "en",
+      "description": "Inspect browser network connectivity, Cloudflare WARP split tunnel routing, and public IP address details.",
+      "author": {
+        "@type": "Person",
+        "@id": "https://xconflictionx.cc/#person",
+        "name": "xCONFLiCTiONx"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "@id": "https://xconflictionx.cc/#organization",
+        "name": "xCONFLiCTiONx",
+        "url": "https://xconflictionx.cc/",
+        "sameAs": [
+          "https://github.com/xCONFLiCTiONx"
+        ]
+      }
+    }
+    </script>
+
+    <style>
+        :root {
+            color-scheme: dark;
+
+            --bg: #080b10;
+            --panel: #0f141b;
+            --panel2: #131a23;
+            --border: #26313d;
+
+            --text: #e7edf4;
+            --muted: #8b98a7;
+
+            --green: #35d07f;
+            --red: #ff5d6c;
+            --yellow: #f2c94c;
+            --blue: #4da3ff;
+            --cyan: #39d8ff;
+
+            --radius: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+            font-family:
+                Inter,
+                Segoe UI,
+                Arial,
+                sans-serif;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 30px 30px 30px;
+        }
+
+        h1 {
+            margin: 0 0 8px;
+            font-size: 30px;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            color: var(--muted);
+            margin-bottom: 28px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns:
+                repeat(auto-fit, minmax(240px, 1fr));
+            gap: 15px;
+        }
+
+        .card {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+        }
+
+        .card h2 {
+            margin: 0 0 16px;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .value {
+            font-size: 24px;
+            font-weight: 700;
+            word-break: break-word;
+        }
+
+        .value.good {
+            color: var(--green);
+        }
+
+        .value.bad {
+            color: var(--red);
+        }
+
+        .value.warn {
+            color: var(--yellow);
+        }
+
+        .value.info {
+            color: var(--blue);
+        }
+
+        .detail {
+            margin-top: 7px;
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .wide {
+            grid-column: 1 / -1;
+        }
+
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--muted);
+            box-shadow: 0 0 10px currentColor;
+        }
+
+        .dot.green {
+            background: var(--green);
+            color: var(--green);
+        }
+
+        .dot.red {
+            background: var(--red);
+            color: var(--red);
+        }
+
+        .dot.yellow {
+            background: var(--yellow);
+            color: var(--yellow);
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table td {
+            padding: 9px 0;
+            border-bottom: 1px solid var(--border);
+            vertical-align: top;
+        }
+
+        .table tr:last-child td {
+            border-bottom: 0;
+        }
+
+        .table td:first-child {
+            width: 180px;
+            color: var(--muted);
+        }
+
+        code {
+            font-family:
+                Consolas,
+                "Courier New",
+                monospace;
+
+            color: var(--cyan);
+            word-break: break-all;
+        }
+
+        button {
+            border: 1px solid var(--border);
+            background: var(--panel2);
+            color: var(--text);
+
+            padding: 11px 18px;
+            border-radius: 8px;
+
+            cursor: pointer;
+
+            font-size: 14px;
+            font-weight: 600;
+
+            transition:
+                background 0.15s,
+                border-color 0.15s,
+                transform 0.1s;
+        }
+
+        button:hover {
+            background: #1a232e;
+            border-color: #3b4b5d;
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        button:disabled {
+            opacity: 0.55;
+            cursor: wait;
+        }
+
+        .button-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .speed-grid {
+            display: grid;
+            grid-template-columns:
+                repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 18px;
+        }
+
+        .speed-card {
+            background: var(--panel2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 18px;
+        }
+
+        .speed-title {
+            color: var(--muted);
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+        .speed-value {
+            font-size: 26px;
+            font-weight: 700;
+        }
+
+        .progress {
+            height: 8px;
+            background: #1b222b;
+            border-radius: 999px;
+            overflow: hidden;
+            margin-top: 18px;
+            display: none;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: var(--blue);
+            transition: width 0.15s linear;
+        }
+
+        .speed-status {
+            margin-top: 12px;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .log {
+            background: #05070a;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+
+            padding: 14px;
+
+            max-height: 280px;
+            overflow-y: auto;
+
+            font-family:
+                Consolas,
+                "Courier New",
+                monospace;
+
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .log-line {
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .log-info {
+            color: var(--blue);
+        }
+
+        .log-ok {
+            color: var(--green);
+        }
+
+        .log-error {
+            color: var(--red);
+        }
+
+        .log-warn {
+            color: var(--yellow);
+        }
+
+        .routing-box {
+            margin-top: 15px;
+            padding: 15px;
+
+            border: 1px solid var(--border);
+            border-radius: 10px;
+
+            background: var(--panel2);
+        }
+
+        .routing-title {
+            color: var(--muted);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 7px;
+        }
+
+        .routing-result {
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .footer {
+            margin-top: 25px;
+            text-align: center;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        @media (max-width: 700px) {
+            .container {
+                padding: 0 18px 18px 18px;
+            }
+
+            .speed-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .table td:first-child {
+                width: 130px;
+            }
+        }
+    </style>
+</head>
+
+<body id="top" data-tool-id="warp-test">
+
+    <header class="site-header">
+        <nav class="nav-content">
+            <div class="nav-brand">
+                <a href="../../index.html">
+                    <span id="header-avatar" class="nav-logo"><img src="https://avatars.githubusercontent.com/u/12835195?v=4" alt="xCONFLiCTiONx" onerror="if(this.src!=='../../assets/favicon.ico')this.src='../../assets/favicon.ico';"></span>
+                    <span class="user-name-js">Loading...</span>
+                </a>
+            </div>
+            <button class="menu-toggle" id="menuToggle">
+                <i class="im im-menu"></i>
+            </button>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="../../index.html"><i class="im im-home"></i> Overview</a></li>
+                <li><a href="../../about/"><i class="im im-user-male"></i> About</a></li>
+                <li><a href="../index.html" class="active"><i class="im im-tools"></i> Tools</a></li>
+                <li><a href="../../privacy/"><i class="im im-shield"></i> Privacy</a></li>
+                <li><a href="../../contact/"><i class="im im-paperplane"></i> Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="container">
+
+        <h1>Network Diagnostic</h1>
+
+        <div class="subtitle">
+            Cloudflare WARP / Gateway routing, connection information,
+            and same-origin speed test.
+        </div>
+
+
+        <!-- ROUTING STATUS -->
+
+        <div class="grid">
+
+            <div class="card wide">
+
+                <div class="status">
+                    <div id="routingDot" class="dot"></div>
+
+                    <div>
+                        <div id="routingResult" class="routing-result">
+                            Checking...
+                        </div>
+
+                        <div id="routingDetail" class="detail">
+                            Reading Cloudflare connection information...
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+
+            <!-- WARP -->
+
+            <div class="card">
+
+                <h2>Cloudflare WARP</h2>
+
+                <div id="warpValue" class="value">
+                    Checking...
+                </div>
+
+                <div class="detail">
+                    Cloudflare trace WARP status
+                </div>
+
+            </div>
+
+
+            <!-- GATEWAY -->
+
+            <div class="card">
+
+                <h2>Cloudflare Gateway</h2>
+
+                <div id="gatewayValue" class="value">
+                    Checking...
+                </div>
+
+                <div class="detail">
+                    Cloudflare trace Gateway status
+                </div>
+
+            </div>
+
+
+            <!-- IP -->
+
+            <div class="card">
+
+                <h2>Observed IP</h2>
+
+                <div id="traceIp" class="value">
+                    Checking...
+                </div>
+
+                <div class="detail">
+                    IP reported by Cloudflare
+                </div>
+
+            </div>
+
+
+            <!-- COLO -->
+
+            <div class="card">
+
+                <h2>Cloudflare POP</h2>
+
+                <div id="coloValue" class="value">
+                    Checking...
+                </div>
+
+                <div class="detail">
+                    Cloudflare edge location
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- CONNECTION INFORMATION -->
+
+        <div class="card wide" style="margin-top:15px;">
+
+            <h2>Connection Information</h2>
+
+            <table class="table">
+
+                <tr>
+                    <td>Hostname</td>
+                    <td>
+                        <code id="hostname">Checking...</code>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>Current URL</td>
+                    <td>
+                        <code id="currentUrl">Checking...</code>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>External IP check (ipify)</td>
+                    <td>
+                        <code id="ipv4">Checking...</code>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>External IPv6 check (ipify)</td>
+                    <td>
+                        <code id="ipv6">Checking...</code>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>HTTP Version</td>
+                    <td>
+                        <code id="httpVersion">Checking...</code>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>TLS</td>
+                    <td>
+                        <code id="tls">Checking...</code>
+                    </td>
+                </tr>
+
+            </table>
+
+        </div>
+
+
+        <!-- MULTI-ENDPOINT TUNNEL AUDIT -->
+        <div class="card wide" style="margin-top:15px;">
+            <h2>🛡️ Multi-Endpoint Tunnel Audit</h2>
+            <div class="detail">
+                Checks this site's Cloudflare trace and several independent public-IP services separately. Each service may follow a different proxy rule. Compare the returned IPs; failed/CORS-blocked checks are inconclusive, not proof of a leak.
+            </div>
+            <div class="button-row" style="margin-top:16px;">
+                <button id="tunnelAuditButton" onclick="runTunnelAudit()">Run Tunnel Audit</button>
+                <button id="webrtcButton" onclick="runWebRTCTest()">Check WebRTC</button>
+                <button onclick="copyTunnelReport()">Copy Report</button>
+            </div>
+            <div id="tunnelSummary" class="routing-box" role="status">
+                <div class="routing-title">Audit result</div>
+                <div id="tunnelSummaryValue" class="routing-result">Not run yet</div>
+                <div id="tunnelSummaryDetail" class="detail">Run the audit while your VPN/proxy is connected, then repeat with it disconnected to establish a baseline.</div>
+            </div>
+            <table class="table" style="margin-top:12px;">
+                <thead><tr><td>Endpoint / route</td><td>Observed IP / result</td><td>Status</td><td>Time</td></tr></thead>
+                <tbody id="tunnelAuditRows"><tr><td colspan="4">No tests run yet.</td></tr></tbody>
+            </table>
+            <div class="routing-box">
+                <div class="routing-title">WebRTC candidate check</div>
+                <div id="webrtcResult" class="detail">Not run yet. This checks addresses exposed to the browser by WebRTC; modern browsers often hide local addresses.</div>
+            </div>
+            <div class="detail" style="margin-top:12px;">
+                <strong>Important:</strong> this is a browser-level diagnostic, not a guarantee that every app or every network protocol uses the tunnel. It cannot directly inspect your operating system's DNS resolver or prove the route taken by traffic outside this browser. For a stronger test, compare results with the tunnel ON and OFF, and use your VPN/proxy's own logs or an external packet capture.
+            </div>
+        </div>
+
+        <!-- SPEED TEST -->
+
+        <div class="card wide" style="margin-top:15px;">
+
+            <h2>Same-Origin Speed Test</h2>
+
+            <div class="detail">
+                This test downloads data directly from this website.
+                That makes it useful for comparing the route with
+                WARP enabled versus a split-tunnel exclusion.
+            </div>
+
+            <div class="button-row" style="margin-top:16px;">
+
+                <button
+                id="speedTestButton"
+                onclick="runSpeedTest()"
+            >
+                ⚡ Run Speed Test
+            </button>
+
+            </div>
+
+
+            <div id="speedProgress" class="progress">
+                <div id="speedProgressBar" class="progress-bar"></div>
+            </div>
+
+
+            <div id="speedStatus" class="speed-status">
+                Ready.
+            </div>
+
+
+            <div class="speed-grid">
+
+                <div class="speed-card">
+
+                    <div class="speed-title">
+                        LATENCY
+                    </div>
+
+                    <div id="speedLatency" class="speed-value">
+                        —
+                    </div>
+
+                    <div id="speedLatencyDetail" class="detail">
+                        Round-trip request time
+                    </div>
+
+                </div>
+
+
+                <div class="speed-card">
+
+                    <div class="speed-title">
+                        DOWNLOAD
+                    </div>
+
+                    <div id="speedDownload" class="speed-value">
+                        —
+                    </div>
+
+                    <div id="speedDownloadDetail" class="detail">
+                        Same-origin download
+                    </div>
+
+                </div>
+
+
+                <div class="speed-card">
+
+                    <div class="speed-title">
+                        UPLOAD
+                    </div>
+
+                    <div id="speedUpload" class="speed-value">
+                        N/A
+                    </div>
+
+                    <div id="speedUploadDetail" class="detail">
+                        Requires a server-side POST endpoint
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- CLOUDFLARE TRACE -->
+
+        <div class="card wide" style="margin-top:15px;">
+
+            <h2>Cloudflare Trace</h2>
+
+            <table class="table">
+
+                <tbody id="traceTable">
+
+                    <tr>
+                        <td>Status</td>
+                        <td>Loading...</td>
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        <!-- LOG -->
+
+        <div class="card wide" style="margin-top:15px;">
+
+            <h2>Diagnostic Log</h2>
+
+            <div id="log" class="log"></div>
+
+        </div>
+
+
+        <div class="footer">
+            Network Diagnostic
+        </div>
+
+    </div>
+
+
+    <script src="../../js/framework.js"></script>
+    <script>
+        "use strict";
+
+
+function byId(id) {
+return document.getElementById(id);
+}
+
+
+/* =========================================================
+   LOGGING
+   ========================================================= */
+
+function log(message, type = "info") {
+
+    const container = byId("log");
+
+    const line =
+        document.createElement("div");
+
+    line.className =
+        "log-line log-" + type;
+
+    const time =
+        new Date().toLocaleTimeString();
+
+    line.textContent =
+        "[" + time + "] " + message;
+
+    container.appendChild(line);
+
+    container.scrollTop =
+        container.scrollHeight;
+}
+
+
+/* =========================================================
+   BASIC PAGE INFORMATION
+   ========================================================= */
+
+function populateBasicInfo() {
+
+    byId("hostname").textContent =
+        window.location.hostname;
+
+    byId("currentUrl").textContent =
+        window.location.href;
+
+    log(
+        "Hostname: " +
+        window.location.hostname,
+        "info"
+    );
+
+    log(
+        "URL: " +
+        window.location.href,
+        "info"
+    );
+}
+
+
+/* =========================================================
+   PUBLIC IP TESTS
+   ========================================================= */
+
+async function getIPv4() {
+    try {
+        const response = await fetch(
+            "https://api.ipify.org?format=json&cache=" + Date.now(),
+            { cache: "no-store" }
+        );
+        if (!response.ok) throw new Error("HTTP " + response.status);
+
+        const data = await response.json();
+        const ip = typeof data.ip === "string" ? data.ip.trim() : "";
+        if (!ip) throw new Error("No IPv4 address returned");
+
+        byId("ipv4").textContent = ip;
+        log("IPv4: " + ip, "ok");
+    } catch (error) {
+        byId("ipv4").textContent = "Unavailable";
+        log("IPv4 lookup failed: " + error.message, "warn");
+    }
+}
+
+async function getIPv6() {
+    const output = byId("ipv6");
+    output.textContent = "Checking…";
+
+    // Try independent IPv6-only services. If api6.ipify.org cannot resolve,
+    // the fallback may still work; neither failure alone proves IPv6 is absent.
+    const probes = [
+        {
+            url: "https://api6.ipify.org?format=json",
+            parse: async response => {
+                const data = await response.json();
+                return typeof data.ip === "string" ? data.ip.trim() : "";
+            },
+            label: "api6.ipify.org"
+        },
+        {
+            url: "https://ipv6.icanhazip.com/",
+            parse: async response => (await response.text()).trim(),
+            label: "ipv6.icanhazip.com"
+        }
+    ];
+
+    const failures = [];
+    for (const probe of probes) {
+        try {
+            const response = await fetch(probe.url, {
+                cache: "no-store",
+                signal: AbortSignal.timeout(7000)
+            });
+            if (!response.ok) throw new Error("HTTP " + response.status);
+
+            const ip = await probe.parse(response);
+            if (!ip || !ip.includes(":")) {
+                throw new Error("Endpoint did not return a valid IPv6 address");
+            }
+
+            output.textContent = ip;
+            output.className = "good";
+            log("IPv6 connectivity confirmed via " + probe.label + ": " + ip, "ok");
+            return;
+        } catch (error) {
+            failures.push(probe.label + ": " + (error.message || error.name || "request failed"));
+        }
+    }
+
+    output.textContent = "IPv6 check failed";
+    output.className = "warn";
+    log("IPv6 could not be verified. This may mean no IPv6 route, DNS filtering, or both probe services being unavailable. " + failures.join(" | "), "warn");
+}
+
+/* =========================================================
+   CLOUDFLARE TRACE
+   ========================================================= */
+
+async function getCloudflareTrace() {
+
+    log(
+        "Requesting Cloudflare trace...",
+        "info"
+    );
+
+    try {
+
+        const response =
+            await fetch(
+                "/cdn-cgi/trace?cache=" +
+                Date.now(),
+                {
+                    cache: "no-store"
+                }
+            );
+
+        if (!response.ok) {
+
+            throw new Error(
+                "HTTP " + response.status
+            );
+        }
+
+        const text =
+            await response.text();
+
+        const data = {};
+
+        text
+            .trim()
+            .split(/\r?\n/)
+            .forEach(line => {
+
+                const index =
+                    line.indexOf("=");
+
+                if (index === -1) {
+                    return;
+                }
+
+                const key =
+                    line.substring(
+                        0,
+                        index
+                    );
+
+                const value =
+                    line.substring(
+                        index + 1
+                    );
+
+                data[key] = value;
+            });
+
+
+        /* -----------------------------------------
+           WARP
+        ----------------------------------------- */
+
+        const warp =
+            (data.warp || "")
+                .toLowerCase();
+
+        const gateway =
+            (data.gateway || "")
+                .toLowerCase();
+
+
+        byId("warpValue").textContent =
+            data.warp || "Not provided";
+
+        byId("gatewayValue").textContent =
+            data.gateway || "Not provided";
+
+
+        /* -----------------------------------------
+           WARP COLOR
+        ----------------------------------------- */
+
+        if (warp === "on") {
+
+            byId("warpValue").className =
+                "value good";
+
+        } else if (warp === "off") {
+
+            byId("warpValue").className =
+                "value bad";
+
+        } else {
+
+            byId("warpValue").className =
+                "value warn";
+        }
+
+
+        /* -----------------------------------------
+           GATEWAY COLOR
+        ----------------------------------------- */
+
+        if (gateway === "on") {
+
+            byId("gatewayValue").className =
+                "value good";
+
+        } else if (gateway === "off") {
+
+            byId("gatewayValue").className =
+                "value bad";
+
+        } else {
+
+            byId("gatewayValue").className =
+                "value warn";
+        }
+
+
+        /* -----------------------------------------
+           TRACE IP
+        ----------------------------------------- */
+
+        byId("traceIp").textContent =
+            data.ip || "Not provided";
+
+
+        byId("coloValue").textContent =
+            data.colo || "Not provided";
+
+
+        byId("httpVersion").textContent =
+            data.http || "Not provided";
+
+
+        byId("tls").textContent =
+            data.tls || "Not provided";
+
+
+        /* -----------------------------------------
+           ROUTING RESULT
+        ----------------------------------------- */
+
+        const dot =
+            byId("routingDot");
+
+        const result =
+            byId("routingResult");
+
+        const detail =
+            byId("routingDetail");
+
+
+        if (
+            warp === "off" &&
+            gateway === "off"
+        ) {
+
+            result.textContent =
+                "BYPASSED / SPLIT TUNNEL";
+
+            result.style.color =
+                "var(--green)";
+
+            detail.textContent =
+                "Cloudflare reports WARP and Gateway are both OFF for this request.";
+
+            dot.className =
+                "dot green";
+
+            log(
+                "Routing result: WARP OFF / Gateway OFF — traffic is bypassing Cloudflare WARP.",
+                "ok"
+            );
+
+        } else if (
+            warp === "on"
+        ) {
+
+            result.textContent =
+                "TUNNELED THROUGH WARP";
+
+            result.style.color =
+                "var(--blue)";
+
+            detail.textContent =
+                "Cloudflare reports WARP ON for this request.";
+
+            dot.className =
+                "dot green";
+
+            log(
+                "Routing result: WARP ON — request reached Cloudflare through WARP.",
+                "ok"
+            );
+
+        } else if (
+            gateway === "on"
+        ) {
+
+            result.textContent =
+                "CLOUDFLARE GATEWAY";
+
+            result.style.color =
+                "var(--blue)";
+
+            detail.textContent =
+                "Cloudflare Gateway is ON for this request.";
+
+            dot.className =
+                "dot green";
+
+            log(
+                "Routing result: Gateway ON.",
+                "ok"
+            );
+
+        } else {
+
+            result.textContent =
+                "UNKNOWN";
+
+            result.style.color =
+                "var(--yellow)";
+
+            detail.textContent =
+                "Cloudflare did not provide enough routing information.";
+
+            dot.className =
+                "dot yellow";
+
+            log(
+                "Could not determine WARP/Gateway state.",
+                "warn"
+            );
+        }
+
+
+        /* -----------------------------------------
+           TRACE TABLE
+        ----------------------------------------- */
+
+        const table =
+            byId("traceTable");
+
+        table.innerHTML = "";
+
+        const fields = [
+            ["ip", "Observed IP"],
+            ["colo", "Cloudflare POP"],
+            ["http", "HTTP"],
+            ["tls", "TLS"],
+            ["warp", "WARP"],
+            ["gateway", "Gateway"],
+            ["s", "Scheme"],
+            ["visit_scheme", "Visit Scheme"],
+            ["uag", "User Agent"],
+            ["loc", "Location"]
+        ];
+
+        fields.forEach(
+            ([key, label]) => {
+
+                if (
+                    data[key] === undefined
+                ) {
+                    return;
+                }
+
+                const row =
+                    document.createElement("tr");
+
+                const name =
+                    document.createElement("td");
+
+                const value =
+                    document.createElement("td");
+
+                name.textContent =
+                    label;
+
+                const code =
+                    document.createElement("code");
+
+                code.textContent =
+                    data[key];
+
+                value.appendChild(code);
+
+                row.appendChild(name);
+                row.appendChild(value);
+
+                table.appendChild(row);
+            }
+        );
+
+
+        log(
+            "Cloudflare trace loaded successfully.",
+            "ok"
+        );
+
+    } catch (error) {
+
+        byId("routingResult").textContent =
+            "TRACE UNAVAILABLE";
+
+        byId("routingResult").style.color =
+            "var(--yellow)";
+
+        byId("routingDetail").textContent =
+            error.message;
+
+        byId("routingDot").className =
+            "dot yellow";
+
+        byId("warpValue").textContent =
+            "Unavailable";
+
+        byId("gatewayValue").textContent =
+            "Unavailable";
+
+        byId("traceIp").textContent =
+            "Unavailable";
+
+        byId("coloValue").textContent =
+            "Unavailable";
+
+        log(
+            "Cloudflare trace failed: " +
+            error.message,
+            "error"
+        );
+    }
+}
+
+
+/* =========================================================
+   MULTI-ENDPOINT TUNNEL AUDIT
+   ========================================================= */
+
+let tunnelAuditResults = [];
+
+function addAuditRow(label, value, status, elapsed) {
+    const row = document.createElement("tr");
+    [label, value, status, elapsed].forEach((text) => {
+        const cell = document.createElement("td");
+        const code = document.createElement("code");
+        code.textContent = String(text);
+        cell.appendChild(code);
+        row.appendChild(cell);
+    });
+    byId("tunnelAuditRows").appendChild(row);
+}
+
+async function probeIPEndpoint(test) {
+    const started = performance.now();
+    try {
+        const response = await fetch(test.url + (test.url.includes("?") ? "&" : "?") + "_tunneltest=" + Date.now(), {
+            cache: "no-store",
+            mode: "cors",
+            credentials: "omit",
+            signal: AbortSignal.timeout(9000)
+        });
+        if (!response.ok) throw new Error("HTTP " + response.status);
+        const body = await response.text();
+        let ip = "";
+        if (test.kind === "json") {
+            const data = JSON.parse(body);
+            ip = data.ip || data.ip_addr || data.query || "";
+        } else {
+            ip = body.trim().split(/\s+/)[0];
+        }
+        if (!ip || !/^[0-9a-f:.]+$/i.test(ip)) throw new Error("Could not parse an IP address");
+        return { label: test.label, ip, status: "Success", ms: Math.round(performance.now() - started) + " ms" };
+    } catch (error) {
+        return { label: test.label, ip: "No result", status: error.name === "TimeoutError" ? "Timed out" : "Blocked / unavailable", ms: Math.round(performance.now() - started) + " ms", error: error.message };
+    }
+}
+
+async function probeSameOriginTrace() {
+    const started = performance.now();
+    try {
+        const response = await fetch("/cdn-cgi/trace?_tunneltest=" + Date.now(), {
+            cache: "no-store",
+            credentials: "same-origin",
+            signal: AbortSignal.timeout(9000)
+        });
+        if (!response.ok) throw new Error("HTTP " + response.status);
+        const body = await response.text();
+        const match = body.match(/^ip=(.+)$/m);
+        if (!match) throw new Error("No ip= field in Cloudflare trace");
+        return { label: "This site · Cloudflare trace", ip: match[1].trim(), status: "Success (same-origin)", ms: Math.round(performance.now() - started) + " ms" };
+    } catch (error) {
+        return { label: "This site · Cloudflare trace", ip: "No result", status: "Unavailable", ms: Math.round(performance.now() - started) + " ms", error: error.message };
+    }
+}
+
+async function runTunnelAudit() {
+    const button = byId("tunnelAuditButton");
+    button.disabled = true;
+    button.textContent = "Testing…";
+    byId("tunnelAuditRows").innerHTML = "";
+    byId("tunnelSummaryValue").textContent = "Running checks…";
+    byId("tunnelSummaryDetail").textContent = "Each destination is requested independently. Results can differ because split-tunnel rules are often hostname-specific.";
+    log("Starting multi-endpoint tunnel audit.", "info");
+
+    const tests = [
+        { label: "This site · Cloudflare trace", local: true },
+        { label: "ipify IPv4/dual-stack", url: "https://api.ipify.org?format=json", kind: "json" },
+        { label: "AWS checkip", url: "https://checkip.amazonaws.com", kind: "text" },
+        { label: "ipinfo.io", url: "https://ipinfo.io/json", kind: "json" }
+    ];
+    try {
+        const results = await Promise.all(tests.map(test => test.local ? probeSameOriginTrace() : probeIPEndpoint(test)));
+        tunnelAuditResults = results;
+        results.forEach(result => {
+            addAuditRow(result.label, result.ip, result.status, result.ms);
+            log(result.label + ": " + result.ip + " (" + result.status + ")" + (result.error ? " — " + result.error : ""), result.ip === "No result" ? "warn" : "info");
+        });
+        const ips = [...new Set(results.filter(r => r.ip !== "No result").map(r => r.ip))];
+        const successful = results.filter(r => r.ip !== "No result").length;
+        const traceResult = results.find(r => r.label === "This site · Cloudflare trace" && r.ip !== "No result");
+        const externalResults = results.filter(r => r.label !== "This site · Cloudflare trace" && r.ip !== "No result");
+        const externalIps = [...new Set(externalResults.map(r => r.ip))];
+
+        if (traceResult && externalResults.length >= 2 && externalIps.length === 1 && traceResult.ip !== externalIps[0]) {
+            byId("tunnelSummaryValue").textContent = "ROUTING MISMATCH — CHECK SPLIT TUNNEL";
+            byId("tunnelSummaryValue").style.color = "var(--yellow)";
+            byId("tunnelSummaryDetail").textContent = "This site via Cloudflare reports " + traceResult.ip + ", while " + externalResults.length + " external service(s) agree on " + externalIps[0] + ". This strongly suggests destination-specific routing or proxy/VPN egress differences. Check your VPN/WARP split-tunnel rules for xconflictionx.cc and the external endpoint hostnames. This browser audit cannot change those routes or prove which route is intended.";
+        } else if (ips.length > 1) {
+            byId("tunnelSummaryValue").textContent = "MULTIPLE EXIT IPs — ROUTES DIFFER";
+            byId("tunnelSummaryValue").style.color = "var(--yellow)";
+            byId("tunnelSummaryDetail").textContent = "Successful endpoints returned " + ips.length + " distinct IPs, and the external services do not all agree. This indicates different egress routes, address families, or proxy services; compare against your intended VPN route and disconnected baseline.";
+        } else if (successful >= 2) {
+            byId("tunnelSummaryValue").textContent = "CONSISTENT IPs ON RESPONDING ENDPOINTS";
+            byId("tunnelSummaryValue").style.color = "var(--green)";
+            byId("tunnelSummaryDetail").textContent = "All " + successful + " successful checks returned the same IP. This is useful evidence, but does not prove all destinations or protocols use the tunnel.";
+        } else {
+            byId("tunnelSummaryValue").textContent = "NOT ENOUGH RESULTS";
+            byId("tunnelSummaryValue").style.color = "var(--yellow)";
+            byId("tunnelSummaryDetail").textContent = "Only " + successful + " endpoint(s) returned an IP. CORS restrictions, endpoint outages, or network filtering may explain failures.";
+        }
+    } finally {
+        button.disabled = false;
+        button.textContent = "Run Tunnel Audit";
+    }
+}
+
+async function runWebRTCTest() {
+    const button = byId("webrtcButton");
+    const output = byId("webrtcResult");
+    button.disabled = true;
+    output.textContent = "Gathering ICE candidates for up to 5 seconds…";
+    try {
+        if (!window.RTCPeerConnection) throw new Error("WebRTC is not supported by this browser");
+        const pc = new RTCPeerConnection({ iceServers: [] });
+        const found = new Set();
+        pc.createDataChannel("tunnel-audit");
+        pc.onicecandidate = event => {
+            if (!event.candidate) return;
+            const text = event.candidate.candidate || "";
+            const match = text.match(/(?:\d{1,3}\.){3}\d{1,3}|[0-9a-f]{0,4}:[0-9a-f:]{2,}/i);
+            if (match) found.add(match[0]);
+        };
+        await pc.setLocalDescription(await pc.createOffer());
+        await new Promise(resolve => setTimeout(resolve, 5000));
+        pc.close();
+        const addresses = [...found];
+        output.textContent = addresses.length
+            ? "Browser exposed candidate address(es): " + addresses.join(", ") + ". Private/local or mDNS-style candidates do not automatically indicate a public IP leak; compare any public candidate against your known VPN/proxy exit IP."
+            : "No address candidates exposed during this check. This is not proof WebRTC can never expose an address.";
+        log("WebRTC candidate check completed: " + (addresses.join(", ") || "no candidates observed"), addresses.length ? "warn" : "info");
+    } catch (error) {
+        output.textContent = "WebRTC check unavailable: " + error.message;
+    } finally {
+        button.disabled = false;
+    }
+}
+
+function copyTunnelReport() {
+    const lines = [
+        "xCONFLiCTiONx Tunnel Audit",
+        "Time: " + new Date().toISOString(),
+        "Page: " + location.href,
+        ...tunnelAuditResults.map(r => r.label + ": " + r.ip + " | " + r.status + " | " + r.ms + (r.error ? " | " + r.error : "")),
+        "WebRTC: " + byId("webrtcResult").textContent,
+        "Summary: " + byId("tunnelSummaryValue").textContent + " — " + byId("tunnelSummaryDetail").textContent
+    ].join("\n");
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(lines).then(() => log("Tunnel audit report copied.", "ok")).catch(() => window.prompt("Copy tunnel audit report:", lines));
+    } else {
+        window.prompt("Copy tunnel audit report:", lines);
+    }
+}
+
+
+/* =========================================================
+   LATENCY
+   ========================================================= */
+
+async function measureLatency() {
+
+    const samples = 5;
+
+    const results = [];
+
+
+    for (
+        let i = 0;
+        i < samples;
+        i++
+    ) {
+
+        const start =
+            performance.now();
+
+        try {
+
+            const response =
+                await fetch(
+                    "/tools/test.html?latency=" +
+                    Date.now() +
+                    "-" +
+                    i,
+                    {
+                        method: "HEAD",
+                        cache: "no-store"
+                    }
+                );
+
+            if (!response.ok) {
+
+                throw new Error(
+                    "HTTP " +
+                    response.status
+                );
+            }
+
+            const elapsed =
+                performance.now() -
+                start;
+
+            results.push(elapsed);
+
+            log(
+                "Latency sample " +
+                (i + 1) +
+                ": " +
+                elapsed.toFixed(1) +
+                " ms",
+                "info"
+            );
+
+        } catch (error) {
+
+            log(
+                "Latency sample failed: " +
+                error.message,
+                "error"
+            );
+        }
+    }
+
+
+    if (!results.length) {
+        return null;
+    }
+
+
+    results.sort(
+        (a, b) => a - b
+    );
+
+
+    /*
+        Remove the highest and lowest
+        sample when we have enough samples.
+    */
+
+    const trimmed =
+        results.length >= 3
+            ? results.slice(1, -1)
+            : results;
+
+
+    return (
+        trimmed.reduce(
+            (a, b) => a + b,
+            0
+        ) /
+        trimmed.length
+    );
+}
+
+
+/* =========================================================
+   DOWNLOAD SPEED
+   ========================================================= */
+
+async function measureDownload() {
+
+    const TEST_SIZE =
+        25 * 1024 * 1024;
+
+
+    const url =
+        "speedtest.bin?cache=" +
+        Date.now();
+
+
+    const start =
+        performance.now();
+
+
+    let bytes = 0;
+
+
+    const response =
+        await fetch(
+            url,
+            {
+                cache: "no-store"
+            }
+        );
+
+
+    if (!response.ok) {
+
+        throw new Error(
+            "Download returned HTTP " +
+            response.status
+        );
+    }
+
+
+    if (!response.body) {
+
+        throw new Error(
+            "Streaming response unavailable."
+        );
+    }
+
+
+    const reader =
+        response.body.getReader();
+
+
+    while (true) {
+
+        const {
+            value,
+            done
+        } = await reader.read();
+
+
+        if (done) {
+            break;
+        }
+
+
+        if (value) {
+
+            bytes +=
+                value.byteLength;
+
+
+            updateSpeedProgress(
+                Math.min(
+                    100,
+                    (bytes / TEST_SIZE) *
+                    100
+                )
+            );
+        }
+    }
+
+
+    const seconds =
+        (
+            performance.now() -
+            start
+        ) / 1000;
+
+
+    if (seconds <= 0) {
+
+        throw new Error(
+            "Invalid download timing."
+        );
+    }
+
+
+    return {
+
+        bytes,
+
+        seconds,
+
+        mbps:
+            (
+                bytes *
+                8 /
+                seconds
+            ) /
+            1000000
+    };
+}
+
+
+/* =========================================================
+   SPEED PROGRESS
+   ========================================================= */
+
+function updateSpeedProgress(
+    percent
+) {
+
+    byId("speedProgress").style.display =
+        "block";
+
+    byId("speedProgressBar").style.width =
+        percent.toFixed(1) +
+        "%";
+}
+
+
+/* =========================================================
+   SPEED TEST
+   ========================================================= */
+
+async function runSpeedTest() {
+
+    const button =
+        byId("speedTestButton");
+
+
+    button.disabled =
+        true;
+
+
+    button.textContent =
+        "Testing...";
+
+
+    byId("speedProgress").style.display =
+        "block";
+
+
+    byId("speedProgressBar").style.width =
+        "0%";
+
+
+    byId("speedStatus").textContent =
+        "Measuring latency...";
+
+
+    byId("speedLatency").textContent =
+        "Testing...";
+
+
+    byId("speedDownload").textContent =
+        "Waiting...";
+
+
+    byId("speedUpload").textContent =
+        "N/A";
+
+
+    byId("speedUploadDetail").textContent =
+        "Requires a server-side POST endpoint";
+
+
+    log(
+        "Starting speed test...",
+        "info"
+    );
+
+
+    try {
+
+        /* -----------------------------------------
+           LATENCY
+        ----------------------------------------- */
+
+        const latency =
+            await measureLatency();
+
+
+        if (latency !== null) {
+
+            byId("speedLatency").textContent =
+                latency.toFixed(1) +
+                " ms";
+
+            byId("speedLatency").className =
+                "speed-value good";
+
+            byId("speedLatencyDetail").textContent =
+                "Average of test samples";
+
+            log(
+                "Average latency: " +
+                latency.toFixed(1) +
+                " ms",
+                "ok"
+            );
+
+        } else {
+
+            byId("speedLatency").textContent =
+                "Failed";
+
+            byId("speedLatency").className =
+                "speed-value bad";
+        }
+
+
+        /* -----------------------------------------
+           DOWNLOAD
+        ----------------------------------------- */
+
+        byId("speedStatus").textContent =
+            "Measuring download speed...";
+
+
+        byId("speedProgressBar").style.width =
+            "0%";
+
+
+        log(
+            "Starting 25 MB download test...",
+            "info"
+        );
+
+
+        const download =
+            await measureDownload();
+
+
+        byId("speedDownload").textContent =
+            download.mbps.toFixed(2) +
+            " Mbps";
+
+
+        byId("speedDownload").className =
+            "speed-value good";
+
+
+        byId("speedDownloadDetail").textContent =
+            formatBytes(
+                download.bytes
+            ) +
+            " downloaded in " +
+            download.seconds.toFixed(2) +
+            " seconds";
+
+
+        log(
+            "Download: " +
+            download.mbps.toFixed(2) +
+            " Mbps",
+            "ok"
+        );
+
+
+        byId("speedProgressBar").style.width =
+            "100%";
+
+
+        byId("speedStatus").textContent =
+            "Speed test complete.";
+
+
+        log(
+            "Speed test completed.",
+            "ok"
+        );
+
+
+    } catch (error) {
+
+        byId("speedStatus").textContent =
+            "Speed test failed: " +
+            error.message;
+
+
+        log(
+            "Speed test failed: " +
+            error.message,
+            "error"
+        );
+
+
+    } finally {
+
+        button.disabled =
+            false;
+
+        button.textContent =
+            "⚡ Run Speed Test";
+    }
+}
+
+
+/* =========================================================
+   FORMAT BYTES
+   ========================================================= */
+
+function formatBytes(bytes) {
+
+    if (bytes < 1024) {
+
+        return (
+            bytes +
+            " B"
+        );
+    }
+
+
+    if (
+        bytes <
+        1024 * 1024
+    ) {
+
+        return (
+            bytes / 1024
+        ).toFixed(1) +
+        " KB";
+    }
+
+
+    if (
+        bytes <
+        1024 *
+        1024 *
+        1024
+    ) {
+
+        return (
+            bytes /
+            (1024 * 1024)
+        ).toFixed(2) +
+        " MB";
+    }
+
+
+    return (
+        bytes /
+        (1024 *
+        1024 *
+        1024)
+    ).toFixed(2) +
+    " GB";
+}
+
+
+/* =========================================================
+   STARTUP
+   ========================================================= */
+
+async function initialize() {
+
+    populateBasicInfo();
+
+    log(
+        "Initializing network diagnostic...",
+        "info"
+    );
+
+
+    /*
+        Run these independently so one failure
+        does not prevent the others.
+    */
+
+    getIPv4();
+
+    getIPv6();
+
+    getCloudflareTrace();
+
+
+    log(
+        "Diagnostic initialization complete.",
+        "ok"
+    );
+}
+
+
+initialize();
+
+    </script>
+    <script src="../../js/jquery-3.2.1.min.js"></script>
+    <script src="../../js/github-fetch.js?v=25"></script>
+</body>
+
+</html>

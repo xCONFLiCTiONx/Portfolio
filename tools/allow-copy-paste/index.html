@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title class="user-name-title-js">Allow Copy-Paste & Right-Click Test Suite | xCONFLiCTiONx</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" id="meta-description-js"
+        content="Interactive browser test suite to verify if right-click, copy, paste, and text selection restrictions can be bypassed by browser extensions.">
+    <meta name="portfolio-tool-id" content="allow-copy-paste">
+    <meta name="portfolio-layout-sidebar" content="false">
+    <link rel="canonical" href="https://xconflictionx.cc/tools/allow-copy-paste/" />
+    <meta name="theme-color" content="#0b0d10">
+    <link rel="manifest" href="../../site.webmanifest">
+    <link rel="stylesheet" href="../../css/main.css">
+    <link rel="icon" id="favicon-js" href="../../assets/favicon.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
+
+    <!-- Open Graph / Social Metadata -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Allow Copy-Paste & Right-Click Test Suite | xCONFLiCTiONx">
+    <meta property="og:description"
+        content="Interactive browser test suite to verify if right-click, copy, paste, and text selection restrictions can be bypassed by browser extensions.">
+    <meta property="og:url" content="https://xconflictionx.cc/tools/allow-copy-paste/">
+    <meta property="og:site_name" content="xCONFLiCTiONx">
+    <meta property="og:image" content="https://xconflictionx.cc/assets/og-image.png">
+
+    <!-- X / Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Allow Copy-Paste & Right-Click Test Suite | xCONFLiCTiONx">
+    <meta name="twitter:description"
+        content="Interactive browser test suite to verify if right-click, copy, paste, and text selection restrictions can be bypassed by browser extensions.">
+    <meta name="twitter:image" content="https://xconflictionx.cc/assets/og-image.png">
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "@id": "https://xconflictionx.cc/tools/allow-copy-paste/#webpage",
+      "url": "https://xconflictionx.cc/tools/allow-copy-paste/",
+      "name": "Allow Copy-Paste & Right-Click Test Suite | xCONFLiCTiONx",
+      "inLanguage": "en",
+      "description": "Interactive browser test suite to verify if right-click, copy, paste, and text selection restrictions can be bypassed by browser extensions.",
+      "author": {
+        "@type": "Person",
+        "@id": "https://xconflictionx.cc/#person",
+        "name": "xCONFLiCTiONx"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "@id": "https://xconflictionx.cc/#organization",
+        "name": "xCONFLiCTiONx",
+        "url": "https://xconflictionx.cc/",
+        "sameAs": [
+          "https://github.com/xCONFLiCTiONx"
+        ]
+      }
+    }
+    </script>
+    <style>
+        /* Tool Page Specific Styles matching Portfolio GitHub Dark Theme */
+        .tool-banner {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 2.4rem;
+            margin-bottom: 3rem;
+        }
+
+        .tool-banner h3 {
+            color: #f0f6fc;
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .tool-banner p {
+            color: #8b949e;
+            font-size: 1.4rem;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+
+        .controls-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.2rem;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .search-box {
+            position: relative;
+            flex-grow: 1;
+            max-width: 380px;
+        }
+
+        .search-box input {
+            width: 100%;
+            background: #0d1117;
+            color: #c9d1d9;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 0.8rem 1.2rem 0.8rem 3.6rem;
+            font-size: 1.4rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .search-box input:focus {
+            border-color: #58a6ff;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 1.2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #8b949e;
+            font-size: 1.6rem;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            background: #0d1117;
+            color: #8b949e;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 0.6rem 1.2rem;
+            font-size: 1.3rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-btn:hover {
+            color: #f0f6fc;
+            border-color: #8b949e;
+        }
+
+        .filter-btn.active {
+            background: #21262d;
+            color: #f0f6fc;
+            border-color: #58a6ff;
+        }
+
+        /* Test Card Grid */
+        .test-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 2rem;
+        }
+
+        .test-card {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .test-card:hover {
+            border-color: #484f58;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .test-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .test-card-title {
+            font-size: 1.6rem;
+            color: #f0f6fc;
+            font-weight: 600;
+            line-height: 1.3;
+        }
+
+        .method-tag {
+            background: rgba(88, 166, 255, 0.1);
+            color: #58a6ff;
+            border: 1px solid rgba(88, 166, 255, 0.3);
+            border-radius: 12px;
+            padding: 0.2rem 0.8rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .feedback-badge {
+            display: inline-block;
+            background: rgba(247, 129, 102, 0.15);
+            color: #f78166;
+            border: 1px solid rgba(247, 129, 102, 0.4);
+            border-radius: 4px;
+            padding: 0.2rem 0.6rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            opacity: 0;
+            transform: translateY(-4px);
+            transition: opacity 0.2s, transform 0.2s;
+        }
+
+        .feedback-badge.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Orange-bordered test box as specified in tool rules */
+        .test-target-box {
+            border: 2px dashed #f78166;
+            background: #0d1117;
+            border-radius: 6px;
+            padding: 1.6rem;
+            margin: 1rem 0;
+            text-align: center;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: text;
+            -webkit-user-select: text;
+            position: relative;
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+
+        .test-target-box.forbidden {
+            background-color: rgba(247, 129, 102, 0.2) !important;
+            border-color: #ff4d4d !important;
+        }
+
+        .test-target-box input {
+            width: 100%;
+            background: #161b22;
+            color: #f0f6fc;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 0.8rem 1rem;
+            font-size: 1.3rem;
+            text-align: center;
+            outline: none;
+        }
+
+        .test-target-box input:focus {
+            border-color: #58a6ff;
+        }
+
+        .test-target-box img,
+        .test-target-box canvas {
+            display: block;
+            margin: 0 auto;
+            max-width: 100%;
+            height: auto;
+        }
+
+        .test-card-desc {
+            color: #8b949e;
+            font-size: 1.3rem;
+            line-height: 1.5;
+            margin-top: 1rem;
+            border-top: 1px solid #21262d;
+            padding-top: 1rem;
+        }
+
+        /* Sidebar stats card */
+        .tool-stats-card {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+
+        .tool-stats-card h4 {
+            color: #f0f6fc;
+            font-size: 1.6rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.8rem 0;
+            border-bottom: 1px solid #21262d;
+            font-size: 1.3rem;
+        }
+
+        .stat-item:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            color: #8b949e;
+        }
+
+        .stat-value {
+            color: #58a6ff;
+            font-weight: 600;
+        }
+
+        /* Custom selection hiding rule for Method 12 */
+        #test-right-click-12 :not(input):not(textarea)::selection {
+            background-color: transparent !important;
+            color: inherit !important;
+        }
+
+        #test-right-click-12 :not(input):not(textarea)::-moz-selection {
+            background-color: transparent !important;
+            color: inherit !important;
+        }
+
+        @media (max-width: 768px) {
+            .test-cards-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .controls-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-box {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body id="top" data-tool-id="allow-copy-paste" class="no-sidebar">
+
+    <header class="site-header">
+        <nav class="nav-content">
+            <div class="nav-brand">
+                <a href="../../index.html">
+                    <span id="header-avatar" class="nav-logo"><img src="https://avatars.githubusercontent.com/u/12835195?v=4" alt="xCONFLiCTiONx" onerror="if(this.src!=='../../assets/favicon.ico')this.src='../../assets/favicon.ico';"></span>
+                    <span class="user-name-js">Loading...</span>
+                </a>
+            </div>
+            <button class="menu-toggle" id="menuToggle">
+                <i class="im im-menu"></i>
+            </button>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="../../index.html"><i class="im im-home"></i> Overview</a></li>
+                <li><a href="../../about/"><i class="im im-user-male"></i> About</a></li>
+                <li><a href="index.html" class="active"><i class="im im-tools"></i> Tools</a></li>
+                <li><a href="../../privacy/"><i class="im im-shield"></i> Privacy</a></li>
+                <li><a href="../../contact/"><i class="im im-paperplane"></i> Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="container no-sidebar">
+
+        <!-- Main Content Section -->
+        <section class="main-content">
+            <h3 class="section-title">Allow Copy-Paste & Right-Click Test Suite</h3>
+
+            <!-- Top Banner Card -->
+            <div class="tool-banner">
+                <h4><i class="im im-check-mark" style="color: #3fb950;"></i> Browser Security & Extension Verification
+                </h4>
+                <p>
+                    Websites often employ techniques to block right-clicking, text highlighting, clipboard copying, or
+                    pasting.
+                    Use the <strong>16 test scenarios</strong> below to verify if your browser extensions (e.g.,
+                    <em>Allow Right Click</em> or <em>Enable Copy</em>) can bypass these restrictions.
+                    Elements marked with an <strong>orange dashed border</strong> have active restrictions applied.
+                </p>
+            </div>
+
+            <!-- Grid of 16 Test Cards -->
+            <div class="test-cards-grid" id="test-grid">
+
+                <!-- Method 1 -->
+                <div class="test-card" data-category="context">
+                    <div>
+                        <div class="test-card-header">
+                            <div>
+                                <span class="method-tag">Method 1</span>
+                                <h5 class="test-card-title" style="margin-top: 0.5rem;">Inline Handler Blocking</h5>
+                            </div>
+                            <span class="feedback-badge">Blocked</span>
+                        </div>
+                        <div class="test-target-box" id="test-right-click-1" oncontextmenu="return false;"
+                            onmousedown="return false;">
+                            <span style="color: #c9d1d9; font-weight: 500;">Right-click anywhere inside this target</span>
+                        </div>
+                    </div>
+                    <p class="test-card-desc">
+                        Blocks right-click context menu using inline HTML event attributes:
+                        <code>oncontextmenu="return false;" onmousedown="return false;"</code>.
+                    </p>
+                </div>
+
+                <!-- Method 2 -->
+                <div class="test-card" data-category="context">
+                    <div>
+                        <div class="test-card-header">
+                            <div>
+                                <span class="method-tag">Method 2</span>
+                                <h4 class="test-card-title" style="margin-top: 0.5rem;">Input Context-Menu Listener</h4>
+                            </div>
+                            <span class="feedback-badge">Blocked</span>
+                        </div>
+                        <div class="test-target-box" id="test-right-click-2">
+                            <input type="text" value="Right-click inside this input box" aria-label="Method 2 test input" readonly>
+                        </div>
+                    </div>
+                    <p class="test-card-desc">
+                        Prevents context menu on an <code>&lt;input&gt;</code> element via JavaScript
+                        <code>addEventListener("contextmenu")</code>.
+                    </p>
+                </div>
+
+                <!-- Method 3 -->
+                <div class="test-card" data-category="clipboard">
+                    <div>
+                        <div class="test-card-header">
+                            <div>
+                                <span class="method-tag">Method 3</span>
+                                <h4 class="test-card-title" style="margin-top: 0.5rem;">Input Paste Event Blocking</h4>
+                            </div>
+                            <span class="feedback-badge">Blocked</span>
+                        </div>
+                        <div class="test-target-box" id="test-right-click-3">
+                            <input type="text" placeholder="Try pasting text here..." aria-label="Method 3 test input">
+                        </div>
+                    </div>
+                    <p class="test-card-desc">
+                        Prevents pasting text into the input field using a JavaScript <code>paste</code> event listener.
+                    </p>
+                </div>
+
+                <!-- Method 4 -->
+                <div class="test-card" data-category="context">
+                    <div>
+                        <div class="test-card-header">
+                            <div>
+                                <span class="method-tag">Method 4</span>
+                                <h4 class="test-card-title" style="margin-top: 0.5rem;">Image Right-Click Listener</h4>
+                            </div>
+                            <span class="feedback-badge">Blocked</span>
+                        </div>
+                        <div class="test-target-box" id="test-right-click-4">
+                            <img src="img.svg" width="92" height="92" alt="Protected Graphic">
+                        </div>
+                    </div>
+                    <p class="test-card-desc">
+                        Blocks right-click on an <code>&lt;img&gt;</code> element via JS <code>contextmenu</code>
+                        listener.
+                    </p>
+                </div>
+
+                <!-- Method 5 -->
+                <div class="test-card" data-category="context">
+                    <div>
+                        <div class="test-card-header">
+                            <div>
+                                <span class="method-tag">Method 5</span>
+                                <h4 class="test-card-title" style="margin-top: 0.5rem;">Image Alert Popup Blocking</h4>
+                            </div>
+                            <span class="feedback-badge">Alerted</span>
+                        </div>
+                        <div class="test-target-box" id="test-right-click-5">
+                            <img src="img.svg" width="92" height="92" alt="Protected Graphic">
+                        </div>
+                    </div>
+                    <p class="test-card-desc">
+                        Triggers a <code>window.alert()</code> modal upon right-clicking an image and cancels the event.
+                    </p>
+                </div>
+
+                <!-- Method 6 -->
+                <div class="test-card" data-category="context">
+                    <div>
+                        <div class="test-card-header">
+                            <div>
+                                <span class="method-tag">Method 6</span>
+                                <h4 class="test-card-title" style="margin-top: 0.5rem;">Image CSS Pointer Events</h4>
+                            </div>
+                            <span class="feedback-badge">CSS Disabled</span>
+                        </div>
+                        <div class="test-target-box" id="test-right-click-6">
+                            <img src="img.svg" width="92" height="92" alt="Protected Graphic" style="pointer-events: none;">
+                        </div>
+                    </div>
+                    <p class="test-card-desc">
+                        Disables mouse pointer events directly on the image element using CSS
+                        <code>pointer-events: none</code>.
+                    </p>
+                </div>
+
+                <!-- Method 7 -->
+                <div class="test-card" data-category="context">
+                    <div>
+                        <div class="test-card-header">
+                            <div>
+                                <span class="method-tag">Method 7</span>
+                                <h4 class="test-card-title" style="margin-top: 0.5rem;">Overlay Mask + JS Blocking</h4>
+                            </div>
+                            <span class="feedback-badge">Masked</span>
+                        </div>
+                        <div class="test-target-box" id="test-right-click-7">
+                            <div style="position: relative; display: inline-block;">
+                                <img src="img.svg" width="92" height="92" alt="Protected Graphic">
+                                <div class="overlap" style="position: absolute; inset: 0;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="test-card-desc">
+                        Places a transparent <code>&lt;div&gt;</code> overlay over the image that intercepts and cancels
+                        right-click events.
+                    </p>
+                </div>
+
+                <!-- Method 8 -->
+                <div class="test-card" data-category="context">
+                    <div>
+                        <div class="test-card-header">
+                            <div>
+                                <span class="method-tag">Method 8</span>
+                                <h4 class="test-card-title" style="margin-top: 0.5rem;">Overlay Mask + CSS Pointer</h4>
+                            </div>
+                            <span class="feedback-badge">Masked</span>
+                        </div>
+                        <div class="test-target-box" id="test-right-click-8">
+                            <div style="position: relative; display: inline-block;">
+                                <img src="img.svg" width="92" height="92" alt="Protected Graphic" style="pointer-events: none;">
+                                <div class="overlap" style="position: absolute; inset: 0;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="test-card-desc">
+                        Combines a transparent overlay container with CSS <code>pointer-events: none</code> on the
+                        underlying image.
+                    </p>
+                </div>
+
+                <!-- Method 9 -->
+                <div class="test-card" data-category="selection">
+                    <div>
+                        <div class="test-card-header">
+                            <div>
+                                <span class="method-tag">Method 9</span>
+                                <h4 class="test-card-title" style="margin-top: 0.5rem;">SelectStart Event Blocking</h4>
+                            </div>
+                            <span class="feedback-badge">Selection Blocked</span>
+                        </div>
+                        <div class="test-target-box" id="test-right-click-9">
+                            <span style="color: #c9d1d9; font-weight: 500;">Try selecting this sample text</span>
+                        </div>
+                    </div>
+                    <p class="test-card-desc">
+                        Prevents starting text selection by intercepting and cancelling the DOM <code>selectstart</code>
+                        event.
+                    </p>
+                </div>
+
+                <!-- Method 10 -->
+                <div class="test-card" data-category="selection">
+                    <div>
+                        <div class="test-card-header">
+                            <div>
+                                <span class="method-tag">Method 10</span>
+                                <h4 class="test-card-title" style="margin-top: 0.5rem;">Selection Range Clearing</h4>
+                            </div>
+                            <span class="feedback-badge">Cleared</span>
+                        </div>
+                        <div class="test-target-box" id="test-right-click-10">
+                            <span style="color: #c9d1d9; font-weight: 500;">Try highlighting this sample text</span>
+                        </div>
+                    </div>
+                    <p class="test-card-desc">
+                        Programmatically clears active text selections instantly using
+                        <code>window.getSelection().removeAllRanges()</code>.
+                    </p>
+                </div>
+
+                <!-- Method 11 -->
+                <div class="test-card" data-category="clipboard">
+                    <div>
+                        <div class="test-card-header">
+                            <div>
+                                <span class="method-tag">Method 11</span>
+                                <h4 class="test-card-title" style="margin-top: 0.5rem;">Keyboard Hotkey Interception
+                                </h4>
+                            </div>
+                            <span class="feedback-badge">Hotkey Intercepted</span>
+                        </div>
+                        <div class="test-target-box" id="test-right-click-11">
+                            <input type="text" value="Try copying with Ctrl+C / Cmd+C" aria-label="Method 11 test input">
+                        </div>
+                    </div>
+                    <p class="test-card-desc">
+                        Blocks keyboard shortcuts like <kbd>Ctrl+C</kbd> / <kbd>Cmd+C</kbd> by listening to keydown
+                        modifier events.
+                    </p>
+                </div>
+
+                <!-- Method 12 -->
+                <div class="test-card" data-category="selection">
+                    <div>
+                        <div class="test-card-header">
+                            <div>
+                                <span class="method-tag">Method 12</span>
+                                <h4 class="test-card-title" style="margin-top: 0.5rem;">CSS ::selection Concealment</h4>
+                            </div>
+                            <span class="feedback-badge">Concealed</span>
+                        </div>
+                        <div class="test-target-box" id="test-right-click-12">
+                            <span style="color: #c9d1d9; font-weight: 500;">Select this text to test highlighting</span>
+                        </div>
+                    </div>
+                    <p class="test-card-desc">
+                        Hides visual text selection highlights using CSS
+                        <code>::selection { background-color: transparent; }</code>.
+                    </p>
+                </div>
+
+                <!-- Method 13 -->
+                <div class="test-card" data-category="selection">
+                    <div>
+                        <div class="test-card-header">
+                            <div>
+                                <span class="method-tag">Method 13</span>
+                                <h4 class="test-card-title" style="margin-top: 0.5rem;">Input Field Overlay Mask</h4>
+                            </div>
+                            <span class="feedback-badge">Masked</span>
+                        </div>
+                        <div class="test-target-box" id="test-right-click-13">
+                            <div style="position: relative; width: 100%;">
+                                <input type="text" value="Select or copy this text" aria-label="Method 13 test input" readonly>
+                                <div class="overlap" style="position: absolute; inset: 0;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="test-card-desc">
+                        Prevents clicking, dragging, or right-clicking on an input element by covering it with a
+                        transparent overlay.
+                    </p>
+                </div>
+
+                <!-- Method 14 -->
+                <div class="test-card" data-category="clipboard">
+                    <div>
+                        <div class="test-card-header">
+                            <div>
+                                <span class="method-tag">Method 14</span>
+                                <h4 class="test-card-title" style="margin-top: 0.5rem;">Input Length Delta Restriction
+                                </h4>
+                            </div>
+                            <span class="feedback-badge">Reverted</span>
+                        </div>
+                        <div class="test-target-box" id="test-right-click-14">
+                            <input type="text" placeholder="Pasting >2 characters will be blocked..." aria-label="Method 14 test input">
+                        </div>
+                    </div>
+                    <p class="test-card-desc">
+                        Restricts clipboard pasting by checking input length deltas on input events and reverting
+                        multi-character pastes.
+                    </p>
+                </div>
+
+                <!-- Method 15 -->
+                <div class="test-card" data-category="media">
+                    <div>
+                        <div class="test-card-header">
+                            <div>
+                                <span class="method-tag">Method 15</span>
+                                <h4 class="test-card-title" style="margin-top: 0.5rem;">HTML5 Canvas Overlay Protection
+                                </h4>
+                            </div>
+                            <span class="feedback-badge">Canvas Protected</span>
+                        </div>
+                        <div class="test-target-box" id="test-right-click-15">
+                            <div style="position: relative; display: inline-block;">
+                                <canvas id="asdsdwe" width="92" height="92" style="pointer-events: none;"></canvas>
+                                <div class="overlap" style="position: absolute; inset: 0;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="test-card-desc">
+                        Renders graphics onto an HTML5 <code>&lt;canvas&gt;</code> element combined with CSS
+                        <code>pointer-events: none</code> and overlay masking.
+                    </p>
+                </div>
+
+                <!-- Method 16 -->
+                <div class="test-card" data-category="context">
+                    <div>
+                        <div class="test-card-header">
+                            <div>
+                                <span class="method-tag">Method 16</span>
+                                <h4 class="test-card-title" style="margin-top: 0.5rem;">CSS Background Image Context
+                                </h4>
+                            </div>
+                            <span class="feedback-badge">No Image Menu</span>
+                        </div>
+                        <div class="test-target-box" id="test-right-click-16"
+                            style="background: url('img.svg') no-repeat center; background-size: contain; height: 92px;">
+                        </div>
+                    </div>
+                    <p class="test-card-desc">
+                        Displays image content as a CSS <code>background-image</code> property instead of an
+                        <code>&lt;img&gt;</code> tag to suppress image context menus.
+                    </p>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="site-footer">
+        <div class="container" style="display: block;">
+            <p>&copy; 2026 <span class="user-name-js"></span>. Built with code and conviction.</p>
+        </div>
+    </footer>
+
+    <script src="../../js/framework.js"></script>
+    <script src="../../js/jquery-3.2.1.min.js"></script>
+    <script src="../../js/github-fetch.js?v=25"></script>
+    <script>
+        // Mobile Menu Toggle
+        $('#menuToggle').click(function() {
+            $('#navLinks').toggleClass('active');
+            $(this).find('i').toggleClass('im-menu im-x-mark');
+        });
+
+        // Event Feedback Helper
+        function showFeedback(element, text) {
+            const card = element.closest('.test-card');
+            if (!card) return;
+            const badge = card.querySelector('.feedback-badge');
+            if (badge) {
+                badge.textContent = text;
+                badge.classList.add('active');
+                clearTimeout(badge.timer);
+                badge.timer = setTimeout(() => {
+                    badge.classList.remove('active');
+                }, 1800);
+            }
+        }
+
+        // Test Methods Config Implementation
+        var config = {
+            stop: function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+                showFeedback(e.currentTarget || e.target, "Event Blocked");
+            },
+            remove: function(e) {
+                window.getSelection().removeAllRanges();
+                showFeedback(e.currentTarget || e.target, "Selection Cleared");
+            },
+            test: {
+                right: {
+                    click: {
+                        action: function() {
+                            // Method 1: Inline + feedback
+                            const m1 = document.getElementById("test-right-click-1");
+                            if (m1) {
+                                m1.addEventListener("contextmenu", function(e) {
+                                    showFeedback(e.currentTarget, "Inline Blocked");
+                                });
+                            }
+
+                            // Method 2: Input contextmenu
+                            const m2 = document.getElementById("test-right-click-2");
+                            if (m2 && m2.querySelector("input")) {
+                                m2.querySelector("input").addEventListener("contextmenu", config.stop);
+                            }
+
+                            // Method 3: Input paste
+                            const m3 = document.getElementById("test-right-click-3");
+                            if (m3 && m3.querySelector("input")) {
+                                m3.querySelector("input").addEventListener("paste", config.stop);
+                            }
+
+                            // Method 4: Image contextmenu
+                            const m4 = document.getElementById("test-right-click-4");
+                            if (m4 && m4.querySelector("img")) {
+                                m4.querySelector("img").addEventListener("contextmenu", config.stop);
+                            }
+
+                            // Method 5: Image contextmenu alert
+                            const m5 = document.getElementById("test-right-click-5");
+                            if (m5 && m5.querySelector("img")) {
+                                m5.querySelector("img").addEventListener("contextmenu", function(e) {
+                                    showFeedback(e.currentTarget, "Alert Triggered");
+                                    window.alert("Context-menu is not allowed!");
+                                    config.stop(e);
+                                    e.returnValue = true;
+                                }, true);
+                            }
+
+                            // Method 6: Image CSS pointer-events: none -> Container catches event
+                            const m6 = document.getElementById("test-right-click-6");
+                            if (m6) {
+                                m6.addEventListener("contextmenu", config.stop);
+                            }
+
+                            // Method 7: Overlay mask contextmenu
+                            const m7 = document.getElementById("test-right-click-7");
+                            if (m7) {
+                                const overlap = m7.querySelector(".overlap");
+                                if (overlap) overlap.addEventListener("contextmenu", config.stop);
+                                m7.addEventListener("contextmenu", config.stop);
+                            }
+
+                            // Method 8: Overlay mask + pointer-events: none
+                            const m8 = document.getElementById("test-right-click-8");
+                            if (m8) {
+                                const overlap = m8.querySelector(".overlap");
+                                if (overlap) overlap.addEventListener("contextmenu", config.stop);
+                                m8.addEventListener("contextmenu", config.stop);
+                            }
+
+                            // Method 9: selectstart
+                            const m9 = document.getElementById("test-right-click-9");
+                            if (m9) {
+                                m9.addEventListener("selectstart", config.stop, true);
+                                m9.addEventListener("contextmenu", config.stop);
+                            }
+
+                            // Method 10: Selection range removal
+                            const m10 = document.getElementById("test-right-click-10");
+                            if (m10) {
+                                m10.addEventListener("mouseup", config.remove);
+                                m10.addEventListener("keyup", config.remove);
+                                m10.addEventListener("contextmenu", config.remove);
+                                m10.addEventListener("touchend", config.remove);
+                            }
+
+                            // Method 11: Keyboard hotkey blocking (Ctrl+C / Cmd+C)
+                            const m11 = document.getElementById("test-right-click-11");
+                            if (m11 && m11.querySelector("input")) {
+                                m11.querySelector("input").onkeydown = function(e) {
+                                    if (e.ctrlKey || e.shiftKey || e.altKey || e.metaKey) {
+                                        showFeedback(e.currentTarget, "Hotkey Intercepted");
+                                        e.preventDefault();
+                                        return false;
+                                    }
+                                };
+                                m11.querySelector("input").addEventListener("contextmenu", config.stop);
+                            }
+
+                            // Method 13: Input overlay mask
+                            const m13 = document.getElementById("test-right-click-13");
+                            if (m13) {
+                                const overlap = m13.querySelector(".overlap");
+                                if (overlap) overlap.addEventListener("contextmenu", config.stop);
+                                m13.addEventListener("contextmenu", config.stop);
+                            }
+
+                            // Method 14: Input paste delta restriction (>2 chars)
+                            const m14 = document.getElementById("test-right-click-14");
+                            if (m14 && m14.querySelector("input")) {
+                                let lastValue = "";
+                                const inputEl = m14.querySelector("input");
+                                const revertMessage = target => {
+                                    target.classList.add("forbidden");
+                                    showFeedback(target, "Paste >2 Chars Blocked");
+                                    setTimeout(() => target.classList.remove("forbidden"), 500);
+                                    requestAnimationFrame(() => {
+                                        target.value = lastValue;
+                                    });
+                                };
+                                inputEl.addEventListener("input", function(e) {
+                                    if (e.target.value.length - lastValue.length > 2) {
+                                        return revertMessage(e.target);
+                                    }
+                                    lastValue = e.target.value;
+                                });
+                            }
+
+                            // Method 15: Canvas overlay protection
+                            const m15 = document.getElementById("test-right-click-15");
+                            if (m15) {
+                                const overlap = m15.querySelector(".overlap");
+                                if (overlap) overlap.addEventListener("contextmenu", config.stop);
+                                m15.addEventListener("contextmenu", config.stop);
+
+                                const canvas = document.getElementById("asdsdwe");
+                                if (canvas) {
+                                    const ctx = canvas.getContext("2d");
+                                    const img = new Image();
+                                    img.src = "img.svg";
+                                    img.onload = function() {
+                                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                                    };
+                                }
+                            }
+
+                            // Method 16: CSS Background image contextmenu
+                            const m16 = document.getElementById("test-right-click-16");
+                            if (m16) {
+                                m16.addEventListener("contextmenu", config.stop);
+                            }
+                        }
+                    }
+                }
+            }
+        };
+
+        // Initialize tests on page load
+        window.addEventListener("load", function() {
+            config.test.right.click.action();
+        });
+    </script>
+</body>
+
+</html>
