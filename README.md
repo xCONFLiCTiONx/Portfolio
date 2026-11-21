@@ -171,4 +171,4 @@ For example, the **Website Grading Tool** (`SiteGrade`) utilizes an optional Clo
 
 ## 📜 License
 
-Original materials in this repository are proprietary and All Rights Reserved under [LICENSE](LICENSE). Third-party components remain under their respective licenses.
+Original project materials are licensed under GNU GPL version 3. Third-party components remain under their respective licenses.
