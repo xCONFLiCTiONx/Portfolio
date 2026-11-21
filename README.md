@@ -1,6 +1,6 @@
 # Portable Static Portfolio Framework
 
-A portable, reusable static GitHub-backed developer portfolio framework. This framework allows developers to fork the repository, make minimal configuration changes in a single file, deploy it to any static hosting service, and easily add custom browser utilities without touching core framework code.
+A portable, configurable static GitHub-backed developer portfolio framework. Configure the supplied site metadata, deploy it to a static hosting service, and add custom browser utilities without modifying the core framework.
 
 ---
 
@@ -20,7 +20,7 @@ A portable, reusable static GitHub-backed developer portfolio framework. This fr
 
 ## 🛠️ Quick Start
 
-### 1. Fork & Configure
+### 1. Configure
 Fork this repository, open `portfolio.config.json` at the root directory, and customize your site identity:
 
 ```json
@@ -171,4 +171,4 @@ For example, the **Website Grading Tool** (`SiteGrade`) utilizes an optional Clo
 
 ## 📜 License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+Original materials in this repository are proprietary and All Rights Reserved under [LICENSE](LICENSE). Third-party components remain under their respective licenses.
