@@ -391,6 +391,29 @@
                     <ul id="profile-metadata" class="profile-metadata"></ul>
                 `;
             }
+            if (!sidebarEl.querySelector('#profile-cert-box')) {
+                const certUrl = toRelativeUrl('certs/xCONFLiCTiONx.cer');
+                const certGuideUrl = toRelativeUrl('certs/');
+                const certBox = document.createElement('div');
+                certBox.id = 'profile-cert-box';
+                certBox.style.cssText = 'margin-top:16px;padding:12px;border-radius:8px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);font-size:12px;';
+                certBox.innerHTML = `
+                    <div style="font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:6px;">
+                        <i class="im im-shield" style="color:#f38020;"></i>
+                        <span>Code Signing Certificate</span>
+                    </div>
+                    <div style="opacity:0.75;line-height:1.4;margin-bottom:10px;">
+                        Install the public cert once on Windows to verify signed xCONFLiCTiONx apps &amp; installers.
+                    </div>
+                    <a href="${certUrl}" download style="display:block;text-align:center;padding:7px 10px;border-radius:6px;background:#f38020;color:#121214;font-weight:700;text-decoration:none;margin-bottom:6px;">
+                        Download xCONFLiCTiONx.cer
+                    </a>
+                    <a href="${certGuideUrl}" style="display:block;text-align:center;font-size:11px;opacity:0.8;text-decoration:none;">
+                        Install instructions &amp; thumbprint &rarr;
+                    </a>
+                `;
+                sidebarEl.appendChild(certBox);
+            }
         }
     }
 
