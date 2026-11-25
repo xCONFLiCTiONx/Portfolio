@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title class="user-name-title-js">Videos | xCONFLiCTiONx</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" id="meta-description-js" content="Project video showcases, architecture walkthroughs, and software demonstrations by xCONFLiCTiONx.">
+    <link rel="canonical" href="https://xconflictionx.cc/videos/" />
+    <meta name="theme-color" content="#0b0d10">
+    <link rel="manifest" href="../site.webmanifest">
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="icon" id="favicon-js" href="../assets/favicon.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
+
+    <!-- Open Graph / Social Metadata -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Project Videos | xCONFLiCTiONx">
+    <meta property="og:description" content="Project video showcases, architecture walkthroughs, and software demonstrations by xCONFLiCTiONx.">
+    <meta property="og:url" content="https://xconflictionx.cc/videos/">
+    <meta property="og:site_name" content="xCONFLiCTiONx">
+    <meta property="og:image" content="https://i.ytimg.com/vi/-P-X7oupI_Y/maxresdefault.jpg">
+
+    <style>
+        .videos-header {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 24px;
+            padding-bottom: 18px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .videos-header-copy p {
+            margin: 6px 0 0;
+            opacity: 0.72;
+            font-size: 14px;
+        }
+        .yt-channel-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 18px;
+            border-radius: 10px;
+            background: rgba(255, 0, 0, 0.14);
+            border: 1px solid rgba(255, 68, 68, 0.42);
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 13px;
+            text-decoration: none;
+            transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+        }
+        .yt-channel-btn:hover {
+            background: rgba(255, 0, 0, 0.25);
+            border-color: rgba(255, 85, 85, 0.75);
+            transform: translateY(-1px);
+            color: #ffffff;
+        }
+        .yt-dot {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 22px;
+            height: 16px;
+            border-radius: 4px;
+            background: #ff0000;
+            color: #fff;
+            font-size: 10px;
+            line-height: 1;
+        }
+
+        .videos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+            gap: 22px;
+        }
+        .video-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.09);
+            border-radius: 14px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            cursor: pointer;
+            transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+        }
+        .video-card:hover {
+            transform: translateY(-3px);
+            border-color: rgba(243, 128, 32, 0.55);
+            box-shadow: 0 16px 38px rgba(0, 0, 0, 0.45);
+        }
+        .video-thumb-wrap {
+            position: relative;
+            aspect-ratio: 16 / 9;
+            background: #05070b;
+            overflow: hidden;
+        }
+        .video-thumb-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.28s ease, filter 0.28s ease;
+        }
+        .video-card:hover .video-thumb-wrap img {
+            transform: scale(1.03);
+            filter: brightness(0.82);
+        }
+        .play-badge {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 62px;
+            height: 62px;
+            border-radius: 50%;
+            background: rgba(11, 13, 16, 0.82);
+            border: 2px solid #f38020;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            padding-left: 4px;
+            box-shadow: 0 0 28px rgba(243, 128, 32, 0.35);
+            transition: transform 0.18s ease, background 0.18s ease;
+        }
+        .video-card:hover .play-badge {
+            transform: translate(-50%, -50%) scale(1.08);
+            background: #f38020;
+            color: #0b0d10;
+        }
+        .video-card-body {
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            flex: 1;
+        }
+        .video-card-title {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 700;
+            color: #f8fafc;
+        }
+        .video-card-desc {
+            margin: 0;
+            font-size: 13.5px;
+            line-height: 1.5;
+            color: rgba(226, 232, 240, 0.72);
+        }
+        .video-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: auto;
+            padding-top: 6px;
+        }
+        .video-tag {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 9px;
+            border-radius: 999px;
+            background: rgba(243, 128, 32, 0.12);
+            border: 1px solid rgba(243, 128, 32, 0.3);
+            color: #f8b26a;
+        }
+
+        /* Modal Player */
+        .video-modal-backdrop {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: rgba(5, 7, 11, 0.86);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .video-modal-backdrop.open {
+            display: flex;
+        }
+        .video-modal {
+            width: 100%;
+            max-width: 980px;
+            background: #10141c;
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 28px 90px rgba(0, 0, 0, 0.75);
+            animation: modalIn 0.18s ease-out;
+        }
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.96) translateY(8px); }
+            to   { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .video-modal-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .video-modal-title {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 700;
+            color: #ffffff;
+        }
+        .video-modal-close {
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.04);
+            color: #cbd5e1;
+            font-size: 18px;
+            cursor: pointer;
+            display: grid;
+            place-items: center;
+        }
+        .video-modal-close:hover {
+            border-color: #f38020;
+            color: #ffffff;
+        }
+        .video-modal-frame {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            background: #000000;
+        }
+        .video-modal-frame iframe {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+        .video-modal-foot {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 14px 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            font-size: 13px;
+            color: rgba(226, 232, 240, 0.78);
+        }
+        .video-modal-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .modal-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            background: rgba(255, 255, 255, 0.05);
+            color: #f1f5f9;
+            font-size: 12.5px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .modal-btn:hover {
+            border-color: #f38020;
+            color: #f38020;
+        }
+        .modal-btn-yt {
+            border-color: rgba(255, 68, 68, 0.4);
+            background: rgba(255, 0, 0, 0.14);
+            color: #ffffff;
+        }
+        .modal-btn-yt:hover {
+            border-color: rgba(255, 85, 85, 0.8);
+            background: rgba(255, 0, 0, 0.25);
+            color: #ffffff;
+        }
+    </style>
+</head>
+<body id="top">
+
+    <header class="site-header">
+        <nav class="nav-content">
+            <div class="nav-brand">
+                <a href="../index.html">
+                    <span id="header-avatar" class="nav-logo"><img src="https://avatars.githubusercontent.com/u/12835195?v=4" alt="xCONFLiCTiONx" onerror="if(this.src!=='../assets/favicon.ico')this.src='../assets/favicon.ico';"></span>
+                    <span class="user-name-js">xCONFLiCTiONx</span>
+                </a>
+            </div>
+            <button class="menu-toggle" id="menuToggle">
+                <i class="im im-menu"></i>
+            </button>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="../index.html"><i class="im im-home"></i> Overview</a></li>
+                <li><a href="./" class="active"><i class="im im-video"></i> Videos</a></li>
+                <li><a href="../about/"><i class="im im-user-male"></i> About</a></li>
+                <li><a href="../tools/"><i class="im im-tools"></i> Tools</a></li>
+                <li><a href="../privacy/"><i class="im im-shield"></i> Privacy</a></li>
+                <li><a href="../contact/"><i class="im im-paperplane"></i> Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="container">
+
+        <!-- Sidebar: Profile Info -->
+        <aside class="sidebar profile-sidebar">
+            <div id="profile-avatar" class="profile-avatar"></div>
+            <h1 id="profile-name" class="profile-name user-name-js">xCONFLiCTiONx</h1>
+            <span id="profile-handle" class="profile-handle">Software Developer</span>
+            <p id="profile-bio" class="profile-bio"></p>
+            <ul id="profile-metadata" class="profile-metadata"></ul>
+        </aside>
+
+        <!-- Main Content: Project Videos Showcase -->
+        <section class="main-content">
+            <div class="videos-header">
+                <div class="videos-header-copy">
+                    <h2 class="section-title" style="margin:0;">Project Videos</h2>
+                    <p>Software showcases, architecture animations, and local-first tool demonstrations.</p>
+                </div>
+                <a id="ytChannelTopLink" class="yt-channel-btn" href="https://www.youtube.com/@xCONFLiCTiONx" target="_blank" rel="noopener noreferrer">
+                    <span class="yt-dot">▶</span>
+                    <span>Visit @xCONFLiCTiONx on YouTube</span>
+                </a>
+            </div>
+
+            <div id="videosGrid" class="videos-grid"></div>
+        </section>
+
+    </main>
+
+    <!-- Video Playback Modal -->
+    <div id="videoModalBackdrop" class="video-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modalVideoTitle">
+        <div class="video-modal">
+            <div class="video-modal-head">
+                <h3 id="modalVideoTitle" class="video-modal-title">Video</h3>
+                <button id="closeVideoModal" class="video-modal-close" aria-label="Close video">✕</button>
+            </div>
+            <div class="video-modal-frame">
+                <iframe
+                    id="modalVideoIframe"
+                    title="YouTube video player"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    referrerpolicy="strict-origin-when-cross-origin"
+                    allowfullscreen
+                ></iframe>
+            </div>
+            <div class="video-modal-foot">
+                <span id="modalVideoTagline"></span>
+                <div class="video-modal-actions">
+                    <button id="copyShareLinkBtn" type="button" class="modal-btn">Copy Link</button>
+                    <a id="modalWatchOnYt" class="modal-btn modal-btn-yt" href="#" target="_blank" rel="noopener noreferrer">Watch on YouTube ↗</a>
+                    <a id="modalChannelLink" class="modal-btn" href="https://www.youtube.com/@xCONFLiCTiONx" target="_blank" rel="noopener noreferrer">YouTube Channel ↗</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="site-footer">
+        <div class="container" style="display: block;">
+            <p>&copy; 2026 <span class="user-name-js">xCONFLiCTiONx</span>. Project videos produced locally with xProjectFilms.</p>
+        </div>
+    </footer>
+
+    <script src="../js/framework.js"></script>
+    <script src="../js/jquery-3.2.1.min.js"></script>
+    <script src="../js/github-fetch.js?v=25"></script>
+    <script src="./videos-data.js"></script>
+    <script>
+        (function () {
+            const videos = window.XPF_VIDEOS || [];
+            const channelUrl = window.XPF_YOUTUBE_CHANNEL || "https://www.youtube.com/@xCONFLiCTiONx";
+            const grid = document.getElementById("videosGrid");
+            const backdrop = document.getElementById("videoModalBackdrop");
+            const iframe = document.getElementById("modalVideoIframe");
+            const titleEl = document.getElementById("modalVideoTitle");
+            const taglineEl = document.getElementById("modalVideoTagline");
+            const watchOnYtEl = document.getElementById("modalWatchOnYt");
+            const copyBtn = document.getElementById("copyShareLinkBtn");
+            const closeBtn = document.getElementById("closeVideoModal");
+
+            document.getElementById("ytChannelTopLink").href = channelUrl;
+            document.getElementById("modalChannelLink").href = channelUrl;
+
+            let activeVideo = null;
+
+            function getRequestedSlug() {
+                const params = new URLSearchParams(window.location.search);
+                const fromQuery = params.get("project") || params.get("v") || params.get("video");
+                if (fromQuery) return fromQuery.trim().toLowerCase();
+
+                if (window.location.hash && window.location.hash.length > 1) {
+                    return decodeURIComponent(window.location.hash.slice(1)).trim().toLowerCase();
+                }
+
+                // Also support /videos/<slug> if routed via rewrite
+                const parts = window.location.pathname.replace(/\/+$/, "").split("/").filter(Boolean);
+                const idx = parts.lastIndexOf("videos");
+                if (idx !== -1 && parts[idx + 1] && parts[idx + 1] !== "index.html") {
+                    return decodeURIComponent(parts[idx + 1]).trim().toLowerCase();
+                }
+                return "";
+            }
+
+            function findVideo(slugOrId) {
+                if (!slugOrId) return null;
+                const needle = slugOrId.toLowerCase();
+                return videos.find(
+                    (v) =>
+                        v.slug.toLowerCase() === needle ||
+                        v.youtubeId.toLowerCase() === needle ||
+                        v.title.toLowerCase().replace(/[^a-z0-9]+/g, "-") === needle
+                ) || null;
+            }
+
+            function openModal(video, updateUrl) {
+                if (!video) return;
+                activeVideo = video;
+                titleEl.textContent = video.title;
+                taglineEl.textContent = video.tagline || "";
+                watchOnYtEl.href = `https://youtu.be/${encodeURIComponent(video.youtubeId)}`;
+                // Autoplay requested; if browser blocks unmuted autoplay, YouTube player stays ready to play on click
+                iframe.src = `https://www.youtube.com/embed/${encodeURIComponent(video.youtubeId)}?autoplay=1&rel=0&modestbranding=1`;
+                backdrop.classList.add("open");
+                document.body.style.overflow = "hidden";
+
+                if (updateUrl) {
+                    const nextUrl = `${window.location.pathname}?project=${encodeURIComponent(video.slug)}`;
+                    history.pushState({ project: video.slug }, "", nextUrl);
+                }
+            }
+
+            function closeModal(updateUrl) {
+                backdrop.classList.remove("open");
+                iframe.src = "";
+                activeVideo = null;
+                document.body.style.overflow = "";
+                if (updateUrl && window.location.search) {
+                    history.pushState({}, "", window.location.pathname);
+                }
+            }
+
+            // Render Showcase Grid
+            grid.innerHTML = "";
+            for (const v of videos) {
+                const card = document.createElement("article");
+                card.className = "video-card";
+                card.tabIndex = 0;
+                card.setAttribute("role", "button");
+                card.setAttribute("aria-label", `Play ${v.title}`);
+                const thumbUrl = `https://i.ytimg.com/vi/${encodeURIComponent(v.youtubeId)}/maxresdefault.jpg`;
+                const tagsHtml = (v.tags || []).map((t) => `<span class="video-tag">${t}</span>`).join("");
+
+                card.innerHTML = `
+                    <div class="video-thumb-wrap">
+                        <img src="${thumbUrl}" alt="${v.title} thumbnail" loading="lazy" onerror="this.src='https://i.ytimg.com/vi/${encodeURIComponent(v.youtubeId)}/hqdefault.jpg';" />
+                        <div class="play-badge">▶</div>
+                    </div>
+                    <div class="video-card-body">
+                        <h3 class="video-card-title">${v.title}</h3>
+                        <p class="video-card-desc">${v.tagline || ""}</p>
+                        <div class="video-tags">${tagsHtml}</div>
+                    </div>
+                `;
+                card.addEventListener("click", () => openModal(v, true));
+                card.addEventListener("keydown", (e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        openModal(v, true);
+                    }
+                });
+                grid.appendChild(card);
+            }
+
+            closeBtn.addEventListener("click", () => closeModal(true));
+            backdrop.addEventListener("click", (e) => {
+                if (e.target === backdrop) closeModal(true);
+            });
+            document.addEventListener("keydown", (e) => {
+                if (e.key === "Escape" && backdrop.classList.contains("open")) {
+                    closeModal(true);
+                }
+            });
+
+            copyBtn.addEventListener("click", () => {
+                if (!activeVideo) return;
+                const shareUrl = `${window.location.origin}${window.location.pathname}?project=${encodeURIComponent(activeVideo.slug)}`;
+                navigator.clipboard.writeText(shareUrl).then(() => {
+                    copyBtn.textContent = "Copied!";
+                    setTimeout(() => (copyBtn.textContent = "Copy Link"), 1600);
+                });
+            });
+
+            window.addEventListener("popstate", () => {
+                const slug = getRequestedSlug();
+                const match = findVideo(slug);
+                if (match) openModal(match, false);
+                else closeModal(false);
+            });
+
+            // Auto-open modal on page load if URL has ?project=<slug> or #<slug>
+            const initialSlug = getRequestedSlug();
+            const initialVideo = findVideo(initialSlug);
+            if (initialVideo) {
+                openModal(initialVideo, false);
+            }
+        })();
+    </script>
+</body>
+</html>
