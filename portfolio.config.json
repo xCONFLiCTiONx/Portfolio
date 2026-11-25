@@ -22,6 +22,11 @@
       "icon": "im im-home"
     },
     {
+      "label": "Videos",
+      "path": "videos/",
+      "icon": "im im-video"
+    },
+    {
       "label": "About",
       "path": "about/",
       "icon": "im im-user-male"
