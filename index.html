@@ -15,7 +15,7 @@
         type="font/woff2"
         crossorigin
     >
-    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/main.css?v=34">
     <link rel="icon" id="favicon-js" href="assets/favicon.ico" type="image/x-icon">
     <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 
@@ -135,9 +135,65 @@
             </div>
         </aside>
 
-        <!-- Main Content: Dynamic Repos -->
+        <!-- Main Content: Hero + Featured Videos + Dynamic Repos -->
         <section id="projects" class="main-content">
-            <h2 class="section-title">Popular repositories</h2>
+            <div class="home-hero">
+                <div class="hero-eyebrow">
+                    <span class="hero-eyebrow-dot"></span>
+                    <span>Local-First &bull; Zero Telemetry &bull; Sovereign Tools</span>
+                </div>
+                <h2>Building lean tools you actually own.</h2>
+                <p>
+                    Native Windows utilities, Android &amp; Wear OS apps, Chromium MV3 extensions, and self-hosted browser tools &mdash; built without paywalls, ads, or trackers.
+                </p>
+                <div class="hero-actions">
+                    <a href="videos/" class="hero-btn hero-btn-primary">
+                        <span>&#9654;</span>
+                        <span>Project Videos</span>
+                    </a>
+                    <a href="tools/" class="hero-btn">
+                        <i class="im im-tools"></i>
+                        <span>Web Tools</span>
+                    </a>
+                    <a href="certs/" class="hero-btn">
+                        <i class="im im-shield"></i>
+                        <span>Code Signing Cert</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="featured-videos-strip">
+                <a href="videos/?project=gitscope" class="featured-video-pill">
+                    <div class="featured-video-thumb">
+                        <img src="https://i.ytimg.com/vi/-P-X7oupI_Y/mqdefault.jpg" alt="GitScope for Windows" loading="lazy">
+                        <span class="featured-video-play">&#9654;</span>
+                    </div>
+                    <div class="featured-video-meta">
+                        <span class="featured-video-label">Featured Showcase</span>
+                        <span class="featured-video-title">GitScope for Windows</span>
+                        <span class="featured-video-sub">Native Git visualization &amp; diagnostics</span>
+                    </div>
+                </a>
+                <a href="videos/?project=xprivacyguard" class="featured-video-pill">
+                    <div class="featured-video-thumb">
+                        <img src="https://i.ytimg.com/vi/heFbevJgb30/mqdefault.jpg" alt="xPrivacyGuard" loading="lazy">
+                        <span class="featured-video-play">&#9654;</span>
+                    </div>
+                    <div class="featured-video-meta">
+                        <span class="featured-video-label">Featured Showcase</span>
+                        <span class="featured-video-title">xPrivacyGuard</span>
+                        <span class="featured-video-sub">Zero Trust VPN &amp; privacy filter suite</span>
+                    </div>
+                </a>
+            </div>
+
+            <div class="repos-toolbar">
+                <h2 class="section-title">Repositories</h2>
+                <div class="repo-search-wrap">
+                    <input id="repo-search-input" class="repo-search-input" type="search" placeholder="Filter repositories..." aria-label="Filter repositories">
+                </div>
+            </div>
+
             <div id="github-repos">
                 <div class="repo-loader">
                     <i class="im im-spinner im-spin"></i> Loading repositories...
@@ -157,6 +213,20 @@
     <script src="js/jquery-3.2.1.min.js"></script>
     <script src="js/github-fetch.js?v=25"></script>
     <script>
+        // Live client-side repository filter
+        (function () {
+            const input = document.getElementById('repo-search-input');
+            const container = document.getElementById('github-repos');
+            if (!input || !container) return;
+            input.addEventListener('input', () => {
+                const q = input.value.trim().toLowerCase();
+                container.querySelectorAll('.repo-item').forEach(card => {
+                    const match = !q || card.textContent.toLowerCase().includes(q);
+                    card.style.display = match ? '' : 'none';
+                });
+            });
+        })();
+
         // Register Service Worker for PWA (Only on HTTP/HTTPS)
         if ('serviceWorker' in navigator && (window.location.protocol === 'http:' || window.location.protocol === 'https:')) {
             window.addEventListener('load', () => {
