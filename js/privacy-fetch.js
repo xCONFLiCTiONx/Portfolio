@@ -1,223 +1,353 @@
 /**
- * Dynamic Privacy Policy Fetcher
- * Version: 30 (Low-Request Policy Discovery)
+ * Dynamic Privacy Policy & License Viewer
+ * Version: 31 (All Repositories + On-Demand Privacy & License Fetching)
  */
 
 async function initPrivacy() {
-    const SELECTOR_ID = '#policy-select';
-    const CONTENT_ID = '#policy-body';
-    const selector = $(SELECTOR_ID);
-    const content = $(CONTENT_ID);
-    const copyBtn = $('#copyLinkBtn');
-    const CATALOG_CACHE_MS = 24 * 60 * 60 * 1000;
+    const selector = document.getElementById('policy-select');
+    const content = document.getElementById('policy-body');
+    const metaBar = document.getElementById('policy-meta-bar');
+    const repoCountItem = document.getElementById('policy-repo-count');
+    const copyBtn = document.getElementById('copyLinkBtn');
+    const tabBtns = Array.from(document.querySelectorAll('.doc-tab-btn'));
 
-    if (!selector.length) return;
+    if (!selector || !content) return;
+
+    const REPOS_CACHE_MS = 6 * 60 * 60 * 1000;
+    const docCache = new Map();
+
+    function escapeHtml(str) {
+        return String(str || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
 
     try {
-        const config = window.PortfolioFramework ? await window.PortfolioFramework.getConfig() : (window.getPortfolioConfig ? await window.getPortfolioConfig() : {});
+        const config = window.PortfolioFramework
+            ? await window.PortfolioFramework.getConfig()
+            : (window.getPortfolioConfig ? await window.getPortfolioConfig() : {});
         const username = (config.github && config.github.username) || config.github_username || 'xCONFLiCTiONx';
         const token = config.github ? config.github.token : config.github_token;
 
         const urlParams = new URLSearchParams(window.location.search);
-        const targetPolicy = (urlParams.get('p') || urlParams.get('policy') || '').toLowerCase();
+        const initialSlug = (urlParams.get('p') || urlParams.get('policy') || urlParams.get('repo') || 'portfolio').trim().toLowerCase();
+        const initialDocParam = (urlParams.get('doc') || urlParams.get('type') || 'privacy').trim().toLowerCase();
+        let activeDocType = initialDocParam === 'license' ? 'license' : 'privacy';
 
-        const thisProjectPolicy = {
+        const localPortfolioEntry = {
             name: 'Portfolio',
-            url: (window.PortfolioFramework && window.PortfolioFramework.toRelativeUrl) ? window.PortfolioFramework.toRelativeUrl('PRIVACY.md') : '../PRIVACY.md',
-            slug: 'portfolio'
+            slug: 'portfolio',
+            owner: username,
+            branch: 'main',
+            htmlUrl: `https://github.com/${encodeURIComponent(username)}/Portfolio`,
+            licenseSpdx: 'GPL-3.0',
+            licenseName: 'GNU General Public License v3.0',
+            localPrivacyUrl: (window.PortfolioFramework && window.PortfolioFramework.toRelativeUrl)
+                ? window.PortfolioFramework.toRelativeUrl('PRIVACY.md')
+                : '../PRIVACY.md',
+            localLicenseUrl: (window.PortfolioFramework && window.PortfolioFramework.toRelativeUrl)
+                ? window.PortfolioFramework.toRelativeUrl('LICENSE')
+                : '../LICENSE'
         };
 
-        async function loadPolicy(downloadUrl, selectedSlug, updateHistory = true) {
-            if (!downloadUrl) return;
-            if (updateHistory && selectedSlug) {
-                window.history.pushState({ path: selectedSlug }, '', '?p=' + selectedSlug);
-            }
-            try {
-                const response = await fetch(downloadUrl);
-                if (response.ok) {
-                    const text = await response.text();
-                    if (typeof marked !== 'undefined') {
-                        content.html(marked.parse(text));
-                    } else {
-                        content.html('<pre style="white-space: pre-wrap;">' + text + '</pre>');
-                    }
-                } else {
-                    content.html(`<p class="error">Error: Could not load text (HTTP ${response.status}).</p>`);
-                }
-            } catch (e) {
-                content.html('<p class="error">Network error while fetching policy.</p>');
-            }
+        let repoEntries = [localPortfolioEntry];
+        let activeRepo = localPortfolioEntry;
+
+        function setTabUI(docType) {
+            activeDocType = docType === 'license' ? 'license' : 'privacy';
+            tabBtns.forEach(btn => {
+                const isActive = btn.dataset.doc === activeDocType;
+                btn.classList.toggle('active', isActive);
+                btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
+            });
         }
 
-        // Setup Change Listener
-        selector.off('change').on('change', function () {
-            const downloadUrl = $(this).val();
-            const selectedSlug = $(this).find(':selected').data('slug');
-            if (downloadUrl) {
-                content.html('<div class="repo-loader"><i class="im im-spinner im-spin"></i> Loading policy content...</div>');
-                loadPolicy(downloadUrl, selectedSlug, true);
-                $('html, body').animate({ scrollTop: content.offset().top - 100 }, 400);
-            }
-        });
-
-        // Immediately load this project's privacy policy by default if no query param or 'portfolio'
-        if (!targetPolicy || targetPolicy === 'portfolio') {
-            selector.html(`<option value="${thisProjectPolicy.url}" data-slug="portfolio" selected>Portfolio</option>`);
-            loadPolicy(thisProjectPolicy.url, thisProjectPolicy.slug, false);
-        } else {
-            selector.html(`<option value="" disabled selected>Searching for ${targetPolicy} policy...</option>`);
+        function updateUrl(slug, docType, push = true) {
+            if (!push) return;
+            const params = new URLSearchParams();
+            params.set('p', slug);
+            if (docType === 'license') params.set('doc', 'license');
+            const nextUrl = `?${params.toString()}`;
+            window.history.pushState({ slug, docType }, '', nextUrl);
         }
 
-        // Reuse the repository catalog briefly to avoid repeated GitHub API calls.
-        const cacheKey = `privacy-policy-catalog:${username.toLowerCase()}`;
-        let cachedCatalog = null;
-        let staleCatalog = null;
-        try {
-            const stored = JSON.parse(localStorage.getItem(cacheKey) || 'null');
-            if (stored && Array.isArray(stored.policies)) {
-                staleCatalog = stored.policies;
-                if (Date.now() - stored.savedAt < CATALOG_CACHE_MS) {
-                    cachedCatalog = stored.policies;
-                }
-            }
-        } catch (error) {
-            console.warn('Privacy: Could not read cached policy catalog.', error);
+        function renderMetaBar(repo, rawUrl) {
+            if (!metaBar) return;
+            const licenseLabel = repo.licenseSpdx && repo.licenseSpdx !== 'NOASSERTION'
+                ? repo.licenseSpdx
+                : (repo.licenseName || 'See LICENSE');
+            const rawLinkHtml = rawUrl
+                ? `<a href="${escapeHtml(rawUrl)}" target="_blank" rel="noopener noreferrer">Raw File ↗</a>`
+                : '';
+            metaBar.innerHTML = `
+                <div class="policy-meta-left">
+                    <strong style="color:#f0f6fc;">${escapeHtml(repo.name)}</strong>
+                    <span class="policy-badge">${escapeHtml(licenseLabel)}</span>
+                </div>
+                <div class="policy-meta-links">
+                    ${rawLinkHtml}
+                    <a href="${escapeHtml(repo.htmlUrl)}" target="_blank" rel="noopener noreferrer">View on GitHub ↗</a>
+                </div>
+            `;
+            metaBar.style.display = 'flex';
         }
 
-        // DISCOVERY: Fetch repository names once, then probe raw files.
-        const fetchOptions = {
-            headers: typeof getGithubHeaders === 'function' ? getGithubHeaders(token) : {},
-            cache: 'default'
-        };
-
-        let foundPolicies = cachedCatalog;
-        let failedRepoChecks = 0;
-        let usingCachedCatalog = cachedCatalog !== null;
-        if (foundPolicies === null) {
-            const repos = [];
-            let nextPageUrl = `https://api.github.com/users/${encodeURIComponent(username)}/repos?sort=updated&per_page=100&page=1`;
-            let reposResponse;
-            while (nextPageUrl) {
-                reposResponse = await fetch(nextPageUrl, fetchOptions);
-                if (!reposResponse.ok) {
-                    if (staleCatalog !== null) {
-                        foundPolicies = staleCatalog;
-                        usingCachedCatalog = true;
-                        break;
-                    }
-                    const rateLimitRemaining = reposResponse.headers.get('X-RateLimit-Remaining');
-                    const detail = reposResponse.status === 403 && rateLimitRemaining === '0'
-                        ? 'GitHub API rate limit reached. Please try again after it resets.'
-                        : `GitHub Error (${reposResponse.status})`;
-                    if (!targetPolicy || targetPolicy === 'portfolio') {
-                        selector.append(`<option value="" disabled>${detail}</option>`);
-                    } else {
-                        selector.html(`<option value="" disabled selected>${detail}</option>`);
-                    }
-                    return;
-                }
-                const pageRepos = await reposResponse.json();
-                if (!Array.isArray(pageRepos)) {
-                    throw new Error('GitHub returned an invalid repository list.');
-                }
-                repos.push(...pageRepos);
-                const linkHeader = reposResponse.headers.get('Link') || '';
-                const nextLink = linkHeader.match(/<([^>]+)>;\s*rel="next"/);
-                nextPageUrl = nextLink ? nextLink[1] : '';
-            }
-
-            if (foundPolicies === null) {
-                foundPolicies = [];
-                let nextRepo = 0;
-                const workers = Array.from({ length: Math.min(3, repos.length) }, async () => {
-                    while (nextRepo < repos.length) {
-                        const repo = repos[nextRepo++];
-                        const owner = repo.owner && repo.owner.login ? repo.owner.login : username;
-                        const branch = (repo.default_branch || 'main')
-                            .split('/')
-                            .map(encodeURIComponent)
-                            .join('/');
-                        const privacyNames = ['privacy.md', 'PRIVACY.md', 'Privacy.md', 'Privacy.MD', 'PRIVACY.MD'];
-                        try {
-                            for (const privacyName of privacyNames) {
-                                const rawUrl = `https://raw.githubusercontent.com/${encodeURIComponent(owner)}/${encodeURIComponent(repo.name)}/${branch}/${privacyName}`;
-                                const response = await fetch(rawUrl, { method: 'HEAD', cache: 'default' });
-                                if (response.ok) {
-                                    foundPolicies.push({
-                                        name: repo.name,
-                                        url: rawUrl,
-                                        slug: repo.name.toLowerCase()
-                                    });
-                                    break;
-                                }
-                                if (response.status !== 404) {
-                                    failedRepoChecks += 1;
-                                    break;
-                                }
-                            }
-                        } catch (error) {
-                            failedRepoChecks += 1;
-                        }
-                    }
-                });
-                await Promise.all(workers);
-                foundPolicies.sort((a, b) => a.name.localeCompare(b.name));
+        async function fetchFirstExisting(urls) {
+            for (const url of urls) {
                 try {
-                    localStorage.setItem(cacheKey, JSON.stringify({
-                        savedAt: Date.now(),
-                        policies: foundPolicies
-                    }));
-                } catch (error) {
-                    console.warn('Privacy: Could not cache policy catalog.', error);
+                    const res = await fetch(url, { cache: 'default' });
+                    if (res.ok) {
+                        const text = await res.text();
+                        return { url, text };
+                    }
+                } catch (_) {
+                    // Try next candidate
                 }
+            }
+            return null;
+        }
+
+        async function loadDocument(repo, docType, pushHistory = true) {
+            if (!repo) return;
+            activeRepo = repo;
+            setTabUI(docType);
+            updateUrl(repo.slug, activeDocType, pushHistory);
+
+            const cacheKey = `${repo.slug}:${activeDocType}`;
+            if (docCache.has(cacheKey)) {
+                const cached = docCache.get(cacheKey);
+                renderMetaBar(repo, cached.url);
+                content.innerHTML = cached.html;
+                return;
+            }
+
+            content.innerHTML = `<div class="repo-loader"><i class="im im-spinner im-spin"></i> Loading ${activeDocType === 'license' ? 'license' : 'privacy policy'} for ${escapeHtml(repo.name)}...</div>`;
+            renderMetaBar(repo, null);
+
+            const owner = encodeURIComponent(repo.owner || username);
+            const name = encodeURIComponent(repo.name);
+            const branch = (repo.branch || 'main').split('/').map(encodeURIComponent).join('/');
+            const rawBase = `https://raw.githubusercontent.com/${owner}/${name}/${branch}`;
+
+            let candidates = [];
+            if (activeDocType === 'license') {
+                if (repo.localLicenseUrl) candidates.push(repo.localLicenseUrl);
+                candidates.push(
+                    `${rawBase}/LICENSE`,
+                    `${rawBase}/LICENSE.md`,
+                    `${rawBase}/LICENSE.txt`,
+                    `${rawBase}/license`,
+                    `${rawBase}/COPYING`
+                );
+            } else {
+                if (repo.localPrivacyUrl) candidates.push(repo.localPrivacyUrl);
+                candidates.push(
+                    `${rawBase}/PRIVACY.md`,
+                    `${rawBase}/privacy.md`,
+                    `${rawBase}/Privacy.md`,
+                    `${rawBase}/PRIVACY.MD`,
+                    `${rawBase}/docs/PRIVACY.md`
+                );
+            }
+
+            const result = await fetchFirstExisting(candidates);
+            let html = '';
+
+            if (result) {
+                const isMarkdown = /\.md$/i.test(result.url);
+                if (isMarkdown && typeof marked !== 'undefined') {
+                    html = marked.parse(result.text);
+                } else {
+                    html = `<pre class="license-pre">${escapeHtml(result.text)}</pre>`;
+                }
+                renderMetaBar(repo, result.url);
+            } else if (activeDocType === 'privacy') {
+                html = `
+                    <div class="policy-notice">
+                        <strong style="color:#f0f6fc;">Zero-Telemetry Default Policy — ${escapeHtml(repo.name)}</strong>
+                        <p style="margin:0.8rem 0 0;color:#c9d1d9;">
+                            This repository does not define a separate custom <code>PRIVACY.md</code>. Like all xCONFLiCTiONx projects, it follows a strict local-first, zero-telemetry standard: no analytics, no tracking beacons, and no selling or sharing of user data.
+                        </p>
+                    </div>
+                    <p>
+                        You can inspect the full source code directly on
+                        <a href="${escapeHtml(repo.htmlUrl)}" target="_blank" rel="noopener noreferrer">GitHub (${escapeHtml(repo.name)}) ↗</a>
+                        or switch to the <strong>License</strong> tab above to view its software license.
+                    </p>
+                `;
+                renderMetaBar(repo, null);
+            } else {
+                const spdxNote = repo.licenseSpdx && repo.licenseSpdx !== 'NOASSERTION'
+                    ? `GitHub reports this repository under <strong>${escapeHtml(repo.licenseSpdx)}</strong>.`
+                    : 'No standard root <code>LICENSE</code> file was found on the default branch.';
+                html = `
+                    <div class="policy-notice">
+                        <strong style="color:#f0f6fc;">License Info — ${escapeHtml(repo.name)}</strong>
+                        <p style="margin:0.8rem 0 0;color:#c9d1d9;">${spdxNote}</p>
+                    </div>
+                    <p>
+                        View repository details on
+                        <a href="${escapeHtml(repo.htmlUrl)}" target="_blank" rel="noopener noreferrer">GitHub (${escapeHtml(repo.name)}) ↗</a>.
+                    </p>
+                `;
+                renderMetaBar(repo, null);
+            }
+
+            docCache.set(cacheKey, { url: result ? result.url : null, html });
+            content.innerHTML = html;
+        }
+
+        async function fetchAllPublicRepos() {
+            const sharedCacheKey = `github-repos:${username.toLowerCase()}`;
+            if (!token) {
+                try {
+                    const cached = JSON.parse(localStorage.getItem(sharedCacheKey) || 'null');
+                    if (cached && cached.savedAt && Date.now() - cached.savedAt < REPOS_CACHE_MS && Array.isArray(cached.data) && cached.data.length > 0) {
+                        return cached.data;
+                    }
+                } catch (_) {}
+            }
+
+            const fetchOptions = {
+                headers: typeof getGithubHeaders === 'function' ? getGithubHeaders(token) : { Accept: 'application/vnd.github.v3+json' },
+                cache: 'default'
+            };
+
+            const allRepos = [];
+            let nextPageUrl = `https://api.github.com/users/${encodeURIComponent(username)}/repos?sort=updated&per_page=100&page=1`;
+
+            while (nextPageUrl) {
+                const res = await fetch(nextPageUrl, fetchOptions);
+                if (!res.ok) {
+                    throw new Error(`GitHub API ${res.status}`);
+                }
+                const page = await res.json();
+                if (!Array.isArray(page)) break;
+                allRepos.push(...page);
+
+                const linkHeader = res.headers.get('Link') || '';
+                const nextMatch = linkHeader.match(/<([^>]+)>;\s*rel="next"/);
+                nextPageUrl = nextMatch ? nextMatch[1] : '';
+            }
+
+            if (!token && allRepos.length > 0) {
+                try {
+                    localStorage.setItem(sharedCacheKey, JSON.stringify({ savedAt: Date.now(), data: allRepos }));
+                } catch (_) {}
+            }
+            return allRepos;
+        }
+
+        function renderSelectOptions(selectedSlug) {
+            selector.innerHTML = '';
+            repoEntries.forEach(entry => {
+                const opt = document.createElement('option');
+                opt.value = entry.slug;
+                const licTag = entry.licenseSpdx && entry.licenseSpdx !== 'NOASSERTION' ? ` (${entry.licenseSpdx})` : '';
+                opt.textContent = `${entry.name}${licTag}`;
+                if (entry.slug === selectedSlug) opt.selected = true;
+                selector.appendChild(opt);
+            });
+            if (repoCountItem) {
+                repoCountItem.style.display = '';
+                const span = repoCountItem.querySelector('span');
+                if (span) span.textContent = `${repoEntries.length} Repositories Listed`;
             }
         }
 
-        // Ensure this project's policy is always present at the top of policy list
-        const policyList = foundPolicies ? [...foundPolicies] : [];
-        const existingPortfolioIndex = policyList.findIndex(p => p.slug === 'portfolio');
-        if (existingPortfolioIndex >= 0) {
-            policyList.splice(existingPortfolioIndex, 1);
+        // Load Portfolio immediately if it's the target so the page is never blank
+        setTabUI(activeDocType);
+        if (initialSlug === 'portfolio') {
+            renderSelectOptions('portfolio');
+            loadDocument(localPortfolioEntry, activeDocType, false);
         }
-        policyList.unshift(thisProjectPolicy);
 
-        const activeSlug = targetPolicy || 'portfolio';
-        selector.empty();
-        policyList.forEach(policy => {
-            const isSelected = activeSlug === policy.slug;
-            const option = $('<option>', {
-                value: policy.url,
-                text: policy.name,
-                selected: isSelected
-            }).attr('data-slug', policy.slug);
-            selector.append(option);
+        // Wire UI controls
+        selector.addEventListener('change', () => {
+            const match = repoEntries.find(r => r.slug === selector.value);
+            if (match) loadDocument(match, activeDocType, true);
         });
 
-        // If target policy was specified and not 'portfolio', load it now
-        if (targetPolicy && targetPolicy !== 'portfolio') {
-            const matchedPolicy = policyList.find(p => p.slug === targetPolicy);
-            if (matchedPolicy) {
-                loadPolicy(matchedPolicy.url, matchedPolicy.slug, false);
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const nextDoc = btn.dataset.doc === 'license' ? 'license' : 'privacy';
+                if (nextDoc !== activeDocType) {
+                    loadDocument(activeRepo, nextDoc, true);
+                }
+            });
+        });
+
+        window.addEventListener('popstate', () => {
+            const params = new URLSearchParams(window.location.search);
+            const slug = (params.get('p') || params.get('policy') || params.get('repo') || 'portfolio').trim().toLowerCase();
+            const doc = (params.get('doc') || params.get('type') || 'privacy').trim().toLowerCase();
+            const match = repoEntries.find(r => r.slug === slug) || localPortfolioEntry;
+            selector.value = match.slug;
+            loadDocument(match, doc === 'license' ? 'license' : 'privacy', false);
+        });
+
+        if (copyBtn) {
+            copyBtn.addEventListener('click', async () => {
+                try {
+                    await navigator.clipboard.writeText(window.location.href);
+                    const orig = copyBtn.innerHTML;
+                    copyBtn.classList.add('copied');
+                    copyBtn.innerHTML = '<i class="im im-check-mark"></i> Copied!';
+                    setTimeout(() => {
+                        copyBtn.classList.remove('copied');
+                        copyBtn.innerHTML = orig;
+                    }, 2000);
+                } catch (err) {
+                    console.error('Copy failed', err);
+                }
+            });
+        }
+
+        // Populate full repository list from GitHub
+        try {
+            const repos = await fetchAllPublicRepos();
+            const mapped = repos.map(r => {
+                const slug = r.name.toLowerCase();
+                const isPortfolio = slug === 'portfolio';
+                return {
+                    name: r.name,
+                    slug,
+                    owner: (r.owner && r.owner.login) || username,
+                    branch: r.default_branch || 'main',
+                    htmlUrl: r.html_url || `https://github.com/${encodeURIComponent(username)}/${encodeURIComponent(r.name)}`,
+                    licenseSpdx: (r.license && r.license.spdx_id) || '',
+                    licenseName: (r.license && r.license.name) || '',
+                    localPrivacyUrl: isPortfolio ? localPortfolioEntry.localPrivacyUrl : null,
+                    localLicenseUrl: isPortfolio ? localPortfolioEntry.localLicenseUrl : null
+                };
+            });
+
+            mapped.sort((a, b) => a.name.localeCompare(b.name));
+            const portfolioIdx = mapped.findIndex(r => r.slug === 'portfolio');
+            const pinnedPortfolio = portfolioIdx >= 0 ? mapped.splice(portfolioIdx, 1)[0] : localPortfolioEntry;
+            repoEntries = [pinnedPortfolio, ...mapped];
+
+            const matched = repoEntries.find(r => r.slug === initialSlug) || pinnedPortfolio;
+            renderSelectOptions(matched.slug);
+
+            if (initialSlug !== 'portfolio' || matched.slug !== 'portfolio') {
+                loadDocument(matched, activeDocType, false);
             } else {
-                content.html(`<p class="error">Privacy policy for "${targetPolicy}" was not found.</p>`);
+                renderMetaBar(matched, activeDocType === 'license' ? matched.localLicenseUrl : matched.localPrivacyUrl);
+            }
+        } catch (err) {
+            console.warn('Privacy/License: Could not load full repo list from GitHub.', err);
+            renderSelectOptions('portfolio');
+            if (initialSlug !== 'portfolio') {
+                loadDocument(localPortfolioEntry, activeDocType, false);
             }
         }
     } catch (e) {
-        console.error('[DEBUG] Privacy: Initialization error', e);
-        selector.html('<option value="" disabled selected>Could not load privacy policies. Check the console for details.</option>');
+        console.error('Privacy/License initialization error:', e);
+        content.innerHTML = '<p class="error">Could not initialize privacy &amp; license viewer.</p>';
     }
-
-    // Handle copy link button
-    copyBtn.off('click').on('click', async function () {
-        try {
-            await navigator.clipboard.writeText(window.location.href);
-            const originalHtml = $(this).html();
-            $(this).addClass('copied').html('<i class="im im-check-mark"></i> Copied!');
-            setTimeout(() => { $(this).removeClass('copied').html(originalHtml); }, 2000);
-        } catch (err) {
-            console.error('Copy failed', err);
-        }
-    });
 }
 
 if (document.readyState === 'loading') {

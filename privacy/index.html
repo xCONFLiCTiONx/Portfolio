@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title class="user-name-title-js">Privacy Policy | xCONFLiCTiONx</title>
+    <title class="user-name-title-js">Privacy &amp; Licenses | xCONFLiCTiONx</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" id="meta-description-js" content="Privacy policy and data handling transparency for xCONFLiCTiONx software and web utilities.">
+    <meta name="description" id="meta-description-js" content="Privacy policies, software licenses, and data handling transparency for all xCONFLiCTiONx repositories and web utilities.">
     <link rel="canonical" href="https://xconflictionx.cc/privacy/" />
     <meta name="theme-color" content="#0b0d10">
     <link rel="manifest" href="../site.webmanifest">
@@ -56,8 +56,9 @@
     <style>
         .policy-header {
             display: flex;
+            flex-wrap: wrap;
             gap: 1rem;
-            margin-bottom: 3rem;
+            margin-bottom: 1.6rem;
             align-items: center;
         }
         .policy-select {
@@ -67,8 +68,40 @@
             padding: 1rem 1.5rem;
             font-size: 1.6rem;
             border-radius: 6px;
-            flex-grow: 1;
+            flex: 1 1 260px;
+            min-inline-size: 0;
             cursor: pointer;
+            height: 4.6rem;
+        }
+        .doc-type-tabs {
+            display: inline-flex;
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 3px;
+            gap: 3px;
+            height: 4.6rem;
+            align-items: center;
+        }
+        .doc-tab-btn {
+            background: transparent;
+            color: #8b949e;
+            border: 0;
+            border-radius: 4px;
+            padding: 0 1.4rem;
+            height: 100%;
+            font-size: 1.4rem;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background-color 0.15s, color 0.15s;
+        }
+        .doc-tab-btn:hover {
+            color: #f0f6fc;
+        }
+        .doc-tab-btn.active {
+            background: #f38020;
+            color: #121214;
         }
         .copy-link-btn {
             background-color: #21262d;
@@ -94,6 +127,50 @@
             color: #3fb950;
             border-color: #3fb950;
         }
+        .policy-meta-bar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 1rem 1.4rem;
+            margin-bottom: 2.2rem;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid #30363d;
+            font-size: 1.35rem;
+            color: #8b949e;
+        }
+        .policy-meta-left {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.8rem;
+        }
+        .policy-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.2rem 0.8rem;
+            border-radius: 999px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            background: rgba(243, 128, 32, 0.14);
+            border: 1px solid rgba(243, 128, 32, 0.35);
+            color: #f8b26a;
+        }
+        .policy-meta-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.4rem;
+        }
+        .policy-meta-links a {
+            color: #58a6ff;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .policy-meta-links a:hover {
+            text-decoration: underline;
+        }
         .policy-body {
             min-height: 200px;
         }
@@ -103,10 +180,31 @@
             border-bottom: 1px solid #30363d;
             padding-bottom: 0.5rem;
         }
+        .policy-body h1:first-child, .policy-body h2:first-child { margin-top: 0; }
         .policy-body h4 { margin-top: 2rem; color: #8b949e; }
         .policy-body p { margin-bottom: 1.5rem; }
         .policy-body ul { margin-left: 2rem; margin-bottom: 2.5rem; list-style: disc; }
         .policy-body strong { color: #f0f6fc; }
+        .license-pre {
+            white-space: pre-wrap;
+            word-break: break-word;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 1.35rem;
+            line-height: 1.65;
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 2rem;
+            color: #c9d1d9;
+            overflow-x: auto;
+        }
+        .policy-notice {
+            background: rgba(88, 166, 255, 0.08);
+            border: 1px solid rgba(88, 166, 255, 0.28);
+            border-radius: 8px;
+            padding: 1.6rem 2rem;
+            margin-bottom: 2rem;
+        }
     </style>
 </head>
 <body id="top">
@@ -138,10 +236,10 @@
 
         <aside class="sidebar">
             <h1 class="profile-name">Legal</h1>
-            <span class="profile-handle">Privacy & Terms</span>
+            <span class="profile-handle">Privacy &amp; Licenses</span>
 
             <p class="profile-bio">
-                Transparent overview of privacy practices and data handling for all xCONFLiCTiONx applications and utilities.
+                Browse privacy policies and software licenses across all xCONFLiCTiONx repositories and utilities.
             </p>
 
             <ul class="profile-metadata">
@@ -153,22 +251,32 @@
                     <i class="im im-shield-check"></i>
                     <span>Zero Telemetry Policy</span>
                 </li>
+                <li id="policy-repo-count" style="display:none;">
+                    <i class="im im-folder"></i>
+                    <span></span>
+                </li>
             </ul>
         </aside>
 
         <section class="main-content">
             <div class="policy-header">
-                <select id="policy-select" class="policy-select">
-                    <option value="" disabled selected>Select a policy or document...</option>
+                <select id="policy-select" class="policy-select" aria-label="Select repository">
+                    <option value="" disabled selected>Loading repositories...</option>
                 </select>
-                <button id="copyLinkBtn" class="copy-link-btn" title="Copy direct link">
+                <div class="doc-type-tabs" role="tablist" aria-label="Document type">
+                    <button type="button" class="doc-tab-btn active" data-doc="privacy" role="tab" aria-selected="true">Privacy</button>
+                    <button type="button" class="doc-tab-btn" data-doc="license" role="tab" aria-selected="false">License</button>
+                </div>
+                <button id="copyLinkBtn" type="button" class="copy-link-btn" title="Copy direct link">
                     <i class="im im-link"></i> <span id="copyText">Copy Link</span>
                 </button>
             </div>
 
+            <div id="policy-meta-bar" class="policy-meta-bar" style="display:none;"></div>
+
             <div id="policy-body" class="policy-body">
                 <div class="repo-loader">
-                    <i class="im im-spinner im-spin"></i> Loading privacy policy...
+                    <i class="im im-spinner im-spin"></i> Loading document...
                 </div>
             </div>
         </section>
@@ -184,7 +292,7 @@
     <script src="../js/framework.js"></script>
     <script src="../js/jquery-3.2.1.min.js"></script>
     <script src="../js/github-fetch.js?v=25"></script>
-    <script src="../js/privacy-fetch.js?v=30"></script>
+    <script src="../js/privacy-fetch.js?v=31"></script>
     <script>
         if ('serviceWorker' in navigator && (window.location.protocol === 'http:' || window.location.protocol === 'https:')) {
             window.addEventListener('load', () => {
