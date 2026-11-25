@@ -27,11 +27,6 @@
       "icon": "im im-video"
     },
     {
-      "label": "About",
-      "path": "about/",
-      "icon": "im im-user-male"
-    },
-    {
       "label": "Tools",
       "path": "tools/",
       "icon": "im im-tools"

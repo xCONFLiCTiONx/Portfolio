@@ -7,7 +7,7 @@ Website: https://xconflictionx.cc
 ## Pages
 
 - [/](https://xconflictionx.cc/)
-- [/about](https://xconflictionx.cc/about)
+- [/videos](https://xconflictionx.cc/videos)
 - [/contact](https://xconflictionx.cc/contact)
 - [/privacy](https://xconflictionx.cc/privacy)
 - [/tools](https://xconflictionx.cc/tools)

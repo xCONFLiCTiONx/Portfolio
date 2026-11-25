@@ -42,7 +42,6 @@ function addPage(){
 function addCommon(){
   const defaults = [
     { path: "/", changefreq: "weekly", priority: "1.0" },
-    { path: "/about/", changefreq: "monthly", priority: "0.8" },
     { path: "/contact/", changefreq: "monthly", priority: "0.8" },
     { path: "/privacy/", changefreq: "monthly", priority: "0.8" },
     { path: "/tools/", changefreq: "monthly", priority: "0.8" },

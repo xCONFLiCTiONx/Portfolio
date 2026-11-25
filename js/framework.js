@@ -74,7 +74,7 @@
 
         // Check sessionStorage first for instantaneous transitions between pages
         try {
-            const stored = sessionStorage.getItem('portfolio_config_v2');
+            const stored = sessionStorage.getItem('portfolio_config_v3');
             if (stored) {
                 cachedConfig = JSON.parse(stored);
                 window.PortfolioConfig = cachedConfig;
@@ -97,7 +97,7 @@
                     if (res.ok) {
                         cachedConfig = await res.json();
                         window.PortfolioConfig = cachedConfig;
-                        try { sessionStorage.setItem('portfolio_config_v2', JSON.stringify(cachedConfig)); } catch (_) {}
+                        try { sessionStorage.setItem('portfolio_config_v3', JSON.stringify(cachedConfig)); } catch (_) {}
                         return cachedConfig;
                     }
                 } catch (e) {
@@ -122,7 +122,6 @@
                 navigation: [
                     { label: "Overview", path: "index.html", icon: "im im-home" },
                     { label: "Videos", path: "videos/", icon: "im im-video" },
-                    { label: "About", path: "about/", icon: "im im-user-male" },
                     { label: "Tools", path: "tools/index.html", icon: "im im-tools" },
                     { label: "Privacy", path: "privacy/", icon: "im im-shield" },
                     { label: "Contact", path: "contact/", icon: "im im-paperplane" }

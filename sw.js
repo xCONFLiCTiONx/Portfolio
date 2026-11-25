@@ -1,9 +1,8 @@
-const CACHE_NAME = 'portfolio-v32';
+const CACHE_NAME = 'portfolio-v33';
 
 const ASSETS = [
   './',
   './index.html',
-  './about/',
   './contact/',
   './privacy/',
   './site.webmanifest',
