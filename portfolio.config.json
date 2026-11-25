@@ -47,6 +47,11 @@
       "name": "GitHub",
       "url": "https://github.com/xCONFLiCTiONx",
       "icon": "im im-github"
+    },
+    {
+      "name": "YouTube",
+      "url": "https://www.youtube.com/@xCONFLiCTiONx",
+      "icon": "im im-youtube"
     }
   ],
   "tools": [
@@ -280,5 +285,38 @@
   "ads": {
     "enabled": true,
     "template": "ads.config.html"
-  }
+  },
+  "youtube": {
+    "channelUrl": "https://www.youtube.com/@xCONFLiCTiONx"
+  },
+  "videos": [
+    {
+      "id": "gitscope",
+      "title": "GitScope for Windows",
+      "youtubeUrl": "https://youtu.be/-P-X7oupI_Y",
+      "description": "Native Windows Git repository visualization, workflow diagnostics, and local developer tooling.",
+      "tags": [
+        "Windows",
+        "Git",
+        "Developer Tool"
+      ],
+      "date": "2026",
+      "enabled": true
+    },
+    {
+      "id": "xprivacyguard",
+      "title": "xPrivacyGuard",
+      "youtubeUrl": "https://youtu.be/heFbevJgb30",
+      "description": "Unified privacy suite with Zero Trust VPN (Windows & Android), DNS ad/tracker filtering, and Chromium MV3 protection.",
+      "tags": [
+        "Privacy",
+        "Zero Trust VPN",
+        "Windows",
+        "Android",
+        "MV3"
+      ],
+      "date": "2026",
+      "enabled": true
+    }
+  ]
 }

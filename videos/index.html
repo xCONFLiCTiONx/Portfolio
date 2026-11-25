@@ -387,9 +387,50 @@
     <script src="../js/github-fetch.js?v=25"></script>
     <script src="./videos-data.js?v=2"></script>
     <script>
-        (function () {
-            const videos = window.XPF_VIDEOS || [];
-            const channelUrl = window.XPF_YOUTUBE_CHANNEL || "https://www.youtube.com/@xCONFLiCTiONx";
+        (async function () {
+            function extractYoutubeId(input) {
+                if (!input) return "";
+                const s = String(input).trim();
+                if (/^[a-zA-Z0-9_-]{11}$/.test(s)) return s;
+                const patterns = [
+                    /youtu\.be\/([a-zA-Z0-9_-]{11})/,
+                    /[?&]v=([a-zA-Z0-9_-]{11})/,
+                    /youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/,
+                    /youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/
+                ];
+                for (const re of patterns) {
+                    const m = s.match(re);
+                    if (m) return m[1];
+                }
+                return s;
+            }
+
+            let channelUrl = window.XPF_YOUTUBE_CHANNEL || "https://www.youtube.com/@xCONFLiCTiONx";
+            let rawVideos = window.XPF_VIDEOS || [];
+
+            try {
+                const resp = await fetch("../portfolio.config.json?v=" + Date.now());
+                if (resp.ok) {
+                    const cfg = await resp.json();
+                    if (cfg?.youtube?.channelUrl) channelUrl = cfg.youtube.channelUrl;
+                    if (Array.isArray(cfg?.videos)) rawVideos = cfg.videos;
+                }
+            } catch {
+                // Fallback to videos-data.js if opened via file://
+            }
+
+            const videos = rawVideos
+                .filter((v) => v && v.enabled !== false)
+                .map((v) => ({
+                    slug: v.slug || v.id || String(v.title || "").toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+                    title: v.title || v.name || "Untitled Video",
+                    youtubeId: extractYoutubeId(v.youtubeId || v.youtubeUrl || v.url),
+                    tagline: v.tagline || v.description || "",
+                    tags: Array.isArray(v.tags) ? v.tags : [],
+                    date: v.date || ""
+                }))
+                .filter((v) => v.youtubeId);
+
             const grid = document.getElementById("videosGrid");
             const modal = document.getElementById("videoModal");
             const iframe = document.getElementById("modalVideoIframe");
