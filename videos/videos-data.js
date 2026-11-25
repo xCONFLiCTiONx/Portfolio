@@ -13,5 +13,13 @@ window.XPF_VIDEOS = [
     tagline: "Native Windows Git repository visualization, workflow diagnostics, and local developer tooling.",
     tags: ["Windows", "Git", "Developer Tool"],
     date: "2026"
+  },
+  {
+    slug: "xprivacyguard",
+    title: "xPrivacyGuard",
+    youtubeId: "heFbevJgb30",
+    tagline: "Unified privacy suite with Zero Trust VPN (Windows & Android), DNS ad/tracker filtering, and Chromium MV3 protection.",
+    tags: ["Privacy", "Zero Trust VPN", "Windows", "Android", "MV3"],
+    date: "2026"
   }
 ];
