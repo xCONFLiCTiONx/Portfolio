@@ -1,322 +1,334 @@
-{
-  "site": {
-    "name": "xCONFLiCTiONx",
-    "title": "xCONFLiCTiONx — Privacy, Security & Technology",
-    "description": "Software Developer Portfolio — Building open-source, local-first tools focused on privacy, security, system automation, and digital freedom.",
-    "author": "xCONFLiCTiONx",
-    "themeColor": "#0b0d10",
-    "favicon": "assets/favicon.ico",
-    "avatar": "https://avatars.githubusercontent.com/u/12835195?v=4",
-    "canonicalBase": "https://xconflictionx.cc",
-    "ogImage": "assets/og-image.png"
-  },
-  "github": {
-    "username": "xCONFLiCTiONx",
-    "profileUrl": "https://github.com/xCONFLiCTiONx",
-    "avatarUrl": "https://avatars.githubusercontent.com/u/12835195?v=4"
-  },
-  "navigation": [
-    {
-      "label": "Overview",
-      "path": "/",
-      "icon": "im im-home"
-    },
-    {
-      "label": "Videos",
-      "path": "videos/",
-      "icon": "im im-video"
-    },
-    {
-      "label": "Tools",
-      "path": "tools/",
-      "icon": "im im-tools"
-    },
-    {
-      "label": "Privacy",
-      "path": "privacy/",
-      "icon": "im im-shield"
-    },
-    {
-      "label": "Contact",
-      "path": "contact/",
-      "icon": "im im-paperplane"
-    }
-  ],
-  "socials": [
-    {
-      "name": "GitHub",
-      "url": "https://github.com/xCONFLiCTiONx",
-      "icon": "im im-github"
-    },
-    {
-      "name": "YouTube",
-      "url": "https://www.youtube.com/@xCONFLiCTiONx",
-      "icon": "im im-youtube"
-    }
-  ],
-  "tools": [
-    {
-      "id": "pdf-tools",
-      "name": "Local PDF Studio",
-      "description": "Merge, split, reorder by dragging, rotate pages, and export PDF documents or images. Client-side processing ensures complete privacy.",
-      "path": "tools/pdf-tools/",
-      "icon": "im im-file-o",
-      "iconImage": "tools/icons/icon48.png",
-      "category": "Document Utility",
-      "enabled": true,
-      "githubUrl": "https://github.com/xCONFLiCTiONx/PDF-Tools",
-      "layout": {
-        "header": true,
-        "sidebar": false,
-        "footer": true,
-        "ads": false
-      }
-    },
-    {
-      "id": "allow-copy-paste",
-      "name": "Allow Copy-Paste Tester",
-      "description": "Interactive test suite with 16 browser restriction methods to verify if browser extensions (e.g. Allow Right Click) can bypass restrictions.",
-      "path": "tools/allow-copy-paste/",
-      "icon": "im im-copy",
-      "category": "Security & Extension Test",
-      "enabled": true,
-      "githubUrl": "https://github.com/xCONFLiCTiONx/Allow-Copy-Paste",
-      "layout": {
-        "header": true,
-        "sidebar": false,
-        "footer": true,
-        "ads": false
-      }
-    },
-    {
-      "id": "dev-box",
-      "name": "Dev Swiss Army Knife",
-      "description": "All-in-one developer utility featuring a JWT Inspector, Regex Tester, Hash Generator, and Text Diff tool. Runs 100% client-side.",
-      "path": "tools/dev-box/",
-      "icon": "im im-code",
-      "category": "Developer Utility",
-      "enabled": true,
-      "githubUrl": "https://github.com/xCONFLiCTiONx/Portfolio/blob/main/tools/dev-box/index.html",
-      "layout": {
-        "header": true,
-        "sidebar": false,
-        "footer": true,
-        "ads": false
-      }
-    },
-    {
-      "id": "warp-test",
-      "name": "Tunnel Test Tool",
-      "description": "Compare public IP results across independent endpoints, inspect Cloudflare trace routing, and run a browser WebRTC candidate check to investigate VPN and proxy split-tunnel behavior.",
-      "path": "tools/warp-test/",
-      "icon": "im im-network",
-      "category": "Developer Utility",
-      "enabled": true,
-      "githubUrl": "https://github.com/xCONFLiCTiONx/Portfolio/blob/main/tools/warp-test/index.html",
-      "layout": {
-        "header": true,
-        "sidebar": false,
-        "footer": true,
-        "ads": false
-      }
-    },
-    {
-      "id": "site-grade",
-      "name": "Website Grading Tool",
-      "description": "Audit a public website from the outside. SiteGrade checks HTTP response, security headers, privacy signals, performance, SEO, configuration, DNS, and accessibility.",
-      "path": "tools/site-grade/",
-      "icon": "im im-dashboard",
-      "category": "Developer Utility",
-      "enabled": true,
-      "githubUrl": "https://github.com/xCONFLiCTiONx/Portfolio/blob/main/tools/site-grade/index.html",
-      "workerUrl": "https://scanner.xconflictionx.cc/scan",
-      "layout": {
-        "header": true,
-        "sidebar": false,
-        "footer": true,
-        "ads": false
-      }
-    },
-    {
-      "id": "seo-generator",
-      "name": "SEO Generator",
-      "description": "Crawl static websites, audit page metadata, preview real-time Open Graph and Twitter social cards, and generate optimized sitemaps and meta tags.",
-      "path": "tools/seo-generator/",
-      "icon": "im im-sitemap",
-      "category": "Developer Utility",
-      "enabled": true,
-      "githubUrl": "https://github.com/xCONFLiCTiONx/Portfolio/blob/main/tools/seo-generator/index.html",
-      "layout": {
-        "header": true,
-        "sidebar": false,
-        "footer": true,
-        "ads": false
-      }
-    },
-    {
-      "id": "image-tool",
-      "name": "Image Tool",
-      "description": "Crop, resize, convert image formats, edit SVG graphics, and bundle ICO/ZIP favicon packages entirely in client-side browser memory.",
-      "path": "tools/image-tool/",
-      "icon": "im im-picture-o",
-      "category": "Developer Utility",
-      "enabled": true,
-      "githubUrl": "https://github.com/xCONFLiCTiONx/Portfolio/blob/main/tools/image-tool/index.html",
-      "layout": {
-        "header": true,
-        "sidebar": false,
-        "footer": true,
-        "ads": false
-      }
-    },
-    {
-      "id": "security-audit",
-      "name": "Security Audit Studio",
-      "description": "Comprehensive Client Security & Privacy Audit Studio to inspect proxy/VPN encapsulation, WebRTC leak detection, browser fingerprint resistance, and permission isolation.",
-      "path": "tools/security-audit/",
-      "icon": "im im-fingerprint",
-      "category": "Developer Utility",
-      "enabled": true,
-      "githubUrl": "https://github.com/xCONFLiCTiONx/Portfolio/blob/main/tools/security-audit/index.html",
-      "layout": {
-        "header": true,
-        "sidebar": false,
-        "footer": true,
-        "ads": false
-      }
-    },
-    {
-      "id": "ai-workspace",
-      "name": "AI Workspace",
-      "description": "Develop smarter with AI directly in your browser — simply engage the Chat or AI tool to examine your project and get instant insights.",
-      "path": "tools/ai-workspace/",
-      "icon": "im im-wizard",
-      "category": "AI Workspace",
-      "enabled": true,
-      "githubUrl": "https://github.com/xCONFLiCTiONx/Portfolio/blob/main/tools/ai-workspace/index.html",
-      "layout": {
-        "header": true,
-        "sidebar": false,
-        "footer": true,
-        "ads": false
-      }
-    },
-    {
-      "id": "privacy-test",
-      "name": "Privacy Test",
-      "description": "Interactive privacy test benchmark suite designed to evaluate and verify content blocking, script isolation, and data leak protection for xPrivacyGuard.",
-      "path": "tools/privacy-test/",
-      "icon": "im im-shield",
-      "category": "Privacy Test",
-      "enabled": true,
-      "githubUrl": "https://github.com/xCONFLiCTiONx/Portfolio/blob/main/tools/privacy-test/index.html",
-      "layout": {
-        "header": true,
-        "sidebar": false,
-        "footer": true,
-        "ads": false
-      }
-    },
-    {
-      "id": "zero-hour",
-      "name": "Zero Hour",
-      "description": "Interactive cybersecurity escape room and incident simulator — investigate logs, scan 3D networks, crack hashes, and contain live breaches.",
-      "path": "tools/zero-hour/",
-      "icon": "im im-gamepad",
-      "category": "Zero Hour",
-      "enabled": true,
-      "githubUrl": "https://github.com/xCONFLiCTiONx/Portfolio/blob/main/tools/zero-hour/index.html",
-      "layout": {
-        "header": true,
-        "sidebar": false,
-        "footer": true,
-        "ads": false
-      }
-    },
-    {
-      "id": "blackbox",
-      "name": "BlackBox Shell",
-      "description": "Progressive CLI diagnostic workbench — discover hidden tools, run live network/DNS/WebRTC probes, and solve morphing kernel & routing faults.",
-      "path": "tools/blackbox/",
-      "icon": "im im-computer",
-      "category": "CLI Workbench",
-      "enabled": true,
-      "githubUrl": "https://github.com/xCONFLiCTiONx/Portfolio/blob/main/tools/blackbox/index.html",
-      "layout": {
-        "header": true,
-        "sidebar": false,
-        "footer": true,
-        "ads": false
-      }
-    },
-    {
-      "id": "code-tools",
-      "name": "Code Tools",
-      "description": "Code Web IDE and daily CLI developer workbench — features a resizable maximizable terminal, live HTTP/curl client, JWT inspector, DNS DoH resolver, crypto hasher, and JavaScript scratchpad.",
-      "path": "tools/code-tools/",
-      "icon": "im im-tools",
-      "category": "Developer Workbench",
-      "enabled": true,
-      "githubUrl": "https://github.com/xCONFLiCTiONx/Portfolio/blob/main/tools/code-tools/index.html",
-      "layout": {
-        "header": false,
-        "sidebar": false,
-        "footer": false,
-        "ads": false
-      }
-    },
-    {
-      "id": "auto-complete",
-      "name": "Auto Complete Test Suite",
-      "description": "Interactive form test suite to test browser autofill extensions, RoboForm patterns, address sets, and inline suggestion engines.",
-      "path": "tools/auto-complete/",
-      "icon": "im im-keyboard",
-      "category": "Extension & Form Testing",
-      "enabled": true,
-      "githubUrl": "https://github.com/xCONFLiCTiONx/Smart-AutoComplete",
-      "layout": {
-        "header": true,
-        "sidebar": false,
-        "footer": true,
-        "ads": false
-      }
-    }
-  ],
-  "ads": {
-    "enabled": true,
-    "template": "ads.config.html"
-  },
-  "youtube": {
-    "channelUrl": "https://www.youtube.com/@xCONFLiCTiONx"
-  },
-  "videos": [
-    {
-      "id": "gitscope",
-      "title": "GitScope for Windows",
-      "youtubeUrl": "https://youtu.be/-P-X7oupI_Y",
-      "description": "Native Windows Git repository visualization, workflow diagnostics, and local developer tooling.",
-      "tags": [
-        "Windows",
-        "Git",
-        "Developer Tool"
-      ],
-      "date": "2026",
-      "enabled": true
-    },
-    {
-      "id": "xprivacyguard",
-      "title": "xPrivacyGuard",
-      "youtubeUrl": "https://youtu.be/heFbevJgb30",
-      "description": "Unified privacy suite with Zero Trust VPN (Windows & Android), DNS ad/tracker filtering, and Chromium MV3 protection.",
-      "tags": [
-        "Privacy",
-        "Zero Trust VPN",
-        "Windows",
-        "Android",
-        "MV3"
-      ],
-      "date": "2026",
-      "enabled": true
-    }
-  ]
+﻿{
+    "site":  {
+                 "name":  "xCONFLiCTiONx",
+                 "title":  "xCONFLiCTiONx — Privacy, Security \u0026 Technology",
+                 "description":  "Software Developer Portfolio — Building open-source, local-first tools focused on privacy, security, system automation, and digital freedom.",
+                 "author":  "xCONFLiCTiONx",
+                 "themeColor":  "#0b0d10",
+                 "favicon":  "assets/favicon.ico",
+                 "avatar":  "https://avatars.githubusercontent.com/u/12835195?v=4",
+                 "canonicalBase":  "https://xconflictionx.cc",
+                 "ogImage":  "assets/og-image.png"
+             },
+    "github":  {
+                   "username":  "xCONFLiCTiONx",
+                   "profileUrl":  "https://github.com/xCONFLiCTiONx",
+                   "avatarUrl":  "https://avatars.githubusercontent.com/u/12835195?v=4"
+               },
+    "navigation":  [
+                       {
+                           "label":  "Overview",
+                           "path":  "/",
+                           "icon":  "im im-home"
+                       },
+                       {
+                           "label":  "Videos",
+                           "path":  "videos/",
+                           "icon":  "im im-video"
+                       },
+                       {
+                           "label":  "Tools",
+                           "path":  "tools/",
+                           "icon":  "im im-tools"
+                       },
+                       {
+                           "label":  "Privacy",
+                           "path":  "privacy/",
+                           "icon":  "im im-shield"
+                       },
+                       {
+                           "label":  "Contact",
+                           "path":  "contact/",
+                           "icon":  "im im-paperplane"
+                       }
+                   ],
+    "socials":  [
+                    {
+                        "name":  "GitHub",
+                        "url":  "https://github.com/xCONFLiCTiONx",
+                        "icon":  "im im-github"
+                    },
+                    {
+                        "name":  "YouTube",
+                        "url":  "https://www.youtube.com/@xCONFLiCTiONx",
+                        "icon":  "im im-youtube"
+                    }
+                ],
+    "tools":  [
+                  {
+                      "id":  "pdf-tools",
+                      "name":  "Local PDF Studio",
+                      "description":  "Merge, split, reorder by dragging, rotate pages, and export PDF documents or images. Client-side processing ensures complete privacy.",
+                      "path":  "tools/pdf-tools/",
+                      "icon":  "im im-file-o",
+                      "iconImage":  "tools/icons/icon48.png",
+                      "category":  "Document Utility",
+                      "enabled":  true,
+                      "githubUrl":  "https://github.com/xCONFLiCTiONx/PDF-Tools",
+                      "layout":  {
+                                     "header":  true,
+                                     "sidebar":  false,
+                                     "footer":  true,
+                                     "ads":  false
+                                 }
+                  },
+                  {
+                      "id":  "allow-copy-paste",
+                      "name":  "Allow Copy-Paste Tester",
+                      "description":  "Interactive test suite with 16 browser restriction methods to verify if browser extensions (e.g. Allow Right Click) can bypass restrictions.",
+                      "path":  "tools/allow-copy-paste/",
+                      "icon":  "im im-copy",
+                      "category":  "Security \u0026 Extension Test",
+                      "enabled":  true,
+                      "githubUrl":  "https://github.com/xCONFLiCTiONx/Allow-Copy-Paste",
+                      "layout":  {
+                                     "header":  true,
+                                     "sidebar":  false,
+                                     "footer":  true,
+                                     "ads":  false
+                                 }
+                  },
+                  {
+                      "id":  "dev-box",
+                      "name":  "Dev Swiss Army Knife",
+                      "description":  "All-in-one developer utility featuring a JWT Inspector, Regex Tester, Hash Generator, and Text Diff tool. Runs 100% client-side.",
+                      "path":  "tools/dev-box/",
+                      "icon":  "im im-code",
+                      "category":  "Developer Utility",
+                      "enabled":  true,
+                      "githubUrl":  "https://github.com/xCONFLiCTiONx/Portfolio/blob/main/tools/dev-box/index.html",
+                      "layout":  {
+                                     "header":  true,
+                                     "sidebar":  false,
+                                     "footer":  true,
+                                     "ads":  false
+                                 }
+                  },
+                  {
+                      "id":  "warp-test",
+                      "name":  "Tunnel Test Tool",
+                      "description":  "Compare public IP results across independent endpoints, inspect Cloudflare trace routing, and run a browser WebRTC candidate check to investigate VPN and proxy split-tunnel behavior.",
+                      "path":  "tools/warp-test/",
+                      "icon":  "im im-network",
+                      "category":  "Developer Utility",
+                      "enabled":  true,
+                      "githubUrl":  "https://github.com/xCONFLiCTiONx/Portfolio/blob/main/tools/warp-test/index.html",
+                      "layout":  {
+                                     "header":  true,
+                                     "sidebar":  false,
+                                     "footer":  true,
+                                     "ads":  false
+                                 }
+                  },
+                  {
+                      "id":  "site-grade",
+                      "name":  "Website Grading Tool",
+                      "description":  "Audit a public website from the outside. SiteGrade checks HTTP response, security headers, privacy signals, performance, SEO, configuration, DNS, and accessibility.",
+                      "path":  "tools/site-grade/",
+                      "icon":  "im im-dashboard",
+                      "category":  "Developer Utility",
+                      "enabled":  true,
+                      "githubUrl":  "https://github.com/xCONFLiCTiONx/Portfolio/blob/main/tools/site-grade/index.html",
+                      "workerUrl":  "https://scanner.xconflictionx.cc/scan",
+                      "layout":  {
+                                     "header":  true,
+                                     "sidebar":  false,
+                                     "footer":  true,
+                                     "ads":  false
+                                 }
+                  },
+                  {
+                      "id":  "seo-generator",
+                      "name":  "SEO Generator",
+                      "description":  "Crawl static websites, audit page metadata, preview real-time Open Graph and Twitter social cards, and generate optimized sitemaps and meta tags.",
+                      "path":  "tools/seo-generator/",
+                      "icon":  "im im-sitemap",
+                      "category":  "Developer Utility",
+                      "enabled":  true,
+                      "githubUrl":  "https://github.com/xCONFLiCTiONx/Portfolio/blob/main/tools/seo-generator/index.html",
+                      "layout":  {
+                                     "header":  true,
+                                     "sidebar":  false,
+                                     "footer":  true,
+                                     "ads":  false
+                                 }
+                  },
+                  {
+                      "id":  "image-tool",
+                      "name":  "Image Tool",
+                      "description":  "Crop, resize, convert image formats, edit SVG graphics, and bundle ICO/ZIP favicon packages entirely in client-side browser memory.",
+                      "path":  "tools/image-tool/",
+                      "icon":  "im im-picture-o",
+                      "category":  "Developer Utility",
+                      "enabled":  true,
+                      "githubUrl":  "https://github.com/xCONFLiCTiONx/Portfolio/blob/main/tools/image-tool/index.html",
+                      "layout":  {
+                                     "header":  true,
+                                     "sidebar":  false,
+                                     "footer":  true,
+                                     "ads":  false
+                                 }
+                  },
+                  {
+                      "id":  "security-audit",
+                      "name":  "Security Audit Studio",
+                      "description":  "Comprehensive Client Security \u0026 Privacy Audit Studio to inspect proxy/VPN encapsulation, WebRTC leak detection, browser fingerprint resistance, and permission isolation.",
+                      "path":  "tools/security-audit/",
+                      "icon":  "im im-fingerprint",
+                      "category":  "Developer Utility",
+                      "enabled":  true,
+                      "githubUrl":  "https://github.com/xCONFLiCTiONx/Portfolio/blob/main/tools/security-audit/index.html",
+                      "layout":  {
+                                     "header":  true,
+                                     "sidebar":  false,
+                                     "footer":  true,
+                                     "ads":  false
+                                 }
+                  },
+                  {
+                      "id":  "ai-workspace",
+                      "name":  "AI Workspace",
+                      "description":  "Develop smarter with AI directly in your browser — simply engage the Chat or AI tool to examine your project and get instant insights.",
+                      "path":  "tools/ai-workspace/",
+                      "icon":  "im im-wizard",
+                      "category":  "AI Workspace",
+                      "enabled":  true,
+                      "githubUrl":  "https://github.com/xCONFLiCTiONx/Portfolio/blob/main/tools/ai-workspace/index.html",
+                      "layout":  {
+                                     "header":  true,
+                                     "sidebar":  false,
+                                     "footer":  true,
+                                     "ads":  false
+                                 }
+                  },
+                  {
+                      "id":  "privacy-test",
+                      "name":  "Privacy Test",
+                      "description":  "Interactive privacy test benchmark suite designed to evaluate and verify content blocking, script isolation, and data leak protection for xPrivacyGuard.",
+                      "path":  "tools/privacy-test/",
+                      "icon":  "im im-shield",
+                      "category":  "Privacy Test",
+                      "enabled":  true,
+                      "githubUrl":  "https://github.com/xCONFLiCTiONx/Portfolio/blob/main/tools/privacy-test/index.html",
+                      "layout":  {
+                                     "header":  true,
+                                     "sidebar":  false,
+                                     "footer":  true,
+                                     "ads":  false
+                                 }
+                  },
+                  {
+                      "id":  "zero-hour",
+                      "name":  "Zero Hour",
+                      "description":  "Interactive cybersecurity escape room and incident simulator — investigate logs, scan 3D networks, crack hashes, and contain live breaches.",
+                      "path":  "tools/zero-hour/",
+                      "icon":  "im im-gamepad",
+                      "category":  "Zero Hour",
+                      "enabled":  true,
+                      "githubUrl":  "https://github.com/xCONFLiCTiONx/Portfolio/blob/main/tools/zero-hour/index.html",
+                      "layout":  {
+                                     "header":  true,
+                                     "sidebar":  false,
+                                     "footer":  true,
+                                     "ads":  false
+                                 }
+                  },
+                  {
+                      "id":  "blackbox",
+                      "name":  "BlackBox Shell",
+                      "description":  "Progressive CLI diagnostic workbench — discover hidden tools, run live network/DNS/WebRTC probes, and solve morphing kernel \u0026 routing faults.",
+                      "path":  "tools/blackbox/",
+                      "icon":  "im im-computer",
+                      "category":  "CLI Workbench",
+                      "enabled":  true,
+                      "githubUrl":  "https://github.com/xCONFLiCTiONx/Portfolio/blob/main/tools/blackbox/index.html",
+                      "layout":  {
+                                     "header":  true,
+                                     "sidebar":  false,
+                                     "footer":  true,
+                                     "ads":  false
+                                 }
+                  },
+                  {
+                      "id":  "code-tools",
+                      "name":  "Code Tools",
+                      "description":  "Code Web IDE and daily CLI developer workbench — features a resizable maximizable terminal, live HTTP/curl client, JWT inspector, DNS DoH resolver, crypto hasher, and JavaScript scratchpad.",
+                      "path":  "tools/code-tools/",
+                      "icon":  "im im-tools",
+                      "category":  "Developer Workbench",
+                      "enabled":  true,
+                      "githubUrl":  "https://github.com/xCONFLiCTiONx/Portfolio/blob/main/tools/code-tools/index.html",
+                      "layout":  {
+                                     "header":  false,
+                                     "sidebar":  false,
+                                     "footer":  false,
+                                     "ads":  false
+                                 }
+                  },
+                  {
+                      "id":  "auto-complete",
+                      "name":  "Auto Complete Test Suite",
+                      "description":  "Interactive form test suite to test browser autofill extensions, RoboForm patterns, address sets, and inline suggestion engines.",
+                      "path":  "tools/auto-complete/",
+                      "icon":  "im im-keyboard",
+                      "category":  "Extension \u0026 Form Testing",
+                      "enabled":  true,
+                      "githubUrl":  "https://github.com/xCONFLiCTiONx/Smart-AutoComplete",
+                      "layout":  {
+                                     "header":  true,
+                                     "sidebar":  false,
+                                     "footer":  true,
+                                     "ads":  false
+                                 }
+                  }
+              ],
+    "ads":  {
+                "enabled":  true,
+                "template":  "ads.config.html"
+            },
+    "youtube":  {
+                    "channelUrl":  "https://www.youtube.com/@xCONFLiCTiONx"
+                },
+    "videos":  [
+                   {
+                       "id":  "toneforge",
+                       "title":  "ToneForge",
+                       "youtubeUrl":  "https://youtu.be/FxzTdDjhT1A",
+                       "description":  "",
+                       "tags":  [
+                                    "Windows",
+                                    "xSoftware"
+                                ],
+                       "date":  "2026",
+                       "enabled":  true
+                   },
+                   {
+                       "id":  "gitscope",
+                       "title":  "GitScope for Windows",
+                       "youtubeUrl":  "https://youtu.be/-P-X7oupI_Y",
+                       "description":  "Native Windows Git repository visualization, workflow diagnostics, and local developer tooling.",
+                       "tags":  [
+                                    "Windows",
+                                    "Git",
+                                    "Developer Tool"
+                                ],
+                       "date":  "2026",
+                       "enabled":  true
+                   },
+                   {
+                       "id":  "xprivacyguard",
+                       "title":  "xPrivacyGuard",
+                       "youtubeUrl":  "https://youtu.be/heFbevJgb30",
+                       "description":  "Unified privacy suite with Zero Trust VPN (Windows \u0026 Android), DNS ad/tracker filtering, and Chromium MV3 protection.",
+                       "tags":  [
+                                    "Privacy",
+                                    "Zero Trust VPN",
+                                    "Windows",
+                                    "Android",
+                                    "MV3"
+                                ],
+                       "date":  "2026",
+                       "enabled":  true
+                   }
+               ]
 }
