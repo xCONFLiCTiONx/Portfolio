@@ -7,14 +7,6 @@ window.XPF_YOUTUBE_CHANNEL = "https://www.youtube.com/@xCONFLiCTiONx";
 
 window.XPF_VIDEOS = [
   {
-    slug: "gitscope",
-    title: "GitScope for Windows",
-    youtubeId: "-P-X7oupI_Y",
-    tagline: "Native Windows Git repository visualization, workflow diagnostics, and local developer tooling.",
-    tags: ["Windows", "Git", "Developer Tool"],
-    date: "2026"
-  },
-  {
     slug: "xprivacyguard",
     title: "xPrivacyGuard",
     youtubeId: "heFbevJgb30",
