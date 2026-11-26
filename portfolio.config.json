@@ -291,6 +291,18 @@
                 },
     "videos":  [
                    {
+                       "id":  "xreponotes-architecture-code-walkthrough-c",
+                       "title":  "xRepoNotes — Architecture \u0026 Code Walkthrough (C#)",
+                       "youtubeUrl":  "https://youtu.be/XjTEztpAshM",
+                       "description":  "A dark-themed notes system with a Windows desktop client, native Android client, and a shared xServer database",
+                       "tags":  [
+                                    "Windows",
+                                    "xSoftware"
+                                ],
+                       "date":  "2026",
+                       "enabled":  true
+                   },
+                   {
                        "id":  "xbackup",
                        "title":  "xBackup",
                        "youtubeUrl":  "https://youtu.be/nLlhkMk3u7Q",
