@@ -1,0 +1,7 @@
+# Security contact information for xCONFLiCTiONx
+# RFC 9116
+
+Canonical: https://xconflictionx.pages.dev/.well-known/security.txt
+Contact: mailto:info@xconflictionx.cc
+Preferred-Languages: en
+Expires: 2027-11-25T23:59:59Z
