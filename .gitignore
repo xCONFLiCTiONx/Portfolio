@@ -66,3 +66,9 @@ pnpm-debug.log*
 **/.wrangler/
 .dev.vars
 temp/
+
+# Privacy: local configs, secrets, databases, keys, logs, installers
+settings.json
+*.db
+*.sqlite*
+*-Setup.exe
